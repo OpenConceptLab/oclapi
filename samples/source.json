@@ -1,0 +1,95 @@
+{
+  "dictionaries": [
+    {
+      "id": "ciel",
+      "url": "http://api.openconceptlab.org/rest/source/ciel",
+      "name": "CIEL Concept Dictionary",
+      "type": "dictionary",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "Columbia University International eHealth Laboratory"
+      }
+    },
+    {
+      "id": "pih",
+      "url": "http://api.openconceptlab.org/rest/source/pih",
+      "name": "PIH Concept Dictionary",
+      "type": "dictionary",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "Partners In Health"
+      }
+    },
+    {
+      "id": "ampath",
+      "url": "http://api.openconceptlab.org/rest/source/ampath",
+      "name": "AMPATH Concept Dictionary",
+      "type": "dictionary",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "AMPATH"
+      }
+    },
+    {
+      "id": "loinc",
+      "url": "http://api.openconceptlab.org/rest/source/loinc",
+      "name": "LOINC",
+      "type": "mapsource",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "Regenstrief Institute"
+      }
+    },
+    {
+      "id": "icd-10",
+      "url": "http://api.openconceptlab.org/rest/source/icd-10",
+      "name": "ICD-10",
+      "type": "mapsource",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "World Health Organization"
+      }
+    },
+    {
+      "id": "snomed",
+      "url": "http://api.openconceptlab.org/rest/source/snomed",
+      "name": "SNOMED",
+      "type": "mapsource",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "IHTSP"
+      }
+    },
+    {
+      "id": "rxnorm",
+      "url": "http://api.openconceptlab.org/rest/source/rxnorm",
+      "name": "RxNORM",
+      "type": "mapsource",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "omrsVersion": "1.6.5",
+        "lastUpdated": "2013-02-13",
+        "owner": "US National Library of Medicine"
+      }
+    }
+  ]
+}
