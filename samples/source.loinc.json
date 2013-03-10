@@ -1,0 +1,14 @@
+{
+    "source": {
+      "id": "loinc",
+      "url": "http://api.openconceptlab.org/rest/source/loinc",
+      "name": "LOINC",
+      "type": "mapsource",
+      "version": "1.1.2",
+      "active" : "true",
+      "properties": {
+        "lastUpdated": "2013-02-13",
+        "owner": "Regenstrief Institute"
+      }
+    }
+}

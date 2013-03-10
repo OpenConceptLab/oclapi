@@ -1,7 +1,57 @@
 {
 	"concepts": [
 		{
-			...
-		}
+			"id": "ciel_1894",
+			"concept_id": "1894",
+			"uuid": "ciel_1894AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			"url": "http://api.openconceptlab.org/rest/source/ciel/1894",
+			"ciel":"1894",
+			"dict":"ciel",
+			"retired": "false",
+			"last_updated": "2010-02-18T05:00:00Z",
+			"created": "2010-02-18T05:00:00Z",
+			"is_set": "false",
+			"class": "Question",
+			"datatype": "Coded",
+			"names": [
+				{
+					"locale": "en",
+					"name": "Newborn cried after birth",
+					"preferred": "true"
+				}
+			],
+			"descriptions": [
+				{
+					"locale": "en",
+					"description": "Did the newborn baby cry after birth (even a little)"
+				}
+			],
+			"answers": [
+				{
+					"id": "ciel_1065",
+					"name": "YES"
+				},
+				{
+					"id": "ciel_1066",
+					"name": "NO"
+				},
+				{
+					"id": "ciel_1067",
+					"name": "UNKNOWN"
+				}
+			],
+			"mappings": [
+				{
+					"mapSource": "snomed",
+					"mapCode": "364737004",
+					"mapType": "same as"
+				},
+				{
+					"mapSource": "snomed-mvp",
+					"mapCode": "18941000105009",
+					"mapType": "same as"
+				}
+			]
+		}	
 	]
 }

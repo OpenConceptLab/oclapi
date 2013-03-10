@@ -1,5 +1,5 @@
 {
-  "dictionary": {
+  "source": {
     "id": "ciel",
     "url": "http://api.openconceptlab.org/rest/source/ciel",
     "name": "CIEL Concept Dictionary",
