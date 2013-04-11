@@ -1,0 +1,214 @@
+{
+    "allRelatedGroup": {
+        "rxcui": "1193236",
+        "conceptGroup": [
+            {
+                "tty": "BN",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1193236",
+                        "name": "Zooby Fluoride Foam",
+                        "synonym": "",
+                        "tty": "BN",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3247869"
+                    }
+                ]
+            },
+            {
+                "tty": "BPCK"
+            },
+            {
+                "tty": "DF",
+                "conceptProperties": [
+                    {
+                        "rxcui": "346284",
+                        "name": "Oral Foam",
+                        "synonym": "",
+                        "tty": "DF",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C1160726"
+                    }
+                ]
+            },
+            {
+                "tty": "GPCK"
+            },
+            {
+                "tty": "IN",
+                "conceptProperties": [
+                    {
+                        "rxcui": "9873",
+                        "name": "Sodium Fluoride",
+                        "synonym": "",
+                        "tty": "IN",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C0037508"
+                    }
+                ]
+            },
+            {
+                "tty": "MIN"
+            },
+            {
+                "tty": "PIN"
+            },
+            {
+                "tty": "SBD",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1193240",
+                        "name": "Sodium Fluoride 27.2 MG/ML Oral Foam [Zooby Fluoride Foam]",
+                        "synonym": "Zooby Fluoride Foam 27.2 MG/ML Oral Foam",
+                        "tty": "SBD",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3247873"
+                    }
+                ]
+            },
+            {
+                "tty": "SBDC",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1193237",
+                        "name": "Sodium Fluoride 27.2 MG/ML [Zooby Fluoride Foam]",
+                        "synonym": "",
+                        "tty": "SBDC",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3247870"
+                    }
+                ]
+            },
+            {
+                "tty": "SBDF",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1193238",
+                        "name": "Sodium Fluoride Oral Foam [Zooby Fluoride Foam]",
+                        "synonym": "",
+                        "tty": "SBDF",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3247871"
+                    }
+                ]
+            },
+            {
+                "tty": "SCD",
+                "conceptProperties": [
+                    {
+                        "rxcui": "248389",
+                        "name": "Sodium Fluoride 27.2 MG/ML Oral Foam",
+                        "synonym": "sodium fluoride 2.72 % Oral Foam",
+                        "tty": "SCD",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C0789817"
+                    }
+                ]
+            },
+            {
+                "tty": "SCDC",
+                "conceptProperties": [
+                    {
+                        "rxcui": "335564",
+                        "name": "Sodium Fluoride 27.2 MG/ML",
+                        "synonym": "",
+                        "tty": "SCDC",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C1132582"
+                    }
+                ]
+            },
+            {
+                "tty": "SCDF",
+                "conceptProperties": [
+                    {
+                        "rxcui": "378213",
+                        "name": "Sodium Fluoride Oral Foam",
+                        "synonym": "",
+                        "tty": "SCDF",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C1252462"
+                    }
+                ]
+            },
+            {
+                "tty": "SCDG",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1159341",
+                        "name": "Sodium Fluoride Oral Product",
+                        "synonym": "",
+                        "tty": "SCDG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3213727"
+                    },
+                    {
+                        "rxcui": "1294866",
+                        "name": "Sodium Fluoride Oral Foam Product",
+                        "synonym": "",
+                        "tty": "SCDG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3465531"
+                    }
+                ]
+            },
+            {
+                "tty": "SBDG",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1193239",
+                        "name": "Zooby Fluoride Foam Oral Product",
+                        "synonym": "",
+                        "tty": "SBDG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3247872"
+                    },
+                    {
+                        "rxcui": "1296485",
+                        "name": "Zooby Fluoride Foam Oral Foam Product",
+                        "synonym": "",
+                        "tty": "SBDG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3467101"
+                    }
+                ]
+            },
+            {
+                "tty": "DFG",
+                "conceptProperties": [
+                    {
+                        "rxcui": "1151131",
+                        "name": "Oral Product",
+                        "synonym": "",
+                        "tty": "DFG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3205666"
+                    },
+                    {
+                        "rxcui": "1294709",
+                        "name": "Oral Foam Product",
+                        "synonym": "",
+                        "tty": "DFG",
+                        "language": "ENG",
+                        "suppress": "N",
+                        "umlscui": "C3465375"
+                    }
+                ]
+            }
+        ]
+    }
+}
