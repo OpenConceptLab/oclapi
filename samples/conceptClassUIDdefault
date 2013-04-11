@@ -1,0 +1,26 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=949D635CE6A36D3F8751C1495621ECEF; Path=/openmrs-standalone
+ETag: "017193f3bf2b09a45c7c01e6674331707"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 406
+Date: Thu, 11 Apr 2013 22:07:04 GMT
+
+{
+    "uuid": "8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+    "display": "Test",
+    "name": "Test",
+    "description": "Acq. during patient encounter (vitals, labs, etc.)",
+    "retired": false,
+    "links": [
+        {
+            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+            "rel": "self"
+        },
+        {
+            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f?v=full",
+            "rel": "full"
+        }
+    ],
+    "resourceVersion": "1.8"
+}
