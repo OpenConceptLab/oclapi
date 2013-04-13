@@ -1,0 +1,77 @@
+HTTP/1.1 200 OK
+Date: Sat, 13 Apr 2013 06:42:34 GMT
+Server: Apache/2.2.13 (Red Hat)
+Accept-Ranges: bytes
+Content-Length: 1226
+Connection: close
+Content-Type: application/json;charset=UTF-8
+
+"success": {
+        "accessedResource": "/bioportal/ontologies/49747",
+        "accessDate": "2013-04-12 23:42:34.677 PDT",
+        "data": [
+            {
+                "ontologyBean": {
+                    "id": 49747,
+                    "ontologyId": 1158,
+                    "virtualViewIds": [
+                        ""
+                    ],
+                    "internalVersionNumber": 16,
+                    "userIds": [
+                        {
+                            "int": 39842
+                        }
+                    ],
+                    "versionNumber": "1.0.0",
+                    "versionStatus": "production",
+                    "isRemote": 0,
+                    "statusId": 3,
+                    "dateCreated": "2013-02-07 13:29:15.0 PST",
+                    "dateReleased": "2013-02-07 00:00:00.0 PST",
+                    "isManual": 1,
+                    "displayLabel": "Cell Behavior Ontology",
+                    "description": "The Cell Behavior Ontology (CBO) describes multi-cell computational models. In particular to describe both the existential behaviors of cells (spatiality, growth, movement, adhesion, death, ...) and computational models of those behaviors.",
+                    "abbreviation": "CBO",
+                    "format": "OWL",
+                    "contactName": "James P. Sluka",
+                    "contactEmail": "JSluka@indiana.edu",
+                    "homepage": "http://cbo.biocomplexity.indiana.edu/cbo/",
+                    "isFlat": 0,
+                    "isFoundry": 0,
+                    "isMetadataOnly": 0,
+                    "documentationSlot": "http://purl.org/dc/elements/1.1/description",
+                    "userAcl": [
+                        ""
+                    ],
+                    "obsoleteProperty": "ObsoleteProperty",
+                    "isView": false,
+                    "categoryIds": [
+                        {
+                            "int": [
+                                5060,
+                                5065,
+                                5073
+                            ]
+                        }
+                    ],
+                    "groupIds": [
+                        ""
+                    ],
+                    "filenames": [
+                        {
+                            "string": "CBO_1_0.owl"
+                        }
+                    ],
+                    "filePath": "/1158/16",
+                    "hasViews": [
+                        ""
+                    ],
+                    "viewOnOntologyVersionId": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    }
+}
