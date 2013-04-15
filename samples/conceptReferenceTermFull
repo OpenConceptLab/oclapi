@@ -1,3 +1,11 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=FD440DF26E0486E9ED1F9F595460B236; Path=/openmrs-standalone
+ETag: "02a4544c1eac5fc054c38fd2294f9fa58"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 50360
+Date: Mon, 15 Apr 2013 20:34:40 GMT
+
 {
     "results": [
         {
