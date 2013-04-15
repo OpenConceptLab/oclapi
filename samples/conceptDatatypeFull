@@ -1,0 +1,372 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=1E2A86B678C35D4370A2969797914C63; Path=/openmrs-standalone
+ETag: "0dca0106f7ea70ed91271726248cb15a3"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 7209
+Date: Mon, 15 Apr 2013 17:06:27 GMT
+
+{
+    "results": [
+        {
+            "uuid": "8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Numeric",
+            "name": "Numeric",
+            "description": "Numeric value, including integer or float (e.g., creatinine, weight)",
+            "hl7Abbreviation": "NM",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a48b6-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Coded",
+            "name": "Coded",
+            "description": "Value determined by term dictionary lookup (i.e., term identifier)",
+            "hl7Abbreviation": "CWE",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a48b6-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a4ab4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Text",
+            "name": "Text",
+            "description": "Free text",
+            "hl7Abbreviation": "ST",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4ab4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "N/A",
+            "name": "N/A",
+            "description": "Not associated with a datatype (e.g., term answers, sets)",
+            "hl7Abbreviation": "ZZ",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a4e74-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Document",
+            "name": "Document",
+            "description": "Pointer to a binary or text-based document (e.g., clinical document, RTF, XML, EKG, image, etc.) stored in complex_obs table",
+            "hl7Abbreviation": "RP",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-04-15T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4e74-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a505e-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Date",
+            "name": "Date",
+            "description": "Absolute date",
+            "hl7Abbreviation": "DT",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-07-22T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a505e-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a591e-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Time",
+            "name": "Time",
+            "description": "Absolute time of day",
+            "hl7Abbreviation": "TM",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-07-22T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a591e-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a5af4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Datetime",
+            "name": "Datetime",
+            "description": "Absolute date and time",
+            "hl7Abbreviation": "TS",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-07-22T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5af4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a5cca-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Boolean",
+            "name": "Boolean",
+            "description": "Boolean value (yes/no, true/false)",
+            "hl7Abbreviation": "BIT",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-08-26T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5cca-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a5e96-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Rule",
+            "name": "Rule",
+            "description": "Value derived from other data",
+            "hl7Abbreviation": "ZZ",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2006-09-11T13:22:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5e96-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a606c-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Structured Numeric",
+            "name": "Structured Numeric",
+            "description": "Complex numeric values possible (ie, <5, 1-10, etc.)",
+            "hl7Abbreviation": "SN",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2005-08-06T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a606c-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4a6242-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Complex",
+            "name": "Complex",
+            "description": "Complex value.  Analogous to HL7 Embedded Datatype",
+            "hl7Abbreviation": "ED",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2008-05-28T12:25:34.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a6242-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        }
+    ]
+}
