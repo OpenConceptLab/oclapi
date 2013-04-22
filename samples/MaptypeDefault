@@ -1,0 +1,132 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=A7C259F71D1822F6A96F7A02A00CFF58; Path=/openmrs-standalone
+ETag: "0d3827d9e11d0ee90830ccbe7d78f3f83"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 2276
+Date: Mon, 22 Apr 2013 17:27:34 GMT
+
+{
+    "results": [
+        {
+            "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "SAME-AS",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "43ac5109-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "NARROWER-THAN",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/43ac5109-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "4b9d9421-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "BROADER-THAN",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/4b9d9421-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "55e02065-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Associated finding",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/55e02065-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "605f4a61-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Associated morphology",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/605f4a61-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "6eb1bfce-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Associated procedure",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/6eb1bfce-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "781bdc8f-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Associated with",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/781bdc8f-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "808f9e19-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Causative agent",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/808f9e19-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "889c3013-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Finding site",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/889c3013-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "929600b9-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Has specimen",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/929600b9-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "999c6fc0-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Laterality",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/999c6fc0-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "a0e52281-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "Severity",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/a0e52281-7d8c-11e1-909d-c80aa9edcf4e",
+                    "rel": "self"
+                }
+            ]
+        }
+    ]
+}
