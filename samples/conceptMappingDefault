@@ -1,0 +1,222 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=409AD49B20F388548FD771FA8398132B; Path=/openmrs-standalone
+ETag: "02cb9ecb93aa1f820934f103e6c430c6c"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 4903
+Date: Mon, 22 Apr 2013 16:07:35 GMT
+
+{
+    "results": [
+        {
+            "display": "AMPATH: 462",
+            "uuid": "134249ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "ea2739a5-3f9f-324d-85e2-c0e76ec204da",
+                "display": "AMPATH: 462",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/ea2739a5-3f9f-324d-85e2-c0e76ec204da",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134249ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134249ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "AMPATH: 120",
+            "uuid": "133983ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "58a5bab8-3a03-3bad-bc8d-336d0e80b656",
+                "display": "AMPATH: 120",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/58a5bab8-3a03-3bad-bc8d-336d0e80b656",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/133983ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/133983ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "ICD-10-WHO: L20.0",
+            "uuid": "94448ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "eeeb7965-0241-361c-9c64-f50f0f9feff1",
+                "display": "ICD-10-WHO: L20.0",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/eeeb7965-0241-361c-9c64-f50f0f9feff1",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/94448ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/94448ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "PIH: 3701",
+            "uuid": "132732ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "dd867350-3234-354d-80c8-084dfb380156",
+                "display": "PIH: 3701",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/dd867350-3234-354d-80c8-084dfb380156",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/132732ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/132732ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "SNOMED CT: 24079001",
+            "uuid": "70449ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "9ba31047-d39b-3e26-9474-b3e07cdb37b7",
+                "display": "SNOMED CT: 24079001",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/9ba31047-d39b-3e26-9474-b3e07cdb37b7",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/70449ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/70449ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "AMPATH: 663",
+            "uuid": "134374ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "2f69d636-e1cb-39c8-8d61-70df01d359d6",
+                "display": "AMPATH: 663",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/2f69d636-e1cb-39c8-8d61-70df01d359d6",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    }
+                ]
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134374ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                },
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134374ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+                    "rel": "full"
+                }
+            ],
+            "resourceVersion": "1.9"
+        }
+    ]
+}
