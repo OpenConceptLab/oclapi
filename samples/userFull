@@ -1,0 +1,234 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=E0E9C5253E39EDF176B2FE3E2D77243E; Path=/openmrs-standalone
+ETag: "0e6c4884c905fd6c458bceb18a7e67436"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 4657
+Date: Mon, 22 Apr 2013 17:45:44 GMT
+
+{
+    "results": [
+        {
+            "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+            "display": "admin",
+            "username": "",
+            "systemId": "admin",
+            "userProperties": {},
+            "person": {
+                "uuid": "15b9f947-82ff-11e2-96ef-f0def12f7061",
+                "display": "Super User",
+                "gender": "M",
+                "age": null,
+                "birthdate": null,
+                "birthdateEstimated": false,
+                "dead": false,
+                "deathDate": null,
+                "causeOfDeath": null,
+                "preferredName": {
+                    "uuid": "15e17c24-82ff-11e2-96ef-f0def12f7061",
+                    "display": "Super User",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061/name/15e17c24-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "preferredAddress": null,
+                "attributes": [],
+                "voided": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "privileges": [],
+            "roles": [
+                {
+                    "uuid": "8d94f280-c2cc-11de-8d13-0010c6dffd0f",
+                    "display": "Provider",
+                    "name": "Provider",
+                    "description": "All users with the 'Provider' role will appear as options in the default Infopath ",
+                    "retired": false,
+                    "privileges": [],
+                    "inheritedRoles": [],
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f280-c2cc-11de-8d13-0010c6dffd0f",
+                            "rel": "self"
+                        },
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f280-c2cc-11de-8d13-0010c6dffd0f?v=full",
+                            "rel": "full"
+                        }
+                    ],
+                    "resourceVersion": "1.8"
+                },
+                {
+                    "uuid": "8d94f852-c2cc-11de-8d13-0010c6dffd0f",
+                    "display": "System Developer",
+                    "name": "System Developer",
+                    "description": "Developers of the OpenMRS .. have additional access to change fundamental structure of the database model.",
+                    "retired": false,
+                    "privileges": [],
+                    "inheritedRoles": [],
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f852-c2cc-11de-8d13-0010c6dffd0f",
+                            "rel": "self"
+                        },
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f852-c2cc-11de-8d13-0010c6dffd0f?v=full",
+                            "rel": "full"
+                        }
+                    ],
+                    "resourceVersion": "1.8"
+                }
+            ],
+            "allRoles": [
+                {
+                    "uuid": "8d94f280-c2cc-11de-8d13-0010c6dffd0f",
+                    "display": "Provider",
+                    "name": "Provider",
+                    "description": "All users with the 'Provider' role will appear as options in the default Infopath ",
+                    "retired": false,
+                    "privileges": [],
+                    "inheritedRoles": [],
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f280-c2cc-11de-8d13-0010c6dffd0f",
+                            "rel": "self"
+                        },
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f280-c2cc-11de-8d13-0010c6dffd0f?v=full",
+                            "rel": "full"
+                        }
+                    ],
+                    "resourceVersion": "1.8"
+                },
+                {
+                    "uuid": "8d94f852-c2cc-11de-8d13-0010c6dffd0f",
+                    "display": "System Developer",
+                    "name": "System Developer",
+                    "description": "Developers of the OpenMRS .. have additional access to change fundamental structure of the database model.",
+                    "retired": false,
+                    "privileges": [],
+                    "inheritedRoles": [],
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f852-c2cc-11de-8d13-0010c6dffd0f",
+                            "rel": "self"
+                        },
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/role/8d94f852-c2cc-11de-8d13-0010c6dffd0f?v=full",
+                            "rel": "full"
+                        }
+                    ],
+                    "resourceVersion": "1.8"
+                }
+            ],
+            "proficientLocales": [],
+            "secretQuestion": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2005-01-01T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "A4F30A1B-5EB9-11DF-A648-37A07F9C90FB",
+            "display": "daemon",
+            "username": "daemon",
+            "systemId": "daemon",
+            "userProperties": {},
+            "person": {
+                "uuid": "15b9f947-82ff-11e2-96ef-f0def12f7061",
+                "display": "Super User",
+                "gender": "M",
+                "age": null,
+                "birthdate": null,
+                "birthdateEstimated": false,
+                "dead": false,
+                "deathDate": null,
+                "causeOfDeath": null,
+                "preferredName": {
+                    "uuid": "15e17c24-82ff-11e2-96ef-f0def12f7061",
+                    "display": "Super User",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061/name/15e17c24-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "preferredAddress": null,
+                "attributes": [],
+                "voided": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/person/15b9f947-82ff-11e2-96ef-f0def12f7061?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "privileges": [],
+            "roles": [],
+            "allRoles": [],
+            "proficientLocales": [],
+            "secretQuestion": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-26T13:25:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/A4F30A1B-5EB9-11DF-A648-37A07F9C90FB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        }
+    ]
+}
