@@ -1,369 +1,45 @@
-HTTP/1.1 200 OK
-Server: Apache-Coyote/1.1
-Set-Cookie: JSESSIONID=A5F37042178104D00C2195216D557B69; Path=/openmrs-standalone
-ETag: "0a1bbe8ad62821b1daf85b32885e61009"
-Content-Type: application/json;charset=UTF-8
-Content-Length: 6771
-Date: Mon, 22 Apr 2013 17:29:34 GMT
-
 {
-    "results": [
+    "mapType": [
         {
             "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "SAME-AS",
-            "name": "SAME-AS",
-            "description": null,
-            "isHidden": false,
+            "url": "/rest/v1/maptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+            "display": "SAME AS",
+            "displayLocale": "en",
+            "names": [
+                {
+                    "name": "SAME AS",
+                    "locale": "en",
+                    "preferred": "True"
+                }
+            ],
+            "descriptions": [
+                {
+                    "description": "equal to",
+                    "locale": "en",
+                    "preferred": "True"
+                }
+            ],
+            "sources": [
+                "ciel",
+            	"pih"
+            ],
             "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
+            "isHidden": false,
+            "properties": {
+            	"omrsVersion": "1.9"
             },
             "links": [
                 {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                    "uri": "/rest/v1/maptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
                     "rel": "self"
                 }
             ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "43ac5109-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "NARROWER-THAN",
-            "name": "NARROWER-THAN",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
+            "auditInfo": [
                 {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/43ac5109-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "4b9d9421-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "BROADER-THAN",
-            "name": "BROADER-THAN",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/4b9d9421-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "55e02065-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Associated finding",
-            "name": "Associated finding",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/55e02065-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "605f4a61-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Associated morphology",
-            "name": "Associated morphology",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/605f4a61-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "6eb1bfce-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Associated procedure",
-            "name": "Associated procedure",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/6eb1bfce-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "781bdc8f-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Associated with",
-            "name": "Associated with",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/781bdc8f-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "808f9e19-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Causative agent",
-            "name": "Causative agent",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/808f9e19-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "889c3013-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Finding site",
-            "name": "Finding site",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/889c3013-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "929600b9-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Has specimen",
-            "name": "Has specimen",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/929600b9-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "999c6fc0-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Laterality",
-            "name": "Laterality",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/999c6fc0-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
-                }
-            ],
-            "resourceVersion": "1.9"
-        },
-        {
-            "uuid": "a0e52281-7d8c-11e1-909d-c80aa9edcf4e",
-            "display": "Severity",
-            "name": "Severity",
-            "description": null,
-            "isHidden": false,
-            "retired": false,
-            "auditInfo": {
-                "creator": {
-                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                    "display": "admin",
-                    "links": [
-                        {
-                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
-                            "rel": "self"
-                        }
-                    ]
-                },
-                "dateCreated": "2013-03-02T00:00:00.000+0300",
-                "changedBy": null,
-                "dateChanged": null
-            },
-            "links": [
-                {
-                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/a0e52281-7d8c-11e1-909d-c80aa9edcf4e",
-                    "rel": "self"
+                    "creator": "admin",
+                    "dateCreated": "2005-02-17T00:00:00.000+0300",
+                    "changedBy": null,
+                    "dateChanged": null
                 }
             ],
             "resourceVersion": "1.9"
