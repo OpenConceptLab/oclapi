@@ -23,8 +23,8 @@
                 "ciel",
             	"pih"
             ],
-            "retired": false,
-            "isHidden": false,
+            "retired": "false",
+            "isHidden": "false",
             "properties": {
             	"omrsVersion": "1.9"
             },
@@ -38,8 +38,8 @@
                 {
                     "creator": "admin",
                     "dateCreated": "2005-02-17T00:00:00.000+0300",
-                    "changedBy": null,
-                    "dateChanged": null
+                    "changedBy": "",
+                    "dateChanged": ""
                 }
             ],
             "resourceVersion": "1.9"
