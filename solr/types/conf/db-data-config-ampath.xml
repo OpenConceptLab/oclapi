@@ -1,0 +1,249 @@
+<dataConfig>
+<dataSource name="ampath" type="JdbcDataSource"  batchSize="-1" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost/omrs18_ampath" user="root" password="OpenCL_8"/>
+<dataSource name="pih" type="JdbcDataSource"  batchSize="-1" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost/omrs19_pih" user="root" password="OpenCL_8"/>
+<dataSource name="mvp" type="JdbcDataSource"  batchSize="-1" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost/omrs19_ciel" user="root" password="OpenCL_8"/>
+<dataSource name="mcl" type="JdbcDataSource"  batchSize="-1" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost/mcl" user="root" password="OpenCL_8"/>
+<dataSource name="test" type="JdbcDataSource"  batchSize="-1" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost/test" user="root" password="OpenCL_8"/>
+   
+ <document>
+
+<entity name = "user" datasource="test" query="                                                                                       
+        select * from test.user">
+
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedbywhom" name="changedbywhom"/>
+            <field column="dateChange" name="dateChange"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="username" name="username"/>
+            <field column="firstName" name="firstName"/>
+            <field column="lastName" name="lastName"/>
+            <field column="organization" name="organization"/>
+            <field column="location" name="location"/>
+            <field column="email" name="email"/>
+           <field column="roleuuid" name="roleuuid"/>
+            <field column="roledisplay" name="roledisplay"/>
+            <field column="rolename" name="rolename"/>
+            <field column="roledescription" name="roledescription"/>
+	    <field column="roleprivileges" name="roleprivileges"/>
+	    <field column="roleretired" name="roleretired"/>
+	    <field column="type" name="type"/>
+          </entity>
+
+<entity name = "maptypes" datasource="test" query="                                                      
+        select * from test.mymaptypes">
+
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="openmrsResourceVersion" name="openmrsResourceVersion"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="name" name="name"/>
+            <field column="namelocale" name="locale"/>
+            <field column="preferred" name="preferred"/>
+            <field column="description" name="description"/>
+            <field column="descriptionLocale" name="descriptionLocale"/>
+            <field column="descriptionPreferred" name="descriptionPreferred"/>
+           <field column="dict" name="dict"/>
+            <field column="type" name="type"/>
+	    <field column="changedbywhom" name="changedby"/>
+            <field column="dateChange" name="dateChanged"/>
+          </entity>
+
+<entity name="star" datasource="test" query="
+select * from test.star">
+
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="resourceType" name="resourceType"/>
+            <field column="resourceDisplay" name="resourceDisplay"/>
+            <field column="resourceUrl" name="resourceUrl"/>
+            <field column="username" name="username"/>
+            <field column="dateStarred" name="dateStarred"/>
+            <field column="type" name="type"/>
+</entity>
+
+<entity name = "collection" datasource="test" query="                                                                                                                          
+select * from test.mycollection
+">
+
+            <field column="full_id" name="full_id"/>
+	    <field column="__type__" name="__type__"/>            
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="hl7Code" name="hl7Code"/>
+            <field column="openmrsResourceVersion" name="openmrsResourceVersion"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="name" name="name"/>
+            <field column="locale" name="locale"/>
+            <field column="preferred" name="preferred"/>
+            <field column="description" name="description"/>
+            <field column="descriptionLocale" name="descriptionLocale"/>
+            <field column="descriptionPreferred" name="descriptionPreferred"/>
+            <field column="collectionType" name="collectionType"/>
+            <field column="owner" name="owner"/>
+            <field column="publicAccess" name="publicAccess"/>
+            <field column="username" name="username"/>
+            <field column="access" name="access"/>
+            <field column="starCount" name="starCount"/>
+            <field column="concept" name="concept" splitBy="|" sourceColName="concept"/>
+	    <field column="concept_url" name="concept_url" splitBy="|" sourceColName="concept_url"/>
+	    <field column="concept_uuid" name="concept_uuid" splitBy="|" sourceColName="concept_uuid"/>
+            <field column="type" name="type"/>
+          </entity>
+
+<entity name = "allsources" datasource="test" query="      
+select * from test.mysources2
+">
+
+            <field column="id" name="id"/>                                                                                                           
+            <field column="full_id" name="full_id"/>                                                                                                 
+            <field column="uuid" name="uuid"/>                                                                                                       
+            <field column="full_uuid" name="full_uuid"/>                                                                                             
+            <field column="name" name="name"/>                                                                                                       
+            <field column="url" name="url"/>                                                                                                         
+            <field column="display" name="display"/>                                                                                                 
+            <field column="displayLocale" name="displayLocale"/>                                                                                     
+            <field column="versionStatus" name="versionStatus"/>                                                                                     
+            <field column="hl7_code" name="hl7_code"/>                                                                                               
+            <field column="description" name="description"/>                                                                                         
+	    <field column="descriptionLocale" name="descriptionLocale"/>
+            <field column="descriptionPreferred" name="descriptionPreferred"/>
+            <field column="retired" name="retired"/>                                                                                                 
+            <field column="dateChanged" name="dateChanged"/>                                                                                         
+            <field column="dateReleased" name="dateReleased"/>                                                                                       
+            <field column="resourceVersion" name="resourceVersion"/>                                                                                 
+            <field column="shortCode" name="shortCode"/>                                                                                             
+            <field column="locale" name="locale"/>                                                                                                   
+            <field column="nameType" name="nameType"/>                                                                                               
+            <field column="preferred" name="preferred"/>                                                                                             
+            <field column="sourceType" name="sourceType"/>                                                                                           
+            <field column="owner" name="owner"/>                                                                                                     
+            <field column="publicAccess" name="publicAccess"/>                                                                                       
+            <field column="username" name="username"/>                                                                                               
+            <field column="access" name="access"/>                                                                                                   
+            <field column="starCount" name="starCount"/>                                                                                             
+            <field column="dict" name="dict"/>                                                                                                       
+            <field column="type" name="type"/>      
+
+         </entity>
+
+<entity name = "mappings" datasource="mvp" query="
+ SELECT * FROM test.mymappings
+ " >
+
+            <field column="id" name="id"/>
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="conceptA_source" name="conceptA_source"/>
+            <field column="conceptA_id" name="conceptA_id"/>
+            <field column="conceptB_source" name="conceptB_source"/>
+            <field column="conceptB_id" name="conceptB_id"/>
+            <field column="maptype" name="maptype"/>
+            <field column="dict" name="dict"/>
+            <field column="type" name="type"/>
+
+         </entity>
+
+<entity name = "classes" datasource="test" query="       
+        select * from test.myclasses">
+
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="hl7Code" name="hl7Code"/>
+            <field column="openmrsResourceVersion" name="openmrsResourceVersion"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="name" name="name"/>
+            <field column="namelocale" name="locale"/>
+            <field column="preferred" name="preferred"/>
+            <field column="description" name="description"/>
+            <field column="localeDesc" name="descriptionLocale"/>
+            <field column="preferredDesc" name="descriptionPreferred"/>
+           <field column="dict" name="dict"/>
+            <field column="type" name="type"/>
+          </entity>
+
+
+<entity name = "datatypes" datasource="test" query="                                                                                                                            
+        select * from test.mydatatypes">
+
+            <field column="full_id" name="full_id"/>
+            <field column="__type__" name="__type__"/>
+            <field column="uuid" name="uuid"/>
+            <field column="url" name="url"/>
+            <field column="display" name="display"/>
+            <field column="displayLocale" name="displayLocale"/>
+            <field column="retired" name="retired"/>
+            <field column="hl7Abbreviation" name="hl7Abbreviation"/>
+            <field column="openmrsResourceVersion" name="openmrsResourceVersion"/>
+            <field column="creator" name="creator"/>
+            <field column="dateCreated" name="dateCreated"/>
+            <field column="changedby" name="changedby"/>
+            <field column="dateChanged" name="dateChanged"/>
+            <field column="resourceVersion" name="resourceVersion"/>
+            <field column="name" name="name"/>
+            <field column="namelocale" name="locale"/>
+            <field column="preferred" name="preferred"/>
+            <field column="description" name="description"/>
+            <field column="localeDesc" name="descriptionLocale"/>
+            <field column="preferredDesc" name="descriptionPreferred"/>
+           <field column="dict" name="dict"/>
+            <field column="type" name="type"/>
+          </entity>
+
+    </document>
+</dataConfig>
+
+
+
