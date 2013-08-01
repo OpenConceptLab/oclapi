@@ -492,22 +492,27 @@ def api_collection():
                     return not_found()
             #search collections with specific concepts
             elif requestparams.has_key('concept'):
+                                
                 #search collection by concept UUID ..This is  the  concept UUID assigned by OCL
                 concept = requestparams['concept']
                 #search for all collections in the index
                 results = solr_interface.query('*').query(type='collection').paginate(startcount, defaultcount).execute()   
                 if int(len(results)) > 0:
                     for result in results:
-                        conceptuuids = str(result['concept_id']).split('|')
-                        if concept in conceptuuids: #the concept is in that list 
+                        if 'concept_id' in result.keys(): concept_id = str(result['concept_id']).split('|')
+                        if concept in concept_id: #the concept is in that list                             
                             result= format_api_output.formatcollection(result)
-                            collections.append(result)                   
-                            js = json.dumps(collections,indent=4)
-                            resp = Response(js,status=200)
-                            resp.headers['Link'] = 'http://openconceptlab.org'                        
-                            return resp
-                        else:
-                            return not_found()
+                            collections.append(result)
+                        #else: return not_found()
+                    
+                    if int(len(collections)) > 0 :                        
+                        #try return the resp now
+                        js = json.dumps(collections,indent=4)
+                        resp = Response(js,status=200)
+                        resp.headers['Link'] = 'http://openconceptlab.org'                        
+                        return resp
+                    else: return not_found()
+
                 else: return not_found()
                                                                      
             elif requestparams.has_key('count'):
@@ -550,7 +555,7 @@ def api_collection():
                 results = solr_interface.query(name).paginate(startIndex,defaultcount).execute()   
                 if int(len(results)) > 0: 
                     for result in results:
-                        result = formatconcept(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)            
                         js = json.dumps(collections,indent=4)
                         resp = Response(js,status=200)
@@ -566,7 +571,7 @@ def api_collection():
                 results = solr_interface.query(name).paginate(startcount,count).execute()                  
                 if int(len(results)) > 0: 
                     for result in results:
-                        result = formatconcept(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)            
                         js = json.dumps(collections,indent=4)
                         resp = Response(js,status=200)
@@ -574,7 +579,8 @@ def api_collection():
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount
                     return resp  
-                else: return not_found()           
+                else: return not_found()   
+            else : return invalid_arguement() # invalid arguement passed in         
                                     
         elif number_of_params_requested == 3 :
             #start with is there a query name for search
@@ -585,7 +591,7 @@ def api_collection():
                 results = solr_interface.query(name).query(type='collection').paginate(startIndex, count).execute()
                 if int(len(results)) > 0:
                     for result in results:
-                        result= formatcollection(result)
+                        result= format_api_output.formatcollection(result)
                         collections.append(result)                   
                         js = json.dumps(collections,indent=4)
                         resp = Response(js,status=200)
