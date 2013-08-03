@@ -3,23 +3,50 @@ Created on Jul 31, 2013
 
 @author: judyw
 '''
+
+def copy_property(keyname, indict, outdict, default = ''):
+    """
+    Copy a property with keyname from the input dictionary to output
+    dictionary using the default value for the output dictionary if
+    the key does not exist in the input dictionary.
+    """
+    if keyname in indict.keys():
+        outdict[keyname] = indict[keyname]
+    else:
+        outdict[keyname] = default
+
 def formatcollection(result):
     collectionOutput = {}
-    if '__type__' in result.keys():collectionOutput['__type__'] = 'OclCollection'
-    else:collectionOutput['__type__'] = ''
+    if '__type__' in result.keys():
+        collectionOutput['__type__'] = 'OclCollection'
+    else:
+        collectionOutput['__type__'] = ''
     
-    if 'uuid' in result.keys():
-        collectionOutput['uuid'] = result['uuid']
-    else:collectionOutput['uuid'] = ''
+    tocopy = ['uuid','display','displayLocale','retired']
+    for key in tocopy:
+        copy_property(key,result,collectionOutput)
+
+    # Delete these comments after testing the above code - sgithens
+
+    # if 'uuid' in result.keys():
+    #     collectionOutput['uuid'] = result['uuid']
+    # else:
+    #     collectionOutput['uuid'] = ''
     
-    if 'display' in result.keys():collectionOutput['display']= result['display']
-    else: collectionOutput['display'] =''
+    # if 'display' in result.keys():
+    #     collectionOutput['display']= result['display']
+    # else: 
+    #     collectionOutput['display'] =''
     
-    if 'displayLocale' in result.keys():collectionOutput['displayLocale']= result['displayLocale']
-    else: collectionOutput['displayLocale'] = ''
+    # if 'displayLocale' in result.keys():
+    #     collectionOutput['displayLocale']= result['displayLocale']
+    # else: 
+    #     collectionOutput['displayLocale'] = ''
     
-    if 'retired' in result.keys():collectionOutput['retired']= result['retired']
-    collectionOutput['retired']= ''
+    # if 'retired' in result.keys():
+    #     collectionOutput['retired']= result['retired']
+    # else:
+    #     collectionOutput['retired']= ''
     
     #properties
     properties = {}
