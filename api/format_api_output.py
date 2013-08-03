@@ -4,9 +4,9 @@ Created on Jul 31, 2013
 @author: judyw
 '''
 
-def copy_property(keyname, indict, outdict, default = ''):
+def copy_item(keyname, indict, outdict, default = ''):
     """
-    Copy a property with keyname from the input dictionary to output
+    Copy an item with keyname from the input dictionary to output
     dictionary using the default value for the output dictionary if
     the key does not exist in the input dictionary.
     """
@@ -24,7 +24,7 @@ def formatcollection(result):
     
     tocopy = ['uuid','display','displayLocale','retired']
     for key in tocopy:
-        copy_property(key,result,collectionOutput)
+        copy_item(key,result,collectionOutput)
 
     # Delete these comments after testing the above code - sgithens
 
