@@ -3,8 +3,7 @@ Created on Jul 31, 2013
 
 @author: judyw
 '''
-
-def copy_item(keyname, indict, outdict, default = ''):
+def copy_item(keyname, indict, outdict, default):
     """
     Copy an item with keyname from the input dictionary to output
     dictionary using the default value for the output dictionary if
@@ -14,98 +13,54 @@ def copy_item(keyname, indict, outdict, default = ''):
         outdict[keyname] = indict[keyname]
     else:
         outdict[keyname] = default
-
+        
 def formatcollection(result):
+    
     collectionOutput = {}
-    if '__type__' in result.keys():
-        collectionOutput['__type__'] = 'OclCollection'
-    else:
-        collectionOutput['__type__'] = ''
-    
-    tocopy = ['uuid','display','displayLocale','retired']
-    for key in tocopy:
-        copy_item(key,result,collectionOutput)
-
-    # Delete these comments after testing the above code - sgithens
-
-    # if 'uuid' in result.keys():
-    #     collectionOutput['uuid'] = result['uuid']
-    # else:
-    #     collectionOutput['uuid'] = ''
-    
-    # if 'display' in result.keys():
-    #     collectionOutput['display']= result['display']
-    # else: 
-    #     collectionOutput['display'] =''
-    
-    # if 'displayLocale' in result.keys():
-    #     collectionOutput['displayLocale']= result['displayLocale']
-    # else: 
-    #     collectionOutput['displayLocale'] = ''
-    
-    # if 'retired' in result.keys():
-    #     collectionOutput['retired']= result['retired']
-    # else:
-    #     collectionOutput['retired']= ''
-    
-    #properties
     properties = {}
-    if 'hl7Code' in result.keys():properties['hl7Code'] = result['hl7Code']
-    else: properties['hl7Code'] =''
-    
-    if 'openmrsResourceVersion' in result.keys():properties['openmrsResourceVersion'] = result['openmrsResourceVersion']
-    else: properties['openmrsResourceVersion'] =''
-    
-    collectionOutput['properties']= properties
-
-    #auditInfo
     auditInfo ={}
-    if 'creator' in result.keys(): auditInfo['creator'] = result['creator']
-    else: auditInfo['creator'] = ''
-    if 'dateCreated' in result.keys():auditInfo['dateCreated'] = result['dateCreated']
-    else: auditInfo['dateCreated'] = ''
-    if 'changedBy' in result.keys():auditInfo['changedBy'] = result['changedby']
-    else: auditInfo['changedBy'] = ''
-    if 'dateChanged' in result.keys():auditInfo['dateChanged'] = result['dateChanged']
-    else:auditInfo['dateChanged'] = ''
+    collectionname = {}
+    myusers ={}
     
+    result['changedBy'] = result['changedby']
+    
+    tocopy = ['uuid','display','displayLocale','retired','collectionType','owner','publicAccess','starCount']
+    for key in tocopy:
+        copy_item(key,result,collectionOutput,'')
+    
+    tocopycollection = ['__type__']
+    for key in tocopycollection:
+        copy_item(key,result,collectionOutput,'OclCollection')
+        
+    toproperties= ['hl7Code','openmrsResourceVersion']
+    for key in toproperties:
+        copy_item(key,result,properties,'')
+        
+    toauditInfo = ['creator','dateCreated','changedBy','dateChanged']
+    for key in toauditInfo:
+        copy_item(key,result,auditInfo,'')
+        
+    tocollectionName = ['name','locale','preferred']
+    for key in tocollectionName:
+        copy_item(key,result,collectionname,'')
+        
+    tosharedUsers = ['username','access']
+    for key in tosharedUsers:
+        copy_item(key,result,myusers,'')
+
+    #properties    
+    collectionOutput['properties']= properties
+    #auditInfo
     collectionOutput['auditInfo']= auditInfo
     
-    if 'creator' in result.keys(): auditInfo['creator'] = result['creator']
-    else: auditInfo['creator'] = ''
-    
-    names = []
-    collectionname = {}
-    if 'name' in result.keys(): collectionname['name'] = result['name']
-    else: collectionname['name'] = ''
-    if 'locale' in result.keys(): collectionname['locale'] = result['locale']
-    else: collectionname['locale'] = ''
-    if 'preferred' in result.keys(): collectionname['preferred'] = result['preferred']
-    else: collectionname['preferred'] = ''
-    
+    #names
+    names = []    
     names.append(collectionname)
     collectionOutput['names']= names
     
-    if 'collectionType' in result.keys(): collectionOutput['collectionType'] = result['collectionType']
-    else: collectionOutput['collectionType'] = ''
-
-    if 'owner' in result.keys(): collectionOutput['owner'] = result['owner']
-    else: collectionOutput['owner'] = ''
-    
-    if 'publicAccess' in result.keys(): collectionOutput['publicAccess'] = result['publicAccess']
-    else: collectionOutput['publicAccess'] = ''
-    
     sharedUsers =[]
-    myusers ={}
-    if 'username' in result.keys(): myusers['username'] = result['username']
-    else: myusers['username'] = ''
-    if 'access' in result.keys(): myusers['access'] = result['access']
-    else: myusers['access'] = ''
     sharedUsers.append(myusers)
     collectionOutput['sharedUsers']= sharedUsers
-
-    if 'starCount' in result.keys(): collectionOutput['starCount'] = result['starCount']
-    else: collectionOutput['starCount'] = ''
     
     #concepts format 
     myurl =''
