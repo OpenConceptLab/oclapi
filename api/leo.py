@@ -4,8 +4,8 @@ Created on Jun 19, 2013
 @author: judyw
 '''
 
-#import modules
-from flask import  Flask, url_for,request,json,Response,jsonify
+# import modules
+from flask import  Flask, url_for, request, json, Response, jsonify
 import json
 import urllib2
 import requests
@@ -13,29 +13,29 @@ import sunburnt
 import uuid
 import format_api_output 
 
-#variables
+# variables
 api_url_root = 'http://staging.openconceptlab.org/rest/v1/'
 
-#url = 'http://staging.openconceptlab.org:8983/solr/types'
-#concepturl='http://staging.openconceptlab.org:8983/solr/concepts'
+# url = 'http://staging.openconceptlab.org:8983/solr/types'
+# concepturl='http://staging.openconceptlab.org:8983/solr/concepts'
 
 url = 'http://localhost:8983/solr/types'
-concepturl='http://localhost:8983/solr/concepts'
+concepturl = 'http://localhost:8983/solr/concepts'
 
 solr_interface = sunburnt.SolrInterface(url)
 
-#set default results to return 
+# set default results to return 
 defaultcount = 50
 
-#start point for search 
+# start point for search 
 startcount = 0
 
-#format header 
+# format header 
 
 app = Flask(__name__)
 
-@app.route('/rest/v1/source/<source>/concept/<uuid>',methods= ['GET','PUT','DELETE'])  
-def api_conceptbysourceuuid(source,uuid):     
+@app.route('/rest/v1/source/<source>/concept/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
+def api_conceptbysourceuuid(source, uuid):     
     if request.method == 'GET':
         concepts = []    
         solr_interface = sunburnt.SolrInterface(concepturl)
@@ -44,8 +44,8 @@ def api_conceptbysourceuuid(source,uuid):
             for result in results:
                 result = formatconcept(result)
                 concepts.append(result)                                            
-                js = json.dumps(concepts,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(concepts, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'  
                 resp.headers['Count'] = defaultcount
                 resp.headers['StartIndex'] = startcount                       
@@ -57,8 +57,8 @@ def api_conceptbysourceuuid(source,uuid):
                 for result in results:
                     result = formatconcept(result)
                     concepts.append(result)                                            
-                    js = json.dumps(concepts,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(concepts, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'    
                     resp.headers['Count'] = defaultcount
                     resp.headers['StartIndex'] = startcount                      
@@ -66,11 +66,11 @@ def api_conceptbysourceuuid(source,uuid):
             else: return not_found() 
             
     elif request.method == 'DELETE':  
-        #search if the existing  resource exists using the uuid
+        # search if the existing  resource exists using the uuid
         solr_interface = sunburnt.SolrInterface(concepturl)
         results = solr_interface.query(uuid=str(uuid)).query(source=source).paginate(startcount, defaultcount).execute()      
-        if int(len(results)) > 0:#means the existing resource is present 
-            #solr  deletes existing index
+        if int(len(results)) > 0:  # means the existing resource is present 
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()        
@@ -87,20 +87,20 @@ def api_conceptbysourceuuid(source,uuid):
           
     else: return not_allowed()      
 
-@app.route('/rest/v1/source/<source>/concept',methods= ['POST'])  
+@app.route('/rest/v1/source/<source>/concept', methods=['POST'])  
 def api_conceptcreate(source):
-    #API methods
-    if request.method == 'POST':   # must specify the source 
+    # API methods
+    if request.method == 'POST':  # must specify the source 
         poststar = json.loads(request.data)
-        poststar['source']=source
+        poststar['source'] = source
         return postconcept(poststar)
     else: return not_allowed() 
                   
-@app.route('/rest/v1/concept',methods= ['GET'])  
+@app.route('/rest/v1/concept', methods=['GET'])  
 def api_concept():
-    if request.method == 'GET':   # searches all sources available from different dictionaries
+    if request.method == 'GET':  # searches all sources available from different dictionaries
         # need to determine if there are any arguements passed in to the url for the GET
-        requestparams ={}
+        requestparams = {}
         concepts = []       
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
@@ -108,47 +108,47 @@ def api_concept():
         solr_interface = sunburnt.SolrInterface(concepturl)
         
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/concept
+            # no parameters passed in the url is just /rest/v1/concept
             results = solr_interface.query('*').paginate(startcount, defaultcount).execute()   
             if int(len(results)) > 0:   
                 for result in results:
                     result = formatconcept(result)
                     concepts.append(result)                   
-                    js = json.dumps(concepts,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(concepts, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'  
                     resp.headers['Count'] = defaultcount
                     resp.headers['StartIndex'] = startcount
                 return resp 
             else: return not_found()        
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/rest/v1/concept?q=malaria&count=20&startIndex=20&sortAsc=True&source=uuid
-            #check if its a q, count,startindex,sortAsc or the source
+            # http://127.0.0.1:5000/rest/v1/concept?q=malaria&count=20&startIndex=20&sortAsc=True&source=uuid
+            # check if its a q, count,startindex,sortAsc or the source
             if  requestparams.has_key('q'):
-                #search by a concept keyword
+                # search by a concept keyword
                 name = requestparams['q']
                 results = solr_interface.query(name).paginate(startcount, defaultcount).execute()    
                 if int(len(results)) > 0:               
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org' 
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startcount             
-                    return resp  #ends the elif for 1 parameter for name search 
+                    return resp  # ends the elif for 1 parameter for name search 
                 else: return not_found()              
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').paginate(startcount,count).execute()              
+                results = solr_interface.query('*').paginate(startcount, count).execute()              
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount
@@ -157,13 +157,13 @@ def api_concept():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').paginate(startIndex,defaultcount).execute()  
+                results = solr_interface.query('*').paginate(startIndex, defaultcount).execute()  
                 if int(len(results)) > 0:           
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startIndex
@@ -176,8 +176,8 @@ def api_concept():
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'  
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startcount            
@@ -186,9 +186,9 @@ def api_concept():
             else:
                 return invalid_arguement()  # invalid parameter passed in
         elif number_of_params_requested == 2 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('source') :
-                #http://127.0.0.1:5000/rest/v1/concept?source='ampath'&q=cough
+                # http://127.0.0.1:5000/rest/v1/concept?source='ampath'&q=cough
                 source = requestparams['source']
                 name = requestparams['q']                
                 results = solr_interface.query(name).query(dict=source).paginate(startcount, defaultcount).execute()                
@@ -196,120 +196,120 @@ def api_concept():
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startcount
                     return resp  
                 else: return not_found()           
-            elif requestparams.has_key('q') and requestparams.has_key('startIndex') : #has a bug
+            elif requestparams.has_key('q') and requestparams.has_key('startIndex') :  # has a bug
                 name = requestparams['q']
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query(name).paginate(startIndex,defaultcount).execute()   
+                results = solr_interface.query(name).paginate(startIndex, defaultcount).execute()   
                 if int(len(results)) > 0: 
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startIndex
                     return resp  
                 else: return not_found()           
             elif requestparams.has_key('q') and requestparams.has_key('count'):
-                #search by a concept keyword
+                # search by a concept keyword
                 name = requestparams['q']
                 count = requestparams['count']  
-                results = solr_interface.query(name).paginate(startcount,count).execute()                  
+                results = solr_interface.query(name).paginate(startcount, count).execute()                  
                 if int(len(results)) > 0: 
                     for result in results:
                         result = formatconcept(result)
                         concepts.append(result)            
-                        js = json.dumps(concepts,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(concepts, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount
                     return resp  
                 else: return not_found()           
-            else: #last one
+            else:  # last one
                 return invalid_arguement()
-            #end of 2 params
+            # end of 2 params
         else: 
             return invalid_arguement()
 
     else: return not_allowed()
 
-#changed the structure of the API so this method is not helpful
-@app.route('/rest/v1/concept/<uuid>',methods= ['GET','PUT','DELETE'])  
+# changed the structure of the API so this method is not helpful
+@app.route('/rest/v1/concept/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
 def api_conceptbyuuid(uuid):     
     if request.method == 'GET':
         solr_interface = sunburnt.SolrInterface(concepturl)
         concepts = []        
-        #implement exception to handle and validate the uuid
+        # implement exception to handle and validate the uuid
         results = solr_interface.query(uuid=uuid).paginate(startcount, defaultcount).execute()
         if int(len(results)) > 0:     
             for result in results:
                 result = formatconcept(result)
                 concepts.append(result)                                            
-                js = json.dumps(concepts,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(concepts, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'
             return resp
         else: return not_found() 
     elif request.method == 'DELETE':  
-        #search if the existing  resource exists using the uuid
+        # search if the existing  resource exists using the uuid
         solr_interface = sunburnt.SolrInterface(concepturl)
         results = solr_interface.query(uuid=uuid).paginate(startcount, defaultcount).execute()
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()        
         else: return not_found()     
     elif request.method == 'PUT':  
-        #search if the existing  resource exists using the uuid
+        # search if the existing  resource exists using the uuid
         solr_interface = sunburnt.SolrInterface(concepturl)
         results = solr_interface.query(uuid=uuid).paginate(startcount, defaultcount).execute()
         data = request.data
         return postocl(data)
     else: return not_allowed()
 
-@app.route('/rest/v1/datatype',methods= ['GET','POST'])  
+@app.route('/rest/v1/datatype', methods=['GET', 'POST'])  
 def api_datatype():
-    if request.method == 'GET':   # searches all datatypes available from different dictionaries        
-        requestparams ={}
+    if request.method == 'GET':  # searches all datatypes available from different dictionaries        
+        requestparams = {}
         datatype = []        
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/classes
+            # no parameters passed in the url is just /rest/v1/classes
             results = solr_interface.query('*').query(type='datatype').paginate(startcount, defaultcount).execute()
             if int(len(results)) > 0:
                 for result in results:
                     result = formatdatatype(result)
                     datatype.append(result)                                            
-                    js = json.dumps(datatype,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(datatype, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'             
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/rest/v1/datatypes?q=number
-            #/datatypes?source=snomed        
-            #/datatypes?q=blood&count=15&startIndex=30                                  
+            # http://127.0.0.1:5000/rest/v1/datatypes?q=number
+            # /datatypes?source=snomed        
+            # /datatypes?q=blood&count=15&startIndex=30                                  
             if  requestparams.has_key('q'):
-                #search by a datatypes keyword or name
+                # search by a datatypes keyword or name
                 name = requestparams['q']
                 results = solr_interface.query(name).query(type='datatype').paginate(startcount, defaultcount).execute()
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatdatatype(result)
                         datatype.append(result)                                            
-                        js = json.dumps(datatype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(datatype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'                    
                     return resp
                 else: return not_found()                        
@@ -320,51 +320,51 @@ def api_datatype():
                     for result in results:
                         result = formatdatatype(result)
                         datatype.append(result)                                            
-                        js = json.dumps(datatype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(datatype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='datatype').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='datatype').paginate(startcount, count).execute()
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatdatatype(result)
                         datatype.append(result)                                            
-                        js = json.dumps(datatype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(datatype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'              
                     return resp
                 else: return not_found()
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='datatype').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='datatype').paginate(startIndex, defaultcount).execute()
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatdatatype(result)
                         datatype.append(result)                                            
-                        js = json.dumps(datatype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(datatype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'              
                     return resp
                 else: return not_found()
         
-        elif number_of_params_requested == 2 :  #implement count and startIndex               
+        elif number_of_params_requested == 2 :  # implement count and startIndex               
                 
             if  requestparams.has_key('count') and requestparams.has_key('startIndex'):
                 count = requestparams['count']
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='datatype').paginate(startIndex,count).execute()
+                results = solr_interface.query('*').query(type='datatype').paginate(startIndex, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startIndex
@@ -372,7 +372,7 @@ def api_datatype():
                 else: return not_found()               
                 
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -382,24 +382,24 @@ def api_datatype():
                     for result in results:
                         result = formatdatatype(result)
                         datatype.append(result)                                            
-                        js = json.dumps(datatype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(datatype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         data = json.load(request.data)
         solr_interface.add(data)
         solr_interface.commit()     
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
     
-@app.route('/rest/v1/datatype/<uuid>',methods= ['GET','PUT','DELETE'])  
+@app.route('/rest/v1/datatype/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
 def api_datatypebyuuid(uuid):     
     if request.method == 'GET':
         datatype = []
@@ -408,107 +408,107 @@ def api_datatypebyuuid(uuid):
             for result in results:
                 result = formatdatatype(result)                    
                 datatype.append(result)                                            
-                js = json.dumps(datatype,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(datatype, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'                         
             return resp
         else: return not_found()
-    elif request.method == 'PUT':  #not sure if we can do this method
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'PUT':  # not sure if we can do this method
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='datatype').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
             postdata = json.loads(request.data)
             return putocl(postdata)
         else: not_found()
-    elif request.method == 'DELETE':  #must specify the source
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'DELETE':  # must specify the source
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='datatype').paginate(startcount, defaultcount).execute()       
-        if int(len(results)) > 0:#means the existing resource is present                    
-            #solr  deletes existing index
+        if int(len(results)) > 0:  # means the existing resource is present                    
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()       
         else: return not_found()   
     else: return not_allowed()  
 
-@app.route('/rest/v1/collection',methods= ['GET','POST'])  
+@app.route('/rest/v1/collection', methods=['GET', 'POST'])  
 def api_collection():
-    if request.method == 'GET':   # searches all classes available from different dictionaries  
+    if request.method == 'GET':  # searches all classes available from different dictionaries  
         
-        requestparams ={}
+        requestparams = {}
         collections = []       
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/collections
+            # no parameters passed in the url is just /rest/v1/collections
             results = solr_interface.query('*').query(type='collection').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:
-                    result= format_api_output.formatcollection(result)
+                    result = format_api_output.formatcollection(result)
                     collections.append(result)                   
-                    js = json.dumps(collections,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(collections, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'               
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/rest/v1/collection?q=antenatal
-            #/collections?owner=johndoe
-            #collections?concept=1234-5678-9012-3456 search by concept  
-            #/collections?q=blood&count=15&startIndex=30          
-            #check if its a q, count,startindex,sortAsc or the source
+            # http://127.0.0.1:5000/rest/v1/collection?q=antenatal
+            # /collections?owner=johndoe
+            # collections?concept=1234-5678-9012-3456 search by concept  
+            # /collections?q=blood&count=15&startIndex=30          
+            # check if its a q, count,startindex,sortAsc or the source
                        
             if  requestparams.has_key('q'):
-                #search by a collection keyword
+                # search by a collection keyword
                 name = requestparams['q']
                 results = solr_interface.query(name=name).query(type='collection').paginate(startcount, defaultcount).execute()   
                 if int(len(results)) > 0:
                     for result in results:
-                        result= format_api_output.formatcollection(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)                   
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
-                    return resp  #ends the elif for 1 parameter for name search
+                    return resp  # ends the elif for 1 parameter for name search
                 else:
                     return not_found()
             elif requestparams.has_key('owner'):
-                #search collection by owner name
+                # search collection by owner name
                 owner = requestparams['owner']
                 results = solr_interface.query(owner=owner).query(type='collection').paginate(startcount, defaultcount).execute()   
                 
                 if int(len(results)) > 0:
                     for result in results:
-                        result= format_api_output.formatcollection(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)                   
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
-                    return resp  #ends the elif for 1 parameter for name search
+                    return resp  # ends the elif for 1 parameter for name search
                 else: 
                     return not_found()
-            #search collections with specific concepts
+            # search collections with specific concepts
             elif requestparams.has_key('concept'):
                                 
-                #search collection by concept UUID ..This is  the  concept UUID assigned by OCL
+                # search collection by concept UUID ..This is  the  concept UUID assigned by OCL
                 concept = requestparams['concept']
-                #search for all collections in the index
+                # search for all collections in the index
                 results = solr_interface.query('*').query(type='collection').paginate(startcount, defaultcount).execute()   
                 if int(len(results)) > 0:
                     for result in results:
                         if 'concept_id' in result.keys(): concept_id = str(result['concept_id']).split('|')
-                        if concept in concept_id: #the concept is in that list                             
-                            result= format_api_output.formatcollection(result)
+                        if concept in concept_id:  # the concept is in that list                             
+                            result = format_api_output.formatcollection(result)
                             collections.append(result)
-                        #else: return not_found()
+                        # else: return not_found()
                     
                     if int(len(collections)) > 0 :                        
-                        #try return the resp now
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        # try return the resp now
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'                        
                         return resp
                     else: return not_found()
@@ -516,16 +516,16 @@ def api_collection():
                 else: return not_found()
                                                                      
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='collection').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='collection').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
-                        result= format_api_output.formatcollection(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)                   
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'              
                     return resp
                 else:
@@ -534,56 +534,56 @@ def api_collection():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='collection').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='collection').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
-                        result= format_api_output.formatcollection(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)                   
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                     return resp
                 else:
                     return not_found()
             else:
-                return invalid_arguement() #may need to test this
+                return invalid_arguement()  # may need to test this
         elif number_of_params_requested == 2 :
-            if requestparams.has_key('q') and requestparams.has_key('startIndex') : #has a bug
+            if requestparams.has_key('q') and requestparams.has_key('startIndex') :  # has a bug
                 name = requestparams['q']
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query(name).paginate(startIndex,defaultcount).execute()   
+                results = solr_interface.query(name).paginate(startIndex, defaultcount).execute()   
                 if int(len(results)) > 0: 
                     for result in results:
                         result = format_api_output.formatcollection(result)
                         collections.append(result)            
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startIndex
                     return resp  
                 else: return not_found()           
             elif requestparams.has_key('q') and requestparams.has_key('count'):
-                #search by a concept keyword
+                # search by a concept keyword
                 name = requestparams['q']
                 count = requestparams['count']  
-                results = solr_interface.query(name).paginate(startcount,count).execute()                  
+                results = solr_interface.query(name).paginate(startcount, count).execute()                  
                 if int(len(results)) > 0: 
                     for result in results:
                         result = format_api_output.formatcollection(result)
                         collections.append(result)            
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount
                     return resp  
                 else: return not_found()   
-            else : return invalid_arguement() # invalid arguement passed in         
+            else : return invalid_arguement()  # invalid arguement passed in         
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -591,24 +591,24 @@ def api_collection():
                 results = solr_interface.query(name).query(type='collection').paginate(startIndex, count).execute()
                 if int(len(results)) > 0:
                     for result in results:
-                        result= format_api_output.formatcollection(result)
+                        result = format_api_output.formatcollection(result)
                         collections.append(result)                   
-                        js = json.dumps(collections,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(collections, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                     return resp
                 else:
                     return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
     elif request.method == 'POST':  
         poststar = request.data 
         return postmycollection(poststar)    
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
 
 def generateuuid():
@@ -621,7 +621,7 @@ def postcollection(result):
         result['full_id'] = result['full_id']
     else:
         myuuid = generateuuid()
-        full_id = str('COLLECTION')+'_'+str(myuuid)
+        full_id = str('COLLECTION') + '_' + str(myuuid)
         result['full_id'] = full_id
     
     if '__type__' not in result.keys():
@@ -632,7 +632,7 @@ def postcollection(result):
         result['url'] = url
         
     if 'uuid' not in result.keys():
-        result['uuid']= myuuid
+        result['uuid'] = myuuid
         
     if result.has_key('sharedUsers'):
         user = result['sharedUsers'][0]
@@ -659,15 +659,15 @@ def postcollection(result):
         desc = result['descriptions'][0]
         result['descriptionLocale'] = desc['locale']
         result['descriptionPreferred'] = desc['preferred']
-        #result['description'] = desc['description']
+        # result['description'] = desc['description']
         del result['descriptions']
         
     if result.has_key('concepts'):
         concepts = result['concepts']
-        c_url =[]
+        c_url = []
         c_uuid = []
         for c in concepts:
-            #create a list then join all concepts 
+            # create a list then join all concepts 
             c_url.append(c['url'])
             c_uuid.append(c['uuid'])
         url = '|'.join(c_url)
@@ -683,28 +683,28 @@ def postcollection(result):
         
     return result
         
-@app.route('/rest/v1/collection/<uuid>',methods= ['GET','PUT','DELETE'])  
+@app.route('/rest/v1/collection/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
 def api_collectionbyuuid(uuid):     
     if request.method == 'GET':
         collections = []        
-        #implement exception to handle and validate the uuid 8-4-4-4-12 hexadecimal digits.
+        # implement exception to handle and validate the uuid 8-4-4-4-12 hexadecimal digits.
         results = solr_interface.query(uuid=uuid).query(type='collection').paginate(startcount, defaultcount).execute()
        
         if int(len(results)) > 0:     
             for result in results:
-                result= formatcollection(result)                    
+                result = formatcollection(result)                    
                 collections.append(result)                                            
-                js = json.dumps(collections,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(collections, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'
                          
             return resp
         else: return not_found()
-    elif request.method == 'PUT':  #not sure if we can do this method
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'PUT':  # not sure if we can do this method
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='collection').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
             document = json.loads(request.data)
             document = postcollection(document)
             try:
@@ -714,46 +714,46 @@ def api_collectionbyuuid(uuid):
             except:
                 return invalidput()
         else: not_found()
-    elif request.method == 'DELETE':  #must specify the source
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'DELETE':  # must specify the source
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='collection').paginate(startcount, defaultcount).execute()
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()        
         else: return not_found() 
 
-@app.route('/rest/v1/class',methods= ['GET','POST'])  
+@app.route('/rest/v1/class', methods=['GET', 'POST'])  
 def api_class():
-    if request.method == 'GET':   # searches all classes available from different dictionaries
+    if request.method == 'GET':  # searches all classes available from different dictionaries
         
-        requestparams ={}
+        requestparams = {}
         classes = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/classes
+            # no parameters passed in the url is just /rest/v1/classes
             results = solr_interface.query('*').query(type='class').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:
-                    #format object to final specifications                                       
+                    # format object to final specifications                                       
                     result = formatclass(result)       
                     classes.append(result)                                            
-                    js = json.dumps(classes,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(classes, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'             
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/rest/v1/classes?q=diagnosis
-            #/classes?source=snomed        
-            #/classes?q=blood&count=15&startIndex=30                      
+            # http://127.0.0.1:5000/rest/v1/classes?q=diagnosis
+            # /classes?source=snomed        
+            # /classes?q=blood&count=15&startIndex=30                      
             
             if  requestparams.has_key('q'):
-                #search by a class keyword or name
+                # search by a class keyword or name
                 name = requestparams['q']
                 results = solr_interface.query(name).query(type='class').paginate(startcount, defaultcount).execute()
 
@@ -761,14 +761,14 @@ def api_class():
                     for result in results:
                         result = formatclass(result) 
                         classes.append(result)                                            
-                        js = json.dumps(classes,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(classes, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
                         
             elif requestparams.has_key('source'):
-                #search classes by owner name
+                # search classes by owner name
                 source = requestparams['source']
                 results = solr_interface.query(dict=source).query(type='class').paginate(startcount, defaultcount).execute()   
                 
@@ -776,23 +776,23 @@ def api_class():
                     for result in results:
                         result = formatclass(result) 
                         classes.append(result)                                            
-                        js = json.dumps(classes,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(classes, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
                                                                            
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='class').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='class').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatclass(result) 
                         classes.append(result)                                            
-                        js = json.dumps(classes,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(classes, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
@@ -800,21 +800,21 @@ def api_class():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='class').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='class').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatclass(result) 
                         classes.append(result)                                            
-                        js = json.dumps(classes,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(classes, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
              
                     return resp
                 else: return not_found()
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -826,25 +826,25 @@ def api_class():
                     for result in results:
                         result = formatclass(result) 
                         classes.append(result)                                            
-                        js = json.dumps(classes,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(classes, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'             
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         poststar = request.data 
         return postocl(poststar)    
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
               
 def postocl(post):            
-    document =  json.loads(post)  
+    document = json.loads(post)  
     document = postcollection(document)
     solr_interface.add(document)
     solr_interface.commit()
@@ -852,9 +852,9 @@ def postocl(post):
 
 
 def postmycollection(post):            
-    document =  json.loads(post)  
+    document = json.loads(post)  
     document = validatecollectionpostdata(document)
-    #check at least a name is present 
+    # check at least a name is present 
     if 'names' not in document.keys():
         return 'A collection must have a name'
     else:
@@ -865,8 +865,8 @@ def postmycollection(post):
         return created(url)
     
 def postsource(post):            
-    document =  json.loads(post)  
-    #check at least a name is present 
+    document = json.loads(post)  
+    # check at least a name is present 
     if 'names' not in document.keys():
         return 'A source must have a name'
     else:
@@ -877,7 +877,7 @@ def postsource(post):
         return created(url)
     
 def postconcept(document):            
-    #check at least a name is present 
+    # check at least a name is present 
     if 'names' not in document.keys():
         return 'A concept must have a name'
     else:
@@ -893,7 +893,7 @@ def formatpostcollection(result):
         result['full_id'] = result['full_id']
     else:
         myuuid = generateuuid()
-        full_id = str('COLLECTION')+'_'+str(myuuid)
+        full_id = str('COLLECTION') + '_' + str(myuuid)
         result['full_id'] = full_id
     
     if '__type__' not in result.keys():
@@ -904,7 +904,7 @@ def formatpostcollection(result):
         result['url'] = url
         
     if 'uuid' not in result.keys():
-        result['uuid']= myuuid
+        result['uuid'] = myuuid
         
     if result.has_key('sharedUsers'):
         user = result['sharedUsers'][0]
@@ -931,15 +931,15 @@ def formatpostcollection(result):
         desc = result['descriptions'][0]
         result['descriptionLocale'] = desc['locale']
         result['descriptionPreferred'] = desc['preferred']
-        #result['description'] = desc['description']
+        # result['description'] = desc['description']
         del result['descriptions']
         
     if result.has_key('concepts'):
         concepts = result['concepts']
-        c_url =[]
+        c_url = []
         c_uuid = []
         for c in concepts:
-            #create a list then join all concepts 
+            # create a list then join all concepts 
             c_url.append(c['url'])
             c_uuid.append(c['uuid'])
         url = '|'.join(c_url)
@@ -960,7 +960,7 @@ def formatpostconcept(result):
     if result.has_key('full_id'):
         result['full_id'] = result['full_id']
     else:
-        full_id = str('CONCEPT')+'_'+str(myuuid)
+        full_id = str('CONCEPT') + '_' + str(myuuid)
         result['full_id'] = full_id
     
     if '__type__' not in result.keys():
@@ -968,11 +968,11 @@ def formatpostconcept(result):
         
     if 'url' not in result.keys():
         source = str(result['source'])
-        url = str("http://www.openconceptlab.org/rest/v1/")+source+ str("/concept/") + str(myuuid)
+        url = str("http://www.openconceptlab.org/rest/v1/") + source + str("/concept/") + str(myuuid)
         result['url'] = url
         
     if 'uuid' not in result.keys():
-        result['uuid']= myuuid
+        result['uuid'] = myuuid
         
     if result.has_key('names'):
         name = result['names'][0]
@@ -1002,19 +1002,19 @@ def formatpostconcept(result):
         audit = {}
         audit = result['auditInfo']
         result['dateChanged'] = audit['dateChanged']
-        result['changedby'] =audit['changedBy']
+        result['changedby'] = audit['changedBy']
         result['creator'] = audit['creator']
         result['dateCreated'] = audit['dateCreated']
         del result['auditInfo']
     if result.has_key('collections'): del result['collections']
     
     if result.has_key('setMembers'):
-        myset = result['setMembers'][0] #may prefer to loop throu this array
+        myset = result['setMembers'][0]  # may prefer to loop throu this array
         result['setParent'] = myset['setParent']
         del result['setMembers']
         
     if result.has_key('answers'):
-        ans = result['answers'][0] #may prefer to loop throu this array
+        ans = result['answers'][0]  # may prefer to loop throu this array
         result['answerDisplay'] = ans['display']
         del result['answers']
         
@@ -1026,7 +1026,7 @@ def formatpostsource(result):
     if result.has_key('full_id'):
         result['full_id'] = result['full_id']
     else:
-        full_id = str('SOURCE')+'_'+str(myuuid)
+        full_id = str('SOURCE') + '_' + str(myuuid)
         result['full_id'] = full_id
         
     if 'type' not in result.keys():
@@ -1040,7 +1040,7 @@ def formatpostsource(result):
         result['url'] = url
         
     if 'uuid' not in result.keys():
-        result['uuid']= myuuid
+        result['uuid'] = myuuid
         
     if result.has_key('sharedUsers'):
         user = result['sharedUsers'][0]
@@ -1072,7 +1072,7 @@ def formatpostsource(result):
     return result
 
 def putocl(results):
-    if int(len(results)) > 0:#means the existing resource is present 
+    if int(len(results)) > 0:  # means the existing resource is present 
         postdata = json.loads(request.data)
         try:
             solr_interface.add(postdata)
@@ -1095,8 +1095,8 @@ def putoclconcept(post):
         return success(url)  
     
 def putoclsource(post):    
-    document =  json.loads(post)  
-        #check at least a name is present 
+    document = json.loads(post)  
+        # check at least a name is present 
     if 'uuid' not in document.keys():
         return 'A source must have a uuid to be updated'
     else:
@@ -1121,7 +1121,7 @@ def validatecollectionpostdata(result):
         result['type'] = 'collection'
     return result
 
-@app.route('/rest/v1/class/<uuid>',methods= ['GET','PUT','DELETE'])  
+@app.route('/rest/v1/class/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
 def api_classbyuuid(uuid):     
     if request.method == 'GET':
 
@@ -1132,16 +1132,16 @@ def api_classbyuuid(uuid):
             for result in results:
                 result = formatclass(result)                     
                 classes.append(result)                                            
-                js = json.dumps(classes,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(classes, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'
                          
             return resp
         else: return not_found()
-    elif request.method == 'PUT':  #not sure if we can do this method
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'PUT':  # not sure if we can do this method
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='class').paginate(startcount, defaultcount).execute()      
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
             document = json.loads(request.data)            
             document = postcollection(document)
             try:
@@ -1152,49 +1152,49 @@ def api_classbyuuid(uuid):
                 return invalidput()
             else: not_found()
         else: not_found()
-    elif request.method == 'DELETE':  #must specify the source
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'DELETE':  # must specify the source
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='class').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
                     
-            #solr  deletes existing index
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()
         
         else: return not_found() 
  
-@app.route('/rest/v1/maptype',methods= ['GET','POST'])  
+@app.route('/rest/v1/maptype', methods=['GET', 'POST'])  
 def api_maptype():
-    if request.method == 'GET':   # searches all classes available from different dictionaries
+    if request.method == 'GET':  # searches all classes available from different dictionaries
         
-        requestparams ={}
+        requestparams = {}
         maptype = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/classes
+            # no parameters passed in the url is just /rest/v1/classes
             results = solr_interface.query('*').query(type='maptype').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:
                     result = mapdatatype(result)
                     maptype.append(result)                                            
-                    js = json.dumps(maptype,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(maptype, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'            
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/rest/v1/maptype?q=diagnosis
-            #/maptype?source=snomed        
-            #/maptype?q=sameas&count=15&startIndex=30                      
+            # http://127.0.0.1:5000/rest/v1/maptype?q=diagnosis
+            # /maptype?source=snomed        
+            # /maptype?q=sameas&count=15&startIndex=30                      
             
             if  requestparams.has_key('q'):
-                #search by a class keyword or name
+                # search by a class keyword or name
                 name = requestparams['q']
                 results = solr_interface.query(name).query(type='maptype').paginate(startcount, defaultcount).execute()
 
@@ -1202,14 +1202,14 @@ def api_maptype():
                     for result in results:
                         result = mapdatatype(result)
                         maptype.append(result)                                            
-                        js = json.dumps(maptype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(maptype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                     return resp
                 else: return not_found()
                         
             elif requestparams.has_key('source'):
-                #search classes by owner name
+                # search classes by owner name
                 source = requestparams['source']
                 results = solr_interface.query(dict=source).query(type='maptype').paginate(startcount, defaultcount).execute()   
                 
@@ -1217,22 +1217,22 @@ def api_maptype():
                     for result in results:   
                         result = mapdatatype(result)                 
                         maptype.append(result)                                            
-                        js = json.dumps(maptype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(maptype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'           
                     return resp
                 else: return not_found()                                                                           
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='maptype').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='maptype').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results: 
                         result = mapdatatype(result)                
                         maptype.append(result)                                            
-                        js = json.dumps(maptype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(maptype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'          
                     return resp
                 else: return not_found()
@@ -1240,20 +1240,20 @@ def api_maptype():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='maptype').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='maptype').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         result = mapdatatype(result)
                         maptype.append(result)                                            
-                        js = json.dumps(maptype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(maptype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'       
                     return resp
                 else: return not_found()
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -1265,25 +1265,25 @@ def api_maptype():
                     for result in results:
                         result = mapdatatype(result)
                         maptype.append(result)                                            
-                        js = json.dumps(maptype,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(maptype, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'         
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         poststar = json.loads(request.data) 
         return postocl(poststar)
     
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
     
-@app.route('/rest/v1/maptype/<uuid>',methods= ['GET','PUT','DELETE'])  
+@app.route('/rest/v1/maptype/<uuid>', methods=['GET', 'PUT', 'DELETE'])  
 def api_maptypebyuuid(uuid):     
     if request.method == 'GET':
 
@@ -1294,48 +1294,48 @@ def api_maptypebyuuid(uuid):
             for result in results:
                 result = mapdatatype(result)                    
                 maptype.append(result)                                            
-                js = json.dumps(maptype,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(maptype, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'                        
             return resp
         else: return not_found()
-    elif request.method == 'PUT':  #not sure if we can do this method
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'PUT':  # not sure if we can do this method
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='maptype').paginate(startcount, defaultcount).execute()
         return putocl(results)
-    elif request.method == 'DELETE':  #must specify the source
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'DELETE':  # must specify the source
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='maptype').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
                     
-            #solr  deletes existing index
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()
         
         else: return not_found()   
                  
-@app.route('/rest/v1/source',methods= ['GET','POST'])  
+@app.route('/rest/v1/source', methods=['GET', 'POST'])  
 def api_source():
-    if request.method == 'GET':   # searches all classes available from different dictionaries
+    if request.method == 'GET':  # searches all classes available from different dictionaries
         
-        requestparams ={}
+        requestparams = {}
         source = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/classes
+            # no parameters passed in the url is just /rest/v1/classes
             results = solr_interface.query('*').query(type='source').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:
                     result = formatsource(result)
                     source.append(result)                                            
-                    js = json.dumps(source,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(source, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'
                     resp.headers['Count'] = defaultcount
                     resp.headers['StartIndex'] = startcount
@@ -1343,11 +1343,11 @@ def api_source():
             else: return not_found()
         elif number_of_params_requested == 1 :
 
-            #http://127.0.0.1:5000/rest/v1/source?q=icd
-            #/source?q=sameas&count=15&startIndex=30                      
+            # http://127.0.0.1:5000/rest/v1/source?q=icd
+            # /source?q=sameas&count=15&startIndex=30                      
             
             if  requestparams.has_key('q'):
-                #search by a class keyword or name
+                # search by a class keyword or name
                 name = requestparams['q']
                 results = solr_interface.query(display=name).query(type='source').paginate(startcount, defaultcount).execute()
                 
@@ -1355,8 +1355,8 @@ def api_source():
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startcount
@@ -1364,16 +1364,16 @@ def api_source():
                 else: return not_found()
                                                                            
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='source').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='source').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:   
                         result = formatsource(result)              
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'     
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount    
@@ -1383,31 +1383,31 @@ def api_source():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='source').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='source').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'    
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startIndex
                     return resp
                 else: return not_found()               
-        elif number_of_params_requested == 2 :  #implement count and startIndex               
+        elif number_of_params_requested == 2 :  # implement count and startIndex               
             if  requestparams.has_key('q') and requestparams.has_key('count'):
                 name = requestparams['q']
                 count = requestparams['count']
-                results = solr_interface.query(display=name).query(type='source').paginate(startcount,count).execute()
+                results = solr_interface.query(display=name).query(type='source').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startcount
@@ -1417,14 +1417,14 @@ def api_source():
             if  requestparams.has_key('q') and requestparams.has_key('startIndex'):
                 name = requestparams['q']
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query(display=name).query(type='source').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query(display=name).query(type='source').paginate(startIndex, defaultcount).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                         resp.headers['Count'] = defaultcount
                         resp.headers['StartIndex'] = startIndex
@@ -1432,7 +1432,7 @@ def api_source():
                 else: return not_found()                                          
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -1444,27 +1444,27 @@ def api_source():
                     for result in results:
                         result = formatsource(result)
                         source.append(result)                                            
-                        js = json.dumps(source,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(source, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'  
                         resp.headers['Count'] = count
                         resp.headers['StartIndex'] = startIndex      
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         poststar = request.data 
         return postsource(poststar)
      
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
 
-@app.route('/rest/v1/source/<uuid>',methods= ['GET','PUT','DELETE'])  #search by uuid and short code
+@app.route('/rest/v1/source/<uuid>', methods=['GET', 'PUT', 'DELETE'])  # search by uuid and short code
 def api_sourcebyuuid(uuid):     
     if request.method == 'GET':
 
@@ -1475,8 +1475,8 @@ def api_sourcebyuuid(uuid):
             for result in results:
                 result = formatsource(result)           
                 source.append(result)                                            
-                js = json.dumps(source,indent=4)
-                resp = Response(js,status=200)
+                js = json.dumps(source, indent=4)
+                resp = Response(js, status=200)
                 resp.headers['Link'] = 'http://openconceptlab.org'
                 resp.headers['Count'] = defaultcount
                 resp.headers['StartIndex'] = startcount 
@@ -1489,16 +1489,16 @@ def api_sourcebyuuid(uuid):
                 for result in results:
                     result = formatsource(result)           
                     code.append(result)                                            
-                    js = json.dumps(code,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(code, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'
                     resp.headers['Count'] = defaultcount
                     resp.headers['StartIndex'] = startcount                                       
                 return resp
             else: return not_found() 
 
-    elif request.method == 'PUT':  #not sure if we can do this method
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'PUT':  # not sure if we can do this method
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='source').paginate(startcount, defaultcount).execute()
         if int(len(results)) > 0:
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
@@ -1508,13 +1508,13 @@ def api_sourcebyuuid(uuid):
             return putoclsource(poststar)
         else: return not_found()  
             
-    elif request.method == 'DELETE':  #must specify the source
-        #search if the existing  resource exists using the uuid
+    elif request.method == 'DELETE':  # must specify the source
+        # search if the existing  resource exists using the uuid
         results = solr_interface.query(uuid=uuid).query(type='source').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
                     
-            #solr  deletes existing index
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()
@@ -1522,53 +1522,53 @@ def api_sourcebyuuid(uuid):
         else: return not_found()   
 
         
-@app.route('/rest/v1/star',methods= ['GET','POST'])  
+@app.route('/rest/v1/star', methods=['GET', 'POST'])  
 def api_star():
-    if request.method == 'GET':   # searches all stars available from different dictionaries
-        requestparams ={}
+    if request.method == 'GET':  # searches all stars available from different dictionaries
+        requestparams = {}
         star = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/star
+            # no parameters passed in the url is just /rest/v1/star
             results = solr_interface.query('*').query(type='star').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:                    
                     star.append(result)                                            
-                    js = json.dumps(star,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(star, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'
              
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
             if  requestparams.has_key('username'):
-                #search by user 
+                # search by user 
                 name = requestparams['username']
                 results = solr_interface.query(username=name).query(type='star').paginate(startcount, defaultcount).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         star.append(result)                                            
-                        js = json.dumps(star,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(star, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                     return resp
                 else: return not_found()
                                                                            
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='star').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='star').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:                 
                         star.append(result)                                            
-                        js = json.dumps(star,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(star, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'         
                     return resp
                 else: return not_found()
@@ -1576,19 +1576,19 @@ def api_star():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='star').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='star').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         star.append(result)                                            
-                        js = json.dumps(star,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(star, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'    
                     return resp
                 else: return not_found()
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('username') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['username']
@@ -1599,117 +1599,117 @@ def api_star():
                 if int(len(results)) > 0:
                     for result in results:
                         star.append(result)                                            
-                        js = json.dumps(star,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(star, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'        
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
-    elif request.method == 'POST':   # must specify the resource id and username
-        #check the minimum number of criteria is met 
+    elif request.method == 'POST':  # must specify the resource id and username
+        # check the minimum number of criteria is met 
         poststar = json.loads(request.data)
         return postocl(poststar)
 
 ''' implement user routes'''
     
-@app.route('/rest/v1/user',methods= ['GET','POST','PUT','DELETE'])  
+@app.route('/rest/v1/user', methods=['GET', 'POST', 'PUT', 'DELETE'])  
 def api_user():    
-    if request.method == 'GET':   # searches all user available from different dictionaries
-        requestparams ={}
+    if request.method == 'GET':  # searches all user available from different dictionaries
+        requestparams = {}
         user = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/star
+            # no parameters passed in the url is just /rest/v1/star
             results = solr_interface.query('*').query(type='user').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results: 
                     result = formatuser(result)                   
                     user.append(result)                                            
-                    js = json.dumps(user,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(user, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'            
                 return resp
             else: return not_found()
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         poststar = json.loads(request.data)
         return postocl(poststar)
-    elif request.method == 'PUT':  #not sure if we can do this method
+    elif request.method == 'PUT':  # not sure if we can do this method
         results = solr_interface.query(uuid=uuid).query(type='user').paginate(startcount, defaultcount).execute()
         return putocl(results)
-    elif request.method == 'DELETE':  #must specify the source
+    elif request.method == 'DELETE':  # must specify the source
         results = solr_interface.query(uuid=uuid).query(type='user').paginate(startcount, defaultcount).execute()
        
-        if int(len(results)) > 0:#means the existing resource is present 
+        if int(len(results)) > 0:  # means the existing resource is present 
                     
-            #solr  deletes existing index
+            # solr  deletes existing index
             solr_interface.delete(queries=solr_interface.Q(uuid=uuid))
             solr_interface.commit()           
             return success()
         
     else: return not_found()
     
-@app.route('/rest/v1/mapping',methods= ['GET','POST'])  
+@app.route('/rest/v1/mapping', methods=['GET', 'POST'])  
 def api_mapping():
-    if request.method == 'GET':   # searches all classes available from different dictionaries
+    if request.method == 'GET':  # searches all classes available from different dictionaries
         
-        requestparams ={}
+        requestparams = {}
         mapping = []        
 
         requestparams = request.args
         number_of_params_requested = int(len(requestparams))
                 
         if number_of_params_requested == 0 :
-            #no parameters passed in the url is just /rest/v1/mapping
+            # no parameters passed in the url is just /rest/v1/mapping
             results = solr_interface.query('*').query(type='mapping').paginate(startcount, defaultcount).execute()
 
             if int(len(results)) > 0:
                 for result in results:
                     result = formatmapping(result)
                     mapping.append(result)                                            
-                    js = json.dumps(mapping,indent=4)
-                    resp = Response(js,status=200)
+                    js = json.dumps(mapping, indent=4)
+                    resp = Response(js, status=200)
                     resp.headers['Link'] = 'http://openconceptlab.org'
              
                 return resp
             else: return not_found()
         elif number_of_params_requested == 1 :
-            #http://127.0.0.1:5000/mapping?concept=1234-5678-9012-3456
-            #/mapping?conceptA=1234-5678-9012-3456
-            #/mapping?conceptB=1234-5678-9012-3456
-            #/mapping?count=15&startIndex=30                      
+            # http://127.0.0.1:5000/mapping?concept=1234-5678-9012-3456
+            # /mapping?conceptA=1234-5678-9012-3456
+            # /mapping?conceptB=1234-5678-9012-3456
+            # /mapping?count=15&startIndex=30                      
             
             if  requestparams.has_key('concept'):
-                #search by a class keyword or name
+                # search by a class keyword or name
                 concept = requestparams['concept']
                 results = solr_interface.query(uuid=concept).query(type='mapping').paginate(startcount, defaultcount).execute()
 
                 if int(len(results)) > 0:
                     for result in results:
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'
                     return resp
                 else: return not_found()
                                                                            
             elif requestparams.has_key('conceptA'):
-                #set the number of returns to return
+                # set the number of returns to return
                 conceptA = requestparams['conceptA']                
-                results = solr_interface.query(conceptA_id=conceptA).query(type='mapping').paginate(startcount,defaultcount).execute()
+                results = solr_interface.query(conceptA_id=conceptA).query(type='mapping').paginate(startcount, defaultcount).execute()
 
                 if int(len(results)) > 0:
                     for result in results:                 
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'       
                     return resp
                 else: return not_found()
@@ -1717,27 +1717,27 @@ def api_mapping():
             elif requestparams.has_key('conceptB'):
                 # set the start index
                 conceptB = requestparams['conceptB']
-                results = solr_interface.query(conceptB_id=conceptB).query(type='mapping').paginate(startcount,defaultcount).execute()
+                results = solr_interface.query(conceptB_id=conceptB).query(type='mapping').paginate(startcount, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'  
                     return resp
                 else: return not_found()
                 
             elif requestparams.has_key('count'):
-                #set the number of returns to return
+                # set the number of returns to return
                 count = requestparams['count']                
-                results = solr_interface.query('*').query(type='mapping').paginate(startcount,count).execute()
+                results = solr_interface.query('*').query(type='mapping').paginate(startcount, count).execute()
 
                 if int(len(results)) > 0:
                     for result in results:                 
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'          
                     return resp
                 else: return not_found()
@@ -1745,19 +1745,19 @@ def api_mapping():
             elif requestparams.has_key('startIndex'):
                 # set the start index
                 startIndex = requestparams['startIndex']
-                results = solr_interface.query('*').query(type='mapping').paginate(startIndex,defaultcount).execute()
+                results = solr_interface.query('*').query(type='mapping').paginate(startIndex, defaultcount).execute()
                 
                 if int(len(results)) > 0:
                     for result in results:
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'      
                     return resp
                 else: return not_found()
                                     
         elif number_of_params_requested == 3 :
-            #start with is there a query name for search
+            # start with is there a query name for search
             if requestparams.has_key('q') and requestparams.has_key('count') and requestparams.has_key('startIndex') :
                 count = requestparams['count']
                 name = requestparams['q']
@@ -1768,34 +1768,34 @@ def api_mapping():
                 if int(len(results)) > 0:
                     for result in results:
                         mapping.append(result)                                            
-                        js = json.dumps(mapping,indent=4)
-                        resp = Response(js,status=200)
+                        js = json.dumps(mapping, indent=4)
+                        resp = Response(js, status=200)
                         resp.headers['Link'] = 'http://openconceptlab.org'         
                     return resp
                 else: return not_found()
-            else: #closes the end of the three parameters
+            else:  # closes the end of the three parameters
                 return not_found()
              
-        else: #last one for GET
+        else:  # last one for GET
             return not_found()
             
-    elif request.method == 'POST':   # must specify the source 
+    elif request.method == 'POST':  # must specify the source 
         poststar = request.data 
-        document =  json.loads(poststar)  
+        document = json.loads(poststar)  
         document = postcollection(document)
         solr_interface.add(document)
         solr_interface.commit()
         return created()
 #         return postocl(poststar) 
     
-    #end these URL calls
+    # end these URL calls
     else: return not_allowed()
              
 @app.errorhandler(404)
 def not_found(error=None):
     message = {
                'status' : 404,
-               'message' :'Resource not found' + '   ' + request.url ,                
+               'message' :'Resource not found' + '   ' + request.url ,
                } 
     resp = jsonify(message)
     resp.headers['Link'] = 'http://openconceptlab.org'
@@ -1807,7 +1807,7 @@ def not_found(error=None):
 def created(url):
     message = {
                'status' : 201,
-               'message' :'Resource' + '   ' + url + '  ' + 'successfully created' + '   ',                
+               'message' :'Resource' + '   ' + url + '  ' + 'successfully created' + '   ',
                } 
     resp = jsonify(message)
     resp.headers['Link'] = 'http://openconceptlab.org'
@@ -1819,7 +1819,7 @@ def created(url):
 def not_allowed(error=None):
     message = {
                'status' : 405,
-               'message' :'The method' + '   ' + request.method + '  ' +'is not allowed for the requested URL' + '   '+ request.url ,                
+               'message' :'The method' + '   ' + request.method + '  ' + 'is not allowed for the requested URL' + '   ' + request.url ,
                } 
     resp = jsonify(message)
     resp.headers['Link'] = 'http://openconceptlab.org'
@@ -1831,7 +1831,7 @@ def not_allowed(error=None):
 def success(error=None):
     message = {
                'status' : 200,
-               'message' :request.method +' on Resource' + '   ' + request.url + '   ' + 'successful ' + '  ' ,                
+               'message' :request.method + ' on Resource' + '   ' + request.url + '   ' + 'successful ' + '  ' ,
                } 
     resp = jsonify(message)
     resp.headers['Link'] = 'http://openconceptlab.org'
@@ -1843,7 +1843,7 @@ def success(error=None):
 def bad_request(error=None):
     message = {
                'status' : 400,
-               'message' :'The  proxy sent a request that this server could not understand' + '   ' + request.url ,                
+               'message' :'The  proxy sent a request that this server could not understand' + '   ' + request.url ,
                } 
     resp = jsonify(message)
     resp.headers['Link'] = 'http://openconceptlab.org'
@@ -1874,32 +1874,32 @@ def unsupported():
     return resp
 
 def formatclass(result):
-    #format properties section
-    result['properties'] = {'hl7Code':result['hl7Code'],'openmrsResourceVersion':result['openmrsResourceVersion'],}
+    # format properties section
+    result['properties'] = {'hl7Code':result['hl7Code'], 'openmrsResourceVersion':result['openmrsResourceVersion'], }
     del result['hl7Code']
     del result['openmrsResourceVersion']
                     
-    #format AuditInfo
-    result['auditInfo'] = {'creator':result['creator'],'dateCreated':result['dateCreated'],'changedBy':result['changedby'],'dateChanged':result['dateChanged']}
+    # format AuditInfo
+    result['auditInfo'] = {'creator':result['creator'], 'dateCreated':result['dateCreated'], 'changedBy':result['changedby'], 'dateChanged':result['dateChanged']}
     del result['creator']
     del result['dateCreated']
     del result['changedby']
     del result['dateChanged']
                     
-    #format names
-    result['names'] = [{'name':result['name'],'locale':result['locale'],'preferred':result['preferred'].replace('"','')}]
+    # format names
+    result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
     del result['name']
     del result['locale']
     del result['preferred']
                     
-    #format descriptions
-    result['descriptions'] = [{'description':result['description'],'locale':result['descriptionLocale'],'preferred':result['descriptionPreferred'].replace('"','')}]
+    # format descriptions
+    result['descriptions'] = [{'description':result['description'], 'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}]
     del result['description']
     del result['descriptionLocale']
     del result['descriptionPreferred']
                     
-    #format sources
-    result['sources']=[result.get('dict')]
+    # format sources
+    result['sources'] = [result.get('dict')]
     del result['dict']
     del result['_version_']
     del result['type']
@@ -1907,32 +1907,32 @@ def formatclass(result):
     return result
 
 def formatdatatype(result):
-    #format properties section
-    result['properties'] = {'hl7Abbreviation':result['hl7Abbreviation'],'openmrsResourceVersion':result['openmrsResourceVersion'],}
+    # format properties section
+    result['properties'] = {'hl7Abbreviation':result['hl7Abbreviation'], 'openmrsResourceVersion':result['openmrsResourceVersion'], }
     del result['hl7Abbreviation']
     del result['openmrsResourceVersion']
                     
-    #format AuditInfo
-    result['auditInfo'] = {'creator':result['creator'],'dateCreated':result['dateCreated'],'changedBy':result['changedby'],'dateChanged':result['dateChanged']}
+    # format AuditInfo
+    result['auditInfo'] = {'creator':result['creator'], 'dateCreated':result['dateCreated'], 'changedBy':result['changedby'], 'dateChanged':result['dateChanged']}
     del result['creator']
     del result['dateCreated']
     del result['changedby']
     del result['dateChanged']
                     
-    #format names
-    result['names'] = [{'name':result['name'],'locale':result['locale'],'preferred':result['preferred'].replace('"','')}]
+    # format names
+    result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
     del result['name']
     del result['locale']
     del result['preferred']
                     
-    #format descriptions
-    result['descriptions'] = [{'description':result['description'],'locale':result['descriptionLocale'],'preferred':result['descriptionPreferred'].replace('"','')}]
+    # format descriptions
+    result['descriptions'] = [{'description':result['description'], 'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}]
     del result['description']
     del result['descriptionLocale']
     del result['descriptionPreferred']
                     
-    #format sources
-    result['sources']=[result.get('dict')]
+    # format sources
+    result['sources'] = [result.get('dict')]
     del result['dict']
     del result['_version_']
     del result['type']
@@ -1940,29 +1940,29 @@ def formatdatatype(result):
     return result
 
 def mapdatatype(result):
-    #format properties section
-    result['properties'] = {'openmrsResourceVersion':result['openmrsResourceVersion'],}
+    # format properties section
+    result['properties'] = {'openmrsResourceVersion':result['openmrsResourceVersion'], }
     del result['openmrsResourceVersion']
                     
-    #format AuditInfo
-    result['auditInfo'] = {'creator':result['creator'],'dateCreated':result['dateCreated']}
+    # format AuditInfo
+    result['auditInfo'] = {'creator':result['creator'], 'dateCreated':result['dateCreated']}
     del result['creator']
     del result['dateCreated']
     
                     
-    #format names
-    result['names'] = [{'name':result['name'],'locale':result['locale'],'preferred':result['preferred'].replace('"','')}]
+    # format names
+    result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
     del result['name']
     del result['locale']
     del result['preferred']
                     
-    #format descriptions
-    result['descriptions'] = [{'locale':result['descriptionLocale'],'preferred':result['descriptionPreferred'].replace('"','')}]
+    # format descriptions
+    result['descriptions'] = [{'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}]
     del result['descriptionLocale']
     del result['descriptionPreferred']
                     
-    #format sources
-    result['sources']=[result.get('dict')]
+    # format sources
+    result['sources'] = [result.get('dict')]
     del result['dict']
     del result['_version_']
     del result['type']
@@ -1971,26 +1971,26 @@ def mapdatatype(result):
 
 def formatsource(result):
     if result.has_key('versionStatus'):
-    #format properties section
+    # format properties section
         result['properties'] = {'versionStatus':result['versionStatus']}
         del result['versionStatus']
 
-    #format audit INFo             
+    # format audit INFo             
     audit = {}
     if result.has_key('creator'): 
-        audit['creator']=result['creator']
+        audit['creator'] = result['creator']
         del result['creator']
     if result.has_key('dateCreated'): 
-        audit['dateCreated']=result['dateCreated']
+        audit['dateCreated'] = result['dateCreated']
         del result['dateCreated']
     if result.has_key('changedby'): 
-        audit['changedBy']=result['changedby']
+        audit['changedBy'] = result['changedby']
         del result['changedby']
     if result.has_key('dateChanged'): 
-        audit['dateChanged']=result['dateChanged']
+        audit['dateChanged'] = result['dateChanged']
         del result['dateChanged']
     if result.has_key('dateReleased'): 
-        audit['dateReleased']=result['dateReleased']
+        audit['dateReleased'] = result['dateReleased']
         del result['dateReleased']
 
     if int(len(audit)) == 1:
@@ -2006,47 +2006,47 @@ def formatsource(result):
             result['auditInfo'] = {'dateReleased':audit['dateReleased']}
     elif int(len(audit)) == 2:
         if audit.has_key('creator') and audit.has_key('dateCreated'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated']}
         elif audit.has_key('creator') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'changedBy':audit['changedBy']}
         elif audit.has_key('creator') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
         elif audit.has_key('dateCreated') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('changedBy') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'changedBy':audit['changedBy'],'dateChanged':audit['dateChanged']}       
+            result['auditInfo'] = {'changedBy':audit['changedBy'], 'dateChanged':audit['dateChanged']}       
     elif int(len(audit)) == 3: 
         if audit.has_key('creator') and audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
     elif int(len(audit)) == 4: 
-        result['auditInfo'] = {'dateChanged':audit['dateChanged'],'changedBy':audit['changedBy'],'creator':audit['creator'],'dateCreated':audit['dateCreated']}   
+        result['auditInfo'] = {'dateChanged':audit['dateChanged'], 'changedBy':audit['changedBy'], 'creator':audit['creator'], 'dateCreated':audit['dateCreated']}   
     elif int(len(audit)) == 5: 
-        result['auditInfo'] = {'dateChanged':audit['dateChanged'],'changedBy':audit['changedBy'],'creator':audit['creator'],'dateCreated':audit['dateCreated'], 'dateReleased':audit['dateReleased']}   
+        result['auditInfo'] = {'dateChanged':audit['dateChanged'], 'changedBy':audit['changedBy'], 'creator':audit['creator'], 'dateCreated':audit['dateCreated'], 'dateReleased':audit['dateReleased']}   
                    
-    #format names
+    # format names
     if result.has_key('nameType'): 
-        result['names'] = [{'name':result['name'],'locale':result['locale'],'nameType':result['nameType'],'preferred':result['preferred'].replace('"','')}]
+        result['names'] = [{'name':result['name'], 'locale':result['locale'], 'nameType':result['nameType'], 'preferred':result['preferred'].replace('"', '')}]
         del result['name']
         del result['locale']
         del result['preferred']
         del result['nameType']
     else:
-        result['names'] = [{'name':result['name'],'locale':result['locale'],'preferred':result['preferred'].replace('"','')}]
+        result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
         del result['name']
         del result['locale']
         del result['preferred']
                    
-    #format descriptions
+    # format descriptions
     if result.has_key('description'):
-        result['descriptions'] = {'description':result['description'],'locale':result['descriptionLocale'],'preferred':result['descriptionPreferred'].replace('"','')}
+        result['descriptions'] = {'description':result['description'], 'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}
         del result['description']
         del result['descriptionLocale']
         del result['descriptionPreferred']
                       
-    #format sources
-    result['sharedUsers']=[result.get('username')]
+    # format sources
+    result['sharedUsers'] = [result.get('username')]
     
     if result.has_key('dict'): del result['dict']
     del result['_version_']
@@ -2056,19 +2056,19 @@ def formatsource(result):
     return result
 
 def formatauditinfo(result):
-    #format audit INFo             
+    # format audit INFo             
     audit = {}
     if result.has_key('creator'): 
-        audit['creator']=result['creator']
+        audit['creator'] = result['creator']
         del result['creator']
     if result.has_key('dateCreated'): 
-        audit['dateCreated']=result['dateCreated']
+        audit['dateCreated'] = result['dateCreated']
         del result['dateCreated']
     if result.has_key('changedby'): 
-        audit['changedBy']=result['changedby']
+        audit['changedBy'] = result['changedby']
         del result['changedby']
     if result.has_key('dateChanged'): 
-        audit['dateChanged']=result['dateChanged']
+        audit['dateChanged'] = result['dateChanged']
         del result['dateChanged']
 
     if int(len(audit)) == 1:
@@ -2082,39 +2082,39 @@ def formatauditinfo(result):
             result['auditInfo'] = {'dateChanged':audit['dateChanged']}
     elif int(len(audit)) == 2:
         if audit.has_key('creator') and audit.has_key('dateCreated'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated']}
         elif audit.has_key('creator') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'changedBy':audit['changedBy']}
         elif audit.has_key('creator') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
         elif audit.has_key('dateCreated') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('changedBy') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'changedBy':audit['changedBy'],'dateChanged':audit['dateChanged']}       
+            result['auditInfo'] = {'changedBy':audit['changedBy'], 'dateChanged':audit['dateChanged']}       
     elif int(len(audit)) == 3: 
         if audit.has_key('creator') and audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
     elif int(len(audit)) == 4: 
-        result['auditInfo'] = {'dateChanged':audit['dateChanged'],'changedBy':audit['changedBy'],'creator':audit['creator'],'dateCreated':audit['dateCreated']}   
+        result['auditInfo'] = {'dateChanged':audit['dateChanged'], 'changedBy':audit['changedBy'], 'creator':audit['creator'], 'dateCreated':audit['dateCreated']}   
 
 def formatmapping(result):
-    #format properties section
+    # format properties section
     result['properties'] = {'properties': result['properties']}
                     
-    #format AuditInfo
-    result['auditInfo'] = {'creator':result['creator'],'dateCreated':result['dateCreated']}
+    # format AuditInfo
+    result['auditInfo'] = {'creator':result['creator'], 'dateCreated':result['dateCreated']}
     del result['creator']
     del result['dateCreated']
     
-    #conceptA
-    result['conceptA'] = {'source':result['conceptA_source'],'id':result['conceptA_id']}
+    # conceptA
+    result['conceptA'] = {'source':result['conceptA_source'], 'id':result['conceptA_id']}
     del result['conceptA_source']
     del result['conceptA_id']
     
-    #conceptB
-    result['conceptB'] = {'source':result['conceptB_source'],'id':result['conceptB_id']}
+    # conceptB
+    result['conceptB'] = {'source':result['conceptB_source'], 'id':result['conceptB_id']}
     del result['conceptB_source']
     del result['conceptB_id']
     
@@ -2125,43 +2125,43 @@ def formatmapping(result):
     return result
 
 def formatcollection(result):
-    #format properties section
-    result['properties'] = {'hl7Code':result['hl7Code'],'openmrsResourceVersion':result['openmrsResourceVersion'],}
+    # format properties section
+    result['properties'] = {'hl7Code':result['hl7Code'], 'openmrsResourceVersion':result['openmrsResourceVersion'], }
     del result['hl7Code']
     del result['openmrsResourceVersion']
 
     result = formatauditinfo(result)
                     
-    #format names
-    result['names'] = [{'name':result['name'],'locale':result['locale'],'preferred':result['preferred'].replace('"','')}]
+    # format names
+    result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
     del result['name']
     del result['locale']
     del result['preferred']
    
-    #format descriptions
-    result['descriptions'] = [{'locale':result['descriptionLocale'],'preferred':result['descriptionPreferred'].replace('"','')}]
-    #del result['description']
+    # format descriptions
+    result['descriptions'] = [{'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}]
+    # del result['description']
     del result['descriptionLocale']
     del result['descriptionPreferred']
     
-    #shared users
-    result['sharedUsers'] = [{'username':result['username'],'access':result['access']}]
+    # shared users
+    result['sharedUsers'] = [{'username':result['username'], 'access':result['access']}]
     del result['username']
     del result['access']    
     
-    #concepts format 
-    myurl =''
+    # concepts format 
+    myurl = ''
     myuuid = ''
     conceptlist = []
-    conceptdict ={}
+    conceptdict = {}
                     
     u = str(result['concept_uuid']).split('|')
     for x in u:
         myuuid = x
         myurl = str('http://www.openconceptlab.org/api/rest/v1/source/ciel/concept/') + str(myuuid)
-        conceptdict ={'uuid':myuuid,'url':myurl}
+        conceptdict = {'uuid':myuuid, 'url':myurl}
         conceptlist.append(conceptdict)
-    result['concepts']=conceptlist
+    result['concepts'] = conceptlist
                       
     del result['_version_']
     del result['type']
@@ -2172,13 +2172,13 @@ def formatcollection(result):
     return result
 
 def formatconcept(result):
-    #format properties section  
+    # format properties section  
     if result.has_key('hiNormal'):
-        #result['properties'] = {'hiNormal':result['hiNormal'],'hiCritical':result['hiCritical'],'lowNormal':result['lowNormal'],'lowAbsolute':result['lowAbsolute'],'lowCritical':result['lowCritical'],'units':result['units'],'precise':result['precise'],'hiAbsolute':result['hiAbsolute']}
-        result['properties'] = {'hiNormal':result['hiNormal'],'lowNormal':result['lowNormal'],'lowAbsolute':result['lowAbsolute'],'lowCritical':result['lowCritical'],'units':result['units'],'precise':result['precise'],'hiAbsolute':result['hiAbsolute']}
+        # result['properties'] = {'hiNormal':result['hiNormal'],'hiCritical':result['hiCritical'],'lowNormal':result['lowNormal'],'lowAbsolute':result['lowAbsolute'],'lowCritical':result['lowCritical'],'units':result['units'],'precise':result['precise'],'hiAbsolute':result['hiAbsolute']}
+        result['properties'] = {'hiNormal':result['hiNormal'], 'lowNormal':result['lowNormal'], 'lowAbsolute':result['lowAbsolute'], 'lowCritical':result['lowCritical'], 'units':result['units'], 'precise':result['precise'], 'hiAbsolute':result['hiAbsolute']}
         del result['hiNormal']
         del result['hiAbsolute']
-        #del result['hiCritical']
+        # del result['hiCritical']
         del result['lowNormal']
         del result['lowAbsolute']
         del result['lowCritical']
@@ -2187,50 +2187,50 @@ def formatconcept(result):
     else: 
         result['properties'] = {'properties':'null'}
         
-    #format questions
+    # format questions
     if result.has_key('questions') :
         u = str(result['questions']).split('|')
         for x in u:
             conceptlist = []
             conceptlist.append(x)
-        result['questions']=conceptlist
+        result['questions'] = conceptlist
         
-    #format answer
+    # format answer
     if result.has_key('answerDisplay'):
         result['answers'] = [{'display':result['answerDisplay']}]
         del result['answerDisplay']
 
     temp = {}
-    #setlist = []    
-    #setMembers
+    # setlist = []    
+    # setMembers
     if result.has_key('setParent') :
         m = str(result['setParent']).split('|')
         for i in m:
             setlist = []
             setlist.append(i)
-        result['setParent']=setlist  
-        temp['setParent']= result['setParent']
+        result['setParent'] = setlist  
+        temp['setParent'] = result['setParent']
         del result['setParent']
     
         
-    #set children    
+    # set children    
     if result.has_key('setChildren') :
         m = str(result['setChildren']).split('|')
         for j in m:
             setlist = []
             setlist.append(j)
-        result['setChildren']=setlist  
-        temp['setChildren']= result['setChildren']
+        result['setChildren'] = setlist  
+        temp['setChildren'] = result['setChildren']
         del result['setChildren']
     
-    #set sibling
+    # set sibling
     if result.has_key('setSibling') :
         b = str(result['setSibling']).split('|')
         for a in b:
             setlist = []
             setlist.append(a)
-        result['setSibling']=setlist  
-        temp['setSibling']=result['setSibling']
+        result['setSibling'] = setlist  
+        temp['setSibling'] = result['setSibling']
         del result['setSibling']
     
     
@@ -2243,27 +2243,27 @@ def formatconcept(result):
             result['setMembers'] = [{'setSibling':temp['setSibling']}]
     elif int(len(temp)) == 2:
         if temp.has_key('setParent') and temp.has_key('setChildren'):
-            result['setMembers'] = [{'setParent':temp['setParent'],'setChildren':temp['setChildren']}]
+            result['setMembers'] = [{'setParent':temp['setParent'], 'setChildren':temp['setChildren']}]
         elif temp.has_key('setParent') and temp.has_key('setSibling'):
-            result['setMembers'] = [{'setParent':temp['setParent'],'setSibling':temp['setSibling']}]
+            result['setMembers'] = [{'setParent':temp['setParent'], 'setSibling':temp['setSibling']}]
         elif temp.has_key('setSibling') and temp.has_key('setChildren'): 
-            result['setMembers'] = [{'setSibling':temp['setSibling'],'setChildren':temp['setChildren']}]
+            result['setMembers'] = [{'setSibling':temp['setSibling'], 'setChildren':temp['setChildren']}]
     elif int(len(temp)) == 3:   
-        result['setMembers'] = [{'setParent':temp['setParent'],'setChildren':temp['setChildren'],'setSibling':temp['setSibling']}]
+        result['setMembers'] = [{'setParent':temp['setParent'], 'setChildren':temp['setChildren'], 'setSibling':temp['setSibling']}]
     
-    #format audit INFo             
+    # format audit INFo             
     audit = {}
     if result.has_key('creator'): 
-        audit['creator']=result['creator']
+        audit['creator'] = result['creator']
         del result['creator']
     if result.has_key('dateCreated'): 
-        audit['dateCreated']=result['dateCreated']
+        audit['dateCreated'] = result['dateCreated']
         del result['dateCreated']
     if result.has_key('changedby'): 
-        audit['changedBy']=result['changedby']
+        audit['changedBy'] = result['changedby']
         del result['changedby']
     if result.has_key('dateChanged'): 
-        audit['dateChanged']=result['dateChanged']
+        audit['dateChanged'] = result['dateChanged']
         del result['dateChanged']
 
     if int(len(audit)) == 1:
@@ -2277,31 +2277,31 @@ def formatconcept(result):
             result['auditInfo'] = {'dateChanged':audit['dateChanged']}
     elif int(len(audit)) == 2:
         if audit.has_key('creator') and audit.has_key('dateCreated'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated']}
         elif audit.has_key('creator') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'changedBy':audit['changedBy']}
         elif audit.has_key('creator') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
         elif audit.has_key('dateCreated') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'dateCreated':audit['dateCreated'],'dateChanged':audit['dateChanged']}
+            result['auditInfo'] = {'dateCreated':audit['dateCreated'], 'dateChanged':audit['dateChanged']}
         elif audit.has_key('changedBy') and audit.has_key('dateChanged'):
-            result['auditInfo'] = {'changedBy':audit['changedBy'],'dateChanged':audit['dateChanged']}       
+            result['auditInfo'] = {'changedBy':audit['changedBy'], 'dateChanged':audit['dateChanged']}       
     elif int(len(audit)) == 3: 
         if audit.has_key('creator') and audit.has_key('dateCreated') and audit.has_key('changedBy'):
-            result['auditInfo'] = {'creator':audit['creator'],'dateCreated':audit['dateCreated'],'changedBy':audit['changedBy']}
+            result['auditInfo'] = {'creator':audit['creator'], 'dateCreated':audit['dateCreated'], 'changedBy':audit['changedBy']}
     elif int(len(audit)) == 4: 
-        result['auditInfo'] = {'dateChanged':audit['dateChanged'],'changedBy':audit['changedBy'],'creator':audit['creator'],'dateCreated':audit['dateCreated']}                       
+        result['auditInfo'] = {'dateChanged':audit['dateChanged'], 'changedBy':audit['changedBy'], 'creator':audit['creator'], 'dateCreated':audit['dateCreated']}                       
                                       
-    #format names
-    result['names'] = [{'uuid':result['nameuuid'],'name':result['name'],'locale':result['namelocale']}]
+    # format names
+    result['names'] = [{'uuid':result['nameuuid'], 'name':result['name'], 'locale':result['namelocale']}]
     del result['name']
     del result['namelocale']
     del result['nameuuid']
                 
-    #format descriptions
-    result['descriptions'] = [{'uuid':result['DescUuid'],'description':result['description'],'locale':result['localeDesc'],'preferred':result['preferredDesc']}]
+    # format descriptions
+    result['descriptions'] = [{'uuid':result['DescUuid'], 'description':result['description'], 'locale':result['localeDesc'], 'preferred':result['preferredDesc']}]
     del result['DescUuid']
     del result['description']
     del result['localeDesc']
@@ -2309,7 +2309,7 @@ def formatconcept(result):
 
     del result['_version_']
     
-    #mappings
+    # mappings
     conceptdisplay = str(result.get('conceptId'))
     conceptdisplay.replace('_', ':')
     mymap = getconceptmapping(conceptdisplay)
@@ -2320,20 +2320,20 @@ def formatconcept(result):
     if result.has_key('conceptMapType'):del result['conceptMapType']    
     if result.has_key('mappingUuid'):del result['mappingUuid']        
     
-    #return collections for this concept 
+    # return collections for this concept 
     conceptid = str(result.get('conceptId')).split('_')
     conceptid = conceptid[1]
     mycollection = getconceptcollections(conceptid)
     result['collections'] = mycollection
     
-    #return stars
+    # return stars
     conceptuuid = result['uuid']
     result['starCount'] = getconceptstars(conceptuuid)
          
     return result
 
 def formatuser(result):
-    #format properties section   
+    # format properties section   
     properties = []
     properties.append('')
     result['properties'] = properties
@@ -2347,8 +2347,8 @@ def formatuser(result):
     del result['dateChange']
     '''
                 
-    #format roles
-    result['roles'] = [{'uuid':result['roleuuid'],'display':result['roledisplay'],'name':result['rolename'],'description':result['roledescription'],'retired':result['roleretired'],'privileges':result['roleprivileges']}]
+    # format roles
+    result['roles'] = [{'uuid':result['roleuuid'], 'display':result['roledisplay'], 'name':result['rolename'], 'description':result['roledescription'], 'retired':result['roleretired'], 'privileges':result['roleprivileges']}]
     del result['roleuuid']
     del result['roledisplay']
     del result['rolename']
@@ -2361,7 +2361,7 @@ def formatuser(result):
     return result
 
 def getconceptmapping(conceptdisplay):
-    #display Mappings     
+    # display Mappings     
     results = solr_interface.query(display=conceptdisplay).query(type='mapping').paginate(startcount, defaultcount).execute()
     conceptmappings = []
     mapping = {}
@@ -2381,14 +2381,14 @@ def getconceptstars(concept):
     if int(len(results)) > 0:
         starCount = 0
         for result in results:
-            starCount +1
+            starCount + 1
         return starCount                                        
     else: 
         starCount = 0
         return starCount
     
 def getconceptcollections(concept):
-    #display Mappings  
+    # display Mappings  
     conceptcollections = []
     collection = {}   
     results = solr_interface.query('*').query(type='collection').paginate(startcount, defaultcount).execute()   
@@ -2407,14 +2407,14 @@ def getconceptcollections(concept):
     
 def wrongjson():
     message = { 
-               'message' : 'Invalid Json format passed in your request on' + '     '  + request.url,
+               'message' : 'Invalid Json format passed in your request on' + '     ' + request.url,
                }
     resp = jsonify(message)
     return resp
 
 def invalidput():
     message = { 
-               'message' : 'PUT resource missing minimum fields' + '     '  + request.url,
+               'message' : 'PUT resource missing minimum fields' + '     ' + request.url,
                }
     resp = jsonify(message)
     return resp
