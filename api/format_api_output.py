@@ -97,3 +97,55 @@ def formatcollection(result):
         collectionOutput['concepts'] = conceptlist
                          
     return collectionOutput
+
+def formatsource(result):
+
+    sourceOutput ={}
+    auditInfo ={}
+    properties = {}
+    sourcename = {}
+    sourcedesc = {}
+    
+    changekeyname(result, 'changedby', 'changedBy')
+
+    tocopy = ['shortCode','sourceType','owner','publicAccess','starCount','__type__','uuid','url','display','displayLocale','retired','resourceVersion']
+    for key in tocopy:
+        copy_item(key, result, sourceOutput, '')
+        
+    toproperties = ['versionStatus']
+    for key in toproperties:
+        copy_item(key, result, properties, '')
+    sourceOutput['properties'] = properties
+
+    # format audit INFo   
+    toauditInfo = ['creator', 'dateCreated', 'changedBy', 'dateChanged','dateReleased']
+    for key in toauditInfo:
+        copy_item(key, result, auditInfo, '')
+    sourceOutput['auditInfo'] = auditInfo
+                  
+    # format names
+    toName = ['name', 'locale', 'preferred' ,'nameType']
+    for key in toName:
+        copy_item(key, result, sourcename, '')
+        
+    names = []    
+    names.append(sourcename)
+    sourceOutput['names'] = names
+                   
+    # format descriptions
+    toDesc = ['descriptionPreferred', 'descriptionLocale', 'description']
+    for key in toDesc:
+        copy_item(key, result, sourcedesc, '')
+    sourcedesc['locale'] = sourcedesc['descriptionLocale']
+    del sourcedesc['descriptionLocale']
+    sourcedesc['preferred'] = sourcedesc['descriptionPreferred']
+    del sourcedesc['descriptionPreferred']
+    
+    description = []
+    description.append(sourcedesc)
+    sourceOutput['descriptions'] = description
+                      
+    # format sources
+    sourceOutput['sharedUsers'] = [result.get('username')]
+    
+    return sourceOutput

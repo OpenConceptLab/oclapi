@@ -1332,7 +1332,7 @@ def api_source():
 
             if int(len(results)) > 0:
                 for result in results:
-                    result = formatsource(result)
+                    result = format_api_output.formatsource(result)
                     source.append(result)                                            
                     js = json.dumps(source, indent=4)
                     resp = Response(js, status=200)
@@ -1353,7 +1353,7 @@ def api_source():
                 
                 if int(len(results)) > 0:
                     for result in results:
-                        result = formatsource(result)
+                        result = format_api_output.formatsource(result)
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1370,7 +1370,7 @@ def api_source():
 
                 if int(len(results)) > 0:
                     for result in results:   
-                        result = formatsource(result)              
+                        result = format_api_output.formatsource(result)             
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1387,7 +1387,7 @@ def api_source():
                 
                 if int(len(results)) > 0:
                     for result in results:
-                        result = formatsource(result)
+                        result = format_api_output.formatsource(result)
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1404,7 +1404,7 @@ def api_source():
 
                 if int(len(results)) > 0:
                     for result in results:
-                        result = formatsource(result)
+                        result = format_api_output.formatsource(result)
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1421,7 +1421,7 @@ def api_source():
 
                 if int(len(results)) > 0:
                     for result in results:
-                        result = formatsource(result)
+                        result = format_api_output.formatsource(result)
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1442,7 +1442,7 @@ def api_source():
                 
                 if int(len(results)) > 0:
                     for result in results:
-                        result = formatsource(result)
+                        result = format_api_output.formatsource(result)
                         source.append(result)                                            
                         js = json.dumps(source, indent=4)
                         resp = Response(js, status=200)
@@ -1473,7 +1473,7 @@ def api_sourcebyuuid(uuid):
        
         if int(len(results)) > 0:     
             for result in results:
-                result = formatsource(result)           
+                result = format_api_output.formatsource(result)           
                 source.append(result)                                            
                 js = json.dumps(source, indent=4)
                 resp = Response(js, status=200)
@@ -1487,7 +1487,7 @@ def api_sourcebyuuid(uuid):
             code = []
             if int(len(results)) > 0:     
                 for result in results:
-                    result = formatsource(result)           
+                    result = format_api_output.formatsource(result)           
                     code.append(result)                                            
                     js = json.dumps(code, indent=4)
                     resp = Response(js, status=200)
@@ -2122,53 +2122,6 @@ def formatmapping(result):
     del result['_version_']
     del result['type']
     
-    return result
-
-def formatcollection(result):
-    # format properties section
-    result['properties'] = {'hl7Code':result['hl7Code'], 'openmrsResourceVersion':result['openmrsResourceVersion'], }
-    del result['hl7Code']
-    del result['openmrsResourceVersion']
-
-    result = formatauditinfo(result)
-                    
-    # format names
-    result['names'] = [{'name':result['name'], 'locale':result['locale'], 'preferred':result['preferred'].replace('"', '')}]
-    del result['name']
-    del result['locale']
-    del result['preferred']
-   
-    # format descriptions
-    result['descriptions'] = [{'locale':result['descriptionLocale'], 'preferred':result['descriptionPreferred'].replace('"', '')}]
-    # del result['description']
-    del result['descriptionLocale']
-    del result['descriptionPreferred']
-    
-    # shared users
-    result['sharedUsers'] = [{'username':result['username'], 'access':result['access']}]
-    del result['username']
-    del result['access']    
-    
-    # concepts format 
-    myurl = ''
-    myuuid = ''
-    conceptlist = []
-    conceptdict = {}
-                    
-    u = str(result['concept_uuid']).split('|')
-    for x in u:
-        myuuid = x
-        myurl = str('http://www.openconceptlab.org/api/rest/v1/source/ciel/concept/') + str(myuuid)
-        conceptdict = {'uuid':myuuid, 'url':myurl}
-        conceptlist.append(conceptdict)
-    result['concepts'] = conceptlist
-                      
-    del result['_version_']
-    del result['type']
-    del result['concept_uuid']
-    del result['concept_url']
-    del result['concept_id']
-   
     return result
 
 def formatconcept(result):
