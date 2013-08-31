@@ -1,0 +1,9 @@
+git+https://github.com/django-nonrel/django-nonrel.git
+git+https://github.com/django-nonrel/django-dbindexer.git
+git+https://github.com/django-nonrel/django-permission-backend-nonrel
+git+https://github.com/django-nonrel/mongodb-engine.git
+git+https://github.com/django-nonrel/mongodb-cache.git
+git+https://github.com/django-nonrel/nonrel-search.git
+MySQL-python==1.2.4
+pymongo==2.6
+wsgiref==0.1.2

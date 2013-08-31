@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1187.39">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px 'Times New Roman'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px 'Times New Roman'; min-height: 18.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px 'Times New Roman'; color: #b51a00; min-height: 18.0px}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px 'Times New Roman'; color: #b51a00}
+    span.s1 {text-decoration: underline ; color: #0000ee}
+    span.s2 {color: #ff4013}
+  </style>
+</head>
+<body>
+<p class="p1">***********************************</p>
+<p class="p1">Columbia International eHealth Lab's (CIEL) OpenMRS Concept Dictionary</p>
+<p class="p1"> </p>
+<p class="p1">***********************************</p>
+<p class="p2"><br></p>
+<p class="p1"><b>Be sure to read the wiki: https://wiki.openmrs.org/display/docs/Getting+and+Using+the+MVP-CIEL+Concept+Dictionary</b></p>
+<p class="p3"><br></p>
+<p class="p4"><b>A new GLOBAL_PROPERTY has been added to the SQL. This will create a global property called: ciel.conceptsVersion<span class="Apple-converted-space"> </span></b></p>
+<p class="p4"><b>It contains a date or version number for the release. In this case, it is the date of the release. We will be using dates in the form YYYYMMDD.</b></p>
+<p class="p1"> </p>
+<p class="p1">BACKGROUND</p>
+<p class="p1">The Millennium Villages Project (MVP), based at the Earth Institute at Columbia University, is a new bottom-up approach to lift developing country villages out of the poverty trap that afflicts more than a billion people worldwide, and help them get on the path of self-sustaining development. Millennium Villages are either existing or being developed in 10 countries throughout Africa (there are 12 millennium village sites running in 10 countries in Sub-Saharan Africa). </p>
+<p class="p1">To achieve this goal, the MVP requires an information and communication system which can provide both necessary infrastructure for monitoring and evaluation, and tools for communicating among villages, cities and countries at and between several clinical and administrative levels. This system is called the Millennium Villages Global-Network (MVG-Net). It will take advantage of the latest in open source software (OpenMRS), databases (MySQL), interface terminology, centralized concept dictionary, and use appropriate technology locally for data entry.</p>
+<p class="p1">The centralized concept dictionary requires a website for the management and collaborative generation of the fundamental elements required by the system's multi-lingual, multi-layered functionality. The site will present the terms and other data elements, descriptions, definitions and concepts used or destined for the system and will provide the medium for participation by the project's partners on terminological choices and relationships, translation, normalization and other inter-community semantic concerns.</p>
+<p class="p1"> </p>
+<p class="p1">IMPORTING THE CONCEPT DICTIONARY</p>
+<p class="p1">Note that this database dump will overwrite the existing concept* tables. Please make a back-up of your database before doing anything with this SQL file. The concept tables are imported after several modifications are required:</p>
+<p class="p2"><br></p>
+<p class="p1">1. You must modify the max_allowed_packet variable (&lt;<a href="http://dev.mysql.com/doc/refman/5.0/en/server-system-variables.html#sysvar_max_allowed_packet"><span class="s1">http://dev.mysql.com/doc/refman/5.0/en/server-system-variables.html#sysvar_max_allowed_packet</span></a>&gt;) to allow for large files. This is done in the my.ini for Windows or my.cnf for Linux. Add max_allowed_packet=128M. Do this below the MAX_CONNECTIONS line of the file. Save the file after editing.</p>
+<p class="p1">2. Then MySQL needs to be restarted before attempting the import.</p>
+<p class="p1">3. Import the files using Mysqladmin or Mysql or SQLYog or other program for importing the .sql file. For Mysql, ensure you are set to the proper database (e.g., USE OPENMRS;) then type SOURCE &lt;path&gt;/openmrs_concepts…sql and the import should begin. It can take 10-15 min on some systems.</p>
+<p class="p2"><br></p>
+<p class="p1">NULL DATE-TIME ERROR FIX</p>
+<p class="p1">It is possible that you can receive an error when using this dictionary in OpenMRS because some of the dates have null times. You can easily fix this by ensuring that your connect string in the runtime.properties file has the following:</p>
+<p class="p1"> </p>
+<p class="p1">connection.url=jdbc:mysql://localhost:3306/openmrsdev?autoReconnect=true<b>&amp;zeroDateTimeBehavior=convertToNull</b></p>
+<p class="p1"> </p>
+<p class="p1">Note the appended command.</p>
+<p class="p1"> </p>
+<p class="p1">DATABASE VERSION</p>
+<p class="p1">The Columbia International eHealth Lab (CIEL) concept dictionary is based upon the OpenMRS concept architecture as implemented by the Millennium Villages Project among others. The structure of the dictionary is intimately tied to the OpenMRS system and therefore follows the OpenMRS data model. The current format of the MVP tables corresponds to the 1.9.3 version of the database. The MVP/CIEL dictionary comes as standard with the new standalone version of OpenMRS (version 1.9+). Additional versions are available in the dropbox.</p>
+<p class="p1"> </p>
+<p class="p1">MAPPING ASSISTANCE</p>
+<p class="p1">The mapping from the concepts to SNOMED CT, ICD-10-WHO and others is provided by a gracious donation of assistance from Intelligent Medical Objects, Inc. (http://www.e-imo.com). If you need comprehensive concepts, more interface terminology, or maps to ICD-9-CM, ICD-10-CA or<b> ICD-10-CM</b> you can contact IMO for licensing information.</p>
+<p class="p1"> </p>
+<p class="p1"><b>CHANGES/ADDITIONS:</b></p>
+<p class="p1"><b>If you have any comments about this dictionary, suggested changes to the coding, etc. please send an email to </b><span class="s2"><b>andrew.kanter@dbmi.columbia.edu</b></span><b>. We will be providing regular updates to the database.</b></p>
+<p class="p1"> </p>
+</body>
+</html>
