@@ -1,7 +1,7 @@
 import os
 import sys
 
-path = '/opt/deploy/django/ocl'
+path = '/opt/deploy/django'
 if path not in sys.path:
     sys.path.append(path)
 
