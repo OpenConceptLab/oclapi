@@ -15,6 +15,7 @@ DATABASES = {
         'NAME': 'ocl',                        # Or path to database file if using sqlite3.
         'USER': 'aaron',                      # Not used with sqlite3.
         'PASSWORD': '',                       # Not used with sqlite3.
+        #'PASSWORD': 'aaron',                       # Not used with sqlite3.
         'HOST': '',                           # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                           # Set to empty string for default. Not used with sqlite3.
         'OPTIONS':
@@ -65,6 +66,7 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = ''
+#STATIC_ROOT = '/usr/local/wsgi/static/'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
