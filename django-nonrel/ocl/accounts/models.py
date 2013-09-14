@@ -18,6 +18,10 @@ class UserProfile(BaseModel):
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
 
     @property
+    def uuid(self):
+        return str(self.uuid)
+
+    @property
     def name(self):
         return self.full_name or "%s %s" % (self.user.first_name, self.user.last_name)
 
@@ -40,14 +44,20 @@ class UserProfile(BaseModel):
             Token.objects.create(user=instance)
 
 
-class Organization(BaseModel, Group):
-    display_name = models.CharField(max_length=100)
+class Organization(BaseModel):
+    name = models.CharField(max_length=100)
     company = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    group = models.OneToOneField(Group)
 
     @property
-    def name(self):
-        return self.display_name or self.name
+    def uuid(self):
+        return str(self.uuid)
+
+    @property
+    def mnemonic(self):
+        return self.group.name
 
     @property
     def type(self):

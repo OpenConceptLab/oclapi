@@ -8,40 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'UserProfile'
-        db.create_table('accounts_userprofile', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('uuid', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, blank=True)),
-            ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('updated_at', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
-            ('full_name', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('company', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('location', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('preferred_locale', self.gf('django.db.models.fields.CharField')(max_length=20, null=True, blank=True)),
-        ))
-        db.send_create_signal('accounts', ['UserProfile'])
-
-        # Adding model 'Organization'
-        db.create_table('accounts_organization', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('uuid', self.gf('uuidfield.fields.UUIDField')(unique=True, max_length=32, blank=True)),
-            ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('updated_at', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('company', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('website', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('group', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.Group'], unique=True)),
-        ))
-        db.send_create_signal('accounts', ['Organization'])
+        # Adding field 'Organization.is_active'
+        db.add_column('accounts_organization', 'is_active',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting model 'UserProfile'
-        db.delete_table('accounts_userprofile')
-
-        # Deleting model 'Organization'
-        db.delete_table('accounts_organization')
+        # Deleting field 'Organization.is_active'
+        db.delete_column('accounts_organization', 'is_active')
 
 
     models = {
@@ -51,6 +26,7 @@ class Migration(SchemaMigration):
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'group': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.Group']", 'unique': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'updated_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('uuidfield.fields.UUIDField', [], {'unique': 'True', 'max_length': '32', 'blank': 'True'}),
