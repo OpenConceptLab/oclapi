@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from oclapi.models import BaseModel
 
 USER_OBJECT_TYPE = 'User'
+ORG_OBJECT_TYPE = 'Organization'
 
 
 class UserProfile(BaseModel):
@@ -15,10 +16,6 @@ class UserProfile(BaseModel):
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
-
-    @property
-    def uuid(self):
-        return str(self.uuid)
 
     @property
     def name(self):
@@ -43,6 +40,20 @@ class UserProfile(BaseModel):
             Token.objects.create(user=instance)
 
 
-admin.site.register(UserProfile)
+class Organization(BaseModel, Group):
+    display_name = models.CharField(max_length=100)
+    company = models.CharField(max_length=100, null=True, blank=True)
+    website = models.CharField(max_length=255, null=True, blank=True)
 
+    @property
+    def name(self):
+        return self.display_name or self.name
+
+    @property
+    def type(self):
+        return ORG_OBJECT_TYPE
+
+
+admin.site.register(UserProfile)
+admin.site.register(Organization)
 
