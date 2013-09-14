@@ -130,6 +130,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     # Third-party apps:
+    'django_group_access',
     'rest_framework',
     'rest_framework.authtoken',
     'south',

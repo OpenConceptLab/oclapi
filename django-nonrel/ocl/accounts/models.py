@@ -11,6 +11,7 @@ USER_OBJECT_TYPE = 'User'
 
 class UserProfile(BaseModel):
     user = models.OneToOneField(User)
+    full_name = models.TextField(null=True, blank=True)
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
@@ -21,7 +22,7 @@ class UserProfile(BaseModel):
 
     @property
     def name(self):
-        return "%s %s" % (self.user.first_name, self.user.last_name)
+        return self.full_name or "%s %s" % (self.user.first_name, self.user.last_name)
 
     @property
     def type(self):

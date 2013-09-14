@@ -1,13 +1,12 @@
 from django.contrib import admin
 from django.conf.urls.defaults import url, patterns, include
 from rest_framework import routers
-from accounts.views import UserViewSet, GroupViewSet
+from accounts.views import GroupViewSet, UserListView, UserDestroyView, UserDetailView
 admin.autodiscover()
 
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
 router.register(r'groups', GroupViewSet)
 urlpatterns = patterns('',
     # Examples:
@@ -22,5 +21,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
-    url(r'^user/', 'accounts.views.current_user'),
+    url(r'^users/$', UserListView.as_view(), name='user_list'),
+    url(r'^users/(?P<pk>[0-9]+)/$', UserDestroyView.as_view(), name='userprofile-detail'),
+    url(r'^user/', UserDetailView.as_view(), name='user_detail'),
 )
