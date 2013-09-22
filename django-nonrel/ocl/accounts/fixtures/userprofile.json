@@ -1,1 +1,0 @@
-[{"pk": 1, "model": "accounts.userprofile", "fields": {"preferred_locale": "en", "uuid": "ac81fb28f8c44132976fdbdc60d54e6b", "created_at": "2013-09-02 14:06:13", "updated_at": "2013-09-02 14:06:13", "user": 2, "company": "Test Healthcare Clinic", "location": "Testonia"}}]

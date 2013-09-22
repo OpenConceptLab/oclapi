@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -16,10 +16,10 @@ class UserProfile(BaseModel):
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
-    @property
-    def uuid(self):
-        return str(self.uuid)
+    def __unicode__(self):
+        return self.name
 
     @property
     def name(self):
@@ -31,7 +31,7 @@ class UserProfile(BaseModel):
 
     @property
     def username(self):
-        return self.user.username
+        return self.mnemonic or self.user.username
 
     @property
     def email(self):
@@ -44,26 +44,4 @@ class UserProfile(BaseModel):
             Token.objects.create(user=instance)
 
 
-class Organization(BaseModel):
-    name = models.CharField(max_length=100)
-    company = models.CharField(max_length=100, null=True, blank=True)
-    website = models.CharField(max_length=255, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    group = models.OneToOneField(Group)
-
-    @property
-    def uuid(self):
-        return str(self.uuid)
-
-    @property
-    def mnemonic(self):
-        return self.group.name
-
-    @property
-    def type(self):
-        return ORG_OBJECT_TYPE
-
-
 admin.site.register(UserProfile)
-admin.site.register(Organization)
-

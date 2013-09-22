@@ -8,22 +8,29 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+NONREL_DATABASE = 'nonrel'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'ocl',                        # Or path to database file if using sqlite3.
-        'USER': 'aaron',                      # Not used with sqlite3.
-        'PASSWORD': '',                       # Not used with sqlite3.
+#        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+#        'NAME': 'ocl',                        # Or path to database file if using sqlite3.
+#        'USER': 'aaron',                      # Not used with sqlite3.
+#        'PASSWORD': '',                       # Not used with sqlite3.
         #'PASSWORD': 'aaron',                       # Not used with sqlite3.
-        'HOST': '',                           # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                           # Set to empty string for default. Not used with sqlite3.
-        'OPTIONS':
-            {'init_command':
-                  'SET storage_engine=INNODB,character_set_connection=utf8,collation_connection=utf8_unicode_ci'
-            },
+#        'HOST': '',                           # Set to empty string for localhost. Not used with sqlite3.
+#        'PORT': '',                           # Set to empty string for default. Not used with sqlite3.
+#        'OPTIONS':
+#            {'init_command':
+#                  'SET storage_engine=INNODB,character_set_connection=utf8,collation_connection=utf8_unicode_ci'
+#            },
+#    },
+#    NONREL_DATABASE: {
+        'ENGINE': 'django_mongodb_engine',
+        'NAME': 'ocl',
     }
 }
+
+#DATABASE_ROUTERS = ['routers.NonrelRouter']
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.3/ref/settings/#allowed-hosts
@@ -42,7 +49,7 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = 1
+SITE_ID=u'523e4d241d1e985fdb985f68'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -130,13 +137,17 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     # Third-party apps:
+    'django_mongodb_engine',
     'django_group_access',
     'rest_framework',
     'rest_framework.authtoken',
-    'south',
+    #'south',
     # Project-specific apps:
-    'accounts',
+    #'accounts',
+    'orgs',
     'oclapi',
+    'sources',
+    'users',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -180,4 +191,4 @@ REST_FRAMEWORK = {
     ]
 }
 
-AUTH_PROFILE_MODULE = 'accounts.UserProfile'
+AUTH_PROFILE_MODULE = 'users.UserProfile'
