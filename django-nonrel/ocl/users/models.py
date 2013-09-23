@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from djangotoolbox.fields import ListField
 from rest_framework.authtoken.models import Token
 from oclapi.models import BaseModel
 
@@ -16,6 +17,7 @@ class UserProfile(BaseModel):
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
+    organizations = ListField()
     is_active = models.BooleanField(default=True)
 
     def __unicode__(self):

@@ -13,11 +13,21 @@ class OrganizationListView(mixins.CreateModelMixin,
     queryset = Organization.objects.filter(is_active=True)
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = OrganizationListSerializer
+        restrict_to = None
         user_is_self = kwargs.pop('user_is_self', False)
         if user_is_self:
-            user_groups = request.user.groups.all()
-            self.queryset = Organization.objects.filter(group__in=user_groups)
-        self.serializer_class = OrganizationListSerializer
+            restrict_to = request.user.get_profile().organizations
+        else:
+            related_object_type = kwargs.pop('related_object_type', None)
+            related_object_kwarg = kwargs.pop('related_object_kwarg', None)
+            if related_object_type and related_object_kwarg:
+                related_object_key = kwargs.pop(related_object_kwarg)
+                if UserProfile == related_object_type:
+                    userprofile = UserProfile.objects.get(mnemonic=related_object_key)
+                    restrict_to = userprofile.organizations
+        if restrict_to is not None:
+            self.queryset = self.queryset.filter(mnemonic__in=restrict_to)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -59,17 +69,63 @@ class OrganizationMemberView(View):
     def put(self, request, *args, **kwargs):
         self._get_group_and_user(request, *args, **kwargs)
         if not self.userprofile.mnemonic in self.organization.members:
-            self.organization.group.user_set.add(self.userprofile.user)
-            self.organization.members.append(self.userprofile.mnemonic)
-            self.organization.save()
+            rollback = True
+            try:
+                self.organization.group.user_set.add(self.userprofile.user)
+                self.organization.members.append(self.userprofile.mnemonic)
+                self.userprofile.organizations.append(self.organization.mnemonic)
+                self.organization.save()
+                self.userprofile.save()
+                rollback = False
+            finally:
+                if rollback:
+                    try:
+                        self.userprofile.organizations.remove(self.organization.mnemonic)
+                    except: pass
+                    try:
+                        self.organization.members.remove(self.userprofile.mnemonic)
+                    except: pass
+                    try:
+                        self.organization.group.user_set.remove(self.userprofile.user)
+                    except: pass
+                    try:
+                        self.organization.save()
+                    except: pass
+                    try:
+                        self.userprofile.save()
+                    except: pass
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request, *args, **kwargs):
         self._get_group_and_user(request, *args, **kwargs)
         if self.userprofile.mnemonic in self.organization.members:
-            self.organization.group.user_set.remove(self.userprofile.user)
-            self.organization.members.remove(self.userprofile.mnemonic)
-            self.organization.save()
+            rollback = True
+            try:
+                self.organization.group.user_set.remove(self.userprofile.user)
+                self.organization.members.remove(self.userprofile.mnemonic)
+                self.userprofile.organizations.remove(self.organization.mnemonic)
+                self.organization.save()
+                self.userprofile.save()
+                rollback = False
+            finally:
+                if rollback:
+                    try:
+                        self.userprofile.organizations.append(self.organization.mnemonic)
+                    except: pass
+                    try:
+                        self.organization.members.append(self.userprofile.mnemonic)
+                    except: pass
+                    try:
+                        self.organization.group.user_set.add(self.userprofile.user)
+                    except: pass
+                    try:
+                        self.organization.save()
+                    except: pass
+                    try:
+                        self.userprofile.save()
+                    except: pass
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
     def _get_group_and_user(self, request, *args, **kwargs):
