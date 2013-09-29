@@ -11,8 +11,8 @@ class Organization(BaseModel):
     name = models.CharField(max_length=100)
     company = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=255, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
     members = ListField()
+    sources = ListField()
     group = models.OneToOneField(Group)
 
     def __unicode__(self):

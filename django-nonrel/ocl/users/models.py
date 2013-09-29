@@ -18,7 +18,7 @@ class UserProfile(BaseModel):
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.CharField(max_length=20, null=True, blank=True)
     organizations = ListField()
-    is_active = models.BooleanField(default=True)
+    sources = ListField()
 
     def __unicode__(self):
         return self.name

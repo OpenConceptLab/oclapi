@@ -11,9 +11,13 @@ class BaseModel(models.Model):
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        return self.mnemonic
 
 
 class RestrictedBaseModel(BaseModel):

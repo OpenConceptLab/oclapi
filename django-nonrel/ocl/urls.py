@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.conf.urls.defaults import url, patterns, include
 from rest_framework import routers
+from sources.views import SourceListView
 from users.views import UserDetailView
 from orgs.views import OrganizationListView
 
@@ -27,4 +28,5 @@ urlpatterns = patterns('',
     # These views pertain to the logged-in user
     url(r'^user/$', UserDetailView.as_view(), {'user_is_self': True}, name='userprofile-self-detail'),
     url(r'^user/orgs/$', OrganizationListView.as_view(), {'user_is_self': True}, name='userprofile-organization-list'),
+    url(r'^user/sources/$', SourceListView.as_view(), name='userprofile-source-list'),
 )
