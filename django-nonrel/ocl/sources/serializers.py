@@ -1,7 +1,48 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from oclapi.fields import DynamicHyperlinkedIdentifyField
 from oclapi.models import NAMESPACE_REGEX
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES
+
+
+class SourceListSerializer(serializers.HyperlinkedModelSerializer):
+    shortCode = serializers.CharField(required=True, source='mnemonic')
+    name = serializers.CharField(required=True)
+
+    class Meta:
+        model = Source
+        fields = ('shortCode', 'name', 'url')
+        lookup_field = 'mnemonic'
+
+    def get_default_fields(self):
+        fields = super(SourceListSerializer, self).get_default_fields()
+        fields.update({
+            'url': DynamicHyperlinkedIdentifyField(view_name=self.context.get('related_view_name'),
+                                                   lookup_field=self.Meta.lookup_field,
+                                                   detail_url_kwarg=self.context.get('url_param'),
+                                                   related_lookup_field=self.context.get('related_url_param'),
+                                                   related_lookup_value=self.context.get('related_url_param_value')
+            )
+        })
+        return fields
+
+
+class SourceDetailSerializer(serializers.Serializer):
+    type = serializers.CharField(required=True)
+    uuid = serializers.CharField(required=True, source='id')
+    id = serializers.CharField(required=True, source='mnemonic')
+    shortCode = serializers.CharField(required=True, source='mnemonic')
+    name = serializers.CharField(required=True)
+    fullName = serializers.CharField(source='full_name')
+    sourceType = serializers.CharField(required=True, source='source_type')
+    publicAccess = serializers.CharField(source='public_access')
+    defaultLocale = serializers.CharField(source='default_locale')
+    supportedLocales = serializers.CharField(source='supported_locales')
+    website = serializers.CharField()
+    description = serializers.CharField()
+
+    class Meta:
+        model = Source
 
 
 class SourceCreateSerializer(serializers.Serializer):
@@ -9,7 +50,7 @@ class SourceCreateSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=100)
     full_name = serializers.CharField(required=False, max_length=100)
     description = serializers.CharField(required=False, max_length=255)
-    type = serializers.ChoiceField(choices=SRC_TYPE_CHOICES)
+    source_type = serializers.ChoiceField(choices=SRC_TYPE_CHOICES)
     public_access = serializers.ChoiceField(choices=ACCESS_TYPE_CHOICES)
     default_locale = serializers.CharField(required=False, max_length=20)
     supported_locales = serializers.CharField(required=False, max_length=255)
