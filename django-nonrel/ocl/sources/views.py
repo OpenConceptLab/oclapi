@@ -61,15 +61,14 @@ class SourceListView(mixins.CreateModelMixin,
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = SourceListSerializer
+        self.additional_serializer_context = {'url_param': self.url_param}
         if self.user_is_self:
             self.additional_serializer_context.update({
                 'related_view_name': 'user-source-detail',
-                'url_param': 'mnemonic',
             })
         elif self.parent_resource:
             self.additional_serializer_context.update({
                 'related_view_name': '%s-source-detail' % self.parent_resource_type.__name__.lower(),
-                'url_param': self.url_param,
                 'related_url_param': self.parent_resource_kwarg,
                 'related_url_param_value': self.parent_resource_lookup
             })

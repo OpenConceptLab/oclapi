@@ -15,6 +15,6 @@ class DynamicHyperlinkedIdentifyField(HyperlinkedIdentityField):
         if self.related_lookup_field and self.related_lookup_value:
             kwargs = {self.related_lookup_field: self.related_lookup_value, self.detail_url_kwarg: lookup_field}
         else:
-            kwargs = {self.lookup_field: lookup_field}
+            kwargs = {self.detail_url_kwarg: lookup_field}
         return reverse(view_name, kwargs=kwargs, request=request, format=fmt)
 
