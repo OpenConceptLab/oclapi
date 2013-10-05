@@ -1,16 +1,17 @@
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from rest_framework.fields import CharField
+from rest_framework.fields import CharField, IntegerField
+from oclapi.serializers import HyperlinkedModelSerializer
 from users.models import UserProfile
 from oclapi.models import NAMESPACE_REGEX
 
 
-class UserListSerializer(serializers.HyperlinkedModelSerializer):
+class UserListSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('username', 'name', 'url')
-        lookup_field = 'mnemonic'
+        lookup_field = 'user'
 
     def get_default_fields(self, *args, **kwargs):
         fields = super(UserListSerializer, self).get_default_fields()
@@ -76,11 +77,11 @@ class UserUpdateSerializer(serializers.Serializer):
         user.save()
 
 
-class UserDetailSerializer(serializers.HyperlinkedModelSerializer):
+class UserDetailSerializer(HyperlinkedModelSerializer):
     class Meta(UserUpdateSerializer.Meta):
         model = UserProfile
-        fields = ('type', 'id', 'username', 'name', 'company', 'location', 'email', 'preferred_locale', 'url', 'created_at', 'updated_at')
-        lookup_field = 'mnemonic'
+        fields = ('type', 'id', 'username', 'name', 'company', 'location', 'email', 'preferred_locale', 'url', 'orgs', 'created_at', 'updated_at')
+        lookup_field = 'user'
 
     def get_default_fields(self, *args, **kwargs):
         fields = super(UserDetailSerializer, self).get_default_fields()
@@ -89,5 +90,6 @@ class UserDetailSerializer(serializers.HyperlinkedModelSerializer):
             'username': CharField(**kwargs),
             'name': CharField(**kwargs),
             'email': CharField(**kwargs),
+            'orgs': IntegerField(**kwargs),
         })
         return fields

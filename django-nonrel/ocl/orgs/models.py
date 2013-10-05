@@ -22,5 +22,9 @@ class Organization(BaseModel):
     def type(self):
         return ORG_OBJECT_TYPE
 
+    @property
+    def num_members(self):
+        return len(self.members)
+
 
 admin.site.register(Organization)

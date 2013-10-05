@@ -1,4 +1,6 @@
 import re
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 from django_group_access import registration
@@ -20,12 +22,15 @@ class BaseModel(models.Model):
         return self.mnemonic
 
 
-class RestrictedBaseModel(BaseModel):
+class SubResourceBaseModel(BaseModel):
+    parent_type = models.ForeignKey(ContentType)
+    parent_id = models.TextField()
+    parent = generic.GenericForeignKey('parent_type', 'parent_id')
+
     class Meta:
         abstract = True
 
-
-registration.register(RestrictedBaseModel)
+registration.register(SubResourceBaseModel)
 
 
 class NonrelMixin(object):

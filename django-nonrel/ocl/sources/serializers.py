@@ -60,7 +60,7 @@ class SourceCreateSerializer(serializers.Serializer):
         model = Source
 
     def restore_object(self, attrs, instance=None):
-        mnemonic = attrs.get('mnemonic', None)
+        mnemonic = attrs.get(self.lookup_field, None)
         if Source.objects.filter(mnemonic=mnemonic).exists():
             self._errors['mnemonic'] = 'Source with mnemonic %s already exists.' % mnemonic
             return None
@@ -82,30 +82,24 @@ class SourceCreateSerializer(serializers.Serializer):
         return source
 
     def save_object(self, obj, **kwargs):
+        parent_resource = kwargs.pop('parent_resource')
+        mnemonic = obj.mnemonic
+        if Source.objects.filter(parent=parent_resource, mnemonic=mnemonic).exists():
+            self._errors['mnemonic'] = 'Source with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
+            return
+        obj.parent = parent_resource
         user = kwargs.pop('owner')
         obj.owner = user
-        owning_entity = user.get_profile()
-        belongs_to_org = kwargs.pop('belongs_to_org', None)
-        if belongs_to_org:
-            obj.belongs_to_organization = belongs_to_org
-            owning_entity = belongs_to_org
         version = obj._version
         del obj._version
         try:
             obj.save(**kwargs)
             version.source = obj
             version.save()
-            owning_entity.sources.append(obj.mnemonic)
-            owning_entity.save()
         except:
-            owning_entity.sources.remove(obj.mnemonic)
-            try:
-                owning_entity.save()
-            finally: pass
             try:
                 version.delete()
             finally: pass
             try:
                 obj.delete()
             finally: pass
-

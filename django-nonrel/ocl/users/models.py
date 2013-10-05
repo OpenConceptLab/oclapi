@@ -39,6 +39,10 @@ class UserProfile(BaseModel):
     def email(self):
         return self.user.email
 
+    @property
+    def orgs(self):
+        return len(self.organizations)
+
     @classmethod
     @receiver(post_save, sender=User)
     def create_auth_token(sender, instance=None, created=False, **kwargs):

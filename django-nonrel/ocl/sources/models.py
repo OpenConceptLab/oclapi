@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from djangotoolbox.fields import ListField
-from oclapi.models import RestrictedBaseModel, BaseModel
+from oclapi.models import SubResourceBaseModel, BaseModel
 from orgs.models import Organization
 from settings import DEFAULT_LOCALE
 
@@ -20,7 +20,7 @@ ACCESS_TYPE_CHOICES = (('View', 'View'),
                        ('None', 'None'))
 
 
-class Source(RestrictedBaseModel):
+class Source(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)

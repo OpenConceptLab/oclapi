@@ -1,16 +1,17 @@
 from django.contrib.auth.models import Group
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from rest_framework.fields import CharField
+from rest_framework.fields import CharField, IntegerField
 from oclapi.models import NAMESPACE_REGEX
+from oclapi.serializers import HyperlinkedModelSerializer
 from orgs.models import Organization
 
 
-class OrganizationListSerializer(serializers.HyperlinkedModelSerializer):
+class OrganizationListSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = Organization
         fields = ('mnemonic', 'name', 'url')
-        lookup_field = 'mnemonic'
+        lookup_field = 'org'
 
 
 class OrganizationCreateSerializer(serializers.Serializer):
@@ -55,15 +56,16 @@ class OrganizationUpdateSerializer(serializers.Serializer):
         return instance
 
 
-class OrganizationDetailSerializer(serializers.HyperlinkedModelSerializer):
+class OrganizationDetailSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = Organization
-        fields = ('type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'created_at', 'updated_at')
-        lookup_field = 'mnemonic'
+        fields = ('type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'num_members', 'created_at', 'updated_at')
+        lookup_field = 'org'
 
     def get_default_fields(self, *args, **kwargs):
         fields = super(OrganizationDetailSerializer, self).get_default_fields()
         fields.update({
-            'type': CharField(**kwargs)
+            'type': CharField(**kwargs),
+            'num_members': IntegerField(**kwargs)
         })
         return fields
