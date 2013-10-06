@@ -43,6 +43,10 @@ class UserProfile(BaseModel):
     def orgs(self):
         return len(self.organizations)
 
+    @staticmethod
+    def get_url_kwarg():
+        return 'user'
+
     @classmethod
     @receiver(post_save, sender=User)
     def create_auth_token(sender, instance=None, created=False, **kwargs):

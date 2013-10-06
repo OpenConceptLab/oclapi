@@ -1,6 +1,7 @@
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
+from oclapi.permissions import HasOwnership
 from oclapi.views import SubResourceMixin
 from sources.models import Source
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer
@@ -11,6 +12,7 @@ class SourceBaseView(SubResourceMixin):
     model = Source
     queryset = Source.objects.filter(is_active=True)
     url_param = 'source'
+    permission_classes = (HasOwnership,)
 
 
 class SourceDetailView(RetrieveAPIView,

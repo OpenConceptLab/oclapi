@@ -26,5 +26,9 @@ class Organization(BaseModel):
     def num_members(self):
         return len(self.members)
 
+    @staticmethod
+    def get_url_kwarg():
+        return 'org'
+
 
 admin.site.register(Organization)

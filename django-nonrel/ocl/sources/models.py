@@ -29,20 +29,50 @@ class Source(SubResourceBaseModel):
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    belongs_to_organization = models.ForeignKey(Organization, null=True, blank=True)
 
     @property
     def type(self):
         return SOURCE_TYPE
 
+    @staticmethod
+    def get_url_kwarg():
+        return 'source'
+
 
 class SourceVersion(BaseModel):
-    source = models.ForeignKey(Source)
+    name = models.TextField()
+    full_name = models.TextField(null=True, blank=True)
+    source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)
+    public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
+    default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
+    supported_locales = ListField(null=True, blank=True)
+    website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    source = models.ForeignKey(Source, related_name='versions')
+    label = models.TextField(null=True, blank=True)
     released = models.BooleanField(default=False, blank=True)
     previous_version = models.OneToOneField('self', related_name='next_version', null=True, blank=True)
-    parent_version = models.ManyToManyField('self', related_name='child_version', null=True, blank=True)
+    parent_version = models.OneToOneField('self', related_name='child_version', null=True, blank=True)
     concepts = ListField()
+
+    @classmethod
+    def for_source(cls, source, label, previous_version=None, parent_version=None):
+        return SourceVersion(
+            mnemonic="%s__%s" % (source.mnemonic, label),
+            name=source.name,
+            full_name=source.full_name,
+            source_type=source.source_type,
+            public_access=source.public_access,
+            default_locale=source.default_locale,
+            supported_locales=source.supported_locales,
+            website=source.website,
+            description=source.description,
+            source=source,
+            label=label,
+            released=False,
+            previous_version=previous_version,
+            parent_version=parent_version
+        )
 
 
 admin.site.register(Source)

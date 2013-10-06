@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import DynamicHyperlinkedIdentifyField
@@ -17,11 +18,8 @@ class SourceListSerializer(serializers.HyperlinkedModelSerializer):
     def get_default_fields(self):
         fields = super(SourceListSerializer, self).get_default_fields()
         fields.update({
-            'url': DynamicHyperlinkedIdentifyField(view_name=self.context.get('related_view_name'),
+            'url': DynamicHyperlinkedIdentifyField(view_name=self.opts.view_name,
                                                    lookup_field=self.Meta.lookup_field,
-                                                   detail_url_kwarg=self.context.get('url_param'),
-                                                   related_lookup_field=self.context.get('related_url_param'),
-                                                   related_lookup_value=self.context.get('related_url_param_value')
             )
         })
         return fields
@@ -58,9 +56,11 @@ class SourceCreateSerializer(serializers.Serializer):
 
     class Meta:
         model = Source
+        lookup_field = 'mnemonic'
+
 
     def restore_object(self, attrs, instance=None):
-        mnemonic = attrs.get(self.lookup_field, None)
+        mnemonic = attrs.get(self.Meta.lookup_field, None)
         if Source.objects.filter(mnemonic=mnemonic).exists():
             self._errors['mnemonic'] = 'Source with mnemonic %s already exists.' % mnemonic
             return None
@@ -77,29 +77,27 @@ class SourceCreateSerializer(serializers.Serializer):
             source.default_locale = attrs.get('default_locale')
         supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else None
         source.supported_locales = supported_locales
-        version = SourceVersion(mnemonic='INITIAL')
-        source._version = version
         return source
 
     def save_object(self, obj, **kwargs):
         parent_resource = kwargs.pop('parent_resource')
         mnemonic = obj.mnemonic
-        if Source.objects.filter(parent=parent_resource, mnemonic=mnemonic).exists():
+        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
+        if Source.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
             self._errors['mnemonic'] = 'Source with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
             return
         obj.parent = parent_resource
         user = kwargs.pop('owner')
         obj.owner = user
-        version = obj._version
-        del obj._version
         try:
             obj.save(**kwargs)
-            version.source = obj
+        except Exception as e:
+            raise e
+        version = SourceVersion.for_source(obj, 'INITIAL')
+        try:
             version.save()
-        except:
-            try:
-                version.delete()
-            finally: pass
+        except Exception as e:
             try:
                 obj.delete()
             finally: pass
+            raise e

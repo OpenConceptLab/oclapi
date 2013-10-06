@@ -73,17 +73,16 @@ class HyperlinkedIdentityField(Field):
 
 class DynamicHyperlinkedIdentifyField(HyperlinkedIdentityField):
 
-    def __init__(self, *args, **kwargs):
-        self.detail_url_kwarg = kwargs.pop('detail_url_kwarg')
-        self.related_lookup_field = kwargs.pop('related_lookup_field')
-        self.related_lookup_value = kwargs.pop('related_lookup_value')
-        super(DynamicHyperlinkedIdentifyField, self).__init__(*args, **kwargs)
-
     def get_url(self, obj, view_name, request, fmt):
-        lookup_field = getattr(obj, self.lookup_field)
-        if self.related_lookup_field and self.related_lookup_value:
-            kwargs = {self.related_lookup_field: self.related_lookup_value, self.detail_url_kwarg: lookup_field}
-        else:
-            kwargs = {self.detail_url_kwarg: lookup_field}
+        kwargs = {
+            obj.get_url_kwarg(): obj.mnemonic
+        }
+        if hasattr(obj, 'parent'):
+            parent = obj.parent
+            while parent:
+                kwargs.update({
+                    parent.get_url_kwarg(): parent.mnemonic
+                })
+                parent = parent.parent if hasattr(parent, 'parent') else None
         return reverse(view_name, kwargs=kwargs, request=request, format=fmt)
 

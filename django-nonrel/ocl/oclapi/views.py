@@ -52,7 +52,9 @@ class SubResourceMixin(generics.GenericAPIView):
         parent_path = path_prefix + '/'
         callback, callback_args, callback_kwargs = resolve(parent_path)
         view = callback.cls(request=self.request, kwargs=callback_kwargs)
-        return view.get_object()
+        parent = view.get_object()
+        self.check_object_permissions(self.request, parent)
+        return parent
 
     def get_queryset(self):
         queryset = super(SubResourceMixin, self).get_queryset()

@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
-from oclapi.permissions import IsOrganizationMember
+from oclapi.permissions import HasOwnership
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer, OrganizationUpdateSerializer
@@ -97,7 +97,7 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
 
     def initial(self, request, *args, **kwargs):
         if (request.method == 'DELETE') or (request.method == 'POST'):
-            self.permission_classes = (IsOrganizationMember, )
+            self.permission_classes = (HasOwnership, )
         super(OrganizationDetailView, self).initial(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
