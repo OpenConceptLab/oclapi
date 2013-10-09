@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.db import models
 from djangotoolbox.fields import ListField
 from oclapi.models import SubResourceBaseModel, BaseModel
-from orgs.models import Organization
 from settings import DEFAULT_LOCALE
 
 SOURCE_TYPE = 'Source'
@@ -14,6 +13,7 @@ SRC_TYPE_CHOICES = (('dictionary', 'Dictionary'),
                     ('externalDictionary', 'External Dictionary'))
 
 VIEW_ACCESS_TYPE = 'View'
+EDIT_ACCESS_TYPE = 'Edit'
 DEFAULT_ACCESS_TYPE = VIEW_ACCESS_TYPE
 ACCESS_TYPE_CHOICES = (('View', 'View'),
                        ('Edit', 'Edit'),
@@ -31,7 +31,11 @@ class Source(SubResourceBaseModel):
     description = models.TextField(null=True, blank=True)
 
     @property
-    def type(self):
+    def num_versions(self):
+        return SourceVersion.objects.filter(source=self).count()
+
+    @classmethod
+    def resource_type(self):
         return SOURCE_TYPE
 
     @staticmethod

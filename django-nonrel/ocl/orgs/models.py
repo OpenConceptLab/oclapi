@@ -18,8 +18,8 @@ class Organization(BaseModel):
     def __unicode__(self):
         return self.name
 
-    @property
-    def type(self):
+    @classmethod
+    def resource_type(cls):
         return ORG_OBJECT_TYPE
 
     @property

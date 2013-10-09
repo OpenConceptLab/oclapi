@@ -59,13 +59,13 @@ class OrganizationUpdateSerializer(serializers.Serializer):
 class OrganizationDetailSerializer(HyperlinkedModelSerializer):
     class Meta:
         model = Organization
-        fields = ('type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'num_members', 'created_at', 'updated_at')
+        fields = ('resource_type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'num_members', 'created_at', 'updated_at')
         lookup_field = 'org'
 
     def get_default_fields(self, *args, **kwargs):
         fields = super(OrganizationDetailSerializer, self).get_default_fields()
         fields.update({
-            'type': CharField(**kwargs),
+            'resource_type': CharField(**kwargs),
             'num_members': IntegerField(**kwargs)
         })
         return fields

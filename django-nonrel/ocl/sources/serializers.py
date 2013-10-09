@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from oclapi.fields import DynamicHyperlinkedIdentifyField
+from oclapi.fields import DynamicHyperlinkedIdentifyField, HyperlinkedParentUrlField
 from oclapi.models import NAMESPACE_REGEX
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES
 
@@ -26,7 +26,7 @@ class SourceListSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class SourceDetailSerializer(serializers.Serializer):
-    type = serializers.CharField(required=True)
+    type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
     shortCode = serializers.CharField(required=True, source='mnemonic')
@@ -38,6 +38,12 @@ class SourceDetailSerializer(serializers.Serializer):
     supportedLocales = serializers.CharField(source='supported_locales')
     website = serializers.CharField()
     description = serializers.CharField()
+    owner = serializers.CharField(source='parent_resource')
+    ownerType = serializers.CharField(source='parent_resource_type')
+    owenerUrl = HyperlinkedParentUrlField()
+    versions = serializers.IntegerField(source='num_versions')
+    createdOn = serializers.DateTimeField(source='created_at')
+    updatedOn = serializers.DateTimeField(source='updated_at')
 
     class Meta:
         model = Source

@@ -44,6 +44,7 @@ class UserBaseView(BaseAPIView):
     lookup_field = 'user'
     model = UserProfile
     queryset = UserProfile.objects.filter(is_active=True)
+    user_is_self = False
 
     def initial(self, request, *args, **kwargs):
         self.user_is_self = kwargs.pop('user_is_self', False)

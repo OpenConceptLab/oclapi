@@ -21,6 +21,7 @@ urlpatterns = patterns('',
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/$', 'rest_framework.authtoken.views.obtain_auth_token'),
     url(r'^orgs/', include('orgs.urls')),
+    url(r'^sources/', include('sources.urls')),
     url(r'^users/', include('users.urls')),
     url(r'^user/', include('user_urls')),
 )

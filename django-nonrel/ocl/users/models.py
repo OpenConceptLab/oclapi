@@ -27,8 +27,8 @@ class UserProfile(BaseModel):
     def name(self):
         return self.full_name or "%s %s" % (self.user.first_name, self.user.last_name)
 
-    @property
-    def type(self):
+    @classmethod
+    def resource_type(cls):
         return USER_OBJECT_TYPE
 
     @property

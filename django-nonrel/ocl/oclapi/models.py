@@ -30,6 +30,15 @@ class SubResourceBaseModel(BaseModel):
     class Meta:
         abstract = True
 
+    @property
+    def parent_resource(self):
+        return self.parent.mnemonic
+
+    @property
+    def parent_resource_type(self):
+        return self.parent.resource_type
+
+
 registration.register(SubResourceBaseModel)
 
 

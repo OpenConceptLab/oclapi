@@ -80,13 +80,13 @@ class UserUpdateSerializer(serializers.Serializer):
 class UserDetailSerializer(HyperlinkedModelSerializer):
     class Meta(UserUpdateSerializer.Meta):
         model = UserProfile
-        fields = ('type', 'id', 'username', 'name', 'company', 'location', 'email', 'preferred_locale', 'url', 'orgs', 'created_at', 'updated_at')
+        fields = ('resource_type', 'id', 'username', 'name', 'company', 'location', 'email', 'preferred_locale', 'url', 'orgs', 'created_at', 'updated_at')
         lookup_field = 'user'
 
     def get_default_fields(self, *args, **kwargs):
         fields = super(UserDetailSerializer, self).get_default_fields()
         fields.update({
-            'type': CharField(**kwargs),
+            'resource_type': CharField(**kwargs),
             'username': CharField(**kwargs),
             'name': CharField(**kwargs),
             'email': CharField(**kwargs),

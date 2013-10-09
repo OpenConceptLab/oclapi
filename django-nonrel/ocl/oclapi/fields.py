@@ -4,6 +4,12 @@ from rest_framework.fields import Field
 from rest_framework.reverse import reverse
 
 
+class HyperlinkedParentUrlField(Field):
+
+    def field_to_native(self, obj, field_name):
+        return self.context['parent_resource_url']
+
+
 class HyperlinkedIdentityField(Field):
     """
     Represents the instance, or a property on the instance, using hyperlinking.
