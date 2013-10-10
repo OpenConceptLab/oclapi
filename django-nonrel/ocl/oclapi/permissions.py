@@ -9,10 +9,13 @@ class HasOwnership(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated:
+        if request.user.is_staff:
+            return True
+        if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
+            userprofile = request.user.get_profile()
             if isinstance(obj, UserProfile):
-                return obj.user == request.user
+                return obj == userprofile
             elif isinstance(obj, Organization):
-                return request.user.username in obj.members
+                return userprofile.id in obj.members
             return True
         return False

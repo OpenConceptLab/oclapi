@@ -55,7 +55,7 @@ class SubResourceMixin(BaseAPIView):
         if self.user:
             or_clauses.append(Q(owner=self.user))
         if self.userprofile:
-            or_clauses += map(lambda x: Q(parent_id=Organization.objects.get(mnemonic=x).id), self.userprofile.organizations)
+            or_clauses += map(lambda x: Q(parent_id=x), self.userprofile.organizations)
         or_clauses += self.base_or_clause
         if or_clauses:
             if len(or_clauses) > 1:

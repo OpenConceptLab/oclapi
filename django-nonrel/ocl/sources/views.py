@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -34,6 +35,8 @@ class SourceListView(SourceBaseView,
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
+        if not self.parent_resource:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)

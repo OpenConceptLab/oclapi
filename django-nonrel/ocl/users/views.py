@@ -27,10 +27,9 @@ class UserListView(mixins.ListModelMixin,
             related_object_key = kwargs.pop(self.related_object_kwarg)
             if Organization == self.related_object_type:
                 organization = Organization.objects.get(mnemonic=related_object_key)
-                member_ids = organization.members
-                if request.user.get_profile().mnemonic not in member_ids:
+                if request.user.get_profile().id not in organization.members and not request.user.is_staff:
                     return HttpResponse(status=status.HTTP_403_FORBIDDEN)
-                self.queryset = UserProfile.objects.filter(mnemonic__in=member_ids)
+                self.queryset = UserProfile.objects.filter(id__in=organization.members)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
