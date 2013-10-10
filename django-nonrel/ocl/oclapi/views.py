@@ -94,6 +94,6 @@ class SubResourceMixin(BaseAPIView):
         callback, callback_args, callback_kwargs = resolve(self.parent_path_info)
         view = callback.cls(request=self.request, kwargs=callback_kwargs)
         parent = view.get_object()
-        self.check_object_permissions(self.request, parent)
+        #self.check_object_permissions(self.request, parent)
         return parent
 

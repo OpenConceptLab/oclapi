@@ -3,7 +3,8 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import DynamicHyperlinkedIdentifyField, HyperlinkedParentUrlField
 from oclapi.models import NAMESPACE_REGEX
-from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES
+from settings import DEFAULT_LOCALE
+from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
 
 
 class SourceListSerializer(serializers.HyperlinkedModelSerializer):
@@ -49,41 +50,35 @@ class SourceDetailSerializer(serializers.Serializer):
         model = Source
 
 
-class SourceCreateSerializer(serializers.Serializer):
-    mnemonic = serializers.CharField(required=True, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    name = serializers.CharField(required=True, max_length=100)
-    full_name = serializers.CharField(required=False, max_length=100)
-    description = serializers.CharField(required=False, max_length=255)
-    source_type = serializers.ChoiceField(choices=SRC_TYPE_CHOICES)
-    public_access = serializers.ChoiceField(choices=ACCESS_TYPE_CHOICES)
-    default_locale = serializers.CharField(required=False, max_length=20)
-    supported_locales = serializers.CharField(required=False, max_length=255)
-    website = serializers.CharField(required=False, max_length=255)
-
+class SourceCreateOrUpdateSerializer(serializers.Serializer):
     class Meta:
         model = Source
         lookup_field = 'mnemonic'
 
-
     def restore_object(self, attrs, instance=None):
-        mnemonic = attrs.get(self.Meta.lookup_field, None)
-        if Source.objects.filter(mnemonic=mnemonic).exists():
-            self._errors['mnemonic'] = 'Source with mnemonic %s already exists.' % mnemonic
-            return None
-        source = Source(mnemonic=attrs.get('mnemonic'),
-                        name=attrs.get('name'),
-                        full_name=attrs.get('full_name'),
-                        website=attrs.get('website'),
-                        description=attrs.get('description'))
-        if attrs.get('type'):
-            source.type = attrs.get('type')
-        if attrs.get('public_access'):
-            source.public_access = attrs.get('public_access')
-        if attrs.get('default_locale'):
-            source.default_locale = attrs.get('default_locale')
-        supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else None
-        source.supported_locales = supported_locales
+        source = instance if instance else Source()
+        source.mnemonic = attrs.get(self.Meta.lookup_field, source.mnemonic)
+        source.name = attrs.get('name', source.name)
+        source.full_name = attrs.get('full_name', source.full_name)
+        source.description = attrs.get('description', source.description)
+        source.source_type = attrs.get('type', source.source_type or DEFAULT_SRC_TYPE)
+        source.public_access = attrs.get('public_access', source.public_access or DEFAULT_ACCESS_TYPE)
+        source.default_locale=attrs.get('default_locale', source.default_locale or DEFAULT_LOCALE)
+        source.website = attrs.get('website', source.website)
+        source.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else source.supported_locales
         return source
+
+
+class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
+    mnemonic = serializers.CharField(required=True, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
+    name = serializers.CharField(required=True, max_length=100)
+    full_name = serializers.CharField(required=False, max_length=100)
+    description = serializers.CharField(required=False, max_length=255)
+    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
+    default_locale = serializers.CharField(required=False, max_length=20)
+    supported_locales = serializers.CharField(required=False, max_length=255)
+    website = serializers.CharField(required=False, max_length=255)
 
     def save_object(self, obj, **kwargs):
         parent_resource = kwargs.pop('parent_resource')
@@ -107,3 +102,26 @@ class SourceCreateSerializer(serializers.Serializer):
                 obj.delete()
             finally: pass
             raise e
+
+
+class SourceUpdateSerializer(SourceCreateOrUpdateSerializer):
+    mnemonic = serializers.CharField(required=False, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
+    name = serializers.CharField(required=False, max_length=100)
+    full_name = serializers.CharField(required=False, max_length=100)
+    description = serializers.CharField(required=False, max_length=255)
+    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
+    default_locale = serializers.CharField(required=False, max_length=20)
+    supported_locales = serializers.CharField(required=False, max_length=255)
+    website = serializers.CharField(required=False, max_length=255)
+
+    def save_object(self, obj, **kwargs):
+        parent_resource = kwargs.pop('parent_resource')
+        mnemonic = obj.mnemonic
+        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
+        matching_sources = Source.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic)
+        if matching_sources.exists():
+            if matching_sources[0] != obj:
+                self._errors['mnemonic'] = 'Source with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
+                return
+        obj.save(**kwargs)
