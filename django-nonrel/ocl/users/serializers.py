@@ -1,34 +1,52 @@
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from rest_framework.fields import CharField, IntegerField
+from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.serializers import LinkedResourceSerializer
 from users.models import UserProfile
 from oclapi.models import NAMESPACE_REGEX
 
 
 class UserListSerializer(LinkedResourceSerializer):
+    username = serializers.CharField()
+    name = serializers.CharField()
+
     class Meta:
         model = UserProfile
-        fields = ('username', 'name', 'url')
-        lookup_field = 'user'
+
+
+class UserDetailSerializer(LinkedResourceSerializer):
+    type = serializers.CharField(source='resource_type')
+    uuid = serializers.CharField(source='id')
+    username = serializers.CharField()
+    name = serializers.CharField()
+    company = serializers.CharField()
+    location = serializers.CharField()
+    email = serializers.CharField()
+    orgs = serializers.IntegerField()
+    publicSources = serializers.IntegerField(source='public_sources')
+    createdOn = serializers.DateTimeField(source='created_at')
+    updatedOn = serializers.DateTimeField(source='updated_at')
+
+    class Meta:
+        model = UserProfile
 
     def get_default_fields(self, *args, **kwargs):
-        fields = super(UserListSerializer, self).get_default_fields()
+        fields = super(UserDetailSerializer, self).get_default_fields()
         fields.update({
-            'username': CharField(**kwargs),
-            'name': CharField(**kwargs),
+            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
+            'orgs_url': HyperlinkedResourceIdentityField(view_name='userprofile-orgs'),
         })
         return fields
 
 
 class UserCreateSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    name = serializers.CharField(required=True, max_length=100)
-    email = serializers.CharField(required=True, max_length=100)
-    company = serializers.CharField(required=False, max_length=100)
-    location = serializers.CharField(required=False, max_length=100)
-    preferredLocale = serializers.CharField(required=False, max_length=20, source='preferred_locale')
+    username = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
+    name = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+    company = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
+    preferredLocale = serializers.CharField(required=False, source='preferred_locale')
 
     def restore_object(self, attrs, instance=None):
         username = attrs.get('username')
@@ -53,12 +71,12 @@ class UserCreateSerializer(serializers.Serializer):
 
 
 class UserUpdateSerializer(serializers.Serializer):
-    username = serializers.CharField(required=False, max_length=100, source='mnemonic')
-    name = serializers.CharField(required=False, max_length=100, source='full_name')
-    email = serializers.CharField(required=False, max_length=100)
-    company = serializers.CharField(required=False, max_length=100)
-    location = serializers.CharField(required=False, max_length=100)
-    preferredLocale = serializers.CharField(required=False, max_length=20, source='preferred_locale')
+    username = serializers.CharField(required=False, source='mnemonic')
+    name = serializers.CharField(required=False, source='full_name')
+    email = serializers.CharField(required=False)
+    company = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
+    preferredLocale = serializers.CharField(required=False, source='preferred_locale')
 
     def restore_object(self, attrs, instance=None):
         if 'email' in attrs or 'mnemonic' in attrs:
@@ -75,21 +93,3 @@ class UserUpdateSerializer(serializers.Serializer):
         super(UserUpdateSerializer, self).save_object(obj, **kwargs)
         user = obj.user
         user.save()
-
-
-class UserDetailSerializer(LinkedResourceSerializer):
-    class Meta(UserUpdateSerializer.Meta):
-        model = UserProfile
-        fields = ('resource_type', 'id', 'username', 'name', 'company', 'location', 'email', 'preferred_locale', 'url', 'orgs', 'created_at', 'updated_at')
-        lookup_field = 'user'
-
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(UserDetailSerializer, self).get_default_fields()
-        fields.update({
-            'resource_type': CharField(**kwargs),
-            'username': CharField(**kwargs),
-            'name': CharField(**kwargs),
-            'email': CharField(**kwargs),
-            'orgs': IntegerField(**kwargs),
-        })
-        return fields

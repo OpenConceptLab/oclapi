@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from rest_framework.authtoken.models import Token
 from oclapi.models import BaseModel
+from sources.models import Source
 
 USER_OBJECT_TYPE = 'User'
 ORG_OBJECT_TYPE = 'Organization'
@@ -42,6 +43,10 @@ class UserProfile(BaseModel):
     @property
     def orgs(self):
         return len(self.organizations)
+
+    @property
+    def public_sources(self):
+        return Source.objects.filter(parent_id=self.id).count()
 
     @staticmethod
     def get_url_kwarg():

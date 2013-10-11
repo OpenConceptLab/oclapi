@@ -59,15 +59,15 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
 
 
 class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
-    mnemonic = serializers.CharField(required=True, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    name = serializers.CharField(required=True, max_length=100)
-    full_name = serializers.CharField(required=False, max_length=100)
-    description = serializers.CharField(required=False, max_length=255)
-    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
-    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
-    default_locale = serializers.CharField(required=False, max_length=20)
-    supported_locales = serializers.CharField(required=False, max_length=255)
-    website = serializers.CharField(required=False, max_length=255)
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    name = serializers.CharField(required=True)
+    fullName = serializers.CharField(required=False, source='full_name')
+    description = serializers.CharField(required=False)
+    sourceType = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES, source='source_type')
+    publicAccess = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, source='public_access')
+    defaultLocale = serializers.CharField(required=False, source='default_locale')
+    supportedLocales = serializers.CharField(required=False, source='supported_locales')
+    website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         parent_resource = kwargs.pop('parent_resource')
@@ -94,15 +94,15 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
 
 
 class SourceUpdateSerializer(SourceCreateOrUpdateSerializer):
-    mnemonic = serializers.CharField(required=False, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    name = serializers.CharField(required=False, max_length=100)
-    full_name = serializers.CharField(required=False, max_length=100)
-    description = serializers.CharField(required=False, max_length=255)
-    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
-    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
-    default_locale = serializers.CharField(required=False, max_length=20)
-    supported_locales = serializers.CharField(required=False, max_length=255)
-    website = serializers.CharField(required=False, max_length=255)
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    name = serializers.CharField(required=True)
+    fullName = serializers.CharField(required=False, source='full_name')
+    description = serializers.CharField(required=False)
+    sourceType = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES, source='source_type')
+    publicAccess = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, source='public_access')
+    defaultLocale = serializers.CharField(required=False, source='default_locale')
+    supportedLocales = serializers.CharField(required=False, source='supported_locales')
+    website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         parent_resource = kwargs.pop('parent_resource')

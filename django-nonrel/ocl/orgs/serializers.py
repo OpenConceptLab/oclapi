@@ -1,28 +1,52 @@
 from django.contrib.auth.models import Group
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from rest_framework.fields import CharField, IntegerField
+from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import LinkedResourceSerializer
 from orgs.models import Organization
 
 
 class OrganizationListSerializer(LinkedResourceSerializer):
+    id = serializers.CharField(source='mnemonic')
+    name = serializers.CharField()
+
     class Meta:
         model = Organization
-        fields = ('mnemonic', 'name', 'url')
-        lookup_field = 'org'
+
+
+class OrganizationDetailSerializer(LinkedResourceSerializer):
+    type = serializers.CharField(source='resource_type')
+    uuid = serializers.CharField(source='id')
+    id = serializers.CharField(source='mnemonic')
+    name = serializers.CharField()
+    company = serializers.CharField()
+    website = serializers.CharField()
+    members = serializers.IntegerField(source='num_members')
+    publicSources = serializers.IntegerField(source='public_sources')
+    createdOn = serializers.DateTimeField(source='created_at')
+    updatedOn = serializers.DateTimeField(source='updated_at')
+
+    class Meta:
+        model = Organization
+
+    def get_default_fields(self, *args, **kwargs):
+        fields = super(OrganizationDetailSerializer, self).get_default_fields()
+        fields.update({
+            'members_url': HyperlinkedResourceIdentityField(view_name='organization-members'),
+            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
+        })
+        return fields
 
 
 class OrganizationCreateSerializer(serializers.Serializer):
-    mnemonic = serializers.CharField(required=True, max_length=100, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    name = serializers.CharField(required=True, max_length=100)
-    company = serializers.CharField(required=False, max_length=100)
-    website = serializers.CharField(required=False, max_length=255)
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    name = serializers.CharField(required=True)
+    company = serializers.CharField(required=False)
+    website = serializers.CharField(required=False)
 
     class Meta:
         model = Organization
-        fields = ('mnemonic', 'name', 'company', 'website')
 
     def restore_object(self, attrs, instance=None):
         mnemonic = attrs.get('mnemonic', None)
@@ -45,27 +69,12 @@ class OrganizationCreateSerializer(serializers.Serializer):
 
 
 class OrganizationUpdateSerializer(serializers.Serializer):
-    name = serializers.CharField(required=False, max_length=100)
-    company = serializers.CharField(required=False, max_length=100)
-    website = serializers.CharField(required=False, max_length=255)
+    name = serializers.CharField(required=False)
+    company = serializers.CharField(required=False)
+    website = serializers.CharField(required=False)
 
     def restore_object(self, attrs, instance=None):
         instance.name = attrs.get('name', instance.name)
         instance.company = attrs.get('company', instance.company)
         instance.website = attrs.get('website', instance.website)
         return instance
-
-
-class OrganizationDetailSerializer(LinkedResourceSerializer):
-    class Meta:
-        model = Organization
-        fields = ('resource_type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'num_members', 'created_at', 'updated_at')
-        lookup_field = 'org'
-
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(OrganizationDetailSerializer, self).get_default_fields()
-        fields.update({
-            'resource_type': CharField(**kwargs),
-            'num_members': IntegerField(**kwargs)
-        })
-        return fields

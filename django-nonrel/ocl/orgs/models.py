@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.db import models
 from djangotoolbox.fields import ListField
 from oclapi.models import BaseModel
+from sources.models import Source
 
 ORG_OBJECT_TYPE = 'Organization'
 
@@ -25,6 +26,10 @@ class Organization(BaseModel):
     @property
     def num_members(self):
         return len(self.members)
+
+    @property
+    def public_sources(self):
+        return Source.objects.filter(parent_id=self.id).count()
 
     @staticmethod
     def get_url_kwarg():
