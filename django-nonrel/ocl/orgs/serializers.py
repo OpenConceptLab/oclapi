@@ -3,11 +3,11 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.fields import CharField, IntegerField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedModelSerializer
+from oclapi.serializers import LinkedResourceSerializer
 from orgs.models import Organization
 
 
-class OrganizationListSerializer(HyperlinkedModelSerializer):
+class OrganizationListSerializer(LinkedResourceSerializer):
     class Meta:
         model = Organization
         fields = ('mnemonic', 'name', 'url')
@@ -56,7 +56,7 @@ class OrganizationUpdateSerializer(serializers.Serializer):
         return instance
 
 
-class OrganizationDetailSerializer(HyperlinkedModelSerializer):
+class OrganizationDetailSerializer(LinkedResourceSerializer):
     class Meta:
         model = Organization
         fields = ('resource_type', 'id', 'mnemonic', 'name', 'company', 'website', 'url', 'num_members', 'created_at', 'updated_at')

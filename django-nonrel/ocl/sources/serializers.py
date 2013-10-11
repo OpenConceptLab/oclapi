@@ -1,32 +1,22 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from oclapi.fields import DynamicHyperlinkedIdentifyField, HyperlinkedParentUrlField
 from oclapi.models import NAMESPACE_REGEX
+from oclapi.serializers import LinkedResourceSerializer, LinkedSubResourceSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
 
 
-class SourceListSerializer(serializers.HyperlinkedModelSerializer):
+class SourceListSerializer(LinkedResourceSerializer):
     shortCode = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
 
     class Meta:
         model = Source
         fields = ('shortCode', 'name', 'url')
-        lookup_field = 'mnemonic'
-
-    def get_default_fields(self):
-        fields = super(SourceListSerializer, self).get_default_fields()
-        fields.update({
-            'url': DynamicHyperlinkedIdentifyField(view_name=self.opts.view_name,
-                                                   lookup_field=self.Meta.lookup_field,
-            )
-        })
-        return fields
 
 
-class SourceDetailSerializer(serializers.Serializer):
+class SourceDetailSerializer(LinkedSubResourceSerializer):
     type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
@@ -41,7 +31,6 @@ class SourceDetailSerializer(serializers.Serializer):
     description = serializers.CharField()
     owner = serializers.CharField(source='parent_resource')
     ownerType = serializers.CharField(source='parent_resource_type')
-    owenerUrl = HyperlinkedParentUrlField()
     versions = serializers.IntegerField(source='num_versions')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
