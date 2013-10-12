@@ -16,3 +16,10 @@ class HyperlinkedResourceOwnerField(HyperlinkedResourceIdentityField):
         return reverse_resource(obj.parent, view_name, request=request, format=format)
 
 
+class HyperlinkedResourceVersionIdentityField(HyperlinkedIdentityField):
+
+    def get_url(self, obj, view_name, request, format):
+        return reverse_resource(obj.versioned_object, view_name, request=request, format=format)
+
+
+

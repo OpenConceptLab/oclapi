@@ -32,3 +32,17 @@ class HasPrivateAccess(BasePermission):
             if obj.parent_id in profile.organizations:
                 return True
         return False
+
+
+class HasAccessToVersionedObject(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_staff:
+            return True
+        versioned_object = obj.versioned_object
+        if request.user == versioned_object.owner:
+            return True
+        if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
+            profile = request.user.get_profile()
+            if versioned_object.parent_id in profile.organizations:
+                return True
+        return False

@@ -4,7 +4,6 @@ from django.db.models import Q
 from rest_framework import generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from orgs.models import Organization
 
 
 class BaseAPIView(generics.GenericAPIView):
@@ -34,12 +33,11 @@ class SubResourceMixin(BaseAPIView):
     user_is_self = False
     parent_path_info = None
     parent_resource = None
-    parent_resource_url = None
     base_or_clause = []
 
     def initial(self, request, *args, **kwargs):
         super(SubResourceMixin, self).initial(request, *args, **kwargs)
-        self.parent_path_info, self.parent_resource_url = self._get_parent_path_and_url(request)
+        self.parent_path_info = self._get_parent_path_info(request)
         self.user = request.user
         if self.user and hasattr(self.user, 'get_profile'):
             self.userprofile = self.user.get_profile()
@@ -67,12 +65,7 @@ class SubResourceMixin(BaseAPIView):
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
         return queryset
 
-    def get_serializer_context(self):
-        context = super(SubResourceMixin, self).get_serializer_context()
-        context.update({'parent_resource_url': self.parent_resource_url})
-        return context
-
-    def _get_parent_path_and_url(self, request):
+    def _get_parent_path_info(self, request):
         path_info = request.path_info
         last_index = len(path_info) - 1
         last_slash = path_info.rindex('/')
@@ -84,9 +77,7 @@ class SubResourceMixin(BaseAPIView):
             path_prefix = path_prefix[0:last_slash]
         if path_prefix:
             path_prefix += '/'
-            return path_prefix, request.build_absolute_uri(path_prefix)
-        else:
-            return None, None
+        return path_prefix
 
     def _get_parent_resource(self):
         if self.parent_path_info is None:
@@ -94,6 +85,33 @@ class SubResourceMixin(BaseAPIView):
         callback, callback_args, callback_kwargs = resolve(self.parent_path_info)
         view = callback.cls(request=self.request, kwargs=callback_kwargs)
         parent = view.get_object()
-        #self.check_object_permissions(self.request, parent)
         return parent
 
+
+class ResourceVersionMixin(BaseAPIView):
+    versioned_object_path_info = None
+    versioned_object = None
+
+    def initial(self, request, *args, **kwargs):
+        super(ResourceVersionMixin, self).initial(request, *args, **kwargs)
+        self.versioned_object_path_info = self._get_versioned_object_path_info(request)
+        self.versioned_object = self._get_versioned_object()
+
+    def get_queryset(self):
+        queryset = super(ResourceVersionMixin, self).get_queryset()
+        versioned_object_type = ContentType.objects.get_for_model(self.versioned_object)
+        queryset = queryset.filter(versioned_object_type__pk=versioned_object_type.id, versioned_object_id=self.versioned_object.id)
+        return queryset
+
+    def _get_versioned_object_path_info(self, request):
+        path_info = request.path_info
+        last_index = len(path_info) - 1
+        last_slash = path_info.rindex('/')
+        if last_slash == last_index:
+            last_slash = path_info.rindex('/', 0, last_index)
+        return path_info[0:last_slash+1]
+
+    def _get_versioned_object(self):
+        callback, callback_args, callback_kwargs = resolve(self.versioned_object_path_info)
+        view = callback.cls(request=self.request, kwargs=callback_kwargs)
+        return view.get_object()

@@ -4,7 +4,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 from django_group_access import registration
-from settings import NONREL_DATABASE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-]+$')
 
@@ -38,24 +37,16 @@ class SubResourceBaseModel(BaseModel):
     def parent_resource_type(self):
         return self.parent.resource_type
 
-
 registration.register(SubResourceBaseModel)
 
 
-class NonrelMixin(object):
+class ResourceVersionModel(BaseModel):
+    versioned_object_id = models.TextField()
+    versioned_object_type = models.ForeignKey(ContentType)
+    versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
+    released = models.BooleanField(default=False, blank=True)
+    previous_version = models.OneToOneField('self', related_name='next_version', null=True, blank=True)
+    parent_version = models.OneToOneField('self', related_name='child_version', null=True, blank=True)
 
-    @classmethod
-    def db_for_read(cls):
-        return NONREL_DATABASE
-
-    @classmethod
-    def db_for_write(cls):
-        return NONREL_DATABASE
-
-    @classmethod
-    def allow_relation(cls, cls2, **hints):
-        return cls2 == cls
-
-    @classmethod
-    def allow_syncdb(cls, db):
-        return db == NONREL_DATABASE
+    class Meta:
+        abstract = True

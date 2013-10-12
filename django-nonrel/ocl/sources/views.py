@@ -3,11 +3,11 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
-from oclapi.permissions import HasPrivateAccess
-from oclapi.views import SubResourceMixin
-from sources.models import Source, EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
+from oclapi.views import SubResourceMixin, ResourceVersionMixin
+from sources.models import Source, EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE, SourceVersion
 from sources.permissions import CanViewSource, CanEditSource
-from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer
+from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer
 
 
 class SourceBaseView(SubResourceMixin):
@@ -79,3 +79,13 @@ class SourceListView(SourceBaseView,
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class SourceVersionBaseView(ResourceVersionMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = SourceVersion
+    permission_classes = (HasAccessToVersionedObject,)
+
+
+class SourceVersionUpdateDetailView(SourceVersionBaseView, RetrieveAPIView):
+    serializer_class = SourceVersionDetailSerializer

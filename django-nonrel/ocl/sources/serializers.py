@@ -2,7 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import LinkedResourceSerializer, LinkedSubResourceSerializer
+from oclapi.serializers import LinkedResourceSerializer, LinkedSubResourceSerializer, ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
 
@@ -114,3 +114,16 @@ class SourceUpdateSerializer(SourceCreateOrUpdateSerializer):
                 self._errors['mnemonic'] = 'Source with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
                 return
         obj.save(**kwargs)
+
+
+class SourceVersionDetailSerializer(ResourceVersionSerializer):
+    type = serializers.CharField(required=True, source='resource_type')
+    uuid = serializers.CharField(required=True, source='id')
+    id = serializers.CharField(required=True, source='mnemonic')
+    description = serializers.CharField()
+    createdOn = serializers.DateTimeField(source='created_at')
+    updatedOn = serializers.DateTimeField(source='updated_at')
+
+    class Meta:
+        model = SourceVersion
+
