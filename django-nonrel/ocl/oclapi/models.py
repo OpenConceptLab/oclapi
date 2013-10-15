@@ -35,6 +35,7 @@ class SubResourceBaseModel(BaseModel):
 
     class Meta:
         abstract = True
+        unique_together = ('mnemonic', 'parent_id')
 
     def __unicode__(self):
         return self.mnemonic
@@ -61,6 +62,7 @@ class ResourceVersionModel(BaseModel):
 
     class Meta:
         abstract = True
+        unique_together = ('mnemonic', 'versioned_object_id')
 
     def __unicode__(self):
         return self.mnemonic
