@@ -80,7 +80,7 @@ class SubResourceMixin(BaseAPIView):
         return path_prefix
 
     def _get_parent_resource(self):
-        if self.parent_path_info is None:
+        if not self.parent_path_info:
             return None
         callback, callback_args, callback_kwargs = resolve(self.parent_path_info)
         view = callback.cls(request=self.request, kwargs=callback_kwargs)

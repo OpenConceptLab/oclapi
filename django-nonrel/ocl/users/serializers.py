@@ -84,6 +84,7 @@ class UserUpdateSerializer(serializers.Serializer):
             user.email = attrs.get('email', user.email)
             user.username = attrs.get('mnemonic', user.username)
         instance.full_name = attrs.get('full_name', instance.full_name)
+        instance.company = attrs.get('company', instance.company)
         instance.location = attrs.get('location', instance.location)
         instance.mnemonic = attrs.get('mnemonic', instance.mnemonic)
         instance.preferred_locale = attrs.get('preferred_locale', instance.preferred_locale)
