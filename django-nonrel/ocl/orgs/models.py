@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db import models
 from djangotoolbox.fields import ListField
-from oclapi.models import BaseModel
+from oclapi.models import BaseResourceModel
 from sources.models import Source
 
 ORG_OBJECT_TYPE = 'Organization'
 
 
-class Organization(BaseModel):
+class Organization(BaseResourceModel):
     name = models.CharField(max_length=100)
     company = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=255, null=True, blank=True)

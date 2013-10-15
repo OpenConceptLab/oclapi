@@ -5,14 +5,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from rest_framework.authtoken.models import Token
-from oclapi.models import BaseModel
+from oclapi.models import BaseResourceModel
 from sources.models import Source
 
 USER_OBJECT_TYPE = 'User'
 ORG_OBJECT_TYPE = 'Organization'
 
 
-class UserProfile(BaseModel):
+class UserProfile(BaseResourceModel):
     user = models.OneToOneField(User)
     full_name = models.TextField(null=True, blank=True)
     company = models.TextField(null=True, blank=True)

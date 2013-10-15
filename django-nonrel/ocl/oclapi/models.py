@@ -9,10 +9,16 @@ NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-]+$')
 
 
 class BaseModel(models.Model):
-    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        abstract = True
+
+
+class BaseResourceModel(BaseModel):
+    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
 
     class Meta:
         abstract = True
@@ -22,12 +28,16 @@ class BaseModel(models.Model):
 
 
 class SubResourceBaseModel(BaseModel):
+    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     parent_type = models.ForeignKey(ContentType)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        return self.mnemonic
 
     @property
     def parent_resource(self):
@@ -41,6 +51,7 @@ registration.register(SubResourceBaseModel)
 
 
 class ResourceVersionModel(BaseModel):
+    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     versioned_object_id = models.TextField()
     versioned_object_type = models.ForeignKey(ContentType)
     versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
@@ -50,3 +61,6 @@ class ResourceVersionModel(BaseModel):
 
     class Meta:
         abstract = True
+
+    def __unicode__(self):
+        return self.mnemonic
