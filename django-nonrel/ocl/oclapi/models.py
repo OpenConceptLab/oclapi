@@ -29,7 +29,7 @@ class BaseResourceModel(BaseModel):
 
 class SubResourceBaseModel(BaseModel):
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    parent_type = models.ForeignKey(ContentType)
+    parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
 
@@ -53,11 +53,11 @@ registration.register(SubResourceBaseModel)
 class ResourceVersionModel(BaseModel):
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     versioned_object_id = models.TextField()
-    versioned_object_type = models.ForeignKey(ContentType)
+    versioned_object_type = models.ForeignKey(ContentType, db_index=False)
     versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
     released = models.BooleanField(default=False, blank=True)
-    previous_version = models.OneToOneField('self', related_name='next_version', null=True, blank=True)
-    parent_version = models.OneToOneField('self', related_name='child_version', null=True, blank=True)
+    previous_version = models.OneToOneField('self', related_name='next_version', null=True, blank=True, db_index=False)
+    parent_version = models.OneToOneField('self', related_name='child_version', null=True, blank=True, db_index=False)
 
     class Meta:
         abstract = True
