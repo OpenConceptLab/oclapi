@@ -118,12 +118,13 @@ class SourceUpdateSerializer(SourceCreateOrUpdateSerializer):
 
 class SourceVersionDetailSerializer(ResourceVersionSerializer):
     type = serializers.CharField(required=True, source='resource_type')
-    uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
     description = serializers.CharField()
+    released = serializers.BooleanField()
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
 
     class Meta:
         model = SourceVersion
-
+        versioned_object_view_name = 'source-detail'
+        versioned_object_field_name = 'sourceUrl'

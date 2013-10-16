@@ -1,5 +1,5 @@
 from rest_framework.relations import HyperlinkedIdentityField
-from urls import reverse_resource
+from urls import reverse_resource, reverse_resource_version
 
 
 class HyperlinkedResourceIdentityField(HyperlinkedIdentityField):
@@ -16,10 +16,16 @@ class HyperlinkedResourceOwnerField(HyperlinkedResourceIdentityField):
         return reverse_resource(obj.parent, view_name, request=request, format=format)
 
 
-class HyperlinkedResourceVersionIdentityField(HyperlinkedIdentityField):
+class HyperlinkedVersionedResourceIdentityField(HyperlinkedIdentityField):
 
     def get_url(self, obj, view_name, request, format):
         return reverse_resource(obj.versioned_object, view_name, request=request, format=format)
+
+
+class HyperlinkedResourceVersionIdentifyField(HyperlinkedIdentityField):
+    def get_url(self, obj, view_name, request, format):
+        return reverse_resource_version(obj, view_name, request=request, format=format)
+
 
 
 

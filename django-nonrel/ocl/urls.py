@@ -41,9 +41,8 @@ def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, f
 
 
 def reverse_resource_version(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):
-    versioned_object = resource.versioned_object
     kwargs = kwargs or {}
     kwargs.update({
         resource.get_url_kwarg(): resource.mnemonic
     })
-    return reverse_resource(versioned_object, viewname, args, kwargs, request, format, **extra)
+    return reverse_resource(resource.versioned_object, viewname, args, kwargs, request, format, **extra)
