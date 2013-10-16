@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import LinkedResourceSerializer, LinkedSubResourceSerializer, ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
@@ -128,3 +129,15 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
         model = SourceVersion
         versioned_object_view_name = 'source-detail'
         versioned_object_field_name = 'sourceUrl'
+
+    def get_default_fields(self):
+        default_fields = super(SourceVersionDetailSerializer, self).get_default_fields()
+        if self.opts.view_name is None:
+            self.opts.view_name = self._get_default_view_name(self.opts.model)
+        default_fields.update(
+            {
+                'parentVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='parent_version', view_name=self.opts.view_name),
+                'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
+            }
+        )
+        return default_fields

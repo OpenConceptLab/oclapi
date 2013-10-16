@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import HyperlinkedModelSerializerOptions
-from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceOwnerField, HyperlinkedVersionedResourceIdentityField, HyperlinkedResourceVersionIdentifyField
+from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceOwnerField, HyperlinkedVersionedResourceIdentityField, HyperlinkedResourceVersionIdentityField
 
 
 class LinkedResourceSerializer(serializers.Serializer):
@@ -73,7 +73,7 @@ class ResourceVersionSerializer(serializers.Serializer):
         ret = self._dict_class()
 
         if 'url' not in fields:
-            url_field = HyperlinkedResourceVersionIdentifyField(
+            url_field = HyperlinkedResourceVersionIdentityField(
                 view_name=self.opts.view_name,
             )
             ret['url'] = url_field
