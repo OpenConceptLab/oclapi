@@ -9,9 +9,9 @@ from users.models import UserProfile
 from users.serializers import UserListSerializer, UserCreateSerializer, UserUpdateSerializer, UserDetailSerializer
 
 
-class UserListView(mixins.ListModelMixin,
-                   mixins.CreateModelMixin,
-                   generics.GenericAPIView):
+class UserListView(BaseAPIView,
+                   mixins.ListModelMixin,
+                   mixins.CreateModelMixin):
     queryset = UserProfile.objects.filter(is_active=True)
 
     def initial(self, request, *args, **kwargs):

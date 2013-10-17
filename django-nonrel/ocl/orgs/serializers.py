@@ -3,11 +3,11 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import LinkedResourceSerializer
+from oclapi.serializers import HyperlinkedResourceSerializer
 from orgs.models import Organization
 
 
-class OrganizationListSerializer(LinkedResourceSerializer):
+class OrganizationListSerializer(HyperlinkedResourceSerializer):
     id = serializers.CharField(source='mnemonic')
     name = serializers.CharField()
 
@@ -15,7 +15,7 @@ class OrganizationListSerializer(LinkedResourceSerializer):
         model = Organization
 
 
-class OrganizationDetailSerializer(LinkedResourceSerializer):
+class OrganizationDetailSerializer(HyperlinkedResourceSerializer):
     type = serializers.CharField(source='resource_type')
     uuid = serializers.CharField(source='id')
     id = serializers.CharField(source='mnemonic')

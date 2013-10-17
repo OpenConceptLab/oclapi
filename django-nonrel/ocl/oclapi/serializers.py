@@ -3,12 +3,17 @@ from rest_framework.serializers import HyperlinkedModelSerializerOptions
 from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceOwnerField, HyperlinkedVersionedResourceIdentityField, HyperlinkedResourceVersionIdentityField
 
 
-class LinkedResourceSerializer(serializers.Serializer):
+class HyperlinkedResourceSerializer(serializers.Serializer):
+    """
+    This serializer is similar to serializers.HyperlinkedModelSerializer, except it uses a different
+    field type (HyperlinkedResourceIdentifyField) to render the 'url' field.  The HyperlinkedResourceIdentityField
+    knows how to generate a URL with multiple levels of nesting.
+    """
     _options_class = HyperlinkedModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
 
     def get_default_fields(self):
-        fields = super(LinkedResourceSerializer, self).get_default_fields()
+        fields = super(HyperlinkedResourceSerializer, self).get_default_fields()
 
         if self.opts.view_name is None:
             self.opts.view_name = self._get_default_view_name(self.opts.model)
@@ -25,9 +30,6 @@ class LinkedResourceSerializer(serializers.Serializer):
         return fields
 
     def _get_default_view_name(self, model):
-        """
-        Return the view name to use if 'view_name' is not specified in 'Meta'
-        """
         model_meta = model._meta
         format_kwargs = {
             'app_label': model_meta.app_label,
@@ -36,10 +38,12 @@ class LinkedResourceSerializer(serializers.Serializer):
         return self._default_view_name % format_kwargs
 
 
-class LinkedSubResourceSerializer(LinkedResourceSerializer):
-
+class HyperlinkedSubResourceSerializer(HyperlinkedResourceSerializer):
+    """
+    A HyperlinkedSubResourceSerializer generates a URL for the parent resource as well as the sub-resource
+    """
     def get_default_fields(self):
-        default_fields = super(LinkedSubResourceSerializer, self).get_default_fields()
+        default_fields = super(HyperlinkedSubResourceSerializer, self).get_default_fields()
         default_fields.update({
             'ownerUrl': HyperlinkedResourceOwnerField(view_name=self._get_default_view_name(self.object.parent))
         })
@@ -47,9 +51,7 @@ class LinkedSubResourceSerializer(LinkedResourceSerializer):
 
 
 class ResourceVersionSerializerOptions(HyperlinkedModelSerializerOptions):
-    """
-    Options for ResourceVersionSerializer
-    """
+
     def __init__(self, meta):
         super(ResourceVersionSerializerOptions, self).__init__(meta)
         self.versioned_object_view_name = getattr(meta, 'versioned_object_view_name', None)
@@ -57,6 +59,10 @@ class ResourceVersionSerializerOptions(HyperlinkedModelSerializerOptions):
 
 
 class ResourceVersionSerializer(serializers.Serializer):
+    """
+    A ResourceVersionSerializer generates a URL for the versioned object as well as the particular version.
+    It does not extend HyperlinkedResourceSerializer because its URL-generation strategy is different.
+    """
     _options_class = ResourceVersionSerializerOptions
     _default_view_name = '%(model_name)s-detail'
 
@@ -67,8 +73,10 @@ class ResourceVersionSerializer(serializers.Serializer):
             self.opts.view_name = self._get_default_view_name(self.opts.model)
 
         if self.opts.versioned_object_view_name is None:
-            versioned_object_model = self.object.versioned_object_type.model_class()
-            self.opts.versioned_object_view_name = self._get_default_view_name(versioned_object_model)
+            object = self.object[0] if self.many and len(self.object) > 0 else self.object
+            if object:
+                versioned_object_model = object.versioned_object_type.model_class()
+                self.opts.versioned_object_view_name = self._get_default_view_name(versioned_object_model)
 
         ret = self._dict_class()
 
@@ -91,9 +99,6 @@ class ResourceVersionSerializer(serializers.Serializer):
         return fields
 
     def _get_default_view_name(self, model):
-        """
-        Return the view name to use if 'view_name' is not specified in 'Meta'
-        """
         model_meta = model._meta
         format_kwargs = {
             'app_label': model_meta.app_label,

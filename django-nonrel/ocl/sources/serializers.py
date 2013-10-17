@@ -3,12 +3,12 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import LinkedResourceSerializer, LinkedSubResourceSerializer, ResourceVersionSerializer
+from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer, ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
 
 
-class SourceListSerializer(LinkedResourceSerializer):
+class SourceListSerializer(HyperlinkedResourceSerializer):
     shortCode = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
 
@@ -17,7 +17,7 @@ class SourceListSerializer(LinkedResourceSerializer):
         fields = ('shortCode', 'name', 'url')
 
 
-class SourceDetailSerializer(LinkedSubResourceSerializer):
+class SourceDetailSerializer(HyperlinkedSubResourceSerializer):
     type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
@@ -85,6 +85,7 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
         except Exception as e:
             raise e
         version = SourceVersion.for_source(obj, 'INITIAL')
+        version.released = True
         try:
             version.save()
         except Exception as e:
@@ -115,6 +116,15 @@ class SourceUpdateSerializer(SourceCreateOrUpdateSerializer):
                 self._errors['mnemonic'] = 'Source with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
                 return
         obj.save(**kwargs)
+
+
+class SourceVersionListSerializer(ResourceVersionSerializer):
+    id = serializers.CharField(source='mnemonic')
+    released = serializers.CharField()
+
+    class Meta:
+        model = SourceVersion
+        fields = ('id', 'released', 'url')
 
 
 class SourceVersionDetailSerializer(ResourceVersionSerializer):

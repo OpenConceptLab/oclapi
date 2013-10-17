@@ -1,13 +1,13 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView
 from rest_framework.response import Response
 from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, ResourceVersionMixin
+from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin
 from sources.models import Source, EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE, SourceVersion
 from sources.permissions import CanViewSource, CanEditSource
-from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer
+from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer
 
 
 class SourceBaseView(SubResourceMixin):
@@ -88,4 +88,37 @@ class SourceVersionBaseView(ResourceVersionMixin):
 
 
 class SourceVersionUpdateDetailView(SourceVersionBaseView, RetrieveAPIView):
+    is_latest = False
     serializer_class = SourceVersionDetailSerializer
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.is_latest = kwargs.pop('is_latest', False)
+        super(SourceVersionUpdateDetailView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_object(self, queryset=None):
+        if self.is_latest:
+            # Determine the base queryset to use.
+            if queryset is None:
+                queryset = self.filter_queryset(self.get_queryset())
+            else:
+                pass  # Deprecation warning
+
+            filter_kwargs = {'released': True}
+            obj = get_object_or_404(queryset, **filter_kwargs)
+
+            # May raise a permission denied
+            self.check_object_permissions(self.request, obj)
+            return obj
+        return super(SourceVersionUpdateDetailView, self).get_object(queryset)
+
+
+class SourceVersionListView(ResourceAttributeChildMixin, ListAPIView):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = SourceVersion
+    permission_classes = (HasAccessToVersionedObject,)
+    serializer_class = SourceVersionListSerializer
+
+    def get_queryset(self):
+        queryset = super(SourceVersionListView, self).get_queryset()
+        return queryset.filter(parent_version=self.resource_version)

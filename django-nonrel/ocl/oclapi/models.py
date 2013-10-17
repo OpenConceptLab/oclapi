@@ -9,6 +9,9 @@ NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-]+$')
 
 
 class BaseModel(models.Model):
+    """
+    Base model for all objects in the system.  Contains timestamps and is_active field for logical deletion
+    """
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -18,6 +21,10 @@ class BaseModel(models.Model):
 
 
 class BaseResourceModel(BaseModel):
+    """
+    A base resource has a mnemonic that is unique across all objects of its type.
+    A base resource may contain sub-resources
+    """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
 
     class Meta:
@@ -28,6 +35,10 @@ class BaseResourceModel(BaseModel):
 
 
 class SubResourceBaseModel(BaseModel):
+    """
+    A sub-resource is an object that exists within the scope of a parent resource.
+    Its mnemonic is unique within the scope of its parent resource.
+    """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
@@ -52,13 +63,17 @@ registration.register(SubResourceBaseModel)
 
 
 class ResourceVersionModel(BaseModel):
+    """
+    This model represents a version of a resource.  It has links to its base resource,
+    as well as its parent and previous versions (if any)
+    """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     versioned_object_id = models.TextField()
     versioned_object_type = models.ForeignKey(ContentType, db_index=False)
     versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
     released = models.BooleanField(default=False, blank=True)
-    previous_version = models.OneToOneField('self', related_name='next_version', null=True, blank=True, db_index=False)
-    parent_version = models.OneToOneField('self', related_name='child_version', null=True, blank=True, db_index=False)
+    previous_version = models.ForeignKey('self', related_name='next_version', null=True, blank=True, db_index=False)
+    parent_version = models.ForeignKey('self', related_name='child_version', null=True, blank=True, db_index=False)
 
     class Meta:
         abstract = True

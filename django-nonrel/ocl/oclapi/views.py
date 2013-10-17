@@ -6,8 +6,41 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 
 
+class PathWalkerMixin():
+    path_info = None
+
+    def get_parent_in_path(self, path_info, levels=1):
+        last_index = len(path_info) - 1
+        last_slash = path_info.rindex('/')
+        if last_slash == last_index:
+            last_slash = path_info.rindex('/', 0, last_index)
+        path_info = path_info[0:last_slash+1]
+        if levels > 1:
+            i = 1
+            while i < levels:
+                last_index = len(path_info) - 1
+                last_slash = path_info.rindex('/', 0, last_index)
+                path_info = path_info[0:last_slash+1]
+                i += 1
+        return path_info
+
+    def get_object_for_path(self, path_info, request):
+        callback, callback_args, callback_kwargs = resolve(path_info)
+        view = callback.cls(request=request, kwargs=callback_kwargs)
+        view.initialize(request, path_info, **callback_kwargs)
+        return view.get_object()
+
+
 class BaseAPIView(generics.GenericAPIView):
     pk_field = 'mnemonic'
+    user_is_self = False
+
+    def initial(self, request, *args, **kwargs):
+        super(BaseAPIView, self).initial(request, *args, **kwargs)
+        self.initialize(request, request.path_info, **kwargs)
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.user_is_self = kwargs.pop('user_is_self', False)
 
     def get_object(self, queryset=None):
         # Determine the base queryset to use.
@@ -27,7 +60,7 @@ class BaseAPIView(generics.GenericAPIView):
         return obj
 
 
-class SubResourceMixin(BaseAPIView):
+class SubResourceMixin(BaseAPIView, PathWalkerMixin):
     user = None
     userprofile = None
     user_is_self = False
@@ -35,17 +68,19 @@ class SubResourceMixin(BaseAPIView):
     parent_resource = None
     base_or_clause = []
 
-    def initial(self, request, *args, **kwargs):
-        super(SubResourceMixin, self).initial(request, *args, **kwargs)
-        self.parent_path_info = self._get_parent_path_info(request)
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(SubResourceMixin, self).initialize(request, path_info_segment, **kwargs)
         self.user = request.user
         if self.user and hasattr(self.user, 'get_profile'):
             self.userprofile = self.user.get_profile()
-        if kwargs.pop('user_is_self', False):
-            self.user_is_self = True
-            self.parent_resource = request.user.get_profile()
+        if self.user_is_self and self.userprofile:
+            self.parent_resource = self.userprofile
         else:
-            self.parent_resource = self._get_parent_resource()
+            levels = 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else 2
+            self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=levels)
+            self.parent_resource = None
+            if self.parent_path_info and '/' != self.parent_path_info:
+                self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
 
     def get_queryset(self):
         queryset = super(SubResourceMixin, self).get_queryset()
@@ -65,37 +100,15 @@ class SubResourceMixin(BaseAPIView):
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
         return queryset
 
-    def _get_parent_path_info(self, request):
-        path_info = request.path_info
-        last_index = len(path_info) - 1
-        last_slash = path_info.rindex('/')
-        if last_slash == last_index:
-            last_slash = path_info.rindex('/', 0, last_index)
-        path_prefix = path_info[0:last_slash]
-        if not isinstance(self, ListModelMixin) and not isinstance(self, CreateModelMixin):
-            last_slash = path_prefix.rindex('/')
-            path_prefix = path_prefix[0:last_slash]
-        if path_prefix:
-            path_prefix += '/'
-        return path_prefix
 
-    def _get_parent_resource(self):
-        if not self.parent_path_info:
-            return None
-        callback, callback_args, callback_kwargs = resolve(self.parent_path_info)
-        view = callback.cls(request=self.request, kwargs=callback_kwargs)
-        parent = view.get_object()
-        return parent
-
-
-class ResourceVersionMixin(BaseAPIView):
+class ResourceVersionMixin(BaseAPIView, PathWalkerMixin):
     versioned_object_path_info = None
     versioned_object = None
 
-    def initial(self, request, *args, **kwargs):
-        super(ResourceVersionMixin, self).initial(request, *args, **kwargs)
-        self.versioned_object_path_info = self._get_versioned_object_path_info(request)
-        self.versioned_object = self._get_versioned_object()
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(ResourceVersionMixin, self).initialize(request, path_info_segment, **kwargs)
+        self.versioned_object_path_info = self.get_parent_in_path(path_info_segment)
+        self.versioned_object = self.get_object_for_path(self.versioned_object_path_info, request)
 
     def get_queryset(self):
         queryset = super(ResourceVersionMixin, self).get_queryset()
@@ -103,15 +116,12 @@ class ResourceVersionMixin(BaseAPIView):
         queryset = queryset.filter(versioned_object_type__pk=versioned_object_type.id, versioned_object_id=self.versioned_object.id)
         return queryset
 
-    def _get_versioned_object_path_info(self, request):
-        path_info = request.path_info
-        last_index = len(path_info) - 1
-        last_slash = path_info.rindex('/')
-        if last_slash == last_index:
-            last_slash = path_info.rindex('/', 0, last_index)
-        return path_info[0:last_slash+1]
 
-    def _get_versioned_object(self):
-        callback, callback_args, callback_kwargs = resolve(self.versioned_object_path_info)
-        view = callback.cls(request=self.request, kwargs=callback_kwargs)
-        return view.get_object()
+class ResourceAttributeChildMixin(BaseAPIView, PathWalkerMixin):
+    resource_version_path_info = None
+    resource_version = None
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(ResourceAttributeChildMixin, self).initialize(request, path_info_segment, **kwargs)
+        self.resource_version_path_info = self.get_parent_in_path(path_info_segment)
+        self.resource_version = self.get_object_for_path(self.resource_version_path_info, request)
