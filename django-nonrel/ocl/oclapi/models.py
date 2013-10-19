@@ -81,3 +81,11 @@ class ResourceVersionModel(BaseModel):
 
     def __unicode__(self):
         return self.mnemonic
+
+    @property
+    def previous_version_mnemonic(self):
+        return self.previous_version.mnemonic if self.previous_version else None
+
+    @property
+    def parent_version_mnemonic(self):
+        return self.parent_version.mnemonic if self.parent_version else None

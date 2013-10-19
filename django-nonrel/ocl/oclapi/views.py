@@ -1,9 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve
 from django.db.models import Q
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.response import Response
 
 
 class PathWalkerMixin():
@@ -58,6 +59,12 @@ class BaseAPIView(generics.GenericAPIView):
         self.check_object_permissions(self.request, obj)
 
         return obj
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.is_active = False
+        obj.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SubResourceMixin(BaseAPIView, PathWalkerMixin):
