@@ -45,11 +45,10 @@ class UserBaseView(BaseAPIView):
     queryset = UserProfile.objects.filter(is_active=True)
     user_is_self = False
 
-    def initial(self, request, *args, **kwargs):
-        self.user_is_self = kwargs.pop('user_is_self', False)
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(UserBaseView, self).initialize(request, path_info_segment, **kwargs)
         if (request.method == 'DELETE') or (request.method == 'POST' and not self.user_is_self):
             self.permission_classes = (IsAdminUser, )
-        super(UserBaseView, self).initial(request, *args, **kwargs)
 
 
 class UserDetailView(UserBaseView,
