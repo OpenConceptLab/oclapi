@@ -3,33 +3,32 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView
 from rest_framework.response import Response
+from conceptcollections.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
 from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin
-from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE
-from sources.models import Source, SourceVersion
+from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE, Collection, CollectionVersion
 from conceptcollections.permissions import CanViewCollection, CanEditCollection
-from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 
 
-class SourceBaseView(SubResourceMixin):
-    lookup_field = 'source'
+class CollectionBaseView(SubResourceMixin):
+    lookup_field = 'collection'
     pk_field = 'mnemonic'
-    model = Source
-    queryset = Source.objects.filter(is_active=True)
+    model = Collection
+    queryset = Collection.objects.filter(is_active=True)
     base_or_clause = [Q(public_access=EDIT_ACCESS_TYPE), Q(public_access=VIEW_ACCESS_TYPE)]
     permission_classes = (HasPrivateAccess,)
 
 
-class SourceRetrieveUpdateDestroyView(SourceBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
+class CollectionRetrieveUpdateDestroyView(CollectionBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
 
     def initial(self, request, *args, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewCollection,)
-            self.serializer_class = SourceDetailSerializer
+            self.serializer_class = CollectionDetailSerializer
         else:
             self.permission_classes = (CanEditCollection,)
-            self.serializer_class = SourceUpdateSerializer
-        super(SourceRetrieveUpdateDestroyView, self).initial(request, *args, **kwargs)
+            self.serializer_class = CollectionUpdateSerializer
+        super(CollectionRetrieveUpdateDestroyView, self).initial(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not self.parent_resource:
@@ -53,16 +52,16 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView, RetrieveAPIView, UpdateAPI
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SourceListView(SourceBaseView,
-                     mixins.CreateModelMixin,
-                     mixins.ListModelMixin):
+class CollectionListView(CollectionBaseView,
+                         mixins.CreateModelMixin,
+                         mixins.ListModelMixin):
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = SourceListSerializer
+        self.serializer_class = CollectionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.serializer_class = SourceCreateSerializer
+        self.serializer_class = CollectionCreateSerializer
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -81,24 +80,24 @@ class SourceListView(SourceBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SourceVersionBaseView(ResourceVersionMixin):
+class CollectionVersionBaseView(ResourceVersionMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
-    model = SourceVersion
-    queryset = SourceVersion.objects.filter(is_active=True)
+    model = CollectionVersion
+    queryset = CollectionVersion.objects.filter(is_active=True)
     permission_classes = (HasAccessToVersionedObject,)
 
 
-class SourceVersionListView(SourceVersionBaseView,
-                            mixins.CreateModelMixin,
-                            mixins.ListModelMixin):
+class CollectionVersionListView(CollectionVersionBaseView,
+                                mixins.CreateModelMixin,
+                                mixins.ListModelMixin):
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = SourceVersionListSerializer
+        self.serializer_class = CollectionVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.serializer_class = SourceVersionCreateSerializer
+        self.serializer_class = CollectionVersionCreateSerializer
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -117,28 +116,28 @@ class SourceVersionListView(SourceVersionBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SourceVersionBaseView(ResourceVersionMixin):
+class CollectionVersionBaseView(ResourceVersionMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
-    model = SourceVersion
+    model = CollectionVersion
     permission_classes = (HasAccessToVersionedObject,)
 
 
-class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
+class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
 
     def initial(self, request, *args, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewCollection,)
-            self.serializer_class = SourceVersionDetailSerializer
+            self.serializer_class = CollectionVersionDetailSerializer
         else:
             self.permission_classes = (CanEditCollection,)
-            self.serializer_class = SourceVersionUpdateSerializer
-        super(SourceVersionRetrieveUpdateView, self).initial(request, *args, **kwargs)
+            self.serializer_class = CollectionVersionUpdateSerializer
+        super(CollectionVersionRetrieveUpdateView, self).initial(request, *args, **kwargs)
 
     def initialize(self, request, path_info_segment, **kwargs):
         self.is_latest = kwargs.pop('is_latest', False)
-        super(SourceVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
+        super(CollectionVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not self.versioned_object:
@@ -175,26 +174,26 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
             # May raise a permission denied
             self.check_object_permissions(self.request, obj)
             return obj
-        return super(SourceVersionRetrieveUpdateView, self).get_object(queryset)
+        return super(CollectionVersionRetrieveUpdateView, self).get_object(queryset)
 
 
-class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, DestroyAPIView):
+class CollectionVersionRetrieveUpdateDestroyView(CollectionVersionRetrieveUpdateView, DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         version = self.get_object()
         if version.released:
             errors = {'non_field_errors' : ['Cannot deactivate a version that is currently released.  Please release another version before deactivating this one.']}
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-        return super(SourceVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
+        return super(CollectionVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
 
 
-class SourceVersionChildListView(ResourceAttributeChildMixin, ListAPIView):
+class CollectionVersionChildListView(ResourceAttributeChildMixin, ListAPIView):
     lookup_field = 'version'
     pk_field = 'mnemonic'
-    model = SourceVersion
+    model = CollectionVersion
     permission_classes = (HasAccessToVersionedObject,)
-    serializer_class = SourceVersionListSerializer
+    serializer_class = CollectionVersionListSerializer
 
     def get_queryset(self):
-        queryset = super(SourceVersionChildListView, self).get_queryset()
+        queryset = super(CollectionVersionChildListView, self).get_queryset()
         return queryset.filter(parent_version=self.resource_version)

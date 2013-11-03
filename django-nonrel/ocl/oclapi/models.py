@@ -1,9 +1,9 @@
 import re
+from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
-from django_group_access import registration
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-]+$')
 
@@ -40,6 +40,7 @@ class SubResourceBaseModel(BaseModel):
     Its mnemonic is unique within the scope of its parent resource.
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
+    owner = models.ForeignKey(User, db_index=False)
     parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
@@ -59,7 +60,7 @@ class SubResourceBaseModel(BaseModel):
     def parent_resource_type(self):
         return self.parent.resource_type
 
-registration.register(SubResourceBaseModel)
+VERSION_TYPE = 'Version'
 
 
 class ResourceVersionModel(BaseModel):

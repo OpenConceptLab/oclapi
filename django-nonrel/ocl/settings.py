@@ -26,7 +26,8 @@ DATABASES = {
 #    },
 #    NONREL_DATABASE: {
         'ENGINE': 'django_mongodb_engine',
-        'NAME': 'ocl',
+        #'NAME': 'ocl',
+        'NAME': 'ocl2',
     }
 }
 
@@ -49,7 +50,7 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = u'525eef031d1e986eacaa8327'
+SITE_ID = u'5275921a1d1e9805364d692c'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -140,12 +141,12 @@ INSTALLED_APPS = (
     # Third-party apps:
     'djangotoolbox',
     'django_mongodb_engine',
-    'django_group_access',
     'rest_framework',
     'rest_framework.authtoken',
     #'south',
     # Project-specific apps:
     #'accounts',
+    'conceptcollections',
     'orgs',
     'oclapi',
     'sources',
