@@ -117,13 +117,6 @@ class SourceVersionListView(SourceVersionBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SourceVersionBaseView(ResourceVersionMixin):
-    lookup_field = 'version'
-    pk_field = 'mnemonic'
-    model = SourceVersion
-    permission_classes = (HasAccessToVersionedObject,)
-
-
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
 

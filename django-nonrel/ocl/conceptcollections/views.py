@@ -116,13 +116,6 @@ class CollectionVersionListView(CollectionVersionBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CollectionVersionBaseView(ResourceVersionMixin):
-    lookup_field = 'version'
-    pk_field = 'mnemonic'
-    model = CollectionVersion
-    permission_classes = (HasAccessToVersionedObject,)
-
-
 class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
 
