@@ -8,11 +8,18 @@ from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubReso
 
 
 class ConceptListSerializer(HyperlinkedResourceSerializer):
-    name = serializers.CharField(required=True, source='mnemonic')
+    id = serializers.CharField(source='mnemonic')
+    conceptClass = serializers.CharField(source='concept_class')
+    datatype = serializers.CharField()
+    source = serializers.CharField(source='parent_resource')
+    owner = serializers.CharField(source='owner_name')
+    ownerType = serializers.CharField(source='owner_type')
+    displayName = serializers.CharField(source='display_name')
+    displayLocale = serializers.CharField(source='display_locale')
 
     class Meta:
         model = Concept
-        fields = ('name', 'url')
+        fields = ('id', 'conceptClass', 'datatype', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
 
 
 class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
@@ -22,6 +29,8 @@ class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
     displayLocale = serializers.CharField(source='display_locale')
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
+    source = serializers.CharField(source='parent_resource')
+    owner = serializers.CharField(source='owner_name')
 
     class Meta:
         model = Concept

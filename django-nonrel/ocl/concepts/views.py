@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView, ListAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer
@@ -20,13 +20,14 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView):
     serializer_class = ConceptDetailSerializer
 
 
-class ConceptListView(ConceptBaseView,
-                      mixins.CreateModelMixin,
-                      mixins.ListModelMixin):
+class ConceptListView(ListAPIView):
+    model = Concept
+    queryset = Concept.objects.filter(is_active=True)
+    serializer_class = ConceptListSerializer
 
-    def get(self, request, *args, **kwargs):
-        self.serializer_class = ConceptListSerializer
-        return self.list(request, *args, **kwargs)
+
+class ConceptCreateView(ConceptBaseView,
+                        mixins.CreateModelMixin):
 
     def post(self, request, *args, **kwargs):
         self.serializer_class = ConceptCreateSerializer

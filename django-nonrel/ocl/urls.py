@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.conf.urls.defaults import url, patterns, include
-from django.core.urlresolvers import NoReverseMatch
 from rest_framework import routers
-from rest_framework.reverse import reverse
+from concepts.views import ConceptListView
 
 admin.autodiscover()
 
@@ -23,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/$', 'rest_framework.authtoken.views.obtain_auth_token'),
     url(r'^collections/', include('conceptcollections.urls')),
+    url(r'^concepts/', ConceptListView.as_view(), name='full-concept'),
     url(r'^orgs/', include('orgs.urls')),
     url(r'^sources/', include('sources.urls')),
     url(r'^users/', include('users.urls')),
@@ -30,20 +30,6 @@ urlpatterns = patterns('',
 )
 
 
-def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):
-    kwargs = kwargs or {}
-    parent = resource
-    while parent is not None:
-        if not hasattr(parent, 'get_url_kwarg'):
-            return NoReverseMatch('Cannot get URL kwarg for %s' % resource)
-        kwargs.update({parent.get_url_kwarg(): parent.mnemonic})
-        parent = parent.parent if hasattr(parent, 'parent') else None
-    return reverse(viewname, args, kwargs, request, format, **extra)
 
 
-def reverse_resource_version(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):
-    kwargs = kwargs or {}
-    kwargs.update({
-        resource.get_url_kwarg(): resource.mnemonic
-    })
-    return reverse_resource(resource.versioned_object, viewname, args, kwargs, request, format, **extra)
+

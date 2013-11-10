@@ -32,8 +32,12 @@ class Concept(SubResourceBaseModel):
         return self.names[0].locale
 
     @property
-    def source_name(self):
-        return self.source.name
+    def owner_name(self):
+        return self.parent.parent_resource
+
+    @property
+    def owner_type(self):
+        return self.parent.parent_resource_type
 
     @property
     def num_versions(self):

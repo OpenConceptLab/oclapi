@@ -1,5 +1,5 @@
 from rest_framework.relations import HyperlinkedIdentityField
-from urls import reverse_resource, reverse_resource_version
+from oclapi.utils import reverse_resource, reverse_resource_version
 
 
 class HyperlinkedResourceIdentityField(HyperlinkedIdentityField):
