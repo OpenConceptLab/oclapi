@@ -2,11 +2,10 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djangotoolbox.fields import ListField
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from settings import DEFAULT_LOCALE
 
 SOURCE_TYPE = 'Source'
-VERSION_TYPE = 'Version'
 
 DICTIONARY_SRC_TYPE = 'dictionary'
 DEFAULT_SRC_TYPE = DICTIONARY_SRC_TYPE

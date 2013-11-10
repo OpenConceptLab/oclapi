@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 
-NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-]+$')
+NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
 
 class BaseModel(models.Model):
