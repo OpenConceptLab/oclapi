@@ -4,7 +4,7 @@ from rest_framework import serializers
 from concepts.fields import LocalizedTextListField
 from concepts.models import Concept, ConceptVersion
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer
+from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer, ResourceVersionSerializer
 
 
 class ConceptListSerializer(HyperlinkedResourceSerializer):
@@ -60,6 +60,8 @@ class ConceptCreateSerializer(ConceptCreateOrUpdateSerializer):
 
     def save_object(self, obj, **kwargs):
         parent_resource = kwargs.pop('parent_resource')
+        parent_resource_version = kwargs.pop('parent_resource_version')
+        parent_resource_version_attr = kwargs.pop('parent_resource_version_attr')
         mnemonic = obj.mnemonic
         parent_resource_type = ContentType.objects.get_for_model(parent_resource)
         if Concept.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
@@ -72,6 +74,7 @@ class ConceptCreateSerializer(ConceptCreateOrUpdateSerializer):
             obj.save(**kwargs)
         except Exception as e:
             raise e
+        # Create the initial version
         version = ConceptVersion.for_concept(obj, 'INITIAL')
         version.released = True
         try:
@@ -81,5 +84,25 @@ class ConceptCreateSerializer(ConceptCreateOrUpdateSerializer):
                 obj.delete()
             finally: pass
             raise e
+        # Associate the version with a version of the parent
+        children = getattr(parent_resource_version, parent_resource_version_attr) or []
+        children += version.id
+        setattr(parent_resource_version, children)
+        try:
+            parent_resource_version.save()
+        finally: pass
 
 
+class ConceptVersionListSerializer(ResourceVersionSerializer):
+    id = serializers.CharField(source='name')
+    conceptClass = serializers.CharField(source='concept_class')
+    datatype = serializers.CharField()
+    source = serializers.CharField(source='parent_resource')
+    owner = serializers.CharField(source='owner_name')
+    ownerType = serializers.CharField(source='owner_type')
+    displayName = serializers.CharField(source='display_name')
+    displayLocale = serializers.CharField(source='display_locale')
+
+    class Meta:
+        model = ConceptVersion
+        fields = ('id', 'conceptClass', 'datatype', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')

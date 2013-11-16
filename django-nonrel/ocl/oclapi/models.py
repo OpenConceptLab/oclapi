@@ -73,8 +73,9 @@ class ResourceVersionModel(BaseModel):
     versioned_object_type = models.ForeignKey(ContentType, db_index=False)
     versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
     released = models.BooleanField(default=False, blank=True)
-    previous_version = models.ForeignKey('self', related_name='next_version', null=True, blank=True, db_index=False)
-    parent_version = models.ForeignKey('self', related_name='child_version', null=True, blank=True, db_index=False)
+    next_version = models.ForeignKey('self', related_name='previous', null=True, blank=True, db_index=False)
+    previous_version = models.ForeignKey('self', related_name='next', null=True, blank=True, db_index=False)
+    parent_version = models.ForeignKey('self', related_name='child', null=True, blank=True, db_index=False)
 
     class Meta:
         abstract = True
@@ -90,3 +91,15 @@ class ResourceVersionModel(BaseModel):
     @property
     def parent_version_mnemonic(self):
         return self.parent_version.mnemonic if self.parent_version else None
+
+    @property
+    def parent_resource(self):
+        return self.versioned_object.parent_resource
+
+    @property
+    def parent_resource_type(self):
+        return self.versioned_object.parent_resource_type
+
+    @classmethod
+    def get_latest_version_of(cls, versioned_object, version_class):
+        return version_class.objects.get(versioned_object_id=versioned_object.id, next_version__isnull=True)

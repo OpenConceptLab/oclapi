@@ -1,11 +1,10 @@
-from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView, ListAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
-from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer
+from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, ResourceVersionMixin
+from oclapi.views import SubResourceMixin, VersionedResourceChildMixin
 
 
 class ConceptBaseView(SubResourceMixin):
@@ -29,13 +28,17 @@ class ConceptListView(ListAPIView):
 class ConceptCreateView(ConceptBaseView,
                         mixins.CreateModelMixin):
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.method != 'POST':
+            delegate_view = ConceptVersionListView.as_view()
+            return delegate_view(request, *args, **kwargs)
+        return super(ConceptCreateView, self).dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         self.serializer_class = ConceptCreateSerializer
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        if not self.parent_resource:
-            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
@@ -49,39 +52,14 @@ class ConceptCreateView(ConceptBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ConceptVersionBaseView(ResourceVersionMixin):
-#     lookup_field = 'version'
-#     pk_field = 'mnemonic'
-#     model = ConceptVersion
-#     queryset = ConceptVersion.objects.filter(is_active=True)
-#     permission_classes = (HasAccessToVersionedObject,)
-#
-#
-# class ConceptVersionListView(ConceptVersionBaseView,
-#                              mixins.CreateModelMixin,
-#                              mixins.ListModelMixin):
-#
-#     def get(self, request, *args, **kwargs):
-#         self.serializer_class = ConceptVersionListSerializer
-#         return self.list(request, *args, **kwargs)
-#
-#     def post(self, request, *args, **kwargs):
-#         self.serializer_class = ConceptVersionCreateSerializer
-#         return self.create(request, *args, **kwargs)
-#
-#     def create(self, request, *args, **kwargs):
-#         if not self.versioned_object:
-#             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-#         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-#         if serializer.is_valid():
-#             self.pre_save(serializer.object)
-#             self.object = serializer.save(force_insert=True, versioned_object=self.versioned_object)
-#             if serializer.is_valid():
-#                 self.post_save(self.object, created=True)
-#                 headers = self.get_success_headers(serializer.data)
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED,
-#                                 headers=headers)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ConceptVersionBaseView(VersionedResourceChildMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = ConceptVersion
+    queryset = ConceptVersion.objects.filter(is_active=True)
+    permission_classes = (HasAccessToVersionedObject,)
+    child_list_attribute = 'concepts'
 
 
+class ConceptVersionListView(ConceptVersionBaseView, ListAPIView):
+    serializer_class = ConceptVersionListSerializer

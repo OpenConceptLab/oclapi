@@ -5,6 +5,7 @@ from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
+from oclapi.models import ResourceVersionModel
 
 
 class PathWalkerMixin():
@@ -105,6 +106,27 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
         if self.parent_resource:
             parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
+        return queryset
+
+
+class VersionedResourceChildMixin(SubResourceMixin):
+    parent_resource_version = None
+    parent_resource_version_model = None
+    child_list_attribute = None
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(VersionedResourceChildMixin, self).initialize(request, path_info_segment, **kwargs)
+        if hasattr(self.parent_resource, 'versioned_object'):
+            self.parent_resource_version = self.parent_resource
+            self.parent_resource = self.parent_resource_version.versioned_object
+        else:
+            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource,
+                                                                                      self.parent_resource_version_model)
+
+    def get_queryset(self):
+        all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
+        queryset = super(SubResourceMixin, self).get_queryset()
+        queryset = queryset.filter(id__in=all_children)
         return queryset
 
 

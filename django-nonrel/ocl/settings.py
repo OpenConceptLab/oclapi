@@ -26,7 +26,7 @@ DATABASES = {
 #    },
 #    NONREL_DATABASE: {
         'ENGINE': 'django_mongodb_engine',
-        'NAME': 'ocl',
+        'NAME': 'ocl2',
     }
 }
 
