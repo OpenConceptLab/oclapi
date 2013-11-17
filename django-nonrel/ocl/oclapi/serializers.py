@@ -44,8 +44,9 @@ class HyperlinkedSubResourceSerializer(HyperlinkedResourceSerializer):
     """
     def get_default_fields(self):
         default_fields = super(HyperlinkedSubResourceSerializer, self).get_default_fields()
+        parent_resource = self.object.parent if hasattr(self.object, 'parent') else self.object.versioned_object.parent
         default_fields.update({
-            'ownerUrl': HyperlinkedResourceOwnerField(view_name=self._get_default_view_name(self.object.parent))
+            'ownerUrl': HyperlinkedResourceOwnerField(view_name=self._get_default_view_name(parent_resource))
         })
         return default_fields
 

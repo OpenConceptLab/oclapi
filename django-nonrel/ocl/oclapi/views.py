@@ -104,6 +104,8 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
             else:
                 queryset = queryset.filter(or_clauses[0])
         if self.parent_resource:
+            if hasattr(self.parent_resource, 'versioned_object'):
+                self.parent_resource = self.parent_resource.versioned_object
             parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
         return queryset
@@ -115,14 +117,18 @@ class VersionedResourceChildMixin(SubResourceMixin):
     child_list_attribute = None
 
     def initialize(self, request, path_info_segment, **kwargs):
-        super(VersionedResourceChildMixin, self).initialize(request, path_info_segment, **kwargs)
+        levels = 1 if self.model.get_url_kwarg() in kwargs else 0
+        levels = levels + 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else levels + 2
+        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=levels)
+        self.parent_resource = None
+        if self.parent_path_info and '/' != self.parent_path_info:
+            self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
         if hasattr(self.parent_resource, 'versioned_object'):
             self.parent_resource_version = self.parent_resource
             self.parent_resource = self.parent_resource_version.versioned_object
         else:
             self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource,
                                                                                       self.parent_resource_version_model)
-
     def get_queryset(self):
         all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
         queryset = super(SubResourceMixin, self).get_queryset()

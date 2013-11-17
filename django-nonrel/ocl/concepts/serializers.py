@@ -106,3 +106,18 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     class Meta:
         model = ConceptVersion
         fields = ('id', 'conceptClass', 'datatype', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
+
+
+class ConceptVersionDetailSerializer(ResourceVersionSerializer):
+    id = serializers.CharField(source='name')
+    conceptClass = serializers.CharField(source='concept_class')
+    datatype = serializers.CharField()
+    displayName = serializers.CharField(source='display_name')
+    displayLocale = serializers.CharField(source='display_locale')
+    names = LocalizedTextListField()
+    descriptions = LocalizedTextListField()
+    source = serializers.CharField(source='parent_resource')
+    owner = serializers.CharField(source='owner_name')
+
+    class Meta:
+        model = ConceptVersion
