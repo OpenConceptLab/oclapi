@@ -30,6 +30,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView):
             return delegate_view(request, *args, **kwargs)
         return super(ConceptRetrieveUpdateDestroyView, self).dispatch(request, *args, **kwargs)
 
+
 class ConceptListView(ListAPIView):
     model = Concept
     queryset = Concept.objects.filter(is_active=True)
@@ -61,6 +62,13 @@ class ConceptCreateView(ConceptBaseView,
                                 headers=headers)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConceptVersionsView(SubResourceMixin, ListAPIView):
+    serializer_class = ConceptVersionListSerializer
+
+    def get_queryset(self):
+        return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id)
 
 
 class ConceptVersionBaseView(VersionedResourceChildMixin):
