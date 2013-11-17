@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djangotoolbox.fields import ListField
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from oclapi.mixins import ConceptContainerMixin, ConceptContainerVersionMixin
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel
 from settings import DEFAULT_LOCALE
 
 SOURCE_TYPE = 'Source'
@@ -21,7 +22,7 @@ ACCESS_TYPE_CHOICES = (('View', 'View'),
                        ('None', 'None'))
 
 
-class Source(SubResourceBaseModel):
+class Source(SubResourceBaseModel, ConceptContainerMixin):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)
@@ -31,20 +32,20 @@ class Source(SubResourceBaseModel):
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    @property
-    def num_versions(self):
-        return SourceVersion.objects.filter(versioned_object_id=self.id).count()
-
     @classmethod
     def resource_type(cls):
         return SOURCE_TYPE
+
+    @classmethod
+    def get_version_model(cls):
+        return SourceVersion
 
     @staticmethod
     def get_url_kwarg():
         return 'source'
 
 
-class SourceVersion(ResourceVersionModel):
+class SourceVersion(ResourceVersionModel, ConceptContainerVersionMixin):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)
@@ -56,7 +57,7 @@ class SourceVersion(ResourceVersionModel):
     concepts = ListField()
 
     @classmethod
-    def for_source(cls, source, label, previous_version=None, parent_version=None):
+    def for_base_object(cls, source, label, previous_version=None, parent_version=None):
         return SourceVersion(
             mnemonic=label,
             name=source.name,
@@ -74,13 +75,6 @@ class SourceVersion(ResourceVersionModel):
             parent_version=parent_version
         )
 
-    @classmethod
-    def resource_type(cls):
-        return VERSION_TYPE
-
-    @staticmethod
-    def get_url_kwarg():
-        return 'version'
 
 admin.site.register(Source)
 admin.site.register(SourceVersion)

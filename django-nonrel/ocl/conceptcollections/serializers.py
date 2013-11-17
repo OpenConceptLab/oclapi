@@ -68,28 +68,8 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
-        parent_resource = kwargs.pop('parent_resource')
-        mnemonic = obj.mnemonic
-        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
-        if Collection.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
-            self._errors['mnemonic'] = 'Collection with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
-            return
-        obj.parent = parent_resource
-        user = kwargs.pop('owner')
-        obj.owner = user
-        try:
-            obj.save(**kwargs)
-        except Exception as e:
-            raise e
-        version = CollectionVersion.for_collection(obj, 'INITIAL')
-        version.released = True
-        try:
-            version.save()
-        except Exception as e:
-            try:
-                obj.delete()
-            finally: pass
-            raise e
+        errors = Collection.persist_new(obj, **kwargs)
+        self._errors.update(errors)
 
 
 class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
@@ -103,15 +83,8 @@ class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
     website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
-        parent_resource = kwargs.pop('parent_resource')
-        mnemonic = obj.mnemonic
-        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
-        matching_collections = Collection.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic)
-        if matching_collections.exists():
-            if matching_collections[0] != obj:
-                self._errors['mnemonic'] = 'Collection with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
-                return
-        obj.save(**kwargs)
+        errors = Collection.persist_changes(obj, **kwargs)
+        self._errors.update(errors)
 
 
 class CollectionVersionListSerializer(ResourceVersionSerializer):
@@ -166,43 +139,8 @@ class CollectionVersionCreateOrUpdateSerializer(serializers.Serializer):
         return instance
 
     def save_object(self, obj, **kwargs):
-        versioned_object = kwargs.pop('versioned_object', None)
-        if versioned_object is None:
-            self._errors['non_field_errors'] = ['Must specify a versioned object.']
-            return
-        if obj._previous_version_mnemonic:
-            previous_version_queryset = CollectionVersion.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._previous_version_mnemonic)
-            if not previous_version_queryset.exists():
-                self._errors['previousVersion'] = ["Previous version %s does not exist." % obj._previous_version_mnemonic]
-            elif obj.mnemonic == obj._previous_version_mnemonic:
-                self._errors['previousVersion'] = ["Previous version cannot be the same as current version."]
-            else:
-                obj.previous_version = previous_version_queryset[0]
-                del(obj._previous_version_mnemonic)
-        if obj._parent_version_mnemonic:
-            parent_version_queryset = CollectionVersion.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._parent_version_mnemonic)
-            if not parent_version_queryset.exists():
-                self._errors['parentVersion'] = ["Parent version %s does not exist." % obj._parent_version_mnemonic]
-            elif obj.mnemonic == obj._parent_version_mnemonic:
-                self._errors['parentVersion'] = ["Parent version cannot be the same as current version."]
-            else:
-                obj.parent_version = parent_version_queryset[0]
-                del(obj._parent_version_mnemonic)
-        if self._errors:
-            return
-        obj.versioned_object = versioned_object
-        error_cause = 'updating version'
-        try:
-            release_version = obj._release_version
-            del(obj._release_version)
-            obj.save(**kwargs)
-            if release_version:
-                error_cause = 'updating released statuses'
-                for v in CollectionVersion.objects.filter(versioned_object_id=versioned_object.id, released=True).exclude(mnemonic=obj.mnemonic):
-                    v.released = False
-                    v.save()
-        except:
-            self._errors['non_field_errors'] = ["Encountered an error while %s." % error_cause]
+        errors = CollectionVersion.persist_changes(obj, **kwargs)
+        self._errors.update(errors)
 
 
 class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerializer):
@@ -226,11 +164,5 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
         return super(CollectionVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
     def save_object(self, obj, **kwargs):
-        versioned_object = kwargs.get('versioned_object', None)
-        if versioned_object is None:
-            self._errors['non_field_errors'] = ['Must specify a versioned object.']
-            return
-        if CollectionVersion.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj.mnemonic).exists():
-            self._errors['mnemonic'] = ["Version with mnemonic %s already exists for source %s." % (obj.mnemonic, versioned_object.mnemonic)]
-            return
-        super(CollectionVersionCreateSerializer, self).save_object(obj, **kwargs)
+        errors = CollectionVersion.persist_new(obj, **kwargs)
+        self._errors.update(errors)

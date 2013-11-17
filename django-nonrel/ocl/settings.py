@@ -26,7 +26,7 @@ DATABASES = {
 #    },
 #    NONREL_DATABASE: {
         'ENGINE': 'django_mongodb_engine',
-        'NAME': 'ocl2',
+        'NAME': 'ocl',
     }
 }
 
@@ -49,7 +49,7 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = u'5275921a1d1e9805364d692c'
+SITE_ID = u'528927d31d1e986bd7104d43'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.

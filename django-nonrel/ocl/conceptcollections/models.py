@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from djangotoolbox.fields import ListField
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from oclapi.mixins import ConceptContainerMixin, ConceptContainerVersionMixin
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel
 from settings import DEFAULT_LOCALE
 
 COLLECTION_TYPE = 'Collection'
@@ -15,7 +16,7 @@ ACCESS_TYPE_CHOICES = (('View', 'View'),
                        ('None', 'None'))
 
 
-class Collection(SubResourceBaseModel):
+class Collection(SubResourceBaseModel, ConceptContainerMixin):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
@@ -24,20 +25,20 @@ class Collection(SubResourceBaseModel):
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    @property
-    def num_versions(self):
-        return CollectionVersion.objects.filter(versioned_object_id=self.id).count()
-
     @classmethod
     def resource_type(cls):
         return COLLECTION_TYPE
+
+    @classmethod
+    def get_version_model(cls):
+        return CollectionVersion
 
     @staticmethod
     def get_url_kwarg():
         return 'collection'
 
 
-class CollectionVersion(ResourceVersionModel):
+class CollectionVersion(ResourceVersionModel, ConceptContainerVersionMixin):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
@@ -48,7 +49,7 @@ class CollectionVersion(ResourceVersionModel):
     concepts = ListField()
 
     @classmethod
-    def for_collection(cls, collection, label, previous_version=None, parent_version=None):
+    def for_base_object(cls, collection, label, previous_version=None, parent_version=None):
         return CollectionVersion(
             mnemonic=label,
             name=collection.name,
@@ -65,13 +66,6 @@ class CollectionVersion(ResourceVersionModel):
             parent_version=parent_version
         )
 
-    @classmethod
-    def resource_type(cls):
-        return VERSION_TYPE
-
-    @staticmethod
-    def get_url_kwarg():
-        return 'version'
 
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
