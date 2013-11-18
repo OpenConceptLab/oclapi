@@ -42,8 +42,10 @@ class Concept(SubResourceBaseModel):
         errors = dict()
         user = kwargs.pop('owner')
         parent_resource = kwargs.pop('parent_resource')
-        parent_resource_version = kwargs.pop('parent_resource_version')
-        child_list_attribute = kwargs.pop('child_list_attribute')
+        parent_resource_version = kwargs.pop('parent_resource_version', None)
+        if parent_resource_version is None:
+            parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
+        child_list_attribute = kwargs.pop('child_list_attribute', None)
         mnemonic = obj.mnemonic
         parent_resource_type = ContentType.objects.get_for_model(parent_resource)
         if Concept.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():

@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404
 from rest_framework.response import Response
@@ -14,11 +15,13 @@ class ConceptBaseView(SubResourceMixin):
     model = Concept
     queryset = Concept.objects.filter(is_active=True)
     permission_classes = (HasAccessToVersionedObject,)
+    child_list_attribute = 'concepts'
 
 
 class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView):
     serializer_class = ConceptDetailSerializer
 
+    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         if request.method != 'POST':
             self.kwargs = kwargs
@@ -40,6 +43,7 @@ class ConceptListView(ListAPIView):
 class ConceptCreateView(ConceptBaseView,
                         mixins.CreateModelMixin):
 
+    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         if request.method != 'POST':
             delegate_view = ConceptVersionListView.as_view()
@@ -54,7 +58,13 @@ class ConceptCreateView(ConceptBaseView,
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, owner=request.user, parent_resource=self.parent_resource)
+            save_kwargs = {
+                'force_insert': True,
+                'owner': request.user,
+                'parent_resource': self.parent_resource,
+                'child_list_attribute': self.child_list_attribute
+            }
+            self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)

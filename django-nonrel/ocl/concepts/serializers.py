@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.fields import LocalizedTextListField
