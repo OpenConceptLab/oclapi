@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 
@@ -36,6 +36,41 @@ class Concept(SubResourceBaseModel):
     @classmethod
     def resource_type(cls):
         return CONCEPT_TYPE
+
+    @classmethod
+    def persist_new(cls, obj, **kwargs):
+        errors = dict()
+        user = kwargs.pop('owner')
+        parent_resource = kwargs.pop('parent_resource')
+        parent_resource_version = kwargs.pop('parent_resource_version')
+        child_list_attribute = kwargs.pop('child_list_attribute')
+        mnemonic = obj.mnemonic
+        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
+        if Concept.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
+            errors['mnemonic'] = 'Concept with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
+            return errors
+        with transaction.commit_on_success():
+            errored_action = 'saving concept'
+            try:
+                obj.parent = parent_resource
+                obj.owner = user
+                obj.save(**kwargs)
+
+                # Create the initial version
+                errored_action = 'creating initial version of concept'
+                version = ConceptVersion.for_concept(obj, 'INITIAL')
+                version.released = True
+                version.save()
+
+                # Associate the version with a version of the parent
+                errored_action = 'associating concept with parent'
+                children = getattr(parent_resource_version, child_list_attribute) or []
+                children.append(version.id)
+                setattr(parent_resource_version, child_list_attribute, children)
+                parent_resource_version.save()
+            except Exception as e:
+                errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
+        return errors
 
     @staticmethod
     def get_url_kwarg():

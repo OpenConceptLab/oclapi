@@ -59,38 +59,8 @@ class ConceptCreateSerializer(ConceptCreateOrUpdateSerializer):
     descriptions = LocalizedTextListField(required=False)
 
     def save_object(self, obj, **kwargs):
-        parent_resource = kwargs.pop('parent_resource')
-        parent_resource_version = kwargs.pop('parent_resource_version')
-        parent_resource_version_attr = kwargs.pop('parent_resource_version_attr')
-        mnemonic = obj.mnemonic
-        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
-        if Concept.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
-            self._errors['mnemonic'] = 'Concept with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
-            return
-        obj.parent = parent_resource
-        user = kwargs.pop('owner')
-        obj.owner = user
-        try:
-            obj.save(**kwargs)
-        except Exception as e:
-            raise e
-        # Create the initial version
-        version = ConceptVersion.for_concept(obj, 'INITIAL')
-        version.released = True
-        try:
-            version.save()
-        except Exception as e:
-            try:
-                obj.delete()
-            finally: pass
-            raise e
-        # Associate the version with a version of the parent
-        children = getattr(parent_resource_version, parent_resource_version_attr) or []
-        children += version.id
-        setattr(parent_resource_version, children)
-        try:
-            parent_resource_version.save()
-        finally: pass
+        errors = Concept.persist_new(obj, **kwargs)
+        self._errors.update(errors)
 
 
 class ConceptVersionListSerializer(ResourceVersionSerializer):

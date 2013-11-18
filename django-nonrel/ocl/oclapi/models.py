@@ -101,6 +101,6 @@ class ResourceVersionModel(BaseModel):
         return self.versioned_object.parent_resource_type
 
     @classmethod
-    def get_latest_version_of(cls, versioned_object, version_class):
-        versions = version_class.objects.filter(versioned_object_id=versioned_object.id, is_active=True).order_by('-created_at')
-        return versions[0]
+    def get_latest_version_of(cls, versioned_object):
+        versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, is_active=True).order_by('-created_at')
+        return versions[0] if versions else None
