@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from sources.models import SourceVersion
 
 CONCEPT_TYPE = 'Concept'
 
@@ -96,6 +97,10 @@ class Concept(SubResourceBaseModel):
                 return name.locale
         return obj.names[0].locale
 
+    @staticmethod
+    def get_version_model():
+        return ConceptVersion
+
 
 class LocalizedText(models.Model):
     name = models.TextField()
@@ -109,6 +114,20 @@ class ConceptVersion(ResourceVersionModel):
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField('LocalizedText'))
     descriptions = ListField(EmbeddedModelField('LocalizedText'))
+
+    def clone(self):
+        return ConceptVersion(
+            mnemonic='_TEMP',
+            concept_class=self.concept_class,
+            datatype=self.datatype,
+            names=self.names,
+            descriptions=self.descriptions,
+            versioned_object_id=self.versioned_object_id,
+            versioned_object_type=self.versioned_object_type,
+            released=self.released,
+            previous_version=self,
+            parent_version=self.parent_version
+        )
 
     @property
     def name(self):
@@ -144,6 +163,29 @@ class ConceptVersion(ResourceVersionModel):
             previous_version=previous_version,
             parent_version=parent_version
         )
+
+    @classmethod
+    def persist_new(cls, obj, **kwargs):
+        errors = dict()
+        with transaction.commit_on_success():
+            errored_action = 'saving new concept version'
+            try:
+                obj.save(**kwargs)
+                obj.mnemonic = obj.id
+                obj.save()
+
+                errored_action = 'setting next_version attribute on previous version'
+                previous_version = obj.previous_version
+                previous_version.next_version = obj
+                previous_version.save()
+
+                errored_action = 'replacing previous version in latest version of source'
+                source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)
+                source_version.update_concept_version(obj)
+                source_version.save()
+            except Exception as e:
+                errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
+        return errors
 
     @classmethod
     def resource_type(cls):

@@ -35,7 +35,13 @@ class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
         model = Concept
 
 
-class ConceptCreateOrUpdateSerializer(serializers.Serializer):
+class ConceptCreateSerializer(serializers.Serializer):
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    conceptClass = serializers.CharField(required=True, source='concept_class')
+    datatype = serializers.CharField(required=False)
+    names = LocalizedTextListField(required=True)
+    descriptions = LocalizedTextListField(required=False)
+
     class Meta:
         model = Concept
         lookup_field = 'mnemonic'
@@ -48,14 +54,6 @@ class ConceptCreateOrUpdateSerializer(serializers.Serializer):
         concept.names = attrs.get('names', concept.names)  # Is this desired behavior??
         concept.descriptions = attrs.get('descriptions', concept.descriptions)  # Is this desired behavior??
         return concept
-
-
-class ConceptCreateSerializer(ConceptCreateOrUpdateSerializer):
-    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
-    conceptClass = serializers.CharField(required=True, source='concept_class')
-    datatype = serializers.CharField(required=False)
-    names = LocalizedTextListField(required=True)
-    descriptions = LocalizedTextListField(required=False)
 
     def save_object(self, obj, **kwargs):
         errors = Concept.persist_new(obj, **kwargs)
@@ -90,3 +88,25 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
 
     class Meta:
         model = ConceptVersion
+
+
+class ConceptVersionUpdateSerializer(serializers.Serializer):
+    conceptClass = serializers.CharField(required=True, source='concept_class')
+    datatype = serializers.CharField(required=False)
+    names = LocalizedTextListField(required=True)
+    descriptions = LocalizedTextListField(required=False)
+
+    class Meta:
+        model = ConceptVersion
+
+    def restore_object(self, attrs, instance=None):
+        instance.concept_class = attrs.get('concept_class', instance.concept_class)
+        instance.datatype = attrs.get('datatype', instance.datatype)
+        instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
+        instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
+        return instance
+
+    def save_object(self, obj, **kwargs):
+        errors = ConceptVersion.persist_new(obj, **kwargs)
+        self._errors.update(errors)
+

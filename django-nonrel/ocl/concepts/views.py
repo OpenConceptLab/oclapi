@@ -1,9 +1,9 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404
+from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404, UpdateAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
-from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer
+from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer
 from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import SubResourceMixin, VersionedResourceChildMixin
 from sources.models import SourceVersion
@@ -18,12 +18,12 @@ class ConceptBaseView(SubResourceMixin):
     child_list_attribute = 'concepts'
 
 
-class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView):
+class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateAPIView):
     serializer_class = ConceptDetailSerializer
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        if request.method != 'POST':
+        if request.method != 'PUT':
             self.kwargs = kwargs
             self.request = self.initialize_request(request, *args, **kwargs)
             self.initial(self.request, *args, **kwargs)
@@ -32,6 +32,31 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView):
             delegate_view = ConceptVersionRetrieveView.as_view()
             return delegate_view(request, *args, **kwargs)
         return super(ConceptRetrieveUpdateDestroyView, self).dispatch(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self.serializer_class = ConceptVersionUpdateSerializer
+        partial = kwargs.pop('partial', True)
+        self.object = self.get_object_or_none()
+
+        if self.object is None:
+            return Response({'non_field_errors': 'Could not find concept to update'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            latest_version = ConceptVersion.get_latest_version_of(self.object)
+            self.object = latest_version.clone()
+            save_kwargs = {'force_update': False}
+            success_status_code = status.HTTP_200_OK
+
+        serializer = self.get_serializer(self.object, data=request.DATA,
+                                         files=request.FILES, partial=partial)
+
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            self.object = serializer.save(**save_kwargs)
+            if serializer.is_valid():
+                self.post_save(self.object, created=True)
+                return Response(serializer.data, status=success_status_code)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConceptListView(ListAPIView):

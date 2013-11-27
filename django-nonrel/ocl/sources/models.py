@@ -56,6 +56,14 @@ class SourceVersion(ResourceVersionModel, ConceptContainerVersionMixin):
     description = models.TextField(null=True, blank=True)
     concepts = ListField()
 
+    def update_concept_version(self, concept_version):
+        previous_version = concept_version.previous_version
+        if previous_version and previous_version.id in self.concepts:
+            index = self.concepts.index(previous_version.id)
+            self.concepts[index] = concept_version.id
+        else:
+            self.concepts.append(concept_version.id)
+
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None):
         return SourceVersion(
