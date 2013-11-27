@@ -13,6 +13,7 @@ class Concept(SubResourceBaseModel):
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField('LocalizedText'))
     descriptions = ListField(EmbeddedModelField('LocalizedText'))
+    retired = models.BooleanField(default=False)
 
     @property
     def display_name(self):
@@ -75,6 +76,28 @@ class Concept(SubResourceBaseModel):
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
         return errors
 
+    @classmethod
+    def retire(cls, concept):
+        concept.retired = True
+        latest_version = ConceptVersion.get_latest_version_of(concept)
+        retired_version = latest_version.clone()
+        retired_version.retired = True
+        latest_source_version = SourceVersion.get_latest_version_of(concept.parent)
+        with transaction.commit_on_success():
+            concept.save()
+
+            retired_version.save()
+            retired_version.mnemonic = retired_version.id
+            retired_version.save()
+
+            previous_version = retired_version.previous_version
+            if previous_version:
+                previous_version.next_version = retired_version
+                previous_version.save()
+
+            latest_source_version.update_concept_version(retired_version)
+            latest_source_version.save()
+
     @staticmethod
     def get_url_kwarg():
         return 'concept'
@@ -114,6 +137,7 @@ class ConceptVersion(ResourceVersionModel):
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField('LocalizedText'))
     descriptions = ListField(EmbeddedModelField('LocalizedText'))
+    retired = models.BooleanField(default=False)
 
     def clone(self):
         return ConceptVersion(
@@ -122,6 +146,7 @@ class ConceptVersion(ResourceVersionModel):
             datatype=self.datatype,
             names=self.names,
             descriptions=self.descriptions,
+            retired=self.retired,
             versioned_object_id=self.versioned_object_id,
             versioned_object_type=self.versioned_object_type,
             released=self.released,
@@ -157,6 +182,7 @@ class ConceptVersion(ResourceVersionModel):
             datatype=concept.datatype,
             names=concept.names,
             descriptions=concept.descriptions,
+            retired=concept.retired,
             versioned_object_id=concept.id,
             versioned_object_type=ContentType.objects.get_for_model(Concept),
             released=False,

@@ -1,6 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404, UpdateAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer
@@ -18,12 +18,12 @@ class ConceptBaseView(SubResourceMixin):
     child_list_attribute = 'concepts'
 
 
-class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateAPIView):
+class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
     serializer_class = ConceptDetailSerializer
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        if request.method != 'PUT':
+        if request.method == 'GET':
             self.kwargs = kwargs
             self.request = self.initialize_request(request, *args, **kwargs)
             self.initial(self.request, *args, **kwargs)
@@ -57,6 +57,13 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        concept = self.get_object_or_none()
+        if concept is None:
+            return Response({'non_field_errors': 'Could not find concept to retire'}, status=status.HTTP_404_NOT_FOUND)
+        Concept.retire(concept)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ConceptListView(ListAPIView):

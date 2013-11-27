@@ -10,6 +10,7 @@ class ConceptListSerializer(HyperlinkedResourceSerializer):
     id = serializers.CharField(source='mnemonic')
     conceptClass = serializers.CharField(source='concept_class')
     datatype = serializers.CharField()
+    retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
     ownerType = serializers.CharField(source='owner_type')
@@ -18,7 +19,7 @@ class ConceptListSerializer(HyperlinkedResourceSerializer):
 
     class Meta:
         model = Concept
-        fields = ('id', 'conceptClass', 'datatype', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
+        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
 
 
 class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
@@ -28,6 +29,7 @@ class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
     displayLocale = serializers.CharField(source='display_locale')
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
+    retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
 
@@ -64,6 +66,7 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='name')
     conceptClass = serializers.CharField(source='concept_class')
     datatype = serializers.CharField()
+    retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
     ownerType = serializers.CharField(source='owner_type')
@@ -72,7 +75,7 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
 
     class Meta:
         model = ConceptVersion
-        fields = ('id', 'conceptClass', 'datatype', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
+        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
 
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
@@ -83,6 +86,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     displayLocale = serializers.CharField(source='display_locale')
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
+    retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
 
