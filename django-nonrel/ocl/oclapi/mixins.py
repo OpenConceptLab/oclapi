@@ -70,6 +70,7 @@ class ConceptContainerVersionMixin(object):
         if cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj.mnemonic).exists():
             errors['mnemonic'] = ["Version with mnemonic %s already exists for source %s." % (obj.mnemonic, versioned_object.mnemonic)]
             return errors
+        kwargs['seed_concepts'] = True
         return cls.persist_changes(obj, **kwargs)
 
     @classmethod
@@ -99,6 +100,11 @@ class ConceptContainerVersionMixin(object):
                 del obj._parent_version_mnemonic
         if errors:
             return errors
+        seed_concepts = kwargs.pop('seed_concepts', False)
+        if seed_concepts:
+            seed_concepts_from = obj.previous_version or obj.parent_version
+            if seed_concepts_from:
+                obj.concepts = list(seed_concepts_from.concepts)
         with transaction.commit_on_success():
             obj.versioned_object = versioned_object
             release_version = obj._release_version

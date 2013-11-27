@@ -62,8 +62,10 @@ class Concept(SubResourceBaseModel):
 
                 # Create the initial version
                 errored_action = 'creating initial version of concept'
-                version = ConceptVersion.for_concept(obj, 'INITIAL')
+                version = ConceptVersion.for_concept(obj, '_TEMP')
                 version.released = True
+                version.save()
+                version.mnemonic = version.id
                 version.save()
 
                 # Associate the version with a version of the parent
