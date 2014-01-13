@@ -5,6 +5,9 @@ __author__ = 'misternando'
 
 
 def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):
+    """
+    Generate the URL for the view specified as viewname of the object specified as resource.
+    """
     kwargs = kwargs or {}
     parent = resource
     while parent is not None:
@@ -16,6 +19,10 @@ def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, f
 
 
 def reverse_resource_version(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):
+    """
+    Generate the URL for the view specified as viewname of the object that is versioned by the object specified as resource.
+    Assumes that resource extends ResourceVersionMixin, and therefore has a versioned_object attribute.
+    """
     kwargs = kwargs or {}
     kwargs.update({
         resource.get_url_kwarg(): resource.mnemonic

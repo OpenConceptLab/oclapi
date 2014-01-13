@@ -5,9 +5,8 @@ from users.models import UserProfile
 
 class HasOwnership(BasePermission):
     """
-    The request is authenticated as a user, and the user is a member of the referenced organization
+    The request is authenticated, and the user is a member of the referenced organization
     """
-
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
@@ -22,6 +21,10 @@ class HasOwnership(BasePermission):
 
 
 class HasPrivateAccess(BasePermission):
+    """
+    Current user is authenticated as a staff user, or is designated as the referenced object's owner,
+    or belongs to an organization that is designated as the referenced object's owner.
+    """
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
@@ -35,6 +38,11 @@ class HasPrivateAccess(BasePermission):
 
 
 class HasAccessToVersionedObject(BasePermission):
+    """
+    Current user is authenticated as a staff user, or is designated as the owner of the object
+    that is versioned by the referenced object, or is a member of an organization
+    that is designated as the owner of the object that is versioned by the referenced object.
+    """
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True

@@ -6,7 +6,10 @@ __author__ = 'misternando'
 
 
 class ConceptContainerMixin(object):
-
+    """
+    This class abstracts away some of the functionality of resources that contain Concepts.
+    ConceptCollections and Sources are 2 concrete examples of ConceptContainers.
+    """
     @property
     def num_versions(self):
         return self.get_version_model().objects.filter(versioned_object_id=self.id).count()
@@ -47,7 +50,10 @@ class ConceptContainerMixin(object):
 
 
 class ConceptContainerVersionMixin(object):
-
+    """
+    This class abstracts away some of the functionality of ConceptContainer versions.
+    ConceptCollectionVersion and SourceVersion are 2 concrete examples of ConceptContainerVersions.
+    """
     @classmethod
     def resource_type(cls):
         return VERSION_TYPE

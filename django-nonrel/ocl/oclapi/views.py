@@ -9,6 +9,9 @@ from oclapi.models import ResourceVersionModel
 
 
 class PathWalkerMixin():
+    """
+    A Mixin with methods that help resolve a resource path to a resource object
+    """
     path_info = None
 
     def get_parent_in_path(self, path_info, levels=1):
@@ -34,6 +37,12 @@ class PathWalkerMixin():
 
 
 class BaseAPIView(generics.GenericAPIView):
+    """
+    An extension of generics.GenericAPIView that:
+    1. Adds a hook for a post-initialize step
+    2. De-couples the lookup field name (in the URL) from the "filter by" field name (in the queryset)
+    3. Performs a soft delete on destroy()
+    """
     pk_field = 'mnemonic'
     user_is_self = False
 
@@ -69,6 +78,11 @@ class BaseAPIView(generics.GenericAPIView):
 
 
 class SubResourceMixin(BaseAPIView, PathWalkerMixin):
+    """
+    Base view for a sub-resource.
+    Includes a post-initialize step that determines the parent resource,
+    and a get_queryset method that applies the appropriate permissions and filtering.
+    """
     user = None
     userprofile = None
     user_is_self = False
@@ -112,6 +126,12 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
 
 
 class VersionedResourceChildMixin(SubResourceMixin):
+    """
+    Base view for a sub-resource that is a child of a versioned resource.
+    For example, a Concept is a child of a Source, which can be versioned.
+    Includes a post-initialize step that determines the parent resource,
+    and a get_queryset method that limits the scope to children of the versioned resource.
+    """
     parent_resource_version = None
     parent_resource_version_model = None
     child_list_attribute = None
@@ -140,6 +160,11 @@ class VersionedResourceChildMixin(SubResourceMixin):
 
 
 class ResourceVersionMixin(BaseAPIView, PathWalkerMixin):
+    """
+    Base view for a resource that is a version of another resource (e.g. a SourceVersion).
+    Includes a post-initialize step that determines the versioned object, and a get_queryset method
+    that limits the scope to versions of that object.
+    """
     versioned_object_path_info = None
     versioned_object = None
 
@@ -156,6 +181,12 @@ class ResourceVersionMixin(BaseAPIView, PathWalkerMixin):
 
 
 class ResourceAttributeChildMixin(BaseAPIView, PathWalkerMixin):
+    """
+    Base view for (a) child(ren) of a resource version.
+    Currently, the only instances of this view are:
+    GET [collection parent]/collections/:collection/:version/children
+    GET [source parent]/sources/:source/:version/children
+    """
     resource_version_path_info = None
     resource_version = None
 

@@ -10,6 +10,7 @@ __author__ = 'misternando'
 extra_kwargs = {'user_is_self': True}
 
 urlpatterns = patterns('',
+    # shortcuts for the currently logged-in user
     url(r'^$', UserDetailView.as_view(), extra_kwargs, name='user-self-detail'),
     url(r'^orgs/$', OrganizationListView.as_view(), extra_kwargs, name='user-organization-list'),
     url(r'^collections/$', CollectionListView.as_view(), extra_kwargs, name='user-source-list'),

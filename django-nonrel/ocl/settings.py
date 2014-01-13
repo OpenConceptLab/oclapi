@@ -1,4 +1,4 @@
-# Django settings for ocl project.
+# Django settings for the ocl project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -8,29 +8,13 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-NONREL_DATABASE = 'nonrel'
 
 DATABASES = {
     'default': {
-#        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-#        'NAME': 'ocl',                        # Or path to database file if using sqlite3.
-#        'USER': 'aaron',                      # Not used with sqlite3.
-#        'PASSWORD': '',                       # Not used with sqlite3.
-        #'PASSWORD': 'aaron',                       # Not used with sqlite3.
-#        'HOST': '',                           # Set to empty string for localhost. Not used with sqlite3.
-#        'PORT': '',                           # Set to empty string for default. Not used with sqlite3.
-#        'OPTIONS':
-#            {'init_command':
-#                  'SET storage_engine=INNODB,character_set_connection=utf8,collation_connection=utf8_unicode_ci'
-#            },
-#    },
-#    NONREL_DATABASE: {
         'ENGINE': 'django_mongodb_engine',
         'NAME': 'ocl',
     }
 }
-
-#DATABASE_ROUTERS = ['routers.NonrelRouter']
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.3/ref/settings/#allowed-hosts
@@ -49,6 +33,14 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
+# This field is unique to a deployment.
+# To determine its value for a new clean deployment, create a Site, and then run manage.py tellsiteid.
+# e.g.
+# $ manage.py shell
+# > s = Site()
+# > s.save()
+# > [CTRL-D]
+# $ manage.py tellsiteid
 SITE_ID = u'528927d31d1e986bd7104d43'
 
 # If you set this to False, Django will make some optimizations so as not
@@ -74,6 +66,7 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = ''
+# In the deployment environment, comment out the above line, and uncomment the one below
 #STATIC_ROOT = '/usr/local/wsgi/static/'
 
 # URL prefix for static files.
@@ -176,7 +169,14 @@ LOGGING = {
     }
 }
 
+# Django Rest Framework configuration
 REST_FRAMEWORK = {
+    # Default to token-based authentication; fall back on session-based
+    # A user gets a unique token upon account creation (residing in the authtoken_token data store).
+    # To pass an authentication token along with your request, include the following header:
+    # Authorization: Token [TOKEN_VALUE]
+    # e.g.
+    # Authorication: Token ad73f481096c3b6202bce395820199
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -194,4 +194,7 @@ REST_FRAMEWORK = {
     ]
 }
 
+# Model that stores auxiliary user profile attributes.
+# A user must have a profile in order to access the system.
+# (A profile is created automatically for any user created using the 'POST /users' endpoint.)
 AUTH_PROFILE_MODULE = 'users.UserProfile'

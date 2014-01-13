@@ -10,7 +10,7 @@ NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
 class BaseModel(models.Model):
     """
-    Base model for all objects in the system.  Contains timestamps and is_active field for logical deletion
+    Base model from which all resources inherit.  Contains timestamps and is_active field for logical deletion.
     """
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -23,7 +23,8 @@ class BaseModel(models.Model):
 class BaseResourceModel(BaseModel):
     """
     A base resource has a mnemonic that is unique across all objects of its type.
-    A base resource may contain sub-resources
+    A base resource may contain sub-resources.
+    (An Organization is a base resource, but a Concept is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
 
@@ -36,8 +37,9 @@ class BaseResourceModel(BaseModel):
 
 class SubResourceBaseModel(BaseModel):
     """
-    A sub-resource is an object that exists within the scope of a parent resource.
+    A sub-resource is an object that exists within the scope of its parent resource.
     Its mnemonic is unique within the scope of its parent resource.
+    (A Source is a base resource, but an Organization is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     owner = models.ForeignKey(User, db_index=False)
@@ -66,7 +68,7 @@ VERSION_TYPE = 'Version'
 class ResourceVersionModel(BaseModel):
     """
     This model represents a version of a resource.  It has links to its base resource,
-    as well as its parent and previous versions (if any)
+    as well as its parent and previous versions (if any).
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     versioned_object_id = models.TextField()

@@ -6,8 +6,8 @@ from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceO
 class HyperlinkedResourceSerializer(serializers.Serializer):
     """
     This serializer is similar to serializers.HyperlinkedModelSerializer, except it uses a different
-    field type (HyperlinkedResourceIdentifyField) to render the 'url' field.  The HyperlinkedResourceIdentityField
-    knows how to generate a URL with multiple levels of nesting.
+    field type (HyperlinkedResourceIdentifyField) to render the 'url' field.
+    HyperlinkedResourceIdentityField knows how to generate a URL with multiple levels of nesting.
     """
     _options_class = HyperlinkedModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
@@ -40,7 +40,8 @@ class HyperlinkedResourceSerializer(serializers.Serializer):
 
 class HyperlinkedSubResourceSerializer(HyperlinkedResourceSerializer):
     """
-    A HyperlinkedSubResourceSerializer generates a URL for the parent resource as well as the sub-resource
+    A HyperlinkedSubResourceSerializer generates a URL for an object that is a sub-resource,
+    and another URL for the parent of that sub-resource.
     """
     def get_default_fields(self):
         default_fields = super(HyperlinkedSubResourceSerializer, self).get_default_fields()
@@ -61,8 +62,9 @@ class ResourceVersionSerializerOptions(HyperlinkedModelSerializerOptions):
 
 class ResourceVersionSerializer(serializers.Serializer):
     """
-    A ResourceVersionSerializer generates a URL for the versioned object as well as the particular version.
-    It does not extend HyperlinkedResourceSerializer because its URL-generation strategy is different.
+    A ResourceVersionSerializer generates a URL for a particular version of a resource,
+    and another URL for the resource that is versioned.
+    It does not extend HyperlinkedResourceSerializer, because its URL-generation strategy is different.
     """
     _options_class = ResourceVersionSerializerOptions
     _default_view_name = '%(model_name)s-detail'

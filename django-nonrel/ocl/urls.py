@@ -21,11 +21,15 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/$', 'rest_framework.authtoken.views.obtain_auth_token'),
+
+    # Top-level resource endpoints
     url(r'^collections/', include('conceptcollections.urls')),
     url(r'^concepts/', ConceptListView.as_view(), name='full-concept'),
     url(r'^orgs/', include('orgs.urls')),
     url(r'^sources/', include('sources.urls')),
     url(r'^users/', include('users.urls')),
+
+    # Shortcuts to endpoints corresponding to the currently logged in user
     url(r'^user/', include('user_urls')),
 )
 
