@@ -5,7 +5,7 @@ Source for the Open Concept Lab APIs
 
 ## Local Environment Setup (on a Mac)
 
-Follow this (guide)[http://docs.python-guide.org/en/latest/starting/install/osx/] to install Python 2.7
+Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
 and set up a virtual environment.  You may wish to name your virtual environment something more descriptive,
 for example replace:
 
@@ -41,4 +41,18 @@ Solr is used to support searching across OCL API entities.  You can use Homebrew
 
 ### The Django Project
 
-Clone this repository, and `cd` into the 
+Clone this repository, and `cd` into the `django/ocl` directory.
+Before you can run the server, you will need to execute the following steps:
+
+1. Install the project dependencies:
+
+    pip install -r requirements.txt
+
+2. Create a Django `Site` and make note of its ID:
+
+    ./manage.py shell
+    >>> from django.contrib.sites.models import Site
+    >>> s = Site()
+    >>> s.save()
+    >>> \[Ctrl-D\] (to exit)
+    
