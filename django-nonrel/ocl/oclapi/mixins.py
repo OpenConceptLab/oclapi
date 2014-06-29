@@ -32,6 +32,8 @@ class ConceptContainerMixin(object):
             version = version_model.for_base_object(obj, 'INITIAL')
             version.released = True
             version.save()
+            version.mnemonic = version.id
+            version.save()
         return errors
 
     @classmethod
