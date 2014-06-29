@@ -176,7 +176,7 @@ REST_FRAMEWORK = {
     # To pass an authentication token along with your request, include the following header:
     # Authorization: Token [TOKEN_VALUE]
     # e.g.
-    # Authorication: Token ad73f481096c3b6202bce395820199
+    # Authorization: Token ad73f481096c3b6202bce395820199
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',

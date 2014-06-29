@@ -52,11 +52,5 @@ class UserProfile(BaseResourceModel):
     def get_url_kwarg():
         return 'user'
 
-    @classmethod
-    @receiver(post_save, sender=User)
-    def create_auth_token(sender, instance=None, created=False, **kwargs):
-        if created:
-            Token.objects.create(user=instance)
-
 
 admin.site.register(UserProfile)

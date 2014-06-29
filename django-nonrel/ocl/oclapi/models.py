@@ -4,6 +4,9 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
@@ -106,3 +109,9 @@ class ResourceVersionModel(BaseModel):
     def get_latest_version_of(cls, versioned_object):
         versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, is_active=True).order_by('-created_at')
         return versions[0] if versions else None
+
+
+@receiver(post_save, sender=User)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)

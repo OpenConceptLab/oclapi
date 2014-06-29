@@ -97,6 +97,8 @@ once you start up your server.
 
 The OCL API should now be running at `http://localhost:8000`.
 
+7. Test an endpoint
+
 
 
 
