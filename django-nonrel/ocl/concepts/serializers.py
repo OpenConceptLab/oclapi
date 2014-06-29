@@ -91,9 +91,11 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
+    version = serializers.CharField(source='mnemonic')
 
     class Meta:
         model = ConceptVersion
+        versioned_object_field_name = 'url'
 
 
 class ConceptVersionUpdateSerializer(serializers.Serializer):
