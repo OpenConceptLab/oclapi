@@ -62,20 +62,26 @@ Before you can run the server, you will need to execute the following steps:
 3. Replace the `SITE_ID` in your settings file.
 
    a. Open `oclapi/settings.py` and find the line containing `SITE_ID=`.
+
    b. Replace the assigned value with the one returned above.
+
    c. Keep the `u` and the single-quotes intact.  (This denotes a unicode String).
 
 4. Use `syncdb` to create your backing Mongo collections.
 
+   ```sh
    ./manage.py syncdb
+   ```
 
    If you are starting with a clean Mongo database, `syncdb` will prompt you to create a superuser.
    Follow that prompt.
 
    If you are not prompted to create a superuser, or wish to do so later, you can also use the command:
 
+   ```sh
    ./manage.py createsuperuser
-
+   ```
+   
 5. Verify your superuser and make note of your token.
 
    ```sh
