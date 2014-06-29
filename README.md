@@ -50,11 +50,13 @@ Before you can run the server, you will need to execute the following steps:
 
 2. Create a Django `Site` and make note of its ID:
 
+   ```sh
     ./manage.py shell
     \>\>\> from django.contrib.sites.models import Site
     \>\>\> s = Site()
     \>\>\> s.save()
     \>\>\> \[Ctrl-D\] (to exit)
+    ```
 
 This should end the code block.
     
