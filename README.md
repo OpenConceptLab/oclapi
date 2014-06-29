@@ -52,11 +52,53 @@ Before you can run the server, you will need to execute the following steps:
 
    ```sh
     ./manage.py shell
-    \>\>\> from django.contrib.sites.models import Site
-    \>\>\> s = Site()
-    \>\>\> s.save()
-    \>\>\> \[Ctrl-D\] (to exit)
+    >>> from django.contrib.sites.models import Site
+    >>> s = Site()
+    >>> s.save()
+    >>> [Ctrl-D] (to exit)
+    ./manage.py tellsiteid
     ```
 
-This should end the code block.
+3. Replace the `SITE_ID` in your settings file.
+   a. Open `oclapi/settings.py` and find the line containing `SITE_ID=`.
+   b. Replace the assigned value with the one returned above.
+   c. Keep the `u` and the single-quotes intact.  (This denotes a unicode String).
+
+4. Use `syncdb` to create your backing Mongo collections.
+
+   ./manage.py syncdb
+
+If you are starting with a clean Mongo database, `syncdb` will prompt you to create a superuser.
+Follow that prompt.
+
+If you are not prompted to create a superuser, or wish to do so later, you can also use the command:
+
+   ./manage.py createsuperuser
+
+5. Verify your superuser and make note of your token.
+
+    ```sh
+    $ mongo
+    > use ocl
+    > db.auth_user.find({'is_superuser':true})
+    ```
+
+This should revel the superuser you just created.  Note the user's _id (e.g. `ObjectId("528927fb2f3e986be1627d6d")`),
+and use it to locate your token:
+
+     > db.authtoken_token.find({'user_id': ObjectId("528927fb2f3e986be1627d6d")})[0]
+
+Make note of the token `_id` (e.g. `"20e6ac8fe09129debac2929f4a20a56bea801165"`).  You will need this to access your endpoints
+once you start up your server.
+
+6. Run the lightweight web server that ships with Django.
+
+   ./manage.py runserver
+
+The OCL API should now be running at `http://localhost:8000`.
+
+
+
+
+
     
