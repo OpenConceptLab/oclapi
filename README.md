@@ -68,36 +68,45 @@ Before you can run the server, you will need to execute the following steps:
 
    ./manage.py syncdb
 
-If you are starting with a clean Mongo database, `syncdb` will prompt you to create a superuser.
-Follow that prompt.
+   If you are starting with a clean Mongo database, `syncdb` will prompt you to create a superuser.
+   Follow that prompt.
 
-If you are not prompted to create a superuser, or wish to do so later, you can also use the command:
+   If you are not prompted to create a superuser, or wish to do so later, you can also use the command:
 
    ./manage.py createsuperuser
 
 5. Verify your superuser and make note of your token.
 
-    ```sh
-    $ mongo
-    > use ocl
-    > db.auth_user.find({'is_superuser':true})
-    ```
+   ```sh
+   $ mongo
+   > use ocl
+   > db.auth_user.find({'is_superuser':true})
+   ```
 
-This should revel the superuser you just created.  Note the user's _id (e.g. `ObjectId("528927fb2f3e986be1627d6d")`),
-and use it to locate your token:
+   This should revel the superuser you just created.  Note the user's _id (e.g. `ObjectId("528927fb2f3e986be1627d6d")`),
+   and use it to locate your token:
 
-     > db.authtoken_token.find({'user_id': ObjectId("528927fb2f3e986be1627d6d")})[0]
+   > db.authtoken_token.find({'user_id': ObjectId("528927fb2f3e986be1627d6d")})[0]
 
-Make note of the token `_id` (e.g. `"20e6ac8fe09129debac2929f4a20a56bea801165"`).  You will need this to access your endpoints
-once you start up your server.
+   Make note of the token `_id` (e.g. `"20e6ac8fe09129debac2929f4a20a56bea801165"`).  You will need this to access your endpoints
+   once you start up your server.
 
 6. Run the lightweight web server that ships with Django.
 
    ./manage.py runserver
 
-The OCL API should now be running at `http://localhost:8000`.
+   The OCL API should now be running at `http://localhost:8000`.
 
-7. Test an endpoint
+7. Test an endpoint.
+   Remember, the API uses token-based authentication, so you can't just plug an endpoint into a browser and hit Return.
+   You'll need to use a tool that allows you to specify a header with your request.  One simple example is `curl`:
+
+   ```sh   
+   curl -H "Authorization: Token c1328d443285f2c933775574e83fe3abfe6d7c0d" http://localhost:8000/users/
+   ```
+
+   I recommend using the [Advanced REST Client](https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo?hl=en-US) app for Chrome.
+   This provides you with a nice editor for passing parameters along with your `POST` and `PUT` requests.
 
 
 
