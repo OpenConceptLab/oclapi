@@ -86,7 +86,9 @@ Before you can run the server, you will need to execute the following steps:
    This should revel the superuser you just created.  Note the user's _id (e.g. `ObjectId("528927fb2f3e986be1627d6d")`),
    and use it to locate your token:
 
+   ```sh
    > db.authtoken_token.find({'user_id': ObjectId("528927fb2f3e986be1627d6d")})[0]
+   ```
 
    Make note of the token `_id` (e.g. `"20e6ac8fe09129debac2929f4a20a56bea801165"`).  You will need this to access your endpoints
    once you start up your server.
