@@ -60,6 +60,7 @@ Before you can run the server, you will need to execute the following steps:
     ```
 
 3. Replace the `SITE_ID` in your settings file.
+
    a. Open `oclapi/settings.py` and find the line containing `SITE_ID=`.
    b. Replace the assigned value with the one returned above.
    c. Keep the `u` and the single-quotes intact.  (This denotes a unicode String).
@@ -100,6 +101,7 @@ Before you can run the server, you will need to execute the following steps:
    The OCL API should now be running at `http://localhost:8000`.
 
 7. Test an endpoint.
+   
    Remember, the API uses token-based authentication, so you can't just plug an endpoint into a browser and hit Return.
    You'll need to use a tool that allows you to specify a header with your request.  One simple example is `curl`:
 
@@ -111,12 +113,30 @@ Before you can run the server, you will need to execute the following steps:
    This provides you with a nice editor for passing parameters along with your `POST` and `PUT` requests.
 
 8. Create an API user.
+   
    Your superuser is not a valid API user, because it was not created via the `POST /users/` operation.
    However, you can use your superuser to access that endpoint and _create_ an API user:
 
    ```sh
    curl -H "Authorization: Token c1328d443285f2c933775574e83fe3abfe6d7c0d" -H "Content-Type: application/json" -d '{"username":"test","email":"test@test.com", "name":"TestyMcTest"}' http://localhost:8000/users/   
    ```
+
+9. (Optional) Make your API user an admin (staff) user.
+
+   Log into the Django admin console with the superuser credentials you established in step 4:
+
+   ```sh
+   http://localhost:8000/admin/
+   ```
+
+   Then navigate to the user list:
+
+   ```sh
+   http://localhost:8000/admin/auth/user/
+   ```
+
+   Select the user you just created, and check the box next to "staff status".  Now your user is an admin within the context of the OCL API.
+
 
 
 
