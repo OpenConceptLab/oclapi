@@ -72,10 +72,12 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     ownerType = serializers.CharField(source='owner_type')
     displayName = serializers.CharField(source='display_name')
     displayLocale = serializers.CharField(source='display_locale')
+    version = serializers.CharField(source='mnemonic')
 
     class Meta:
         model = ConceptVersion
-        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
+        versioned_object_field_name = 'url'
+        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url', 'versionUrl', 'version')
 
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
