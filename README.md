@@ -110,6 +110,13 @@ Before you can run the server, you will need to execute the following steps:
    I recommend using the [Advanced REST Client](https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo?hl=en-US) app for Chrome.
    This provides you with a nice editor for passing parameters along with your `POST` and `PUT` requests.
 
+8. Create an API user.
+   Your superuser is not a valid API user, because it was not created via the `POST /users/` operation.
+   However, you can use your superuser to access that endpoint and _create_ an API user:
+
+   ```sh
+   curl -H "Authorization: Token c1328d443285f2c933775574e83fe3abfe6d7c0d" -H "Content-Type: application/json" -d '{"username":"test","email":"test@test.com", "name":"TestyMcTest"}' http://localhost:8000/users/   
+   ```
 
 
 
