@@ -55,4 +55,6 @@ Before you can run the server, you will need to execute the following steps:
     \>\>\> s = Site()
     \>\>\> s.save()
     \>\>\> \[Ctrl-D\] (to exit)
+
+This should end the code block.
     
