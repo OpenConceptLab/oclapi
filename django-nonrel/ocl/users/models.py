@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from djangotoolbox.fields import ListField
-from rest_framework.authtoken.models import Token
 from oclapi.models import BaseResourceModel
 from sources.models import Source
 

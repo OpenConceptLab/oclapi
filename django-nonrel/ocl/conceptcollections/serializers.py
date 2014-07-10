@@ -93,7 +93,8 @@ class CollectionVersionListSerializer(ResourceVersionSerializer):
 
     class Meta:
         model = CollectionVersion
-        fields = ('id', 'released', 'url')
+        versioned_object_field_name = 'url'
+        fields = ('id', 'released', 'url', 'versionUrl')
 
 
 class CollectionVersionDetailSerializer(ResourceVersionSerializer):

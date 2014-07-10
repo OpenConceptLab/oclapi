@@ -96,7 +96,8 @@ class SourceVersionListSerializer(ResourceVersionSerializer):
 
     class Meta:
         model = SourceVersion
-        fields = ('id', 'released', 'url')
+        versioned_object_field_name = 'url'
+        fields = ('id', 'released', 'url', 'versionUrl')
 
 
 class SourceVersionDetailSerializer(ResourceVersionSerializer):
