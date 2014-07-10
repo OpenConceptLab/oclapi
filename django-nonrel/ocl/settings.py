@@ -41,7 +41,7 @@ LANGUAGE_CODE = 'en-us'
 # > s.save()
 # > [CTRL-D]
 # $ manage.py tellsiteid
-SITE_ID = u'528927d31d1e986bd7104d43'
+SITE_ID = u'52956b2b50d61b2a8486b865'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
