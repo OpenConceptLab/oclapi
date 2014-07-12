@@ -22,6 +22,10 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    def soft_delete(self):
+        self.is_active = False
+        self.save()
+
 
 class BaseResourceModel(BaseModel):
     """

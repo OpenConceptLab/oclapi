@@ -14,9 +14,8 @@ class UserProfile(BaseResourceModel):
     full_name = models.TextField(null=True, blank=True)
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
-    preferred_locale = models.CharField(max_length=20, null=True, blank=True)
+    preferred_locale = models.TextField(null=True, blank=True)
     organizations = ListField()
-    sources = ListField()
 
     def __unicode__(self):
         return self.name

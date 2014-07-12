@@ -6,21 +6,124 @@ Replace this with more appropriate tests for your application.
 """
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.test import TestCase
+from sources.models import Source
+from users.models import UserProfile, USER_OBJECT_TYPE
 
 
 class UserProfileTest(TestCase):
-    fixtures = ['user', 'userprofile']
 
-    def test_user_attributes(self):
-        user = User.objects.get(pk=2)
-        profile = user.get_profile()
-        self.assertEqual(profile.get_uuid(), 'ac81fb28f8c44132976fdbdc60d54e6b', 'UUID should be returned correctly')
-        self.assertEqual(user.username, 'test', 'Username should be returned correctly.')
-        self.assertEqual(profile.get_full_name(), "Joe Test", 'Name should be returned correctly')
-        self.assertEqual(profile.company, 'Test Healthcare Clinic', 'Company should be returned correctly')
-        self.assertEqual(profile.location, 'Testonia', 'Location should be returned correctly')
-        self.assertEqual(user.email, 'joe@test.co', 'Email should be returned correctly')
-        self.assertEqual(profile.preferred_locale, 'en', 'Preferred Locale should be returned correctly')
-        self.assertEqual(profile.created_at, datetime.strptime('2013-09-02 14:06:13', "%Y-%m-%d %H:%M:%S"), 'Created at should be returned correctly')
-        self.assertEqual(profile.updated_at, datetime.strptime('2013-09-02 14:06:13', "%Y-%m-%d %H:%M:%S"), 'Updated at should be returned correctly')
+    def setUp(self):
+        self.user1 = User.objects.create(
+            username='user1',
+            email='user1@test.com',
+            last_name='One',
+            first_name='User'
+        )
+
+    def test_create_userprofile_positive(self):
+        self.assertFalse(UserProfile.objects.filter(mnemonic='user1').exists())
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+        self.assertTrue(UserProfile.objects.filter(mnemonic='user1').exists())
+
+    def test_create_userprofile_negative__no_user(self):
+        with self.assertRaises(ValidationError):
+            user = UserProfile(mnemonic='user1')
+            user.full_clean()
+            user.save()
+
+    def test_create_userprofile_negative__no_mnemonic(self):
+        with self.assertRaises(ValidationError):
+            user = UserProfile(user=self.user1)
+            user.full_clean()
+            user.save()
+
+    def test_profile_name_overrides_user_name(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals("%s %s" % (self.user1.first_name, self.user1.last_name), user.name)
+        user.full_name = 'John Q. Test'
+        self.assertEquals('John Q. Test', user.name)
+
+    def test_resource_type(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals(USER_OBJECT_TYPE, user.resource_type())
+
+    def test_mnemonic_overrides_username(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals(self.user1.username, user.username)
+        user.mnemonic = 'johnnytest'
+        self.assertEquals('johnnytest', user.username)
+
+    def test_inherits_email_from_user(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals(self.user1.email, user.email)
+
+    def test_user_orgs(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals(0, user.orgs)
+        user.organizations.append(1)
+        self.assertEquals(1, user.orgs)
+        user.organizations.remove(1)
+        self.assertEquals(0, user.orgs)
+
+    def test_user_public_sources(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        self.assertEquals(0, user.public_sources)
+        Source.objects.create(
+            mnemonic='source1',
+            owner=self.user1,
+            parent=user,
+            name='Source One',
+        )
+        self.assertEquals(1, user.public_sources)
+        Source.objects.create(
+            mnemonic='source1',
+            owner=self.user1,
+            parent=self.user1,
+            name='Source One',
+        )
+        self.assertEquals(1, user.public_sources)
+        Source.objects.create(
+            mnemonic='source2',
+            owner=self.user1,
+            parent=user,
+            name='Source Two',
+        )
+        self.assertEquals(2, user.public_sources)
+
+    def test_delete(self):
+        user = UserProfile(user=self.user1, mnemonic='user1')
+        user.full_clean()
+        user.save()
+
+        user_id = user.id
+        self.assertTrue(user.is_active)
+        self.assertTrue(UserProfile.objects.filter(id=user_id).exists())
+        user.soft_delete()
+        self.assertFalse(user.is_active)
+        self.assertTrue(UserProfile.objects.filter(id=user_id).exists())
+        user.delete()
+        self.assertFalse(UserProfile.objects.filter(id=user_id).exists())

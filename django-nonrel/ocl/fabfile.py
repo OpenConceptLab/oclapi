@@ -18,6 +18,10 @@ def hello(name="World"):
     print("Hello %s" % name)
 
 
+def test_local():
+    local("./manage.py test users")
+
+
 def backup():
     with cd(DEPLOY_DIR):
         run("tar -czvf ocl_`date +%Y%m%d`.tgz ocl")
