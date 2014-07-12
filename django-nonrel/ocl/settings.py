@@ -33,16 +33,6 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-# This field is unique to a deployment.
-# To determine its value for a new clean deployment, create a Site, and then run manage.py tellsiteid.
-# e.g.
-# $ manage.py shell
-# > s = Site()
-# > s.save()
-# > [CTRL-D]
-# $ manage.py tellsiteid
-SITE_ID = u'52956b2b50d61b2a8486b865'
-
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
@@ -123,7 +113,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
