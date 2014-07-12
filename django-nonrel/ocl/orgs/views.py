@@ -1,22 +1,13 @@
-from django.db import transaction
 from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from oclapi.permissions import HasOwnership
+from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer, OrganizationUpdateSerializer
 from users.models import UserProfile
-
-@transaction.commit_on_success
-def add_user_to_org(userprofile, organization):
-    if not userprofile.id in organization.members:
-        organization.group.user_set.add(userprofile.user)
-        organization.members.append(userprofile.id)
-        userprofile.organizations.append(organization.id)
-        organization.save()
-        userprofile.save()
 
 
 class OrganizationListView(mixins.ListModelMixin,
@@ -77,8 +68,7 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
 
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.is_active = False
-        obj.save()
+        obj.soft_delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -107,14 +97,8 @@ class OrganizationMemberView(generics.GenericAPIView):
         add_user_to_org(self.userprofile, self.organization)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
-    @transaction.commit_on_success
     def delete(self, request, *args, **kwargs):
         if not request.user.is_staff and not self.user_in_org:
             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
-        if self.userprofile.id in self.organization.members:
-            self.organization.group.user_set.remove(self.userprofile.user)
-            self.organization.members.remove(self.userprofile.id)
-            self.userprofile.organizations.remove(self.organization.id)
-            self.organization.save()
-            self.userprofile.save()
+        remove_user_from_org(self.userprofile, self.organization)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)

@@ -53,11 +53,9 @@ class OrganizationCreateSerializer(serializers.Serializer):
         if Organization.objects.filter(mnemonic=mnemonic).exists():
             self._errors['mnemonic'] = 'Organization with mnemonic %s already exists.' % mnemonic
             return None
-        group = Group(name=mnemonic)
         organization = Organization(name=attrs.get('name'), mnemonic=mnemonic)
         organization.company = attrs.get('company', None)
         organization.website = attrs.get('website', None)
-        organization._group = group
         return organization
 
     def save_object(self, obj, **kwargs):
@@ -72,9 +70,3 @@ class OrganizationUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
-
-    def restore_object(self, attrs, instance=None):
-        instance.name = attrs.get('name', instance.name)
-        instance.company = attrs.get('company', instance.company)
-        instance.website = attrs.get('website', instance.website)
-        return instance

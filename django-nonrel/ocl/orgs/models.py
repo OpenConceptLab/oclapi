@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.models import Group
 from django.db import models
 from djangotoolbox.fields import ListField
 from oclapi.models import BaseResourceModel
@@ -9,12 +8,10 @@ ORG_OBJECT_TYPE = 'Organization'
 
 
 class Organization(BaseResourceModel):
-    name = models.CharField(max_length=100)
-    company = models.CharField(max_length=100, null=True, blank=True)
-    website = models.CharField(max_length=255, null=True, blank=True)
+    name = models.TextField()
+    company = models.TextField(null=True, blank=True)
+    website = models.TextField(null=True, blank=True)
     members = ListField()
-    sources = ListField()
-    group = models.OneToOneField(Group)
 
     def __unicode__(self):
         return self.name
