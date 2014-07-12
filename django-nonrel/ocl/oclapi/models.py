@@ -2,6 +2,7 @@ import re
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -82,7 +83,6 @@ class ResourceVersionModel(BaseModel):
     versioned_object_type = models.ForeignKey(ContentType, db_index=False)
     versioned_object = generic.GenericForeignKey('versioned_object_type', 'versioned_object_id')
     released = models.BooleanField(default=False, blank=True)
-    next_version = models.ForeignKey('self', related_name='previous', null=True, blank=True, db_index=False)
     previous_version = models.ForeignKey('self', related_name='next', null=True, blank=True, db_index=False)
     parent_version = models.ForeignKey('self', related_name='child', null=True, blank=True, db_index=False)
 
@@ -92,6 +92,10 @@ class ResourceVersionModel(BaseModel):
 
     def __unicode__(self):
         return self.mnemonic
+
+    def clean(self):
+        if self == self.parent_version:
+            raise ValidationError('version cannot be its own parent')
 
     @property
     def previous_version_mnemonic(self):

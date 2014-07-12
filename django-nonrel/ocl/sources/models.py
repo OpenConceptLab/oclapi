@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from djangotoolbox.fields import ListField
 from oclapi.mixins import ConceptContainerMixin, ConceptContainerVersionMixin
@@ -66,6 +67,10 @@ class SourceVersion(ResourceVersionModel, ConceptContainerVersionMixin):
 
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None):
+        if not Source == type(source):
+            raise ValidationError("source must be of type 'Source'")
+        if not source.id:
+            raise ValidationError("source must have an Object ID.")
         return SourceVersion(
             mnemonic=label,
             name=source.name,
@@ -77,7 +82,7 @@ class SourceVersion(ResourceVersionModel, ConceptContainerVersionMixin):
             website=source.website,
             description=source.description,
             versioned_object_id=source.id,
-            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_type=ContentType.objects.get_for_model(type(source)),
             released=False,
             previous_version=previous_version,
             parent_version=parent_version
