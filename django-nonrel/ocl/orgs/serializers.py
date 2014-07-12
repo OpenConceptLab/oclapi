@@ -58,13 +58,6 @@ class OrganizationCreateSerializer(serializers.Serializer):
         organization.website = attrs.get('website', None)
         return organization
 
-    def save_object(self, obj, **kwargs):
-        group = obj._group
-        group.save()
-        del obj._group
-        obj.group = group
-        obj.save(**kwargs)
-
 
 class OrganizationUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
