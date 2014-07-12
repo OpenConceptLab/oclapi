@@ -20,6 +20,7 @@ def hello(name="World"):
 
 def test_local():
     local("./manage.py test users")
+    local("./manage.py test orgs")
 
 
 def backup():
