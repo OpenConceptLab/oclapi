@@ -420,12 +420,16 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         }
         errors = Concept.persist_new(concept, **kwargs)
         self.assertEquals(0, len(errors))
-
-        source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(1, len(source_version.concepts))
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
         self.assertEquals(1, concept.num_versions)
+
+        concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertFalse(concept_version.retired)
+
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(concept_version.id, source_version.concepts[0])
 
         retired = Concept.retire(concept)
         self.assertTrue(retired)
@@ -433,7 +437,12 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertTrue(concept.retired)
         self.assertEquals(2, concept.num_versions)
 
+        concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertTrue(concept_version.retired)
+
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(concept_version.id, source_version.concepts[0])
+
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=False).count())
-        latest_version = ConceptVersion.get_latest_version_of(concept)
-        self.assertTrue(latest_version.retired)
