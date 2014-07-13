@@ -22,6 +22,7 @@ def test_local():
     local("./manage.py test users")
     local("./manage.py test orgs")
     local("./manage.py test sources")
+    local("./manage.py test concepts")
 
 
 def backup():

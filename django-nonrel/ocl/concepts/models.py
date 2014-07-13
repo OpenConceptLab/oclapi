@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
@@ -42,63 +43,90 @@ class Concept(SubResourceBaseModel):
     @classmethod
     def persist_new(cls, obj, **kwargs):
         errors = dict()
-        user = kwargs.pop('owner')
-        parent_resource = kwargs.pop('parent_resource')
+        user = kwargs.pop('owner', None)
+        if not user:
+            errors['owner'] = 'Concept owner cannot be null.'
+        parent_resource = kwargs.pop('parent_resource', None)
+        if not parent_resource:
+            errors['parent'] = 'Concept parent cannot be null.'
+        if errors:
+            return errors
+        obj.owner = user
+        obj.parent = parent_resource
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+        if errors:
+            return errors
+
         parent_resource_version = kwargs.pop('parent_resource_version', None)
         if parent_resource_version is None:
             parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
-        child_list_attribute = kwargs.pop('child_list_attribute', None)
-        mnemonic = obj.mnemonic
-        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
-        if Concept.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic).exists():
-            errors['mnemonic'] = 'Concept with mnemonic %s already exists for parent resource %s.' % (mnemonic, parent_resource.mnemonic)
-            return errors
-        with transaction.commit_on_success():
-            errored_action = 'saving concept'
-            try:
-                obj.parent = parent_resource
-                obj.owner = user
-                obj.save(**kwargs)
+        child_list_attribute = kwargs.pop('child_list_attribute', 'concepts')
 
-                # Create the initial version
-                errored_action = 'creating initial version of concept'
-                version = ConceptVersion.for_concept(obj, '_TEMP')
-                version.released = True
-                version.save()
-                version.mnemonic = version.id
-                version.save()
+        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
+        initial_version = None
+        errored_action = 'saving concept'
+        persisted = False
+        try:
+            obj.save(**kwargs)
 
-                # Associate the version with a version of the parent
-                errored_action = 'associating concept with parent'
-                children = getattr(parent_resource_version, child_list_attribute) or []
-                children.append(version.id)
-                setattr(parent_resource_version, child_list_attribute, children)
-                parent_resource_version.save()
-            except Exception as e:
+            # Create the initial version
+            errored_action = 'creating initial version of concept'
+            initial_version = ConceptVersion.for_concept(obj, '_TEMP')
+            initial_version.save()
+            initial_version.mnemonic = initial_version.id
+            initial_version.released = True
+            initial_version.save()
+
+            # Associate the version with a version of the parent
+            errored_action = 'associating concept with parent'
+            parent_children = getattr(parent_resource_version, child_list_attribute) or []
+            parent_children.append(initial_version.id)
+            setattr(parent_resource_version, child_list_attribute, parent_children)
+            parent_resource_version.save()
+
+            persisted = True
+        finally:
+            if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
+                setattr(parent_resource_version, initial_parent_children)
+                parent_resource_version.save()
+                if initial_version:
+                    initial_version.delete()
+                obj.delete()
         return errors
 
     @classmethod
     def retire(cls, concept):
+        if concept.retired:
+            return False
         concept.retired = True
         latest_version = ConceptVersion.get_latest_version_of(concept)
         retired_version = latest_version.clone()
         retired_version.retired = True
         latest_source_version = SourceVersion.get_latest_version_of(concept.parent)
-        with transaction.commit_on_success():
+        latest_source_version_concepts = latest_source_version.concepts
+        retired = False
+        try:
             concept.save()
 
             retired_version.save()
             retired_version.mnemonic = retired_version.id
             retired_version.save()
 
-            previous_version = retired_version.previous_version
-            if previous_version:
-                previous_version.next_version = retired_version
-                previous_version.save()
-
             latest_source_version.update_concept_version(retired_version)
             latest_source_version.save()
+            retired = True
+        finally:
+            if not retired:
+                latest_source_version.concepts = latest_source_version_concepts
+                latest_source_version.save()
+                retired_version.delete()
+                concept.retired = False
+                concept.save()
+        return retired
 
     @staticmethod
     def get_url_kwarg():
