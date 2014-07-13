@@ -50,6 +50,7 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(source.mnemonic, source.__unicode__())
         self.assertEquals(self.org1.mnemonic, source.parent_resource)
         self.assertEquals(self.org1.resource_type, source.parent_resource_type)
+        self.assertEquals(0, source.num_versions)
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
@@ -64,16 +65,16 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(source.mnemonic, source.__unicode__())
         self.assertEquals(self.userprofile1.mnemonic, source.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
+        self.assertEquals(0, source.num_versions)
 
-
-    def test_create_source_positive__invalid_source_type(self):
+    def test_create_source_negative__invalid_source_type(self):
         with self.assertRaises(ValidationError):
             source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
                             source_type='INVALID', public_access=EDIT_ACCESS_TYPE)
             source.full_clean()
             source.save()
 
-    def test_create_source_positive__invalid_access_type(self):
+    def test_create_source_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
             source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
                             source_type=DICTIONARY_SRC_TYPE, public_access='INVALID')
@@ -93,6 +94,7 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(source.mnemonic, source.__unicode__())
         self.assertEquals(self.userprofile1.mnemonic, source.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
+        self.assertEquals(0, source.num_versions)
 
     def test_create_source_negative__no_name(self):
         with self.assertRaises(ValidationError):
@@ -122,6 +124,7 @@ class SourceTest(SourceBaseTest):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1)
         source.full_clean()
         source.save()
+        self.assertEquals(0, source.num_versions)
         with self.assertRaises(ValidationError):
             source = Source(name='source1', mnemonic='source1', owner=self.user2, parent=self.org1)
             source.full_clean()
@@ -136,6 +139,7 @@ class SourceTest(SourceBaseTest):
             parent_type=ContentType.objects.get_for_model(Organization),
             parent_id=self.org1.id
         ).count())
+        self.assertEquals(0, source.num_versions)
 
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1)
         source.full_clean()
@@ -148,6 +152,64 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(source.mnemonic, source.__unicode__())
         self.assertEquals(self.userprofile1.mnemonic, source.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
+        self.assertEquals(0, source.num_versions)
+
+
+class SourceClassMethodTest(SourceBaseTest):
+
+    def setUp(self):
+        super(SourceClassMethodTest, self).setUp()
+        self.new_source = Source(
+            name='source1',
+            mnemonic='source1',
+            full_name='Source One',
+            source_type=DICTIONARY_SRC_TYPE,
+            public_access=EDIT_ACCESS_TYPE,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+    def test_persist_new_positive(self):
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.userprofile1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertEquals(0, len(errors))
+        self.assertTrue(Source.objects.filter(name='source1').exists())
+        source = Source.objects.get(name='source1')
+        self.assertTrue(SourceVersion.objects.filter(versioned_object_id=source.id))
+        source_version = SourceVersion.objects.get(versioned_object_id=source.id)
+        self.assertEquals(1, source.num_versions)
+        self.assertEquals(source_version, SourceVersion.get_latest_version_of(source))
+
+    def test_persist_new_negative__no_parent(self):
+        kwargs = {
+            'owner': self.user1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertTrue(errors.has_key('parent'))
+        self.assertFalse(Source.objects.filter(name='source1').exists())
+
+    def test_persist_new_negative__no_owner(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertTrue(errors.has_key('owner'))
+        self.assertFalse(Source.objects.filter(name='source1').exists())
+
+    def test_persist_new_negative__no_name(self):
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.userprofile1
+        }
+        self.new_source.name = None
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertTrue(errors.has_key('name'))
+        self.assertFalse(Source.objects.filter(name='source1').exists())
 
 
 class SourceVersionTest(SourceBaseTest):
@@ -180,6 +242,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(self.org1.resource_type, source_version.parent_resource_type)
 
         self.assertEquals(source_version, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(1, self.source1.num_versions)
 
     def test_source_version_create_negative__no_name(self):
         with self.assertRaises(ValidationError):
@@ -189,6 +252,7 @@ class SourceVersionTest(SourceBaseTest):
             )
             source_version.full_clean()
             source_version.save()
+        self.assertEquals(0, self.source1.num_versions)
 
     def test_source_version_create_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
@@ -198,6 +262,7 @@ class SourceVersionTest(SourceBaseTest):
             )
             source_version.full_clean()
             source_version.save()
+        self.assertEquals(0, self.source1.num_versions)
 
     def test_source_version_create_negative__no_source(self):
         with self.assertRaises(ValidationError):
@@ -207,6 +272,7 @@ class SourceVersionTest(SourceBaseTest):
             )
             source_version.full_clean()
             source_version.save()
+        self.assertEquals(0, self.source1.num_versions)
 
     def test_source_version_create_negative__same_mnemonic(self):
         source_version = SourceVersion(
@@ -216,6 +282,7 @@ class SourceVersionTest(SourceBaseTest):
         )
         source_version.full_clean()
         source_version.save()
+        self.assertEquals(1, self.source1.num_versions)
 
         with self.assertRaises(ValidationError):
             source_version = SourceVersion(
@@ -225,6 +292,7 @@ class SourceVersionTest(SourceBaseTest):
             )
             source_version.full_clean()
             source_version.save()
+        self.assertEquals(1, self.source1.num_versions)
 
     def test_source_version_create_positive__same_mnemonic(self):
         source_version = SourceVersion(
@@ -239,6 +307,7 @@ class SourceVersionTest(SourceBaseTest):
             versioned_object_type=ContentType.objects.get_for_model(Source),
             versioned_object_id=self.source1.id
         ).exists())
+        self.assertEquals(1, self.source1.num_versions)
 
         source_version = SourceVersion(
             name='version1',
@@ -252,6 +321,7 @@ class SourceVersionTest(SourceBaseTest):
             versioned_object_type=ContentType.objects.get_for_model(Source),
             versioned_object_id=self.source2.id
         ).exists())
+        self.assertEquals(1, self.source2.num_versions)
 
     def test_source_version_create_positive__subsequent_versions(self):
         version1 = SourceVersion(
@@ -267,6 +337,7 @@ class SourceVersionTest(SourceBaseTest):
             versioned_object_id=self.source1.id
         ).exists())
         self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(1, self.source1.num_versions)
 
         version2 = SourceVersion(
             name='version2',
@@ -286,6 +357,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version2.parent_version)
         self.assertIsNone(version2.parent_version_mnemonic)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEqual(2, self.source1.num_versions)
 
         version3 = SourceVersion(
             name='version3',
@@ -305,6 +377,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version3.parent_version)
         self.assertIsNone(version3.parent_version_mnemonic)
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(3, self.source1.num_versions)
 
     def test_source_version_create_positive__child_versions(self):
         version1 = SourceVersion(
@@ -320,6 +393,7 @@ class SourceVersionTest(SourceBaseTest):
             versioned_object_id=self.source1.id
         ).exists())
         self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(1, self.source1.num_versions)
 
         version2 = SourceVersion(
             name='version2',
@@ -339,6 +413,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version2.previous_version)
         self.assertIsNone(version2.previous_version_mnemonic)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(2, self.source1.num_versions)
 
         version3 = SourceVersion(
             name='version3',
@@ -358,6 +433,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version3.previous_version)
         self.assertIsNone(version3.previous_version_mnemonic)
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(3, self.source1.num_versions)
 
     def test_source_version_create_positive__child_and_subsequent_versions(self):
         version1 = SourceVersion(
@@ -373,6 +449,7 @@ class SourceVersionTest(SourceBaseTest):
             versioned_object_id=self.source1.id
         ).exists())
         self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(1, self.source1.num_versions)
 
         version2 = SourceVersion(
             name='version2',
@@ -392,6 +469,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version2.previous_version)
         self.assertIsNone(version2.previous_version_mnemonic)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(2, self.source1.num_versions)
 
         version3 = SourceVersion(
             name='version3',
@@ -411,61 +489,7 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version3.parent_version)
         self.assertIsNone(version3.parent_version_mnemonic)
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
-
-    def test_source_version_create_positive__subsequent_versions(self):
-        version1 = SourceVersion(
-            name='version1',
-            mnemonic='version1',
-            versioned_object=self.source1
-        )
-        version1.full_clean()
-        version1.save()
-        self.assertTrue(SourceVersion.objects.filter(
-            mnemonic='version1',
-            versioned_object_type=ContentType.objects.get_for_model(Source),
-            versioned_object_id=self.source1.id
-        ).exists())
-        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
-
-        version2 = SourceVersion(
-            name='version2',
-            mnemonic='version2',
-            versioned_object=self.source1,
-            previous_version=version1,
-        )
-        version2.full_clean()
-        version2.save()
-        self.assertTrue(SourceVersion.objects.filter(
-            mnemonic='version2',
-            versioned_object_type=ContentType.objects.get_for_model(Source),
-            versioned_object_id=self.source1.id
-        ).exists())
-        self.assertEquals(version1, version2.previous_version)
-        self.assertEquals(version1.mnemonic, version2.previous_version_mnemonic)
-        self.assertIsNone(version2.parent_version)
-        self.assertIsNone(version2.parent_version_mnemonic)
-        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
-
-        version3 = SourceVersion(
-            name='version3',
-            mnemonic='version3',
-            versioned_object=self.source1,
-            previous_version=version2
-        )
-        version3.full_clean()
-        version3.save()
-        self.assertTrue(SourceVersion.objects.filter(
-            mnemonic='version3',
-            versioned_object_type=ContentType.objects.get_for_model(Source),
-            versioned_object_id=self.source1.id
-        ).exists())
-        self.assertEquals(version2, version3.previous_version)
-        self.assertEquals(version2.mnemonic, version3.previous_version_mnemonic)
-        self.assertIsNone(version3.parent_version)
-        self.assertIsNone(version3.parent_version_mnemonic)
-        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
-
-
+        self.assertEquals(3, self.source1.num_versions)
 
 
 class SourceVersionClassMethodTest(SourceBaseTest):
@@ -516,6 +540,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertFalse(version1.released)
         self.assertIsNone(version1.parent_version)
         self.assertIsNone(version1.previous_version)
+        self.assertEquals(1, self.source1.num_versions)
 
     def test_for_base_object_negative__no_source(self):
         with self.assertRaises(ValidationError):
@@ -540,12 +565,13 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             version1 = SourceVersion.for_base_object(self.source1, 'version1', previous_version=self.source1)
             version1.full_clean()
             version1.save()
+        self.assertEquals(0, self.source1.num_versions)
 
     def test_for_base_object_negative__bad_parent_version(self):
         with self.assertRaises(ValueError):
             version1 = SourceVersion.for_base_object(self.source1, 'version1', parent_version=self.source1)
             version1.full_clean()
             version1.save()
-
+        self.assertEquals(0, self.source1.num_versions)
 
 

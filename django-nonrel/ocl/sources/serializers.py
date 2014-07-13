@@ -136,7 +136,6 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
         instance.released = attrs.get('released', instance.released)
         if was_released and not instance.released:
             self._errors['released'] = ['Cannot set this field to "false".  (Releasing another version will cause this field to become false.)']
-        instance._release_version = instance.released and not was_released
         instance.description = attrs.get('description', instance.description)
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
