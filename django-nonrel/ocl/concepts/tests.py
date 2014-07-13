@@ -5,6 +5,7 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from django.test import TestCase
@@ -446,3 +447,132 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=False).count())
+
+        self.assertFalse(Concept.retire(concept))
+
+
+class ConceptVersionTest(ConceptBaseTest):
+
+    def setUp(self):
+        super(ConceptVersionTest, self).setUp()
+        self.concept1 = Concept(
+            mnemonic='concept1',
+            owner=self.user1,
+            parent=self.source1,
+            concept_class='First',
+        )
+        display_name = LocalizedText(
+            name='concept1',
+            locale='en'
+        )
+        self.concept1.names.append(display_name)
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.source1,
+        }
+        Concept.persist_new(self.concept1, **kwargs)
+
+        self.concept2 = Concept(
+            mnemonic='concept2',
+            owner=self.user1,
+            parent=self.source1,
+            concept_class='Second',
+        )
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.source2,
+        }
+        Concept.persist_new(self.concept2, **kwargs)
+
+    def test_create_concept_version_positive(self):
+        self.assertEquals(1, self.concept1.num_versions)
+        concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=self.concept1,
+            concept_class='First',
+            names=self.concept1.names,
+        )
+        concept_version.full_clean()
+        concept_version.save()
+        self.assertTrue(ConceptVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Concept),
+            versioned_object_id=self.concept1.id,
+        ).exists())
+        self.assertEquals(2, self.concept1.num_versions)
+        self.assertEquals(concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+
+        self.assertEquals(self.concept1.mnemonic, concept_version.name)
+        self.assertEquals(self.concept1.owner_name, concept_version.owner_name)
+        self.assertEquals(self.concept1.owner_type, concept_version.owner_type)
+        self.assertEquals(self.concept1.display_name, concept_version.display_name)
+        self.assertEquals(self.concept1.display_locale, concept_version.display_locale)
+
+    def test_create_concept_version_negative__no_mnemonic(self):
+        with self.assertRaises(ValidationError):
+            concept_version = ConceptVersion(
+                versioned_object=self.concept1,
+                concept_class='First',
+            )
+            concept_version.full_clean()
+            concept_version.save()
+
+    def test_create_concept_version_negative__no_versioned_object(self):
+        with self.assertRaises(ValidationError):
+            concept_version = ConceptVersion(
+                mnemonic='version1',
+                concept_class='First',
+            )
+            concept_version.full_clean()
+            concept_version.save()
+
+    def test_create_concept_version_negative__no_concept_class(self):
+        with self.assertRaises(ValidationError):
+            concept_version = ConceptVersion(
+                mnemonic='version1',
+                versioned_object=self.concept1,
+            )
+            concept_version.full_clean()
+            concept_version.save()
+
+    def test_concept_version_clone(self):
+        self.assertEquals(1, self.concept1.num_versions)
+        concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=self.concept1,
+            concept_class='First',
+            names=self.concept1.names,
+        )
+        concept_version.full_clean()
+        concept_version.save()
+        self.assertTrue(ConceptVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Concept),
+            versioned_object_id=self.concept1.id,
+        ).exists())
+        self.assertEquals(2, self.concept1.num_versions)
+        self.assertEquals(concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+
+        self.assertEquals(self.concept1.mnemonic, concept_version.name)
+        self.assertEquals(self.concept1.owner_name, concept_version.owner_name)
+        self.assertEquals(self.concept1.owner_type, concept_version.owner_type)
+        self.assertEquals(self.concept1.display_name, concept_version.display_name)
+        self.assertEquals(self.concept1.display_locale, concept_version.display_locale)
+
+        version2 = concept_version.clone()
+        version2.mnemonic = 'version2'
+        version2.full_clean()
+        version2.save()
+
+        self.assertEquals(3, self.concept1.num_versions)
+        self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(concept_version, version2.previous_version)
+
+        self.assertEquals(self.concept1, version2.versioned_object)
+        self.assertEquals(self.concept1.mnemonic, version2.name)
+        self.assertEquals(self.concept1.owner_name, version2.owner_name)
+        self.assertEquals(self.concept1.owner_type, version2.owner_type)
+        self.assertEquals(self.concept1.display_name, version2.display_name)
+        self.assertEquals(self.concept1.display_locale, version2.display_locale)
+
+

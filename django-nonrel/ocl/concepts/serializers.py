@@ -115,6 +115,6 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         return instance
 
     def save_object(self, obj, **kwargs):
-        errors = ConceptVersion.persist_new(obj, **kwargs)
+        errors = ConceptVersion.persist_clone(obj, **kwargs)
         self._errors.update(errors)
 

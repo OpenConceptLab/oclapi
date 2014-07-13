@@ -221,25 +221,25 @@ class ConceptVersion(ResourceVersionModel):
         )
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
+    def persist_clone(cls, obj, **kwargs):
         errors = dict()
-        with transaction.commit_on_success():
-            errored_action = 'saving new concept version'
-            try:
-                obj.save(**kwargs)
-                obj.mnemonic = obj.id
-                obj.save()
+        source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)
+        persisted = False
+        errored_action = 'saving new concept version'
+        try:
+            obj.save(**kwargs)
+            obj.mnemonic = obj.id
+            obj.save()
 
-                errored_action = 'setting next_version attribute on previous version'
-                previous_version = obj.previous_version
-                previous_version.next_version = obj
-                previous_version.save()
+            errored_action = 'replacing previous version in latest version of source'
+            source_version.update_concept_version(obj)
+            source_version.save()
 
-                errored_action = 'replacing previous version in latest version of source'
-                source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)
-                source_version.update_concept_version(obj)
-                source_version.save()
-            except Exception as e:
+            persisted = True
+        finally:
+            if not persisted:
+                source_version.update_concept_version()
+
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
         return errors
 

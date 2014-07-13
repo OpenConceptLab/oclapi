@@ -34,6 +34,11 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         return super(ConceptRetrieveUpdateDestroyView, self).dispatch(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        if hasattr(self.parent_resource, 'versioned_object'):
+            parent_versioned_object = self.parent_resource.versioned_object
+            if self.parent_resource != type(self.parent_resource).get_latest_version_of(parent_versioned_object):
+                return Response({'non_field_errors': 'Parent version is not the latest.  Cannot update concept.'}, status=status.HTTP_400_BAD_REQUEST)
+
         self.serializer_class = ConceptVersionUpdateSerializer
         partial = kwargs.pop('partial', True)
         self.object = self.get_object_or_none()

@@ -126,6 +126,10 @@ class SourceVersion(ResourceVersionModel):
         else:
             self.concepts.append(concept_version.id)
 
+    @staticmethod
+    def get_url_kwarg():
+        return 'version'
+
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None):
         if not Source == type(source):
