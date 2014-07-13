@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 
 from django.test import TestCase
 from orgs.models import Organization
-from sources.models import Source, DICTIONARY_SRC_TYPE, EDIT_ACCESS_TYPE, SourceVersion
+from sources.models import Source, DICTIONARY_SRC_TYPE, EDIT_ACCESS_TYPE, SourceVersion, REFERENCE_SRC_TYPE, VIEW_ACCESS_TYPE
 from users.models import UserProfile
 
 
@@ -210,6 +210,171 @@ class SourceClassMethodTest(SourceBaseTest):
         errors = Source.persist_new(self.new_source, **kwargs)
         self.assertTrue(errors.has_key('name'))
         self.assertFalse(Source.objects.filter(name='source1').exists())
+
+    def test_persist_changes_positive(self):
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.userprofile1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertEquals(0, len(errors))
+
+        id = self.new_source.id
+        name = self.new_source.name
+        mnemonic = self.new_source.mnemonic
+        full_name = self.new_source.full_name
+        source_type = self.new_source.source_type
+        public_access = self.new_source.public_access
+        default_locale = self.new_source.default_locale
+        supported_locales = self.new_source.supported_locales
+        website = self.new_source.website
+        description = self.new_source.description
+
+        self.new_source.name = "%s_prime" % name
+        self.new_source.mnemonic = "%s-prime" % mnemonic
+        self.new_source.full_name = "%s_prime" % full_name
+        self.new_source.source_type = REFERENCE_SRC_TYPE
+        self.new_source.public_access = VIEW_ACCESS_TYPE
+        self.new_source.default_locale = "%s_prime" % default_locale
+        self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
+        self.new_source.website = "%s_prime" % website
+        self.new_source.description = "%s_prime" % description
+
+        del(kwargs['owner'])
+        errors = Source.persist_changes(self.new_source, **kwargs)
+        self.assertEquals(0, len(errors))
+        self.assertTrue(Source.objects.filter(id=id).exists())
+        self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
+        source_version = SourceVersion.objects.get(versioned_object_id=id)
+        self.assertEquals(1, self.new_source.num_versions)
+        self.assertEquals(source_version, SourceVersion.get_latest_version_of(self.new_source))
+
+        self.new_source = Source.objects.get(id=id)
+        self.assertNotEquals(name, self.new_source.name)
+        self.assertNotEquals(mnemonic, self.new_source.mnemonic)
+        self.assertNotEquals(full_name, self.new_source.full_name)
+        self.assertNotEquals(source_type, self.new_source.source_type)
+        self.assertNotEquals(public_access, self.new_source.public_access)
+        self.assertNotEquals(default_locale, self.new_source.default_locale)
+        self.assertNotEquals(supported_locales, self.new_source.supported_locales)
+        self.assertNotEquals(website, self.new_source.website)
+        self.assertNotEquals(description, self.new_source.description)
+
+    def test_persist_changes_negative__illegal_value(self):
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.userprofile1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertEquals(0, len(errors))
+
+        id = self.new_source.id
+        name = self.new_source.name
+        mnemonic = self.new_source.mnemonic
+        full_name = self.new_source.full_name
+        source_type = self.new_source.source_type
+        public_access = self.new_source.public_access
+        default_locale = self.new_source.default_locale
+        supported_locales = self.new_source.supported_locales
+        website = self.new_source.website
+        description = self.new_source.description
+
+        self.new_source.name = "%s_prime" % name
+        self.new_source.mnemonic = "%s-prime" % mnemonic
+        self.new_source.full_name = "%s_prime" % full_name
+        self.new_source.source_type = "ILLEGAL VALUE"
+        self.new_source.public_access = VIEW_ACCESS_TYPE
+        self.new_source.default_locale = "%s_prime" % default_locale
+        self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
+        self.new_source.website = "%s_prime" % website
+        self.new_source.description = "%s_prime" % description
+
+        del(kwargs['owner'])
+        errors = Source.persist_changes(self.new_source, **kwargs)
+        self.assertEquals(1, len(errors))
+        self.assertTrue(errors.has_key('source_type'))
+        self.assertTrue(Source.objects.filter(id=id).exists())
+        self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
+        source_version = SourceVersion.objects.get(versioned_object_id=id)
+        self.assertEquals(1, self.new_source.num_versions)
+        self.assertEquals(source_version, SourceVersion.get_latest_version_of(self.new_source))
+
+        self.new_source = Source.objects.get(id=id)
+        self.assertEquals(name, self.new_source.name)
+        self.assertEquals(mnemonic, self.new_source.mnemonic)
+        self.assertEquals(full_name, self.new_source.full_name)
+        self.assertEquals(source_type, self.new_source.source_type)
+        self.assertEquals(public_access, self.new_source.public_access)
+        self.assertEquals(default_locale, self.new_source.default_locale)
+        self.assertEquals(supported_locales, self.new_source.supported_locales)
+        self.assertEquals(website, self.new_source.website)
+        self.assertEquals(description, self.new_source.description)
+
+    def test_persist_changes_negative__repeated_mnemonic(self):
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.userprofile1
+        }
+        errors = Source.persist_new(self.new_source, **kwargs)
+        self.assertEquals(0, len(errors))
+
+        source = Source(
+            name='source2',
+            mnemonic='source2',
+            full_name='Source Two',
+            source_type=DICTIONARY_SRC_TYPE,
+            public_access=EDIT_ACCESS_TYPE,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source2.com',
+            description='This is the second test source'
+        )
+        errors = Source.persist_new(source, **kwargs)
+        self.assertEquals(0, len(errors))
+        self.assertEquals(2, Source.objects.all().count())
+
+        self.new_source = Source.objects.get(mnemonic='source2')
+        id = self.new_source.id
+        name = self.new_source.name
+        mnemonic = self.new_source.mnemonic
+        full_name = self.new_source.full_name
+        source_type = self.new_source.source_type
+        public_access = self.new_source.public_access
+        default_locale = self.new_source.default_locale
+        supported_locales = self.new_source.supported_locales
+        website = self.new_source.website
+        description = self.new_source.description
+
+        self.new_source.mnemonic = 'source1'
+        self.new_source.name = "%s_prime" % name
+        self.new_source.full_name = "%s_prime" % full_name
+        self.new_source.source_type = REFERENCE_SRC_TYPE
+        self.new_source.public_access = VIEW_ACCESS_TYPE
+        self.new_source.default_locale = "%s_prime" % default_locale
+        self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
+        self.new_source.website = "%s_prime" % website
+        self.new_source.description = "%s_prime" % description
+
+        del(kwargs['owner'])
+        errors = Source.persist_changes(self.new_source, **kwargs)
+        self.assertEquals(1, len(errors))
+        self.assertTrue(errors.has_key('__all__'))
+        self.assertTrue(Source.objects.filter(id=id).exists())
+        self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
+        source_version = SourceVersion.objects.get(versioned_object_id=id)
+        self.assertEquals(1, self.new_source.num_versions)
+        self.assertEquals(source_version, SourceVersion.get_latest_version_of(self.new_source))
+
+        self.new_source = Source.objects.get(id=id)
+        self.assertEquals(name, self.new_source.name)
+        self.assertEquals(mnemonic, self.new_source.mnemonic)
+        self.assertEquals(full_name, self.new_source.full_name)
+        self.assertEquals(source_type, self.new_source.source_type)
+        self.assertEquals(public_access, self.new_source.public_access)
+        self.assertEquals(default_locale, self.new_source.default_locale)
+        self.assertEquals(supported_locales, self.new_source.supported_locales)
+        self.assertEquals(website, self.new_source.website)
+        self.assertEquals(description, self.new_source.description)
 
 
 class SourceVersionTest(SourceBaseTest):

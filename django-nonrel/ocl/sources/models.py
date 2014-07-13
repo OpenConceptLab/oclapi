@@ -9,17 +9,20 @@ from settings import DEFAULT_LOCALE
 SOURCE_TYPE = 'Source'
 
 DICTIONARY_SRC_TYPE = 'dictionary'
+REFERENCE_SRC_TYPE = 'reference'
+EXTERNAL_DICT_SRC_TYPE = 'externalDictionary'
 DEFAULT_SRC_TYPE = DICTIONARY_SRC_TYPE
-SRC_TYPE_CHOICES = (('dictionary', 'Dictionary'),
-                    ('reference', 'Reference'),
-                    ('externalDictionary', 'External Dictionary'))
+SRC_TYPE_CHOICES = ((DICTIONARY_SRC_TYPE, 'Dictionary'),
+                    (REFERENCE_SRC_TYPE, 'Reference'),
+                    (EXTERNAL_DICT_SRC_TYPE, 'External Dictionary'))
 
 VIEW_ACCESS_TYPE = 'View'
 EDIT_ACCESS_TYPE = 'Edit'
+NONE_ACCESS_TYPE = 'None'
 DEFAULT_ACCESS_TYPE = VIEW_ACCESS_TYPE
-ACCESS_TYPE_CHOICES = (('View', 'View'),
-                       ('Edit', 'Edit'),
-                       ('None', 'None'))
+ACCESS_TYPE_CHOICES = ((VIEW_ACCESS_TYPE, 'View'),
+                       (EDIT_ACCESS_TYPE, 'Edit'),
+                       (NONE_ACCESS_TYPE, 'None'))
 
 
 class Source(SubResourceBaseModel):
@@ -91,14 +94,15 @@ class Source(SubResourceBaseModel):
     @classmethod
     def persist_changes(cls, obj, **kwargs):
         errors = dict()
-        parent_resource = kwargs.pop('parent_resource')
-        mnemonic = obj.mnemonic
-        parent_resource_type = ContentType.objects.get_for_model(parent_resource)
-        matching_sources = cls.objects.filter(parent_type__pk=parent_resource_type.id, parent_id=parent_resource.id, mnemonic=mnemonic)
-        if matching_sources.exists():
-            if matching_sources[0] != obj:
-                errors['mnemonic'] = '%s with mnemonic %s already exists for parent resource %s.' % (cls, mnemonic, parent_resource.mnemonic)
-                return errors
+        parent_resource = kwargs.pop('parent_resource', obj.parent)
+        if not parent_resource:
+            errors['parent'] = 'Source parent cannot be None.'
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+        if errors:
+            return errors
         obj.save(**kwargs)
         return errors
 
