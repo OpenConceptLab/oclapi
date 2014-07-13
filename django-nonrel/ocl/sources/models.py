@@ -165,11 +165,12 @@ class SourceVersion(ResourceVersionModel):
     @classmethod
     def persist_changes(cls, obj, **kwargs):
         errors = dict()
-        versioned_object = kwargs.pop('versioned_object')
+        versioned_object = kwargs.pop('versioned_object', obj.versioned_object)
         if versioned_object is None:
             errors['non_field_errors'] = ['Must specify a versioned object.']
             return errors
-        if obj._previous_version_mnemonic:
+        obj.versioned_object = versioned_object
+        if hasattr(obj, '_previous_version_mnemonic') and obj._previous_version_mnemonic:
             previous_version_queryset = cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._previous_version_mnemonic)
             if not previous_version_queryset.exists():
                 errors['previousVersion'] = ["Previous version %s does not exist." % obj._previous_version_mnemonic]
@@ -178,7 +179,7 @@ class SourceVersion(ResourceVersionModel):
             else:
                 obj.previous_version = previous_version_queryset[0]
                 del obj._previous_version_mnemonic
-        if obj._parent_version_mnemonic:
+        if hasattr(obj, '_parent_version_mnemonic') and obj._parent_version_mnemonic:
             parent_version_queryset = cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._parent_version_mnemonic)
             if not parent_version_queryset.exists():
                 errors['parentVersion'] = ["Parent version %s does not exist." % obj._parent_version_mnemonic]
@@ -194,7 +195,6 @@ class SourceVersion(ResourceVersionModel):
             seed_concepts_from = obj.previous_version or obj.parent_version
             if seed_concepts_from:
                 obj.concepts = list(seed_concepts_from.concepts)
-        obj.versioned_object = versioned_object
         persisted = False
         try:
             obj.save(**kwargs)

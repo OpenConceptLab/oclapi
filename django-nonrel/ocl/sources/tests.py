@@ -739,4 +739,338 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             version1.save()
         self.assertEquals(0, self.source1.num_versions)
 
+    def test_persist_changes_positive(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        mnemonic = version1.mnemonic
+        released = version1.released
+        description = version1.description
+
+        id = version1.id
+        version1.mnemonic = "%s-prime" % mnemonic
+        version1.released = not released
+        version1.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version1)
+        self.assertEquals(0, len(errors))
+
+        version1 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(1, self.source1.num_versions)
+        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertNotEquals(mnemonic, version1.mnemonic)
+        self.assertNotEquals(released, version1.released)
+        self.assertNotEquals(description, version1.description)
+
+    def test_persist_changes_negative__bad_previous_version(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        mnemonic = version1.mnemonic
+        released = version1.released
+        description = version1.description
+
+        id = version1.id
+        version1._previous_version_mnemonic = 'No such version'
+        version1.mnemonic = "%s-prime" % mnemonic
+        version1.released = not released
+        version1.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version1)
+        self.assertEquals(1, len(errors))
+        self.assertTrue('previousVersion' in errors)
+
+        version1 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(1, self.source1.num_versions)
+        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(mnemonic, version1.mnemonic)
+        self.assertEquals(released, version1.released)
+        self.assertEquals(description, version1.description)
+
+    def test_persist_changes_negative__previous_version_is_self(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        mnemonic = version1.mnemonic
+        released = version1.released
+        description = version1.description
+
+        id = version1.id
+        version1._previous_version_mnemonic = mnemonic
+        version1.released = not released
+        version1.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version1)
+        self.assertEquals(1, len(errors))
+        self.assertTrue('previousVersion' in errors)
+
+        version1 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(1, self.source1.num_versions)
+        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(mnemonic, version1.mnemonic)
+        self.assertEquals(released, version1.released)
+        self.assertEquals(description, version1.description)
+
+    def test_persist_changes_negative__bad_parent_version(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        mnemonic = version1.mnemonic
+        released = version1.released
+        description = version1.description
+
+        id = version1.id
+        version1._parent_version_mnemonic = 'No such version'
+        version1.mnemonic = "%s-prime" % mnemonic
+        version1.released = not released
+        version1.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version1)
+        self.assertEquals(1, len(errors))
+        self.assertTrue('parentVersion' in errors)
+
+        version1 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(1, self.source1.num_versions)
+        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(mnemonic, version1.mnemonic)
+        self.assertEquals(released, version1.released)
+        self.assertEquals(description, version1.description)
+
+    def test_persist_changes_negative__parent_version_is_self(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        mnemonic = version1.mnemonic
+        released = version1.released
+        description = version1.description
+
+        id = version1.id
+        version1._parent_version_mnemonic = mnemonic
+        version1.released = not released
+        version1.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version1)
+        self.assertEquals(1, len(errors))
+        self.assertTrue('parentVersion' in errors)
+
+        version1 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(1, self.source1.num_versions)
+        self.assertEquals(version1, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(mnemonic, version1.mnemonic)
+        self.assertEquals(released, version1.released)
+        self.assertEquals(description, version1.description)
+
+    def test_persist_changes_positive__good_previous_version(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2.full_clean()
+        version2.save()
+        self.assertIsNone(version2.previous_version)
+
+        mnemonic = version2.mnemonic
+        released = version2.released
+        description = version2.description
+
+        id = version2.id
+        version2._previous_version_mnemonic = 'version1'
+        version2.mnemonic = "%s-prime" % mnemonic
+        version2.released = not released
+        version2.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version2)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.previous_version)
+        self.assertNotEquals(mnemonic, version2.mnemonic)
+        self.assertNotEquals(released, version2.released)
+        self.assertNotEquals(description, version2.description)
+
+    def test_persist_changes_positive__good_parent_version(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.full_clean()
+        version1.save()
+
+        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2.full_clean()
+        version2.save()
+        self.assertIsNone(version2.parent_version)
+
+        mnemonic = version2.mnemonic
+        released = version2.released
+        description = version2.description
+
+        id = version2.id
+        version2._parent_version_mnemonic = 'version1'
+        version2.mnemonic = "%s-prime" % mnemonic
+        version2.released = not released
+        version2.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version2)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.parent_version)
+        self.assertNotEquals(mnemonic, version2.mnemonic)
+        self.assertNotEquals(released, version2.released)
+        self.assertNotEquals(description, version2.description)
+
+    def test_persist_changes_positive__seed_from_previous(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.concepts = [1]
+        version1.full_clean()
+        version1.save()
+
+        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2.full_clean()
+        version2.save()
+        self.assertIsNone(version2.previous_version)
+
+        mnemonic = version2.mnemonic
+        released = version2.released
+        description = version2.description
+
+        id = version2.id
+        version2._previous_version_mnemonic = 'version1'
+        version2.mnemonic = "%s-prime" % mnemonic
+        version2.released = not released
+        version2.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version2)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.previous_version)
+        self.assertEquals([], version2.concepts)
+        self.assertNotEquals(mnemonic, version2.mnemonic)
+        self.assertNotEquals(released, version2.released)
+        self.assertNotEquals(description, version2.description)
+
+        errors = SourceVersion.persist_changes(version2, seed_concepts=True)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.previous_version)
+        self.assertEquals([1], version2.concepts)
+
+    def test_persist_changes_positive__seed_from_parent(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.concepts = [2]
+        version1.full_clean()
+        version1.save()
+
+        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2.full_clean()
+        version2.save()
+        self.assertIsNone(version2.parent_version)
+
+        mnemonic = version2.mnemonic
+        released = version2.released
+        description = version2.description
+
+        id = version2.id
+        version2._parent_version_mnemonic = 'version1'
+        version2.mnemonic = "%s-prime" % mnemonic
+        version2.released = not released
+        version2.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version2)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.parent_version)
+        self.assertEquals([], version2.concepts)
+        self.assertNotEquals(mnemonic, version2.mnemonic)
+        self.assertNotEquals(released, version2.released)
+        self.assertNotEquals(description, version2.description)
+
+        errors = SourceVersion.persist_changes(version2, seed_concepts=True)
+        self.assertEquals(0, len(errors))
+
+        version2 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version2.versioned_object)
+        self.assertEquals(2, self.source1.num_versions)
+        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version2.parent_version)
+        self.assertEquals([2], version2.concepts)
+
+    def test_persist_changes_positive__seed_from_previous_over_parent(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1.concepts = [1]
+        version1.full_clean()
+        version1.save()
+
+        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2.concepts = [2]
+        version2.full_clean()
+        version2.save()
+        self.assertIsNone(version2.previous_version)
+
+        version3 = SourceVersion.for_base_object(self.source1, 'version3')
+        version3.full_clean()
+        version3.save()
+
+        mnemonic = version3.mnemonic
+        released = version3.released
+        description = version3.description
+
+        id = version3.id
+        version3._parent_version_mnemonic = 'version2'
+        version3._previous_version_mnemonic = 'version1'
+        version3.mnemonic = "%s-prime" % mnemonic
+        version3.released = not released
+        version3.description = "%s-prime" % description
+
+        errors = SourceVersion.persist_changes(version3)
+        self.assertEquals(0, len(errors))
+
+        version3 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version3.versioned_object)
+        self.assertEquals(3, self.source1.num_versions)
+        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version1, version3.previous_version)
+        self.assertEquals(version2, version3.parent_version)
+        self.assertEquals([], version3.concepts)
+        self.assertNotEquals(mnemonic, version3.mnemonic)
+        self.assertNotEquals(released, version3.released)
+        self.assertNotEquals(description, version3.description)
+
+        errors = SourceVersion.persist_changes(version3, seed_concepts=True)
+        self.assertEquals(0, len(errors))
+
+        version3 = SourceVersion.objects.get(id=id)
+        self.assertEquals(self.source1, version3.versioned_object)
+        self.assertEquals(3, self.source1.num_versions)
+        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
+        self.assertEquals(version2, version3.parent_version)
+        self.assertEquals(version1, version3.previous_version)
+        self.assertEquals([1], version3.concepts)
 
