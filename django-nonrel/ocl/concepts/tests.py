@@ -576,3 +576,70 @@ class ConceptVersionTest(ConceptBaseTest):
         self.assertEquals(self.concept1.display_locale, version2.display_locale)
 
 
+class ConceptVersionStaticMethodsTest(ConceptBaseTest):
+
+    def setUp(self):
+        super(ConceptVersionStaticMethodsTest, self).setUp()
+        self.concept1 = Concept(mnemonic='concept1', concept_class='First')
+        display_name = LocalizedText(name='concept1', locale='en')
+        self.concept1.names.append(display_name)
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.source1,
+        }
+        Concept.persist_new(self.concept1, **kwargs)
+        initial_version = ConceptVersion.get_latest_version_of(self.concept1)
+
+        self.concept2 = Concept(mnemonic='concept2', concept_class='Second')
+        kwargs = {
+            'owner': self.user1,
+            'parent_resource': self.source2,
+        }
+        Concept.persist_new(self.concept2, **kwargs)
+
+        self.concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=self.concept1,
+            concept_class='First',
+            names=self.concept1.names,
+            previous_version=initial_version,
+        )
+        self.concept_version.full_clean()
+        self.concept_version.save()
+
+    def test_for_concept_positive(self):
+        self.concept1.datatype = 'Boolean'
+        self.concept1.save()
+
+        label = 'version1'
+        version = ConceptVersion.for_concept(self.concept1, label)
+
+        self.assertEquals(label, version.mnemonic)
+        self.assertEquals(self.concept1, version.versioned_object)
+        self.assertEquals(self.concept1.concept_class, version.concept_class)
+        self.assertEquals(self.concept1.datatype, version.datatype)
+        self.assertEquals(self.concept1.names, version.names)
+        self.assertEquals(self.concept1.descriptions, version.descriptions)
+        self.assertEquals(self.concept1.retired, version.retired)
+        self.assertFalse(version.released)
+
+    def test_persist_clone_positive(self):
+        self.assertEquals(2, self.concept1.num_versions)
+        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+
+        source_version.update_concept_version(self.concept_version)
+        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(self.concept_version.id, source_version.concepts[0])
+
+        version2 = self.concept_version.clone()
+        ConceptVersion.persist_clone(version2)
+
+        self.assertEquals(3, self.concept1.num_versions)
+        self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(self.concept_version, version2.previous_version)
+
+        source_version.update_concept_version(version2)
+        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(version2.id, source_version.concepts[0])

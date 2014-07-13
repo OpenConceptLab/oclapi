@@ -12,6 +12,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
+        #'HOST': '65.99.230.144',
         'NAME': 'ocl',
     }
 }

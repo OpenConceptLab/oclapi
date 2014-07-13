@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import models
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from sources.models import SourceVersion
@@ -238,8 +238,8 @@ class ConceptVersion(ResourceVersionModel):
             persisted = True
         finally:
             if not persisted:
-                source_version.update_concept_version()
-
+                source_version.update_concept_version(obj.previous_version)
+                obj.delete()
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
         return errors
 
