@@ -31,11 +31,20 @@ Using the Mongo command-line, create a database named `ocl`:
 
      > use ocl
 
-### Solr
+### Solr 4.9.0
 
-Solr is used to support searching across OCL API entities.  You can use Homebrew to install it as well:
+Solr is used to support searching across OCL API entities.  To download Solr 4.9.0, visit the Solr [mirrors](http://www.apache.org/dyn/closer.cgi/lucene/solr/4.9.0) page and select a mirror.  Then download solr-4.9.0.tgz (NOT solr-4.9.0-src.tgz).
 
-    brew install solr
+Choose an install directory (e.g. `~/third-party`, henceforth `$INSTALL_DIR`) and extract the tarball there.  You will then need to set 2 environment variables:
+
+       export SOLR_ROOT=$INSTALL_DIR/solr-4.9.0
+       export SOLR_HOME=$OCLAPI_ROOT/solr
+
+`$OCLAPI_ROOT` refers to your Git project root (i.e. the location of this Readme file).
+
+This should enable you to run `$OCLAPI_ROOT/run_solr.sh`, which starts Solr in a Jetty instance listening on port 8983.  Verify this by visiting:
+
+     http://localhost:8983/solr
 
 *** More details required here ***
 
