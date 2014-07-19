@@ -1,6 +1,7 @@
 from __future__ import with_statement
 import os
 from fabric.api import local, settings, abort, run, cd
+from fabric.context_managers import prefix
 from fabric.operations import sudo
 from fabric.state import env
 
@@ -42,7 +43,8 @@ def provision():
     with cd(CHECKOUT_DIR):
         run("cp -r oclapi/django-nonrel/ocl %s" % DEPLOY_DIR)
     with cd("%s/ocl" % DEPLOY_DIR):
-        run("pip install -r requirements.txt")
+        with prefix("source /opt/virtualenvs/ocl/bin/activate"):
+            run("pip install -r requirements.txt")
 
 
 def restart():
