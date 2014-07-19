@@ -1,9 +1,9 @@
-git+https://github.com/django-nonrel/django@nonrel-1.3
-git+https://github.com/django-nonrel/djangotoolbox@toolbox-1.3
-git+https://github.com/django-nonrel/mongodb-engine@mongodb-engine-1.3
-South==0.8.2
+git+https://github.com/django-nonrel/django@nonrel-1.5
+git+https://github.com/django-nonrel/djangotoolbox@toolbox-1.5-beta
+git+https://github.com/django-nonrel/mongodb-engine@mongodb-engine-1.5-beta
 django-haystack==2.1.0
 django-uuidfield==0.4.0
 djangorestframework==2.3.7
+Fabric==1.9.0
 pymongo==2.6
 wsgiref==0.1.2
