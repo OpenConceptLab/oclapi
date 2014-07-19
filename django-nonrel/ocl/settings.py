@@ -125,7 +125,7 @@ INSTALLED_APPS = (
     'django_mongodb_engine',
     'rest_framework',
     'rest_framework.authtoken',
-    #'south',
+    'haystack',
     # Project-specific apps:
     #'accounts',
     'concepts',

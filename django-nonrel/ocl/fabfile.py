@@ -1,6 +1,7 @@
 from __future__ import with_statement
 import os
 from fabric.api import local, settings, abort, run, cd
+from fabric.operations import sudo
 from fabric.state import env
 
 __author__ = 'misternando'
@@ -36,9 +37,20 @@ def checkout():
     with cd(CHECKOUT_DIR):
         run("rm -rf oclapi")
         run("git clone https://github.com/OpenConceptLab/oclapi.git")
-        run("cp -r oclapi/django-nonrel/ocl /opt/deploy/django")
+
+def provision():
+    with cd(CHECKOUT_DIR):
+        run("cp -r oclapi/django-nonrel/ocl %s" % DEPLOY_DIR)
+    with cd("%s/ocl" % DEPLOY_DIR):
+        run("pip install -r requirements.txt")
+
+
+def restart():
+    sudo('/etc/init.d/httpd restart')
 
 
 def deploy():
     backup()
     checkout()
+    provision()
+    restart()
