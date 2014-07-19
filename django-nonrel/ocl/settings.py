@@ -181,7 +181,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         #'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'PAGINATE_BY': 10,             # Default to 10
+    'PAGINATE_BY_PARAM': 'limit',  # Allow client to override, using `?limit=xxx`.
+    'MAX_PAGINATE_BY': 100         # Maximum limit allowed when using `?limit=xxx`.
 }
 
 # Model that stores auxiliary user profile attributes.
