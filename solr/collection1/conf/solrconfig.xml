@@ -364,10 +364,11 @@
          uncommitted changes to the index, so use of a hard autoCommit
          is recommended (see below).
          "dir" - the target directory for transaction logs, defaults to the
-                solr data directory.  --> 
+                solr data directory.
     <updateLog>
       <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
+  --> 
  
     <!-- AutoCommit
 
