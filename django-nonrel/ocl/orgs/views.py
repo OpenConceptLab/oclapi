@@ -12,7 +12,7 @@ from users.models import UserProfile
 
 class OrganizationListView(mixins.ListModelMixin,
                            mixins.CreateModelMixin,
-                           generics.GenericAPIView):
+                           BaseAPIView):
     queryset = Organization.objects.filter(is_active=True)
 
     def initial(self, request, *args, **kwargs):
