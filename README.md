@@ -46,8 +46,6 @@ This should enable you to run `$OCLAPI_ROOT/run_solr.sh`, which starts Solr in a
 
      http://localhost:8983/solr
 
-*** More details required here ***
-
 ### The Django Project
 
 Clone this repository, and `cd` into the `django/ocl` directory.
@@ -57,26 +55,7 @@ Before you can run the server, you will need to execute the following steps:
 
     pip install -r requirements.txt
 
-2. Create a Django `Site` and make note of its ID:
-
-   ```sh
-    ./manage.py shell
-    >>> from django.contrib.sites.models import Site
-    >>> s = Site()
-    >>> s.save()
-    >>> [Ctrl-D] (to exit)
-    ./manage.py tellsiteid
-    ```
-
-3. Replace the `SITE_ID` in your settings file.
-
-   a. Open `oclapi/settings.py` and find the line containing `SITE_ID=`.
-
-   b. Replace the assigned value with the one returned above.
-
-   c. Keep the `u` and the single-quotes intact.  (This denotes a unicode String).
-
-4. Use `syncdb` to create your backing Mongo collections.
+2. Use `syncdb` to create your backing Mongo collections.
 
    ```sh
    ./manage.py syncdb
@@ -91,7 +70,7 @@ Before you can run the server, you will need to execute the following steps:
    ./manage.py createsuperuser
    ```
    
-5. Verify your superuser and make note of your token.
+3. Verify your superuser and make note of your token.
 
    ```sh
    $ mongo
@@ -109,13 +88,13 @@ Before you can run the server, you will need to execute the following steps:
    Make note of the token `_id` (e.g. `"20e6ac8fe09129debac2929f4a20a56bea801165"`).  You will need this to access your endpoints
    once you start up your server.
 
-6. Run the lightweight web server that ships with Django.
+4. Run the lightweight web server that ships with Django.
 
    ./manage.py runserver
 
    The OCL API should now be running at `http://localhost:8000`.
 
-7. Test an endpoint.
+5. Test an endpoint.
    
    Remember, the API uses token-based authentication, so you can't just plug an endpoint into a browser and hit Return.
    You'll need to use a tool that allows you to specify a header with your request.  One simple example is `curl`:
@@ -127,7 +106,7 @@ Before you can run the server, you will need to execute the following steps:
    I recommend using the [Advanced REST Client](https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo?hl=en-US) app for Chrome.
    This provides you with a nice editor for passing parameters along with your `POST` and `PUT` requests.
 
-8. Create an API user.
+6. Create an API user.
    
    Your superuser is not a valid API user, because it was not created via the `POST /users/` operation.
    However, you can use your superuser to access that endpoint and _create_ an API user:
@@ -136,7 +115,7 @@ Before you can run the server, you will need to execute the following steps:
    curl -H "Authorization: Token c1328d443285f2c933775574e83fe3abfe6d7c0d" -H "Content-Type: application/json" -d '{"username":"test","email":"test@test.com", "name":"TestyMcTest"}' http://localhost:8000/users/   
    ```
 
-9. (Optional) Make your API user an admin (staff) user.
+7. (Optional) Make your API user an admin (staff) user.
 
    Log into the Django admin console with the superuser credentials you established in step 4:
 
