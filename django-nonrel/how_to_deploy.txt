@@ -6,8 +6,10 @@ sudo yum install httpd-devel
 sudo yum install python-devel
 install mongodb: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/
 sudo yum install python-pip
-install solr: http://andres.jaimes.net/878/setup-lucene-solr-centos-tomcat/
-sudo yum install python-lxml
+Download Solr 4.9.0 at: http://lucene.apache.org/solr/downloads.html
+Extract it to /tmp
+cp -r /tmp/example /opt/solr
+Configure Jetty to run Solr at startup: http://wiki.apache.org/solr/SolrJetty
 
 sudo mkdir -p /usr/local/wsgi/static
 sudo mkdir -p /usr/local/wsgi/media
