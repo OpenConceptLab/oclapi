@@ -77,6 +77,7 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     class Meta:
         model = ConceptVersion
         versioned_object_field_name = 'url'
+        versioned_object_view_name = 'concept-detail'
         fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url', 'versionUrl', 'version')
 
 

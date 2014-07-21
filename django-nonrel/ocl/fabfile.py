@@ -29,9 +29,9 @@ def test_local():
 
 def backup():
     with cd(DEPLOY_DIR):
-        run("tar -czvf ocl_`date +%Y%m%d`.tgz django solr")
+        run("tar -czvf ocl_`date +%Y%m%d`.tgz django solr/collection1/conf")
         run("mv ocl_*.tgz %s" % BACKUP_DIR)
-        run("rm -rf django solr")
+        run("rm -rf django solr/collection1/conf")
 
 
 def checkout():
@@ -43,7 +43,7 @@ def checkout():
 def provision():
     with cd(CHECKOUT_DIR):
         run("cp -r oclapi/django-nonrel %s/django" % DEPLOY_DIR)
-        run("cp -r oclapi/solr %s" % DEPLOY_DIR)
+        run("cp -r oclapi/solr/collection1/conf %s/solr/collection1" % DEPLOY_DIR)
         sudo("chown -R solr:wheel %s/solr" % DEPLOY_DIR)
     with cd("%s/django/ocl" % DEPLOY_DIR):
         run("cp settings.py.deploy settings.py")
