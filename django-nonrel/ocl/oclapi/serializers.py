@@ -5,7 +5,10 @@ from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceO
 
 
 class HeaderPaginationSerializer(PaginationSerializer):
-    _headers_and_data = None
+
+    def __init__(self, *args, **kwargs):
+        self._headers_and_data = None
+        super(HeaderPaginationSerializer, self).__init__(*args, **kwargs)
 
     @property
     def data(self):
