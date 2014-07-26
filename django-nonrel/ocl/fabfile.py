@@ -50,6 +50,7 @@ def provision():
         with prefix("source /opt/virtualenvs/ocl/bin/activate"):
             run("pip install -r requirements.txt")
             run("./manage.py build_solr_schema > /opt/deploy/solr/collection1/conf/schema.xml")
+            sudo('/etc/init.d/jetty restart')
             run("./manage.py rebuild_index")
 
 
