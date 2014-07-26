@@ -4,14 +4,14 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
-from oclapi.views import BaseAPIView
+from oclapi.views import BaseAPIView, ListWithHeadersMixin
 from orgs.models import Organization
 from users.models import UserProfile
 from users.serializers import UserListSerializer, UserCreateSerializer, UserUpdateSerializer, UserDetailSerializer
 
 
 class UserListView(BaseAPIView,
-                   mixins.ListModelMixin,
+                   ListWithHeadersMixin,
                    mixins.CreateModelMixin):
     queryset = UserProfile.objects.filter(is_active=True)
     filter_backends = [HaystackSearchFilter]

@@ -1,6 +1,33 @@
 from rest_framework import serializers
+from rest_framework.pagination import PaginationSerializer
 from rest_framework.serializers import HyperlinkedModelSerializerOptions
 from oclapi.fields import HyperlinkedResourceIdentityField, HyperlinkedResourceOwnerField, HyperlinkedVersionedResourceIdentityField, HyperlinkedResourceVersionIdentityField
+
+
+class HeaderPaginationSerializer(PaginationSerializer):
+    _headers_and_data = None
+
+    @property
+    def data(self):
+        if self._headers_and_data is None:
+            self._populate_headers_and_data()
+        return self._headers_and_data['data']
+
+    @property
+    def headers(self):
+        if self._headers_and_data is None:
+            self._populate_headers_and_data()
+        return self._headers_and_data['headers']
+
+    def _populate_headers_and_data(self):
+        self._headers_and_data = {}
+        obj = self.object
+        page_fields = self.to_native(obj)
+        self._headers_and_data['headers'] = {}
+        self._headers_and_data['headers']['count'] = page_fields['count']
+        self._headers_and_data['headers']['next'] = page_fields['next']
+        self._headers_and_data['headers']['previous'] = page_fields['previous']
+        self._headers_and_data['data'] = page_fields['results']
 
 
 class HyperlinkedResourceSerializer(serializers.Serializer):
