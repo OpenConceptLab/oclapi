@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from oclapi.utils import reverse_resource
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
@@ -23,9 +24,30 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def url(self):
+        return reverse_resource(self, self.view_name)
+
+    @property
+    def view_name(self):
+        return self.get_default_view_name()
+
+    @property
+    def _default_view_name(self):
+        return '%(model_name)s-detail'
+
     def soft_delete(self):
         self.is_active = False
         self.save()
+
+    def get_default_view_name(self):
+        model = self.__class__
+        model_meta = model._meta
+        format_kwargs = {
+            'app_label': model_meta.app_label,
+            'model_name': model_meta.object_name.lower()
+        }
+        return self._default_view_name % format_kwargs
 
 
 class BaseResourceModel(BaseModel):
@@ -61,6 +83,14 @@ class SubResourceBaseModel(BaseModel):
 
     def __unicode__(self):
         return self.mnemonic
+
+    @property
+    def owner_url(self):
+        if isinstance(self.owner, User):
+            owner = self.owner.userprofile
+        else:
+            owner = self.owner
+        return reverse_resource(owner, owner.view_name)
 
     @property
     def parent_resource(self):

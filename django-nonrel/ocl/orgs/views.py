@@ -4,15 +4,15 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from oclapi.permissions import HasOwnership
 from oclapi.utils import add_user_to_org, remove_user_from_org
-from oclapi.views import BaseAPIView
+from oclapi.views import BaseAPIView, ListWithHeadersMixin
 from orgs.models import Organization
 from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer, OrganizationUpdateSerializer
 from users.models import UserProfile
 
 
-class OrganizationListView(mixins.ListModelMixin,
-                           mixins.CreateModelMixin,
-                           BaseAPIView):
+class OrganizationListView(BaseAPIView,
+                           ListWithHeadersMixin,
+                           mixins.CreateModelMixin):
     queryset = Organization.objects.filter(is_active=True)
 
     def initial(self, request, *args, **kwargs):
@@ -22,7 +22,7 @@ class OrganizationListView(mixins.ListModelMixin,
         super(OrganizationListView, self).initial(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = OrganizationListSerializer
+        self.serializer_class = OrganizationDetailSerializer if self.is_verbose(request) else OrganizationListSerializer
         restrict_to = None
         if self.user_is_self:
             restrict_to = request.user.get_profile().organizations

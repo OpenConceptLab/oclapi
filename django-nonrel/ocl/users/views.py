@@ -19,10 +19,8 @@ class UserListView(BaseAPIView,
     solr_fields = {
         'username': {'sortable': True, 'filterable': False}
     }
-    verbose = False
 
     def initial(self, request, *args, **kwargs):
-        self.verbose = request.QUERY_PARAMS.get('verbose', False)
         self.related_object_type = kwargs.pop('related_object_type', None)
         self.related_object_kwarg = kwargs.pop('related_object_kwarg', None)
         if request.method == 'POST':
@@ -30,7 +28,7 @@ class UserListView(BaseAPIView,
         super(UserListView, self).initial(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = UserDetailSerializer if self.verbose else UserListSerializer
+        self.serializer_class = UserDetailSerializer if self.is_verbose(request) else UserListSerializer
         if self.related_object_type and self.related_object_kwarg:
             related_object_key = kwargs.pop(self.related_object_kwarg)
             if Organization == self.related_object_type:

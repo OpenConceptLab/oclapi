@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, VersionedResourceChildMixin
+from oclapi.views import SubResourceMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin
 from sources.models import SourceVersion
 
 
@@ -71,10 +71,14 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ConceptListView(ListAPIView):
+class ConceptListView(BaseAPIView, ListWithHeadersMixin):
     model = Concept
     queryset = Concept.objects.filter(is_active=True)
     serializer_class = ConceptListSerializer
+
+    def get(self, request, *args, **kwargs):
+        self.serializer_class = ConceptDetailSerializer if self.is_verbose(request) else ConceptListSerializer
+        return self.list(request, *args, **kwargs)
 
 
 class ConceptCreateView(ConceptBaseView,

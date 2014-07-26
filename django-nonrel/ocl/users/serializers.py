@@ -2,20 +2,20 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceIdentityField
-from oclapi.serializers import HyperlinkedResourceSerializer
 from users.models import UserProfile
 from oclapi.models import NAMESPACE_REGEX
 
 
-class UserListSerializer(HyperlinkedResourceSerializer):
+class UserListSerializer(serializers.Serializer):
     username = serializers.CharField()
     name = serializers.CharField()
+    url = serializers.CharField()
 
     class Meta:
         model = UserProfile
 
 
-class UserDetailSerializer(HyperlinkedResourceSerializer):
+class UserDetailSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type')
     uuid = serializers.CharField(source='id')
     username = serializers.CharField()
@@ -27,6 +27,7 @@ class UserDetailSerializer(HyperlinkedResourceSerializer):
     publicSources = serializers.IntegerField(source='public_sources')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
+    url = serializers.CharField()
 
     class Meta:
         model = UserProfile

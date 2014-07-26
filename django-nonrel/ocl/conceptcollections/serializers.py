@@ -1,23 +1,21 @@
-from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from conceptcollections.models import Collection, DEFAULT_ACCESS_TYPE, ACCESS_TYPE_CHOICES, CollectionVersion
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer, ResourceVersionSerializer
+from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 
 
-class CollectionListSerializer(HyperlinkedResourceSerializer):
+class CollectionListSerializer(serializers.Serializer):
     shortCode = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
+    url = serializers.CharField()
 
     class Meta:
         model = Collection
-        fields = ('shortCode', 'name', 'url')
 
-
-class CollectionDetailSerializer(HyperlinkedSubResourceSerializer):
+class CollectionDetailSerializer(serializers.Serializer):
     type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
@@ -34,6 +32,8 @@ class CollectionDetailSerializer(HyperlinkedSubResourceSerializer):
     versions = serializers.IntegerField(source='num_versions')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
+    url = serializers.CharField()
+    ownerUrl = serializers.CharField(source='owner_url')
 
     class Meta:
         model = Collection

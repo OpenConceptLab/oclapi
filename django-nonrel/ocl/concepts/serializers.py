@@ -3,10 +3,10 @@ from rest_framework import serializers
 from concepts.fields import LocalizedTextListField
 from concepts.models import Concept, ConceptVersion
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer, ResourceVersionSerializer
+from oclapi.serializers import ResourceVersionSerializer
 
 
-class ConceptListSerializer(HyperlinkedResourceSerializer):
+class ConceptListSerializer(serializers.Serializer):
     id = serializers.CharField(source='mnemonic')
     conceptClass = serializers.CharField(source='concept_class')
     datatype = serializers.CharField()
@@ -16,13 +16,14 @@ class ConceptListSerializer(HyperlinkedResourceSerializer):
     ownerType = serializers.CharField(source='owner_type')
     displayName = serializers.CharField(source='display_name')
     displayLocale = serializers.CharField(source='display_locale')
+    url = serializers.CharField()
+    ownerUrl = serializers.CharField(source='owner_url')
 
     class Meta:
         model = Concept
-        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url')
 
 
-class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
+class ConceptDetailSerializer(serializers.Serializer):
     conceptClass = serializers.CharField(source='concept_class')
     datatype = serializers.CharField()
     displayName = serializers.CharField(source='display_name')
@@ -32,6 +33,8 @@ class ConceptDetailSerializer(HyperlinkedSubResourceSerializer):
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
+    url = serializers.CharField()
+    ownerUrl = serializers.CharField(source='owner_url')
 
     class Meta:
         model = Concept

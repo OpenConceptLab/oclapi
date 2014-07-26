@@ -39,6 +39,10 @@ class PathWalkerMixin():
 
 
 class ListWithHeadersMixin(ListModelMixin):
+    verbose_param = 'verbose'
+
+    def is_verbose(self, request):
+        return request.QUERY_PARAMS.get(self.verbose_param, False)
 
     def list(self, request, *args, **kwargs):
         self.object_list = self.filter_queryset(self.get_queryset())

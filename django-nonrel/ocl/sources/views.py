@@ -63,7 +63,7 @@ class SourceListView(SourceBaseView,
     }
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = SourceListSerializer
+        self.serializer_class = SourceDetailSerializer if self.is_verbose(request) else SourceListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

@@ -2,21 +2,22 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedResourceSerializer, HyperlinkedSubResourceSerializer, ResourceVersionSerializer
+from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
 
 
-class SourceListSerializer(HyperlinkedResourceSerializer):
+class SourceListSerializer(serializers.Serializer):
     shortCode = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
+    url = serializers.CharField()
+    ownerUrl = serializers.CharField(source='owner_url')
 
     class Meta:
         model = Source
-        fields = ('shortCode', 'name', 'url')
 
 
-class SourceDetailSerializer(HyperlinkedSubResourceSerializer):
+class SourceDetailSerializer(serializers.Serializer):
     type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
@@ -34,6 +35,8 @@ class SourceDetailSerializer(HyperlinkedSubResourceSerializer):
     versions = serializers.IntegerField(source='num_versions')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
+    url = serializers.CharField()
+    ownerUrl = serializers.CharField(source='owner_url')
 
     class Meta:
         model = Source

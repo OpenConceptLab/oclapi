@@ -1,21 +1,20 @@
-from django.contrib.auth.models import Group
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.serializers import HyperlinkedResourceSerializer
 from orgs.models import Organization
 
 
-class OrganizationListSerializer(HyperlinkedResourceSerializer):
+class OrganizationListSerializer(serializers.Serializer):
     id = serializers.CharField(source='mnemonic')
     name = serializers.CharField()
+    url = serializers.CharField()
 
     class Meta:
         model = Organization
 
 
-class OrganizationDetailSerializer(HyperlinkedResourceSerializer):
+class OrganizationDetailSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type')
     uuid = serializers.CharField(source='id')
     id = serializers.CharField(source='mnemonic')
@@ -26,6 +25,7 @@ class OrganizationDetailSerializer(HyperlinkedResourceSerializer):
     publicSources = serializers.IntegerField(source='public_sources')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
+    url = serializers.CharField()
 
     class Meta:
         model = Organization
