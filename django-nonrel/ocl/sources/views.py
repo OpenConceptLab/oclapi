@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView
 from rest_framework.response import Response
+from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin
+from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin, ListWithHeadersMixin
 from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE
 from sources.models import Source, SourceVersion
 from conceptcollections.permissions import CanViewCollection, CanEditCollection
@@ -54,8 +55,12 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView, RetrieveAPIView, UpdateAPI
 
 
 class SourceListView(SourceBaseView,
-                     mixins.CreateModelMixin,
-                     mixins.ListModelMixin):
+                     ListWithHeadersMixin,
+                     mixins.CreateModelMixin):
+    filter_backends = [HaystackSearchFilter]
+    solr_fields = {
+        'source_type': {'sortable': False, 'filterable': True}
+    }
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = SourceListSerializer

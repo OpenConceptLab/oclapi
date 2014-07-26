@@ -175,6 +175,8 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
 # Model that stores auxiliary user profile attributes.
 # A user must have a profile in order to access the system.
 # (A profile is created automatically for any user created using the 'POST /users' endpoint.)

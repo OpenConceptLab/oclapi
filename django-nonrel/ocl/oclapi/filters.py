@@ -33,6 +33,18 @@ class HaystackSearchFilter(BaseFilterBackend):
         params = request.QUERY_PARAMS.get(self.search_param, '')
         return params.replace(',', ' ').split()
 
+    def get_filters(self, request, view):
+        filters = {}
+        if not view.solr_fields:
+            return filters
+        for k in request.QUERY_PARAMS:
+            v = request.QUERY_PARAMS.get(k,'')
+            if k in view.solr_fields:
+                attrs = view.solr_fields[k]
+                if attrs.get('filterable', False):
+                    filters[k] = v
+        return filters
+
     def get_sort_and_desc(self, request):
         sort_field = request.QUERY_PARAMS.get(self.sort_desc_param)
         if sort_field is not None:
@@ -62,15 +74,18 @@ class HaystackSearchFilter(BaseFilterBackend):
 
     def filter_queryset(self, request, queryset, view):
         terms = self.get_search_terms(request)
+        filters = self.get_filters(request, view)
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
             if sort and desc:
                 sort = '-' + sort
-        if terms or sort:
+        if terms or filter or sort:
             sqs = RelatedSearchQuerySet()
             for term in terms:
                 sqs = sqs.filter(content=term)
+            if filters:
+                sqs = sqs.filter(**filters)
             if sort:
                 sqs = sqs.order_by(sort)
             sqs = sqs.load_all()

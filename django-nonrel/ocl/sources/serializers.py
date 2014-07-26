@@ -50,7 +50,7 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.name = attrs.get('name', source.name)
         source.full_name = attrs.get('full_name', source.full_name)
         source.description = attrs.get('description', source.description)
-        source.source_type = attrs.get('type', source.source_type or DEFAULT_SRC_TYPE)
+        source.source_type = attrs.get('source_type', source.source_type or DEFAULT_SRC_TYPE)
         source.public_access = attrs.get('public_access', source.public_access or DEFAULT_ACCESS_TYPE)
         source.default_locale=attrs.get('default_locale', source.default_locale or DEFAULT_LOCALE)
         source.website = attrs.get('website', source.website)
