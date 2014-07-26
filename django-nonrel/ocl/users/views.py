@@ -15,6 +15,9 @@ class UserListView(BaseAPIView,
                    mixins.CreateModelMixin):
     queryset = UserProfile.objects.filter(is_active=True)
     filter_backends = [HaystackSearchFilter]
+    solr_fields = {
+        'username': {'sortable': True, 'filterable': False}
+    }
 
     def initial(self, request, *args, **kwargs):
         self.related_object_type = kwargs.pop('related_object_type', None)
