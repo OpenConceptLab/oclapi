@@ -25,12 +25,18 @@ class HeaderPaginationSerializer(PaginationSerializer):
     def _populate_headers_and_data(self):
         self._headers_and_data = {}
         obj = self.object
+        page_number = obj.number
+        page_size = obj.paginator.per_page
+        offset = (page_number - 1) * page_size
         page_fields = self.to_native(obj)
+        results = page_fields['results']
         self._headers_and_data['headers'] = {}
-        self._headers_and_data['headers']['count'] = page_fields['count']
+        self._headers_and_data['headers']['num_found'] = page_fields['count']
+        self._headers_and_data['headers']['num_returned'] = len(results)
+        self._headers_and_data['headers']['offset'] = offset
         self._headers_and_data['headers']['next'] = page_fields['next']
         self._headers_and_data['headers']['previous'] = page_fields['previous']
-        self._headers_and_data['data'] = page_fields['results']
+        self._headers_and_data['data'] = results
 
 
 class ResourceVersionSerializerOptions(HyperlinkedModelSerializerOptions):
