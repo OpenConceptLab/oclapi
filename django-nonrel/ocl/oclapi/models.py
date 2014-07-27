@@ -7,6 +7,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from djangotoolbox.fields import DictField
 from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource
 
@@ -20,6 +21,7 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    extras = DictField()
 
     class Meta:
         abstract = True

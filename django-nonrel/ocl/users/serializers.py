@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
@@ -28,6 +30,7 @@ class UserDetailSerializer(serializers.Serializer):
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
     url = serializers.CharField()
+    extras = serializers.WritableField()
 
     class Meta:
         model = UserProfile
@@ -48,6 +51,7 @@ class UserCreateSerializer(serializers.Serializer):
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     preferredLocale = serializers.CharField(required=False, source='preferred_locale')
+    extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
         username = attrs.get('username')
@@ -60,6 +64,7 @@ class UserCreateSerializer(serializers.Serializer):
         profile.company = attrs.get('company', None)
         profile.location = attrs.get('location', None)
         profile.preferred_locale = attrs.get('preferred_locale', None)
+        profile.extras = attrs.get('extras', None)
         profile._user = user
         return profile
 
@@ -78,6 +83,7 @@ class UserUpdateSerializer(serializers.Serializer):
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     preferredLocale = serializers.CharField(required=False, source='preferred_locale')
+    extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
         if 'email' in attrs or 'mnemonic' in attrs:
@@ -89,6 +95,7 @@ class UserUpdateSerializer(serializers.Serializer):
         instance.location = attrs.get('location', instance.location)
         instance.mnemonic = attrs.get('mnemonic', instance.mnemonic)
         instance.preferred_locale = attrs.get('preferred_locale', instance.preferred_locale)
+        instance.extras = attrs.get('extras', instance.extras)
         return instance
 
     def save_object(self, obj, **kwargs):
