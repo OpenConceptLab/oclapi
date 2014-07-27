@@ -39,8 +39,14 @@ class BaseModel(models.Model):
         return '%(model_name)s-detail'
 
     def soft_delete(self):
-        self.is_active = False
-        self.save()
+        if self.is_active:
+            self.is_active = False
+            self.save()
+
+    def undelete(self):
+        if not self.is_active:
+            self.is_active = True
+            self.save()
 
     def get_default_view_name(self):
         model = self.__class__

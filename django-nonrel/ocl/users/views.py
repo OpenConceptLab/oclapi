@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
@@ -77,3 +77,14 @@ class UserDetailView(UserBaseView,
         obj = self.get_object()
         obj.soft_delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserReactivateView(UserBaseView, UpdateAPIView):
+    permission_classes = (IsAdminUser, )
+    queryset = UserProfile.objects.filter(is_active=False)
+
+    def update(self, request, *args, **kwargs):
+        profile = self.get_object()
+        profile.undelete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

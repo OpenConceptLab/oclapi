@@ -20,6 +20,18 @@ class UserProfile(BaseResourceModel):
     def __unicode__(self):
         return self.name
 
+    def soft_delete(self):
+        if self.user.is_active:
+            self.user.is_active = False
+            self.user.save()
+        super(UserProfile, self).soft_delete()
+
+    def undelete(self):
+        if not self.user.is_active:
+            self.user.is_active = True
+            self.user.save()
+        super(UserProfile, self).undelete()
+
     @property
     def name(self):
         return self.full_name or "%s %s" % (self.user.first_name, self.user.last_name)

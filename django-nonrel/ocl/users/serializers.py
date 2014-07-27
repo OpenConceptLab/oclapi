@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers

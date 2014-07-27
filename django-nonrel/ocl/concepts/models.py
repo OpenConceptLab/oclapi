@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from sources.models import SourceVersion
@@ -253,3 +256,12 @@ class ConceptVersion(ResourceVersionModel):
 
 admin.site.register(Concept)
 admin.site.register(ConceptVersion)
+
+@receiver(post_save, sender=User)
+def propagate_owner_status(sender, instance=None, created=False, **kwargs):
+    if instance.is_active:
+        for concept in Concept.objects.filter(owner=instance):
+            concept.undelete()
+    else:
+        for concept in Concept.objects.filter(owner=instance):
+            concept.soft_delete()

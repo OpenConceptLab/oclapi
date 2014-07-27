@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel
 from settings import DEFAULT_LOCALE
@@ -172,3 +175,12 @@ class CollectionVersion(ResourceVersionModel):
 
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
+
+@receiver(post_save, sender=User)
+def propagate_owner_status(sender, instance=None, created=False, **kwargs):
+    if instance.is_active:
+        for collection in Collection.objects.filter(owner=instance):
+            collection.undelete()
+    else:
+        for collection in Collection.objects.filter(owner=instance):
+            collection.soft_delete()
