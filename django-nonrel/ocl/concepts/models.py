@@ -213,6 +213,7 @@ class ConceptVersion(ResourceVersionModel):
             mnemonic=label,
             concept_class=concept.concept_class,
             datatype=concept.datatype,
+            extras=concept.extras,
             names=concept.names,
             descriptions=concept.descriptions,
             retired=concept.retired,

@@ -30,6 +30,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     displayLocale = serializers.CharField(source='display_locale')
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
+    extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
@@ -46,6 +47,7 @@ class ConceptCreateSerializer(serializers.Serializer):
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False)
+    extras = serializers.WritableField(required=False)
 
     class Meta:
         model = Concept
@@ -56,6 +58,7 @@ class ConceptCreateSerializer(serializers.Serializer):
         concept.mnemonic = attrs.get(self.Meta.lookup_field, concept.mnemonic)
         concept.concept_class = attrs.get('concept_class', concept.concept_class)
         concept.datatype = attrs.get('datatype', concept.datatype)
+        concept.extras = attrs.get('extras', concept.extras)
         concept.names = attrs.get('names', concept.names)  # Is this desired behavior??
         concept.descriptions = attrs.get('descriptions', concept.descriptions)  # Is this desired behavior??
         return concept
@@ -75,13 +78,14 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     ownerType = serializers.CharField(source='owner_type')
     displayName = serializers.CharField(source='display_name')
     displayLocale = serializers.CharField(source='display_locale')
+    extras = serializers.WritableField()
     version = serializers.CharField(source='mnemonic')
 
     class Meta:
         model = ConceptVersion
         versioned_object_field_name = 'url'
         versioned_object_view_name = 'concept-detail'
-        fields = ('id', 'conceptClass', 'datatype', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url', 'versionUrl', 'version')
+        fields = ('id', 'conceptClass', 'datatype', 'extras', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url', 'versionUrl', 'version')
 
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
@@ -96,6 +100,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
     version = serializers.CharField(source='mnemonic')
+    extras = serializers.WritableField()
 
     class Meta:
         model = ConceptVersion
@@ -107,6 +112,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False)
+    extras = serializers.WritableField(required=False)
 
     class Meta:
         model = ConceptVersion
@@ -114,6 +120,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         instance.concept_class = attrs.get('concept_class', instance.concept_class)
         instance.datatype = attrs.get('datatype', instance.datatype)
+        instance.extras = attrs.get('extras', instance.extras)
         instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
         instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
         return instance
