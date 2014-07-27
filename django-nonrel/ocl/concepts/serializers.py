@@ -96,11 +96,11 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     displayLocale = serializers.CharField(source='display_locale')
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
+    extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
     version = serializers.CharField(source='mnemonic')
-    extras = serializers.WritableField()
 
     class Meta:
         model = ConceptVersion
