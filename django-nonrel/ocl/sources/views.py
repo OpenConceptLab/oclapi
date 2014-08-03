@@ -5,14 +5,14 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin, ListWithHeadersMixin
+from oclapi.views import ConceptDictionaryMixin, ResourceVersionMixin, ResourceAttributeChildMixin, ListWithHeadersMixin
 from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE
 from sources.models import Source, SourceVersion
-from conceptcollections.permissions import CanViewCollection, CanEditCollection
+from conceptcollections.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 
 
-class SourceBaseView(SubResourceMixin):
+class SourceBaseView(ConceptDictionaryMixin):
     lookup_field = 'source'
     pk_field = 'mnemonic'
     model = Source
@@ -23,14 +23,14 @@ class SourceBaseView(SubResourceMixin):
 
 class SourceRetrieveUpdateDestroyView(SourceBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
 
-    def initial(self, request, *args, **kwargs):
+    def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
-            self.permission_classes = (CanViewCollection,)
+            self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = SourceDetailSerializer
         else:
-            self.permission_classes = (CanEditCollection,)
+            self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = SourceUpdateSerializer
-        super(SourceRetrieveUpdateDestroyView, self).initial(request, *args, **kwargs)
+        super(SourceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not self.parent_resource:
@@ -100,10 +100,12 @@ class SourceVersionListView(SourceVersionBaseView,
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionListSerializer
+        self.permission_classes = (CanViewConceptDictionary,)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionCreateSerializer
+        self.permission_classes = (CanEditConceptDictionary,)
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -125,16 +127,13 @@ class SourceVersionListView(SourceVersionBaseView,
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
 
-    def initial(self, request, *args, **kwargs):
+    def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
-            self.permission_classes = (CanViewCollection,)
+            self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = SourceVersionDetailSerializer
         else:
-            self.permission_classes = (CanEditCollection,)
+            self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = SourceVersionUpdateSerializer
-        super(SourceVersionRetrieveUpdateView, self).initial(request, *args, **kwargs)
-
-    def initialize(self, request, path_info_segment, **kwargs):
         self.is_latest = kwargs.pop('is_latest', False)
         super(SourceVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
 

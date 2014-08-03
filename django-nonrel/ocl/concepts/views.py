@@ -3,19 +3,24 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion
+from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer
-from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin
+from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin, ChildResourceMixin
 from sources.models import SourceVersion
 
 
-class ConceptBaseView(SubResourceMixin):
+class ConceptBaseView(ChildResourceMixin):
     lookup_field = 'concept'
     pk_field = 'mnemonic'
     model = Concept
     queryset = Concept.objects.filter(is_active=True)
-    permission_classes = (HasAccessToVersionedObject,)
+    permission_classes = (CanEditParentDictionary,)
     child_list_attribute = 'concepts'
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        if request.method == 'GET':
+            self.permission_classes = (CanViewParentDictionary,)
+        super(ConceptBaseView, self).initialize(request, path_info_segment, **kwargs)
 
 
 class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
@@ -75,6 +80,7 @@ class ConceptListView(BaseAPIView, ListWithHeadersMixin):
     model = Concept
     queryset = Concept.objects.filter(is_active=True)
     serializer_class = ConceptListSerializer
+    permission_classes = (CanViewParentDictionary,)
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = ConceptDetailSerializer if self.is_verbose(request) else ConceptListSerializer
@@ -115,8 +121,9 @@ class ConceptCreateView(ConceptBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ConceptVersionsView(SubResourceMixin, ListAPIView):
+class ConceptVersionsView(ConceptDictionaryMixin, ListAPIView):
     serializer_class = ConceptVersionListSerializer
+    permission_classes = (CanViewParentDictionary,)
 
     def get_queryset(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id)
@@ -128,16 +135,18 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     model = ConceptVersion
     parent_resource_version_model = SourceVersion
     queryset = ConceptVersion.objects.filter(is_active=True)
-    permission_classes = (HasAccessToVersionedObject,)
+    permission_classes = (CanEditParentDictionary,)
     child_list_attribute = 'concepts'
 
 
 class ConceptVersionListView(ConceptVersionBaseView, ListAPIView):
     serializer_class = ConceptVersionListSerializer
+    permission_classes = (CanViewParentDictionary,)
 
 
 class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
     serializer_class = ConceptVersionDetailSerializer
+    permission_classes = (CanViewParentDictionary,)
     versioned_object = None
 
     def initialize(self, request, path_info_segment, **kwargs):

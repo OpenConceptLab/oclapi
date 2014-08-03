@@ -138,8 +138,11 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
             if self.parent_path_info and '/' != self.parent_path_info:
                 self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
 
+
+class ConceptDictionaryMixin(SubResourceMixin):
+
     def get_queryset(self):
-        queryset = super(SubResourceMixin, self).get_queryset()
+        queryset = super(ConceptDictionaryMixin, self).get_queryset()
         or_clauses = []
         if self.user:
             or_clauses.append(Q(owner=self.user))
@@ -159,7 +162,20 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
         return queryset
 
 
-class VersionedResourceChildMixin(SubResourceMixin):
+class ChildResourceMixin(SubResourceMixin):
+
+    def get_queryset(self):
+        queryset = super(ChildResourceMixin, self).get_queryset()
+        if self.parent_resource:
+            # If we have a parent resource at this point, then the implication is that we have access to that resource
+            if hasattr(self.parent_resource, 'versioned_object'):
+                self.parent_resource = self.parent_resource.versioned_object
+            parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
+            queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
+        return queryset
+
+
+class VersionedResourceChildMixin(ConceptDictionaryMixin):
     """
     Base view for a sub-resource that is a child of a versioned resource.
     For example, a Concept is a child of a Source, which can be versioned.
@@ -188,7 +204,7 @@ class VersionedResourceChildMixin(SubResourceMixin):
         if lookup:
             return self.model.objects.filter(id=lookup)
         all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
-        queryset = super(SubResourceMixin, self).get_queryset()
+        queryset = super(ConceptDictionaryMixin, self).get_queryset()
         queryset = queryset.filter(id__in=all_children)
         return queryset
 

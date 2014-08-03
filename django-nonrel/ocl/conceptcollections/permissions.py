@@ -2,7 +2,7 @@ from oclapi.permissions import HasPrivateAccess
 from sources.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
 
 
-class CanViewCollection(HasPrivateAccess):
+class CanViewConceptDictionary(HasPrivateAccess):
     """
     The request is authenticated as a user, and the user can view this source
     """
@@ -10,10 +10,10 @@ class CanViewCollection(HasPrivateAccess):
     def has_object_permission(self, request, view, obj):
         if EDIT_ACCESS_TYPE == obj.public_access or VIEW_ACCESS_TYPE == obj.public_access:
             return True
-        return super(CanViewCollection, self).has_object_permission(request, view, obj)
+        return super(CanViewConceptDictionary, self).has_object_permission(request, view, obj)
 
 
-class CanEditCollection(HasPrivateAccess):
+class CanEditConceptDictionary(HasPrivateAccess):
     """
     The request is authenticated as a user, and the user can edit this source
     """
@@ -21,4 +21,4 @@ class CanEditCollection(HasPrivateAccess):
     def has_object_permission(self, request, view, obj):
         if EDIT_ACCESS_TYPE == obj.public_access:
             return True
-        return super(CanEditCollection, self).has_object_permission(request, view, obj)
+        return super(CanEditConceptDictionary, self).has_object_permission(request, view, obj)

@@ -2,6 +2,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from concepts.models import Concept
 from oclapi.models import SubResourceBaseModel
+from oclapi.utils import reverse_resource
+
+MAPPING_RESOURCE_TYPE = 'Mapping'
 
 
 class Mapping(SubResourceBaseModel):
@@ -11,11 +14,80 @@ class Mapping(SubResourceBaseModel):
     to_concept_name = models.TextField(null=True, blank=True)
     to_concept_code = models.TextField(null=True, blank=True)
 
+    class Meta:
+        unique_together = (
+            ("parent_id", "parent_type", "map_type", "to_concept"),
+            ("parent_id", "parent_type", "map_type", "to_source_url", "to_concept_name", "to_concept_code")
+        )
+
     def clean(self, exclude=None):
-        if not (self.to_concept or self.to_source_url or self.to_concept_name or self.to_concept_code):
+        if not (self.to_concept or (self.to_source_url and self.to_concept_name and self.to_concept_code)):
             raise ValidationError("Must specify either 'to_concept' or 'to_source_url', 'to_concept_name' & 'to_concept_code'")
         if self.to_concept and self.to_source_url and self.to_concept_name and self.to_concept_code:
             raise ValidationError("Must specify one of 'to_concept' or 'to_source_url', 'to_concept_name' & 'to_concept_code'.  Cannot specify both.")
+
+    def get_to_source_url(self):
+        return self.to_source_url or reverse_resource(self.to_concept.parent, 'source-detail')
+
+    def get_to_concept_name(self):
+        return self.to_concept_name or self.to_concept.display_name
+
+    def get_to_concept_code(self):
+        return self.to_concept_code or self.to_concept.mnemonic
+
+    @property
+    def to_source_name(self):
+        return self.to_concept.parent.mnemonic if self.to_concept else None
+
+    @property
+    def to_source_owner(self):
+        return self.to_concept.parent.parent.mnemonic if self.to_concept else None
+
+    @property
+    def from_concept_code(self):
+        return self.parent.mnemonic
+
+    @property
+    def from_source(self):
+        return self.parent.parent
+
+    @property
+    def from_source_name(self):
+        return self.parent.parent.mnemonic
+
+    @property
+    def from_source_owner(self):
+        return self.parent.parent.parent.mnemonic
+
+    @staticmethod
+    def resource_type():
+        return MAPPING_RESOURCE_TYPE
+
+    @staticmethod
+    def get_url_kwarg():
+        return 'mapping'
+
+    @classmethod
+    def persist_changes(cls, obj, **kwargs):
+        is_update = kwargs.get('force_update', False)
+        errors = dict()
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+            return errors
+
+        persisted = False
+        try:
+            obj.save(**kwargs)
+            if not is_update:
+                obj.mnemonic = obj.id
+                obj.save(**kwargs)
+            persisted = True
+        finally:
+            if not persisted:
+                errors['non_field_errors'] = ["Failed to persist mapping."]
+        return errors
 
     @classmethod
     def persist_new(cls, obj, **kwargs):
@@ -32,18 +104,7 @@ class Mapping(SubResourceBaseModel):
         if non_field_errors:
             errors['non_field_errors'] = non_field_errors
             return errors
-        to_concept = obj.to_concept
-        if to_concept:
-            if cls.objects.filter(owner=owner, parent_id=parent_resource.id, to_concept=to_concept).exists():
-                errors['non_field_errors'] = ["Mapping already exists from %s to %s" % (parent_resource, to_concept)]
-                return errors
-        persisted = False
-        try:
-            obj.save(**kwargs)
-            persisted = True
-        finally:
-            if not persisted:
-                errors['non_field_errors'] = ["Failed to persist mapping."]
-        return errors
+        obj.mnemonic = 'TEMP'
+        return cls.persist_changes(obj)
 
 

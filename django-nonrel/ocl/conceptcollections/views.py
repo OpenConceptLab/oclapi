@@ -5,12 +5,12 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from conceptcollections.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
-from oclapi.views import SubResourceMixin, ResourceVersionMixin, ResourceAttributeChildMixin
+from oclapi.views import ConceptDictionaryMixin, ResourceVersionMixin, ResourceAttributeChildMixin
 from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE, Collection, CollectionVersion
-from conceptcollections.permissions import CanViewCollection, CanEditCollection
+from conceptcollections.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 
 
-class CollectionBaseView(SubResourceMixin):
+class CollectionBaseView(ConceptDictionaryMixin):
     lookup_field = 'collection'
     pk_field = 'mnemonic'
     model = Collection
@@ -23,10 +23,10 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView, RetrieveAPIView, U
 
     def initial(self, request, *args, **kwargs):
         if 'GET' == request.method:
-            self.permission_classes = (CanViewCollection,)
+            self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = CollectionDetailSerializer
         else:
-            self.permission_classes = (CanEditCollection,)
+            self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = CollectionUpdateSerializer
         super(CollectionRetrieveUpdateDestroyView, self).initial(request, *args, **kwargs)
 
@@ -121,10 +121,10 @@ class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPI
 
     def initial(self, request, *args, **kwargs):
         if 'GET' == request.method:
-            self.permission_classes = (CanViewCollection,)
+            self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = CollectionVersionDetailSerializer
         else:
-            self.permission_classes = (CanEditCollection,)
+            self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = CollectionVersionUpdateSerializer
         super(CollectionVersionRetrieveUpdateView, self).initial(request, *args, **kwargs)
 
