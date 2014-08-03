@@ -2,8 +2,29 @@
 Serializer fields that deal with relationships among entities
 (e.g. resources, sub-resources, resource versions) in the OCL Object Model.
 """
-from rest_framework.relations import HyperlinkedIdentityField
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from oclapi.utils import reverse_resource, reverse_resource_version
+
+
+class HyperlinkedRelatedField(HyperlinkedRelatedField):
+    pk_field = 'mnemonic'
+
+    def __init__(self, *args, **kwargs):
+        self.lookup_kwarg = kwargs.pop('lookup_kwarg', None)
+        super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
+
+    def get_object(self, queryset, view_name, view_args, view_kwargs):
+        lookup = view_kwargs.get(self.lookup_kwarg, None)
+        if lookup is not None:
+            filter_kwargs = {self.pk_field: lookup}
+        else:
+            raise ObjectDoesNotExist()
+
+        return queryset.get(**filter_kwargs)
+
+    def get_url(self, obj, view_name, request, format):
+        return reverse_resource(obj, view_name, request=request, format=format)
 
 
 class HyperlinkedResourceIdentityField(HyperlinkedIdentityField):
