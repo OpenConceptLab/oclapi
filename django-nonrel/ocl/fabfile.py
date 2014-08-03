@@ -25,6 +25,7 @@ def test_local():
     local("./manage.py test orgs")
     local("./manage.py test sources")
     local("./manage.py test concepts")
+    local("./manage.py test mappings")
 
 
 def backup():

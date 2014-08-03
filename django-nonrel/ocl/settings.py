@@ -127,13 +127,13 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'haystack',
     # Project-specific apps:
-    #'accounts',
+    'oclapi',
+    'users',
+    'orgs',
+    'sources',
     'concepts',
     'conceptcollections',
-    'orgs',
-    'oclapi',
-    'sources',
-    'users',
+    'mappings',
 )
 
 # Django Rest Framework configuration
