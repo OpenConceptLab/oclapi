@@ -1,83 +1,52 @@
-from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView, CreateAPIView
 from rest_framework.response import Response
-from conceptcollections.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
-from oclapi.permissions import HasPrivateAccess, HasAccessToVersionedObject
-from oclapi.views import ConceptDictionaryMixin, ResourceVersionMixin, ResourceAttributeChildMixin
-from conceptcollections.models import VIEW_ACCESS_TYPE, EDIT_ACCESS_TYPE, Collection, CollectionVersion
-from conceptcollections.permissions import CanViewConceptDictionary, CanEditConceptDictionary
+from collection.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
+from collection.models import Collection, CollectionVersion
+from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
+from oclapi.filters import HaystackSearchFilter
+from oclapi.permissions import HasAccessToVersionedObject
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ListWithHeadersMixin
 
 
-class CollectionBaseView(ConceptDictionaryMixin):
+class CollectionBaseView():
     lookup_field = 'collection'
     pk_field = 'mnemonic'
     model = Collection
     queryset = Collection.objects.filter(is_active=True)
-    base_or_clause = [Q(public_access=EDIT_ACCESS_TYPE), Q(public_access=VIEW_ACCESS_TYPE)]
-    permission_classes = (HasPrivateAccess,)
+
+    def get_detail_serializer(self, obj, data=None, files=None, partial=False):
+        return CollectionDetailSerializer(obj, data, files, partial)
 
 
-class CollectionRetrieveUpdateDestroyView(CollectionBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
+class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
+                                          RetrieveAPIView,
+                                          DestroyAPIView,
+                                          ConceptDictionaryUpdateMixin):
 
-    def initial(self, request, *args, **kwargs):
+    def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = CollectionDetailSerializer
         else:
             self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = CollectionUpdateSerializer
-        super(CollectionRetrieveUpdateDestroyView, self).initial(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if not self.parent_resource:
-            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        self.object = self.get_object()
-        created = False
-        save_kwargs = {'force_update': True, 'parent_resource': self.parent_resource}
-        success_status_code = status.HTTP_200_OK
-
-        serializer = self.get_serializer(self.object, data=request.DATA,
-                                         files=request.FILES, partial=True)
-
-        if serializer.is_valid():
-            self.pre_save(serializer.object)
-            self.object = serializer.save(**save_kwargs)
-            if serializer.is_valid():
-                self.post_save(self.object, created=created)
-                return Response(serializer.data, status=success_status_code)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        super(CollectionRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
 
 class CollectionListView(CollectionBaseView,
-                         mixins.CreateModelMixin,
-                         mixins.ListModelMixin):
+                         ConceptDictionaryCreateMixin,
+                         ListWithHeadersMixin):
+    serializer_class = CollectionCreateSerializer
+    filter_backends = [HaystackSearchFilter]
+    solr_fields = {
+        'collection_type': {'sortable': False, 'filterable': True}
+    }
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = CollectionListSerializer
+        self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.serializer_class = CollectionCreateSerializer
-        return self.create(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        if not self.parent_resource:
-            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-        if serializer.is_valid():
-            self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, owner=request.user, parent_resource=self.parent_resource)
-            if serializer.is_valid():
-                self.post_save(self.object, created=True)
-                headers = self.get_success_headers(serializer.data)
-                return Response(serializer.data, status=status.HTTP_201_CREATED,
-                                headers=headers)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CollectionVersionBaseView(ResourceVersionMixin):
@@ -94,10 +63,12 @@ class CollectionVersionListView(CollectionVersionBaseView,
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionVersionListSerializer
+        self.permission_classes = (CanViewConceptDictionary,)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.serializer_class = CollectionVersionCreateSerializer
+        self.permission_classes = (CanEditConceptDictionary,)
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -119,16 +90,13 @@ class CollectionVersionListView(CollectionVersionBaseView,
 class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
 
-    def initial(self, request, *args, **kwargs):
+    def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewConceptDictionary,)
             self.serializer_class = CollectionVersionDetailSerializer
         else:
             self.permission_classes = (CanEditConceptDictionary,)
             self.serializer_class = CollectionVersionUpdateSerializer
-        super(CollectionVersionRetrieveUpdateView, self).initial(request, *args, **kwargs)
-
-    def initialize(self, request, path_info_segment, **kwargs):
         self.is_latest = kwargs.pop('is_latest', False)
         super(CollectionVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
 
@@ -189,4 +157,4 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = super(CollectionVersionChildListView, self).get_queryset()
-        return queryset.filter(parent_version=self.resource_version)
+        return queryset.filter(parent_version=self.resource_version, is_active=True)

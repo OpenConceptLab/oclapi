@@ -2,12 +2,13 @@ import warnings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import resolve
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, UpdateModelMixin
 from rest_framework.response import Response
-from oclapi.models import ResourceVersionModel
+from oclapi.models import ResourceVersionModel, EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.permissions import HasPrivateAccess
 
 
 class PathWalkerMixin():
@@ -140,6 +141,8 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
 
 
 class ConceptDictionaryMixin(SubResourceMixin):
+    base_or_clause = [Q(public_access=EDIT_ACCESS_TYPE), Q(public_access=VIEW_ACCESS_TYPE)]
+    permission_classes = (HasPrivateAccess,)
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
@@ -160,6 +163,71 @@ class ConceptDictionaryMixin(SubResourceMixin):
             parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
         return queryset
+
+
+class ConceptDictionaryCreateMixin(ConceptDictionaryMixin):
+
+    """
+    Concrete view for creating a model instance.
+    """
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        if not self.parent_resource:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True, owner=request.user, parent_resource=self.parent_resource)
+            if serializer.is_valid():
+                self.post_save(self.object, created=True)
+                headers = self.get_success_headers(serializer.data)
+                serializer = self.get_detail_serializer(self.object, data=request.DATA, files=request.FILES, partial=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED,
+                                headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_success_headers(self, data):
+        try:
+            return {'Location': data['url']}
+        except (TypeError, KeyError):
+            return {}
+
+
+class ConceptDictionaryUpdateMixin(ConceptDictionaryMixin):
+
+    """
+    Concrete view for updating a model instance.
+    """
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if not self.parent_resource:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        self.object = self.get_object()
+        created = False
+        save_kwargs = {'force_update': True, 'parent_resource': self.parent_resource}
+        success_status_code = status.HTTP_200_OK
+
+        serializer = self.get_serializer(self.object, data=request.DATA,
+                                         files=request.FILES, partial=True)
+
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            self.object = serializer.save(**save_kwargs)
+            if serializer.is_valid():
+                self.post_save(self.object, created=created)
+                serializer = self.get_detail_serializer(self.object)
+                return Response(serializer.data, status=success_status_code)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_detail_serializer(self, obj, data=None, files=None, partial=False):
+        pass
 
 
 class ChildResourceMixin(SubResourceMixin):

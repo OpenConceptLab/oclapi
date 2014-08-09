@@ -9,8 +9,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from django.test import TestCase
+from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
 from orgs.models import Organization
-from sources.models import Source, DICTIONARY_SRC_TYPE, EDIT_ACCESS_TYPE, SourceVersion, REFERENCE_SRC_TYPE, VIEW_ACCESS_TYPE
+from sources.models import Source, DICTIONARY_SRC_TYPE, SourceVersion, REFERENCE_SRC_TYPE
 from users.models import UserProfile
 
 
@@ -388,7 +389,8 @@ class SourceVersionTest(SourceBaseTest):
         source_version = SourceVersion(
             name='version1',
             mnemonic='version1',
-            versioned_object=self.source1
+            versioned_object=self.source1,
+            released=True
         )
         source_version.full_clean()
         source_version.save()
@@ -492,7 +494,8 @@ class SourceVersionTest(SourceBaseTest):
         version1 = SourceVersion(
             name='version1',
             mnemonic='version1',
-            versioned_object=self.source1
+            versioned_object=self.source1,
+            released=True
         )
         version1.full_clean()
         version1.save()
@@ -521,7 +524,6 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version1.mnemonic, version2.previous_version_mnemonic)
         self.assertIsNone(version2.parent_version)
         self.assertIsNone(version2.parent_version_mnemonic)
-        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEqual(2, self.source1.num_versions)
 
         version3 = SourceVersion(
@@ -541,14 +543,14 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version2.mnemonic, version3.previous_version_mnemonic)
         self.assertIsNone(version3.parent_version)
         self.assertIsNone(version3.parent_version_mnemonic)
-        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(3, self.source1.num_versions)
 
     def test_source_version_create_positive__child_versions(self):
         version1 = SourceVersion(
             name='version1',
             mnemonic='version1',
-            versioned_object=self.source1
+            versioned_object=self.source1,
+            released=True
         )
         version1.full_clean()
         version1.save()
@@ -577,7 +579,6 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version1.mnemonic, version2.parent_version_mnemonic)
         self.assertIsNone(version2.previous_version)
         self.assertIsNone(version2.previous_version_mnemonic)
-        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(2, self.source1.num_versions)
 
         version3 = SourceVersion(
@@ -597,14 +598,14 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version2.mnemonic, version3.parent_version_mnemonic)
         self.assertIsNone(version3.previous_version)
         self.assertIsNone(version3.previous_version_mnemonic)
-        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(3, self.source1.num_versions)
 
     def test_source_version_create_positive__child_and_subsequent_versions(self):
         version1 = SourceVersion(
             name='version1',
             mnemonic='version1',
-            versioned_object=self.source1
+            versioned_object=self.source1,
+            released=True
         )
         version1.full_clean()
         version1.save()
@@ -633,7 +634,6 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version1.mnemonic, version2.parent_version_mnemonic)
         self.assertIsNone(version2.previous_version)
         self.assertIsNone(version2.previous_version_mnemonic)
-        self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(2, self.source1.num_versions)
 
         version3 = SourceVersion(
@@ -653,7 +653,6 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(version2.mnemonic, version3.previous_version_mnemonic)
         self.assertIsNone(version3.parent_version)
         self.assertIsNone(version3.parent_version_mnemonic)
-        self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(3, self.source1.num_versions)
 
 
@@ -765,7 +764,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(description, version1.description)
 
     def test_persist_changes_negative__bad_previous_version(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
         version1.full_clean()
         version1.save()
 
@@ -792,7 +791,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(description, version1.description)
 
     def test_persist_changes_negative__previous_version_is_self(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
         version1.full_clean()
         version1.save()
 
@@ -818,7 +817,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(description, version1.description)
 
     def test_persist_changes_negative__bad_parent_version(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
         version1.full_clean()
         version1.save()
 
@@ -845,7 +844,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(description, version1.description)
 
     def test_persist_changes_negative__parent_version_is_self(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
         version1.full_clean()
         version1.save()
 

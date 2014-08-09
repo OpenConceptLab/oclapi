@@ -24,7 +24,7 @@ urlpatterns = patterns('',
     url(r'^api-token-auth/$', 'rest_framework.authtoken.views.obtain_auth_token'),
 
     # Top-level resource endpoints
-    url(r'^collections/', include('conceptcollections.urls')),
+    url(r'^collections/', include('collection.urls')),
     url(r'^concepts/', ConceptListView.as_view(), name='full-concept'),
     url(r'^orgs/', include('orgs.urls')),
     url(r'^sources/', include('sources.urls')),

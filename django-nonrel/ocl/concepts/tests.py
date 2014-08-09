@@ -11,7 +11,8 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from orgs.models import Organization
-from sources.models import Source, DICTIONARY_SRC_TYPE, EDIT_ACCESS_TYPE, REFERENCE_SRC_TYPE, VIEW_ACCESS_TYPE, SourceVersion
+from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from sources.models import Source, DICTIONARY_SRC_TYPE, REFERENCE_SRC_TYPE, SourceVersion
 from users.models import UserProfile
 
 

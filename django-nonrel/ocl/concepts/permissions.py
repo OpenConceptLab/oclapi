@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from conceptcollections.permissions import CanViewConceptDictionary, CanEditConceptDictionary
+from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 
 __author__ = 'misternando'
 

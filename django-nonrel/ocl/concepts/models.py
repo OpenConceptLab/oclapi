@@ -1,3 +1,4 @@
+from urlparse import urljoin
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -6,7 +7,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE, BaseModel
+from oclapi.utils import reverse_resource
 from sources.models import SourceVersion
 
 CONCEPT_TYPE = 'Concept'
@@ -254,6 +256,26 @@ class ConceptVersion(ResourceVersionModel):
     @staticmethod
     def get_url_kwarg():
         return 'concept_version'
+
+
+class ConceptReference(SubResourceBaseModel):
+    concept = models.ForeignKey(Concept)
+    concept_version = models.ForeignKey(ConceptVersion, null=True, blank=True)
+    source_version = models.ForeignKey(SourceVersion, null=True, blank=True)
+
+    def clean(self):
+        if self.concept_version and self.source_version:
+            raise ValidationError('Cannot specify both source_version and concept_version.')
+
+    @property
+    def concept_reference_url(self):
+        if self.source_version:
+            source_version_url = reverse_resource(self.source_version, 'sourceversion-detail')
+            return urljoin(source_version_url, self.concept.mnemonic)
+        if self.concept_version:
+            return reverse_resource(self.concept_version, 'conceptversion-detail')
+        return reverse_resource(self.concept, 'concept-detail')
+
 
 admin.site.register(Concept)
 admin.site.register(ConceptVersion)

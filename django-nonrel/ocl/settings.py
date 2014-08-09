@@ -132,7 +132,7 @@ INSTALLED_APPS = (
     'orgs',
     'sources',
     'concepts',
-    'conceptcollections',
+    'collection',
     'mappings',
 )
 

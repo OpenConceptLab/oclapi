@@ -37,6 +37,7 @@ class UserDetailSerializer(serializers.Serializer):
         fields = super(UserDetailSerializer, self).get_default_fields()
         fields.update({
             'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
+            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list'),
             'orgs_url': HyperlinkedResourceIdentityField(view_name='userprofile-orgs'),
         })
         return fields

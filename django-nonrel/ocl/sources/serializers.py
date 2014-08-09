@@ -4,7 +4,8 @@ from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
-from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE, DEFAULT_SRC_TYPE
+from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, DEFAULT_SRC_TYPE
+from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 
 
 class SourceListSerializer(serializers.Serializer):
@@ -136,11 +137,13 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
         lookup_field = 'mnemonic'
 
     def restore_object(self, attrs, instance=None):
+        instance.mnemonic = attrs.get(self.Meta.lookup_field, instance.mnemonic)
+        instance.description = attrs.get('description', instance.description)
         was_released = instance.released
         instance.released = attrs.get('released', instance.released)
         if was_released and not instance.released:
             self._errors['released'] = ['Cannot set this field to "false".  (Releasing another version will cause this field to become false.)']
-        instance.description = attrs.get('description', instance.description)
+        instance._was_released = was_released
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
         return instance

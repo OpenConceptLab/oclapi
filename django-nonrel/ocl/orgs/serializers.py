@@ -22,6 +22,7 @@ class OrganizationDetailSerializer(serializers.Serializer):
     company = serializers.CharField()
     website = serializers.CharField()
     members = serializers.IntegerField(source='num_members')
+    publicCollections = serializers.IntegerField(source='public_collections')
     publicSources = serializers.IntegerField(source='public_sources')
     createdOn = serializers.DateTimeField(source='created_at')
     updatedOn = serializers.DateTimeField(source='updated_at')
@@ -35,6 +36,7 @@ class OrganizationDetailSerializer(serializers.Serializer):
         fields.update({
             'members_url': HyperlinkedResourceIdentityField(view_name='organization-members'),
             'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
+            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list')
         })
         return fields
 

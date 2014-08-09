@@ -7,9 +7,10 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import DictField
+from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource
+from settings import DEFAULT_LOCALE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
@@ -21,7 +22,7 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
-    extras = DictField()
+    extras = DictField(null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -157,7 +158,192 @@ class ResourceVersionModel(BaseModel):
         return versions[0] if versions else None
 
 
+VIEW_ACCESS_TYPE = 'View'
+EDIT_ACCESS_TYPE = 'Edit'
+NONE_ACCESS_TYPE = 'None'
+DEFAULT_ACCESS_TYPE = VIEW_ACCESS_TYPE
+ACCESS_TYPE_CHOICES = ((VIEW_ACCESS_TYPE, 'View'),
+                       (EDIT_ACCESS_TYPE, 'Edit'),
+                       (NONE_ACCESS_TYPE, 'None'))
+
+
+class ConceptContainerModel(SubResourceBaseModel):
+    name = models.TextField()
+    full_name = models.TextField(null=True, blank=True)
+    public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
+    default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
+    supported_locales = ListField(null=True, blank=True)
+    website = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta(SubResourceBaseModel.Meta):
+        abstract = True
+
+    @property
+    def num_versions(self):
+        return self.get_version_model().objects.filter(versioned_object_id=self.id).count()
+
+    @classmethod
+    def persist_new(cls, obj, **kwargs):
+        errors = dict()
+        parent_resource = kwargs.pop('parent_resource', None)
+        if not parent_resource:
+            errors['parent'] = 'Source parent cannot be None.'
+        user = kwargs.pop('owner', None)
+        if not user:
+            errors['owner'] = 'Source owner cannot be None.'
+        if errors:
+            return errors
+
+        obj.parent = parent_resource
+        obj.owner = user
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+        if errors:
+            return errors
+
+        persisted = False
+        version = None
+        try:
+            obj.save(**kwargs)
+            version_model = cls.get_version_model()
+            version = version_model.for_base_object(obj, 'INITIAL')
+            version.released = True
+            version.save()
+            version.mnemonic = version.id
+            version.save()
+            persisted = True
+        finally:
+            if not persisted:
+                errors['non_field_errors'] = "An error occurred while trying to persist new %s." % cls.name
+                if version:
+                    version.delete()
+                obj.delete()
+        return errors
+
+    @classmethod
+    def persist_changes(cls, obj, **kwargs):
+        errors = dict()
+        parent_resource = kwargs.pop('parent_resource', obj.parent)
+        if not parent_resource:
+            errors['parent'] = 'Source parent cannot be None.'
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+        if errors:
+            return errors
+        obj.save(**kwargs)
+        return errors
+
+
+class ConceptContainerVersionModel(ResourceVersionModel):
+    name = models.TextField()
+    full_name = models.TextField(null=True, blank=True)
+    public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
+    default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
+    supported_locales = ListField(null=True, blank=True)
+    website = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta(ResourceVersionModel.Meta):
+        abstract = True
+
+    def seed_concepts(self):
+        pass
+
+    @staticmethod
+    def get_url_kwarg():
+        return 'version'
+
+    @classmethod
+    def get_latest_version_of(cls, versioned_object):
+        versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, released=True).order_by('-created_at')
+        return versions[0] if versions else None
+
+    @classmethod
+    def persist_new(cls, obj, **kwargs):
+        obj.released = True
+        kwargs['seed_concepts'] = True
+        return cls.persist_changes(obj, **kwargs)
+
+    @classmethod
+    def persist_changes(cls, obj, **kwargs):
+        errors = dict()
+
+        # Ensure versioned object specified
+        versioned_object = kwargs.pop('versioned_object', obj.versioned_object)
+        if versioned_object is None:
+            errors['non_field_errors'] = ['Must specify a versioned object.']
+            return errors
+        obj.versioned_object = versioned_object
+
+        # Ensure mnemonic does not conflict with existing
+        old_mnemonic = obj.mnemonic
+        mnemonic = kwargs.pop('mnemonic', obj.mnemonic)
+        if mnemonic != old_mnemonic:
+            if cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj.mnemonic).exists():
+                errors['mnemonic'] = ["Version with mnemonic %s already exists for %s %s." % (obj.mnemonic, cls.name, versioned_object.mnemonic)]
+                return errors
+        obj.mnemonic = mnemonic
+
+        # Ensure previous version is valid
+        if hasattr(obj, '_previous_version_mnemonic') and obj._previous_version_mnemonic:
+            previous_version_queryset = cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._previous_version_mnemonic)
+            if not previous_version_queryset.exists():
+                errors['previousVersion'] = ["Previous version %s does not exist." % obj._previous_version_mnemonic]
+            elif obj.mnemonic == obj._previous_version_mnemonic:
+                errors['previousVersion'] = ["Previous version cannot be the same as current version."]
+            else:
+                obj.previous_version = previous_version_queryset[0]
+                del obj._previous_version_mnemonic
+
+        # Ensure parent version is valid
+        if hasattr(obj, '_parent_version_mnemonic') and obj._parent_version_mnemonic:
+            parent_version_queryset = cls.objects.filter(versioned_object_id=versioned_object.id, mnemonic=obj._parent_version_mnemonic)
+            if not parent_version_queryset.exists():
+                errors['parentVersion'] = ["Parent version %s does not exist." % obj._parent_version_mnemonic]
+            elif obj.mnemonic == obj._parent_version_mnemonic:
+                errors['parentVersion'] = ["Parent version cannot be the same as current version."]
+            else:
+                obj.parent_version = parent_version_queryset[0]
+                del obj._parent_version_mnemonic
+
+        # If there are errors at this point, fall out before doing any more work
+        if errors:
+            return errors
+
+        # Seed concepts from another version, if requested
+        seed_concepts = kwargs.pop('seed_concepts', False)
+        if seed_concepts:
+            obj.seed_concepts()
+
+        # See if we need to toggle the released flag
+        previous_release = None
+        if hasattr(obj, '_was_released'):
+            if obj.released and not obj._was_released:
+                previous_release = cls.objects.get(versioned_object_id=obj.versioned_object.id, released=True)
+            del obj._was_released
+
+        persisted = False
+        try:
+            if previous_release:
+                previous_release.released = False
+                previous_release.save()
+            obj.save(**kwargs)
+            persisted = True
+        finally:
+            if not persisted:
+                if previous_release:
+                    previous_release.released = True
+                    previous_release.save()
+                errors['non_field_errors'] = ["Encountered an error while updating version."]
+        return errors
+
+
 @receiver(post_save, sender=User)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
+    if instance and created:
         Token.objects.create(user=instance)

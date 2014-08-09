@@ -13,7 +13,6 @@ class ConceptBaseView(ChildResourceMixin):
     lookup_field = 'concept'
     pk_field = 'mnemonic'
     model = Concept
-    queryset = Concept.objects.filter(is_active=True)
     permission_classes = (CanEditParentDictionary,)
     child_list_attribute = 'concepts'
 
@@ -78,7 +77,6 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
 
 class ConceptListView(BaseAPIView, ListWithHeadersMixin):
     model = Concept
-    queryset = Concept.objects.filter(is_active=True)
     serializer_class = ConceptListSerializer
     permission_classes = (CanViewParentDictionary,)
 
@@ -134,7 +132,6 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     pk_field = 'mnemonic'
     model = ConceptVersion
     parent_resource_version_model = SourceVersion
-    queryset = ConceptVersion.objects.filter(is_active=True)
     permission_classes = (CanEditParentDictionary,)
     child_list_attribute = 'concepts'
 

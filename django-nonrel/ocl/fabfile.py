@@ -24,6 +24,7 @@ def test_local():
     local("./manage.py test users")
     local("./manage.py test orgs")
     local("./manage.py test sources")
+    local("./manage.py test collection")
     local("./manage.py test concepts")
     local("./manage.py test mappings")
 
@@ -50,6 +51,11 @@ def provision():
         run("cp settings.py.deploy settings.py")
         with prefix("source /opt/virtualenvs/ocl/bin/activate"):
             run("pip install -r requirements.txt")
+            run("./manage.py test users")
+            run("./manage.py test orgs")
+            run("./manage.py test sources")
+            run("./manage.py test collection")
+            run("./manage.py test concepts")
             run("./manage.py build_solr_schema > /opt/deploy/solr/collection1/conf/schema.xml")
             sudo('/etc/init.d/jetty restart')
             run("./manage.py rebuild_index")
