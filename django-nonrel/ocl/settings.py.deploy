@@ -129,7 +129,7 @@ INSTALLED_APPS = (
     # Project-specific apps:
     #'accounts',
     'concepts',
-    'conceptcollections',
+    'collection',
     'orgs',
     'oclapi',
     'sources',
