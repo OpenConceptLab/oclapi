@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from djangotoolbox.fields import ListField
 from concepts.models import ConceptReference
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
 from oclapi.utils import reverse_resource
@@ -44,6 +45,12 @@ COLLECTION_VERSION_TYPE = "Collection Version"
 
 class CollectionVersion(ConceptContainerVersionModel):
     collection_type = models.TextField(blank=True)
+    concept_references = ListField()
+
+    def seed_concepts(self):
+        seed_concepts_from = self.previous_version or self.parent_version
+        if seed_concepts_from:
+            self.concept_references = list(seed_concepts_from.concept_references)
 
     @property
     def resource_type(self):

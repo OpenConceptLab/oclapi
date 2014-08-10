@@ -1,7 +1,8 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from collection.fields import ConceptReferenceField
 from concepts.fields import LocalizedTextListField
-from concepts.models import Concept, ConceptVersion
+from concepts.models import Concept, ConceptVersion, ConceptReference
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 
@@ -129,3 +130,47 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         errors = ConceptVersion.persist_clone(obj, **kwargs)
         self._errors.update(errors)
 
+
+class ConceptReferenceCreateSerializer(serializers.Serializer):
+    url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
+    id = serializers.CharField(source='mnemonic', required=False)
+
+    class Meta:
+        model = ConceptReference
+        lookup_field = 'mnemonic'
+
+    def restore_object(self, attrs, instance=None):
+        concept_reference = instance if instance else ConceptReference()
+        concept = attrs.get('concept', None)
+        if concept:
+            concept_reference.concept = concept
+            if hasattr(concept, '_concept_version'):
+                concept_reference.concept_version = concept._concept_version
+            elif hasattr(concept, '_source_version'):
+                concept_reference.source_version = concept._source_version
+        concept_reference.mnemonic = attrs.get(self.Meta.lookup_field, concept_reference.mnemonic)
+        if not concept_reference.mnemonic:
+            concept_reference.mnemonic = "%s..%s" % (concept_reference.concept.parent, concept_reference.concept)
+        return concept_reference
+
+    def save_object(self, obj, **kwargs):
+        errors = ConceptReference.persist_new(obj, **kwargs)
+        self._errors.update(errors)
+
+
+class ConceptReferenceDetailSerializer(serializers.Serializer):
+    id = serializers.CharField(source='mnemonic')
+    concept_reference_url = serializers.URLField(read_only=True)
+    concept_class = serializers.CharField(read_only=True)
+    data_type = serializers.CharField(read_only=True)
+    source = serializers.CharField(read_only=True)
+    owner = serializers.CharField(read_only=True, source='owner_name')
+    owner_type = serializers.CharField(read_only=True)
+    display_name = serializers.CharField(read_only=True)
+    display_locale = serializers.CharField(read_only=True)
+    version = serializers.CharField(read_only=True, source='concept_version')
+    is_current_version = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ConceptReference
+        lookup_field = 'mnemonic'

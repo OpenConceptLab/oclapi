@@ -927,6 +927,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
 
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
+        version1.concept_references = [1]
         version1.full_clean()
         version1.save()
 
@@ -953,6 +954,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.previous_version)
+        self.assertEquals([], version2.concept_references)
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -965,9 +967,11 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.previous_version)
+        self.assertEquals([1], version2.concept_references)
 
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
+        version1.concept_references = [2]
         version1.full_clean()
         version1.save()
 
@@ -994,6 +998,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.parent_version)
+        self.assertEquals([], version2.concept_references)
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -1006,13 +1011,16 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.parent_version)
+        self.assertEquals([2], version2.concept_references)
 
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
+        version1.concept_references = [1]
         version1.full_clean()
         version1.save()
 
         version2 = CollectionVersion.for_base_object(self.collection1, 'version2')
+        version2.concept_references = [2]
         version2.full_clean()
         version2.save()
         self.assertIsNone(version2.previous_version)
@@ -1041,6 +1049,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version3, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version3.previous_version)
         self.assertEquals(version2, version3.parent_version)
+        self.assertEquals([], version3.concept_references)
         self.assertNotEquals(mnemonic, version3.mnemonic)
         self.assertNotEquals(released, version3.released)
         self.assertNotEquals(description, version3.description)
@@ -1054,4 +1063,5 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version3, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
+        self.assertEquals([1], version3.concept_references)
 

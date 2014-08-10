@@ -1,5 +1,4 @@
 from urlparse import urljoin
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -7,18 +6,27 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE, BaseModel
-from oclapi.utils import reverse_resource
+from concepts.mixins import DictionaryItemMixin
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from oclapi.utils import reverse_resource, reverse_resource_version
 from sources.models import SourceVersion
+
+
+class LocalizedText(models.Model):
+    name = models.TextField()
+    locale = models.TextField()
+    locale_preferred = models.BooleanField(default=False)
+    type = models.TextField(null=True, blank=True)
+
 
 CONCEPT_TYPE = 'Concept'
 
 
-class Concept(SubResourceBaseModel):
+class Concept(SubResourceBaseModel, DictionaryItemMixin):
     concept_class = models.TextField()
     datatype = models.TextField(null=True, blank=True)
-    names = ListField(EmbeddedModelField('LocalizedText'))
-    descriptions = ListField(EmbeddedModelField('LocalizedText'))
+    names = ListField(EmbeddedModelField(LocalizedText))
+    descriptions = ListField(EmbeddedModelField(LocalizedText))
     retired = models.BooleanField(default=False)
 
     @property
@@ -46,62 +54,13 @@ class Concept(SubResourceBaseModel):
         return CONCEPT_TYPE
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
-        errors = dict()
-        user = kwargs.pop('owner', None)
-        if not user:
-            errors['owner'] = 'Concept owner cannot be null.'
-        parent_resource = kwargs.pop('parent_resource', None)
-        if not parent_resource:
-            errors['parent'] = 'Concept parent cannot be null.'
-        if errors:
-            return errors
-        obj.owner = user
-        obj.parent = parent_resource
-        try:
-            obj.full_clean()
-        except ValidationError as e:
-            errors.update(e.message_dict)
-        if errors:
-            return errors
-
-        parent_resource_version = kwargs.pop('parent_resource_version', None)
-        if parent_resource_version is None:
-            parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
-        child_list_attribute = kwargs.pop('child_list_attribute', 'concepts')
-
-        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
-        initial_version = None
-        errored_action = 'saving concept'
-        persisted = False
-        try:
-            obj.save(**kwargs)
-
-            # Create the initial version
-            errored_action = 'creating initial version of concept'
-            initial_version = ConceptVersion.for_concept(obj, '_TEMP')
-            initial_version.save()
-            initial_version.mnemonic = initial_version.id
-            initial_version.released = True
-            initial_version.save()
-
-            # Associate the version with a version of the parent
-            errored_action = 'associating concept with parent'
-            parent_children = getattr(parent_resource_version, child_list_attribute) or []
-            parent_children.append(initial_version.id)
-            setattr(parent_resource_version, child_list_attribute, parent_children)
-            parent_resource_version.save()
-
-            persisted = True
-        finally:
-            if not persisted:
-                errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
-                setattr(parent_resource_version, initial_parent_children)
-                parent_resource_version.save()
-                if initial_version:
-                    initial_version.delete()
-                obj.delete()
-        return errors
+    def create_initial_version(cls, obj, **kwargs):
+        initial_version = ConceptVersion.for_concept(obj, '_TEMP')
+        initial_version.save()
+        initial_version.mnemonic = initial_version.id
+        initial_version.released = True
+        initial_version.save()
+        return initial_version
 
     @classmethod
     def retire(cls, concept):
@@ -158,13 +117,6 @@ class Concept(SubResourceBaseModel):
     @staticmethod
     def get_version_model():
         return ConceptVersion
-
-
-class LocalizedText(models.Model):
-    name = models.TextField()
-    locale = models.TextField()
-    locale_preferred = models.BooleanField(default=False)
-    type = models.TextField(null=True, blank=True)
 
 
 class ConceptVersion(ResourceVersionModel):
@@ -258,7 +210,7 @@ class ConceptVersion(ResourceVersionModel):
         return 'concept_version'
 
 
-class ConceptReference(SubResourceBaseModel):
+class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
     concept = models.ForeignKey(Concept)
     concept_version = models.ForeignKey(ConceptVersion, null=True, blank=True)
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True)
@@ -270,15 +222,44 @@ class ConceptReference(SubResourceBaseModel):
     @property
     def concept_reference_url(self):
         if self.source_version:
-            source_version_url = reverse_resource(self.source_version, 'sourceversion-detail')
-            return urljoin(source_version_url, self.concept.mnemonic)
+            source_version_url = reverse_resource_version(self.source_version, 'sourceversion-detail')
+            return urljoin(source_version_url, 'concepts/%s/' % self.concept.mnemonic)
         if self.concept_version:
-            return reverse_resource(self.concept_version, 'conceptversion-detail')
+            return reverse_resource_version(self.concept_version, 'conceptversion-detail')
         return reverse_resource(self.concept, 'concept-detail')
 
+    @property
+    def concept_class(self):
+        return self.concept.concept_class if self.concept else None
 
-admin.site.register(Concept)
-admin.site.register(ConceptVersion)
+    @property
+    def data_type(self):
+        return self.concept.datatype if self.concept else None
+
+    @property
+    def source(self):
+        return self.concept.parent if self.concept else None
+
+    @property
+    def owner_name(self):
+        return self.concept.owner_name if self.concept else None
+
+    @property
+    def owner_type(self):
+        return self.concept.owner_type if self.concept else None
+
+    @property
+    def display_name(self):
+        return self.concept.display_name if self.concept else None
+
+    @property
+    def display_locale(self):
+        return self.concept.display_locale if self.concept else None
+
+    @property
+    def is_current_version(self):
+        return not(self.concept_version or self.source_version)
+
 
 @receiver(post_save, sender=User)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):

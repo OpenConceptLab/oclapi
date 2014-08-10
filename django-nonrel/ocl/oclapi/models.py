@@ -251,9 +251,6 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     class Meta(ResourceVersionModel.Meta):
         abstract = True
 
-    def seed_concepts(self):
-        pass
-
     @staticmethod
     def get_url_kwarg():
         return 'version'
