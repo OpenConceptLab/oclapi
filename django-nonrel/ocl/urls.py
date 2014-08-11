@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.conf.urls.defaults import url, patterns, include
 from rest_framework import routers
-from concepts.views import ConceptListView
+from concepts.views import ConceptVersionListAllView
 from mappings.views import MappingListView
 
 admin.autodiscover()
@@ -25,7 +25,7 @@ urlpatterns = patterns('',
 
     # Top-level resource endpoints
     url(r'^collections/', include('collection.urls')),
-    url(r'^concepts/', ConceptListView.as_view(), name='full-concept'),
+    url(r'^concepts/', ConceptVersionListAllView.as_view(), name='all-concepts'),
     url(r'^orgs/', include('orgs.urls')),
     url(r'^sources/', include('sources.urls')),
     url(r'^users/', include('users.urls')),

@@ -3,8 +3,10 @@ from rest_framework import serializers
 from collection.fields import ConceptReferenceField
 from concepts.fields import LocalizedTextListField
 from concepts.models import Concept, ConceptVersion, ConceptReference
+from oclapi.fields import HyperlinkedRelatedField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
+from sources.models import Source
 
 
 class ConceptListSerializer(serializers.Serializer):
@@ -71,41 +73,47 @@ class ConceptCreateSerializer(serializers.Serializer):
 
 class ConceptVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='name')
-    conceptClass = serializers.CharField(source='concept_class')
+    concept_class = serializers.CharField()
     datatype = serializers.CharField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
-    ownerType = serializers.CharField(source='owner_type')
-    displayName = serializers.CharField(source='display_name')
-    displayLocale = serializers.CharField(source='display_locale')
+    owner_type = serializers.CharField()
+    display_name = serializers.CharField()
+    display_locale = serializers.CharField()
+    version = serializers.CharField(source='mnemonic')
     extras = serializers.WritableField()
+
+    class Meta:
+        model = ConceptVersion
+        versioned_object_field_name = 'url'
+        versioned_object_view_name = 'concept-detail'
+
+
+class ConceptVersionDetailSerializer(ResourceVersionSerializer):
+    type = serializers.CharField(source='versioned_object_type')
+    uuid = serializers.CharField(source='id')
+    id = serializers.CharField(source='name')
+    concept_class = serializers.CharField()
+    datatype = serializers.CharField()
+    display_name = serializers.CharField()
+    display_locale = serializers.CharField()
+    names = LocalizedTextListField()
+    descriptions = LocalizedTextListField()
+    extras = serializers.WritableField()
+    retired = serializers.BooleanField()
+    source = serializers.CharField(source='parent_resource')
+    source_url = HyperlinkedRelatedField(source='source', view_name='source-detail', queryset=Source.objects.all())
+    owner = serializers.CharField(source='owner_name')
+    owner_type = serializers.CharField()
+    owner_url = serializers.URLField()
+    mappings_url = serializers.URLField()
     version = serializers.CharField(source='mnemonic')
 
     class Meta:
         model = ConceptVersion
         versioned_object_field_name = 'url'
         versioned_object_view_name = 'concept-detail'
-        fields = ('id', 'conceptClass', 'datatype', 'extras', 'retired', 'source', 'owner', 'ownerType', 'displayName', 'displayLocale', 'url', 'versionUrl', 'version')
-
-
-class ConceptVersionDetailSerializer(ResourceVersionSerializer):
-    id = serializers.CharField(source='name')
-    conceptClass = serializers.CharField(source='concept_class')
-    datatype = serializers.CharField()
-    displayName = serializers.CharField(source='display_name')
-    displayLocale = serializers.CharField(source='display_locale')
-    names = LocalizedTextListField()
-    descriptions = LocalizedTextListField()
-    extras = serializers.WritableField()
-    retired = serializers.BooleanField()
-    source = serializers.CharField(source='parent_resource')
-    owner = serializers.CharField(source='owner_name')
-    version = serializers.CharField(source='mnemonic')
-
-    class Meta:
-        model = ConceptVersion
-        versioned_object_field_name = 'url'
 
 
 class ConceptVersionUpdateSerializer(serializers.Serializer):

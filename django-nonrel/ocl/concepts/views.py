@@ -4,7 +4,7 @@ from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptCreateSerializer, ConceptListSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
+from concepts.serializers import ConceptCreateSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin, ChildResourceMixin
 from sources.models import SourceVersion
 
@@ -63,6 +63,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
+                serializer = ConceptVersionDetailSerializer(self.object)
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -75,13 +76,12 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ConceptListView(BaseAPIView, ListWithHeadersMixin):
-    model = Concept
-    serializer_class = ConceptListSerializer
+class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
+    model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = ConceptDetailSerializer if self.is_verbose(request) else ConceptListSerializer
+        self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
 
 
@@ -113,6 +113,8 @@ class ConceptCreateView(ConceptBaseView,
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)
+                latest_version = ConceptVersion.get_latest_version_of(self.object)
+                serializer = ConceptVersionDetailSerializer(latest_version)
                 return Response(serializer.data, status=status.HTTP_201_CREATED,
                                 headers=headers)
 

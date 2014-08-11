@@ -2,6 +2,7 @@ from urlparse import urljoin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -9,6 +10,7 @@ from djangotoolbox.fields import ListField, EmbeddedModelField
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from oclapi.utils import reverse_resource, reverse_resource_version
+from orgs.models import Organization
 from sources.models import SourceVersion
 
 
@@ -146,6 +148,14 @@ class ConceptVersion(ResourceVersionModel):
         return self.versioned_object.mnemonic
 
     @property
+    def owner_url(self):
+        if isinstance(self.versioned_object.owner, Organization):
+            return reverse_resource(self.versioned_object.owner, 'organization-detail')
+        else:
+            kwargs = {'user': self.versioned_object.owner.username}
+            return reverse('userprofile-detail', kwargs=kwargs)
+
+    @property
     def owner_name(self):
         return self.versioned_object.owner_name
 
@@ -160,6 +170,14 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def display_locale(self):
         return Concept.get_display_locale_for(self)
+
+    @property
+    def source(self):
+        return self.versioned_object.parent
+
+    @property
+    def mappings_url(self):
+        return reverse_resource(self.versioned_object, 'mapping-list')
 
     @classmethod
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
@@ -204,6 +222,10 @@ class ConceptVersion(ResourceVersionModel):
     @classmethod
     def resource_type(cls):
         return VERSION_TYPE
+
+    @classmethod
+    def versioned_object_type(cls):
+        return CONCEPT_TYPE
 
     @staticmethod
     def get_url_kwarg():
