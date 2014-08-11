@@ -260,6 +260,10 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
     def is_current_version(self):
         return not(self.concept_version or self.source_version)
 
+    @staticmethod
+    def get_url_kwarg():
+        return 'concept'
+
 
 @receiver(post_save, sender=User)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):

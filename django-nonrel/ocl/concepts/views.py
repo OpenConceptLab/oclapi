@@ -158,7 +158,7 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
         return super(ConceptVersionRetrieveView, self).get_object()
 
 
-class ConceptReferenceBaseView(ChildResourceMixin):
+class ConceptReferenceBaseView(VersionedResourceChildMixin):
     lookup_field = 'concept'
     pk_field = 'mnemonic'
     model = ConceptReference
@@ -182,6 +182,7 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, ListCreateAPIView
                 'force_insert': True,
                 'owner': request.user,
                 'parent_resource': self.parent_resource,
+                'child_list_attribute': self.child_list_attribute
             }
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():

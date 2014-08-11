@@ -256,13 +256,13 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         return 'version'
 
     @classmethod
-    def get_latest_version_of(cls, versioned_object):
-        versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, released=True).order_by('-created_at')
+    def get_latest_released_version_of(cls, versioned_object):
+        versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, is_active=True, released=True).order_by('-created_at')
         return versions[0] if versions else None
 
     @classmethod
     def persist_new(cls, obj, **kwargs):
-        obj.released = True
+        obj.is_active = True
         kwargs['seed_concepts'] = True
         return cls.persist_changes(obj, **kwargs)
 

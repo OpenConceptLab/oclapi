@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import patterns, url
-from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView
+from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionVersionListView
 from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView
 from orgs.views import OrganizationListView
 from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView
@@ -30,10 +30,10 @@ urlpatterns = patterns('',
     url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/$', CollectionRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-collection-detail'),
     url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptReferenceListCreateView.as_view(), name='user-collection-concepts'),
     url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptReferenceRetrieveUpdateDestroyView.as_view(), name='user-collection-concept'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/versions/$', SourceVersionListView.as_view(), extra_kwargs, name='user-sourceversion-list'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/latest/$', SourceVersionRetrieveUpdateView.as_view(), {'user_is_self': True, 'is_latest': True}, name='user-sourceversion-latest'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/$', SourceVersionRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-sourceversion-detail'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/children/$', SourceVersionChildListView.as_view(), extra_kwargs, name='user-sourceversion-child-list'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptCreateView.as_view(), name='concept-list'),
-    #url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/versions/$', CollectionVersionListView.as_view(), extra_kwargs, name='user-sourceversion-list'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/latest/$', CollectionVersionRetrieveUpdateDestroyView.as_view(), {'user_is_self': True, 'is_latest': True}, name='user-sourceversion-latest'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/$', CollectionVersionRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-sourceversion-detail'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/children/$', CollectionVersionChildListView.as_view(), extra_kwargs, name='user-sourceversion-child-list'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptReferenceListCreateView.as_view(), name='concept-list'),
+    url(r'^collections/(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptReferenceRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
 )

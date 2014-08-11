@@ -44,7 +44,7 @@ class ConceptDetailSerializer(serializers.Serializer):
 
 class ConceptCreateSerializer(serializers.Serializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
-    conceptClass = serializers.CharField(required=True, source='concept_class')
+    conceptClass = serializers.CharField(source='concept_class')
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False)
