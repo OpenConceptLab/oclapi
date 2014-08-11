@@ -6,7 +6,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
-from concepts.models import ConceptReference
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
 from oclapi.utils import reverse_resource
 
@@ -27,10 +26,6 @@ class Collection(ConceptContainerModel):
     @property
     def resource_type(self):
         return COLLECTION_TYPE
-
-    @property
-    def num_concepts(self):
-        return ConceptReference.objects.filter(parent_id=self.id).count()
 
     @classmethod
     def get_version_model(cls):
