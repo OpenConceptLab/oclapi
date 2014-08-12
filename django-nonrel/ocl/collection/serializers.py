@@ -9,10 +9,12 @@ from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 
 
 class CollectionListSerializer(serializers.Serializer):
-    shortCode = serializers.CharField(required=True, source='mnemonic')
+    id = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
     url = serializers.CharField()
-    ownerUrl = serializers.CharField(source='owner_url')
+    owner = serializers.CharField(source='parent_resource')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
 
     class Meta:
         model = Collection
@@ -22,22 +24,22 @@ class CollectionDetailSerializer(serializers.Serializer):
     type = serializers.CharField(required=True, source='resource_type')
     uuid = serializers.CharField(required=True, source='id')
     id = serializers.CharField(required=True, source='mnemonic')
-    shortCode = serializers.CharField(required=True, source='mnemonic')
+    short_code = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
-    fullName = serializers.CharField(source='full_name')
-    collectionType = serializers.CharField(source='collection_type')
-    publicAccess = serializers.CharField(source='public_access')
-    defaultLocale = serializers.CharField(source='default_locale')
-    supportedLocales = serializers.CharField(source='supported_locales')
+    url = serializers.CharField()
+    full_name = serializers.CharField()
+    collection_type = serializers.CharField()
+    public_access = serializers.CharField()
+    default_locale = serializers.CharField()
+    supported_locales = serializers.CharField()
     website = serializers.CharField()
     description = serializers.CharField()
     owner = serializers.CharField(source='parent_resource')
-    ownerType = serializers.CharField(source='parent_resource_type')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
     versions = serializers.IntegerField(source='num_versions')
-    createdOn = serializers.DateTimeField(source='created_at')
-    updatedOn = serializers.DateTimeField(source='updated_at')
-    url = serializers.CharField()
-    ownerUrl = serializers.CharField(source='owner_url')
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
 
     class Meta:
         model = Collection
@@ -65,12 +67,12 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     name = serializers.CharField(required=True)
-    fullName = serializers.CharField(required=False, source='full_name')
+    full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    collectionType = serializers.CharField(required=False, source='collection_type')
-    publicAccess = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, source='public_access')
-    defaultLocale = serializers.CharField(required=False, source='default_locale')
-    supportedLocales = serializers.CharField(required=False, source='supported_locales')
+    collection_type = serializers.CharField(required=False)
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
+    default_locale = serializers.CharField(required=False)
+    supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
@@ -81,12 +83,12 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
 class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     name = serializers.CharField(required=True)
-    fullName = serializers.CharField(required=False, source='full_name')
+    full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    collectionType = serializers.CharField(required=False, source='collection_type')
-    publicAccess = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, source='public_access')
-    defaultLocale = serializers.CharField(required=False, source='default_locale')
-    supportedLocales = serializers.CharField(required=False, source='supported_locales')
+    collection_type = serializers.CharField(required=False)
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
+    default_locale = serializers.CharField(required=False)
+    supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
@@ -97,12 +99,14 @@ class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
 class CollectionVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='mnemonic')
     released = serializers.CharField()
+    owner = serializers.CharField(source='parent_resource')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
 
     class Meta:
         model = CollectionVersion
         versioned_object_view_name = 'collection-detail'
         versioned_object_field_name = 'url'
-        fields = ('id', 'released', 'url', 'versionUrl')
 
 
 class CollectionVersionDetailSerializer(ResourceVersionSerializer):
@@ -110,8 +114,11 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     id = serializers.CharField(required=True, source='mnemonic')
     description = serializers.CharField()
     released = serializers.BooleanField()
-    createdOn = serializers.DateTimeField(source='created_at')
-    updatedOn = serializers.DateTimeField(source='updated_at')
+    owner = serializers.CharField(source='parent_resource')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
 
     class Meta:
         model = CollectionVersion
@@ -157,16 +164,16 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     id = serializers.CharField(required=False, source='mnemonic')
     released = serializers.BooleanField(required=False)
     description = serializers.CharField(required=False)
-    previousVersion = serializers.CharField(required=False, source='previous_version_mnemonic')
-    parentVersion = serializers.CharField(required=False, source='parent_version_mnemonic')
+    previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
+    parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
 
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     released = serializers.BooleanField(required=False)
     description = serializers.CharField(required=False)
-    previousVersion = serializers.CharField(required=False, source='previous_version_mnemonic')
-    parentVersion = serializers.CharField(required=False, source='parent_version_mnemonic')
+    previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
+    parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
 
     def restore_object(self, attrs, instance=None):
         version = CollectionVersion()

@@ -48,6 +48,10 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         return self.parent.parent_resource_type
 
     @property
+    def owner_url(self):
+        return self.parent.parent_url
+
+    @property
     def num_versions(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.id).count()
 
@@ -264,11 +268,15 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
 
     @property
     def owner_name(self):
-        return self.concept.owner_name if self.concept else None
+        return self.parent.parent_resource if self.parent else None
 
     @property
     def owner_type(self):
-        return self.concept.owner_type if self.concept else None
+        return self.parent.parent_resource_type if self.parent else None
+
+    @property
+    def owner_url(self):
+        return self.parent.parent_url if self.parent else None
 
     @property
     def display_name(self):

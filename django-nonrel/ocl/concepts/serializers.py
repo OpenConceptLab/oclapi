@@ -11,34 +11,35 @@ from sources.models import Source
 
 class ConceptListSerializer(serializers.Serializer):
     id = serializers.CharField(source='mnemonic')
-    conceptClass = serializers.CharField(source='concept_class')
+    concept_class = serializers.CharField()
     datatype = serializers.CharField()
+    url = serializers.URLField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
-    ownerType = serializers.CharField(source='owner_type')
-    displayName = serializers.CharField(source='display_name')
-    displayLocale = serializers.CharField(source='display_locale')
-    url = serializers.CharField()
-    ownerUrl = serializers.CharField(source='owner_url')
+    owner_type = serializers.CharField()
+    owner_url = serializers.URLField()
+    display_name = serializers.CharField()
+    display_locale = serializers.CharField()
 
     class Meta:
         model = Concept
 
 
 class ConceptDetailSerializer(serializers.Serializer):
-    conceptClass = serializers.CharField(source='concept_class')
+    concept_class = serializers.CharField()
     datatype = serializers.CharField()
-    displayName = serializers.CharField(source='display_name')
-    displayLocale = serializers.CharField(source='display_locale')
+    display_name = serializers.CharField()
+    display_locale = serializers.CharField()
+    url = serializers.URLField()
     names = LocalizedTextListField()
     descriptions = LocalizedTextListField()
     extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
-    url = serializers.CharField()
-    ownerUrl = serializers.CharField(source='owner_url')
+    owner_type = serializers.CharField()
+    owner_url = serializers.URLField()
 
     class Meta:
         model = Concept
@@ -46,7 +47,7 @@ class ConceptDetailSerializer(serializers.Serializer):
 
 class ConceptCreateSerializer(serializers.Serializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
-    conceptClass = serializers.CharField(source='concept_class')
+    concept_class = serializers.CharField()
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False)
@@ -79,6 +80,7 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     source = serializers.CharField(source='parent_resource')
     owner = serializers.CharField(source='owner_name')
     owner_type = serializers.CharField()
+    owner_url = serializers.URLField()
     display_name = serializers.CharField()
     display_locale = serializers.CharField()
     version = serializers.CharField(source='mnemonic')
@@ -117,7 +119,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
 
 
 class ConceptVersionUpdateSerializer(serializers.Serializer):
-    conceptClass = serializers.CharField(required=True, source='concept_class')
+    concept_class = serializers.CharField(required=True)
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False)
@@ -174,6 +176,7 @@ class ConceptReferenceDetailSerializer(serializers.Serializer):
     source = serializers.CharField(read_only=True)
     owner = serializers.CharField(read_only=True, source='owner_name')
     owner_type = serializers.CharField(read_only=True)
+    owner_url = serializers.URLField(read_only=True)
     display_name = serializers.CharField(read_only=True)
     display_locale = serializers.CharField(read_only=True)
     version = serializers.CharField(read_only=True, source='concept_version')

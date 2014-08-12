@@ -81,6 +81,7 @@ class SourceVersionListView(SourceVersionBaseView,
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)
+                serializer = SourceVersionDetailSerializer(self.object)
                 return Response(serializer.data, status=status.HTTP_201_CREATED,
                                 headers=headers)
 
@@ -117,6 +118,7 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=created)
+                serializer = SourceVersionDetailSerializer(self.object)
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

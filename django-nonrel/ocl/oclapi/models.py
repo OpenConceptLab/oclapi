@@ -78,7 +78,7 @@ class SubResourceBaseModel(BaseModel):
     """
     A sub-resource is an object that exists within the scope of its parent resource.
     Its mnemonic is unique within the scope of its parent resource.
-    (A Source is a base resource, but an Organization is not.)
+    (A Source is a sub-resource, but an Organization is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     owner = models.ForeignKey(User, db_index=False)
@@ -94,12 +94,8 @@ class SubResourceBaseModel(BaseModel):
         return self.mnemonic
 
     @property
-    def owner_url(self):
-        if isinstance(self.owner, User):
-            owner = self.owner.userprofile
-        else:
-            owner = self.owner
-        return reverse_resource(owner, owner.view_name)
+    def parent_url(self):
+        return reverse_resource(self.parent, self.parent.view_name)
 
     @property
     def parent_resource(self):
@@ -250,6 +246,18 @@ class ConceptContainerVersionModel(ResourceVersionModel):
 
     class Meta(ResourceVersionModel.Meta):
         abstract = True
+
+    @property
+    def parent_resource(self):
+        return self.versioned_object.parent_resource
+
+    @property
+    def parent_resource_type(self):
+        return self.versioned_object.parent_resource_type
+
+    @property
+    def parent_url(self):
+        return self.versioned_object.parent_url
 
     @staticmethod
     def get_url_kwarg():
