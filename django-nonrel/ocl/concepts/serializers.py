@@ -27,6 +27,7 @@ class ConceptListSerializer(serializers.Serializer):
 
 
 class ConceptDetailSerializer(serializers.Serializer):
+    id = serializers.CharField(source='mnemonic')
     concept_class = serializers.CharField()
     datatype = serializers.CharField()
     display_name = serializers.CharField()
