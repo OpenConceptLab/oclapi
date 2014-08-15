@@ -32,12 +32,16 @@ class ListField(WritableField):
 class LocalizedTextListField(ListField):
     type_name = 'LocalizedTextListField'
 
+    def __init__(self, **kwargs):
+        self.name_override = kwargs.pop('name_override', None)
+        super(LocalizedTextListField, self).__init__(**kwargs)
+
     def element_from_native(self, element):
         if not element or not isinstance(element, dict):
             msg = self.error_messages['invalid'] % element
             raise ValidationError(msg)
         lt = LocalizedText()
-        name = element.get('name', None)
+        name = element.get(self.name_attr, None)
         if name is None or not isinstance(name, unicode):
             msg = self.error_messages['invalid'] % element
             raise ValidationError(msg)
@@ -53,8 +57,12 @@ class LocalizedTextListField(ListField):
 
     def element_to_native(self, element):
         return {
-            'name': element.name,
+            self.name_attr: element.name,
             'locale': element.locale,
             'localePreferred': element.locale_preferred,
             'type': element.type
         }
+
+    @property
+    def name_attr(self):
+        return 'name' if self.name_override is None else self.name_override

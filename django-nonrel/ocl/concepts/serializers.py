@@ -34,7 +34,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     display_locale = serializers.CharField()
     url = serializers.URLField()
     names = LocalizedTextListField()
-    descriptions = LocalizedTextListField()
+    descriptions = LocalizedTextListField(name_override='description')
     extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
@@ -51,7 +51,7 @@ class ConceptCreateSerializer(serializers.Serializer):
     concept_class = serializers.CharField()
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
-    descriptions = LocalizedTextListField(required=False)
+    descriptions = LocalizedTextListField(required=False, name_override='description')
     extras = serializers.WritableField(required=False)
 
     class Meta:
@@ -102,7 +102,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     display_name = serializers.CharField()
     display_locale = serializers.CharField()
     names = LocalizedTextListField()
-    descriptions = LocalizedTextListField()
+    descriptions = LocalizedTextListField(name_override='description')
     extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
@@ -123,7 +123,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
     concept_class = serializers.CharField(required=True)
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=True)
-    descriptions = LocalizedTextListField(required=False)
+    descriptions = LocalizedTextListField(required=False, name_override='description')
     extras = serializers.WritableField(required=False)
 
     class Meta:
