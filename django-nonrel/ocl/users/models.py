@@ -56,6 +56,10 @@ class UserProfile(BaseResourceModel):
     def public_sources(self):
         return Source.objects.filter(parent_id=self.id).count()
 
+    @property
+    def num_stars(self):
+        return 0
+
     @staticmethod
     def get_url_kwarg():
         return 'user'

@@ -2,6 +2,24 @@ from haystack.query import RelatedSearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
 
+class SearchQuerySetWrapper(object):
+
+    def __init__(self, sqs):
+        self.sqs = sqs
+
+    def __len__(self):
+        return len(self.sqs)
+
+    def __getitem__(self, item):
+        result = self.sqs.__getitem__(item)
+        if isinstance(result, list):
+            return [r.object for r in result]
+        return result.object
+
+    def __iter__(self):
+        yield self.sqs.__iter__().object
+
+
 class HaystackSearchFilter(BaseFilterBackend):
     search_param = 'q'  # The URL query parameter used for the search.
     sort_asc_param = 'sortAsc'
@@ -57,15 +75,15 @@ class HaystackSearchFilter(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         use_sqs = False
         terms = self.get_search_terms(request)
-        use_sqs != terms
+        use_sqs != len(terms)
         filters = self.get_filters(request, view)
-        use_sqs != filters
+        use_sqs != len(terms)
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
             if sort and desc:
                 sort = '-' + sort
-        use_sqs != sort
+        use_sqs != sort is not None
         if use_sqs:
             sqs = RelatedSearchQuerySet()
             for term in terms:
@@ -74,8 +92,9 @@ class HaystackSearchFilter(BaseFilterBackend):
                 sqs = sqs.filter(**filters)
             if sort:
                 sqs = sqs.order_by(sort)
+            sqs = sqs.models(view.model)
             sqs = sqs.load_all()
             sqs = sqs.load_all_queryset(view.model, queryset)
-            return sqs._load_all_querysets[view.model]
+            return SearchQuerySetWrapper(sqs)
 
         return queryset

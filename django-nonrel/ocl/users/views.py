@@ -17,7 +17,9 @@ class UserListView(BaseAPIView,
     queryset = UserProfile.objects.filter(is_active=True)
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
-        'username': {'sortable': True, 'filterable': False}
+        'username': {'sortable': True, 'filterable': False},
+        'date_joined': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
     }
 
     def initial(self, request, *args, **kwargs):

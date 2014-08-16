@@ -9,6 +9,8 @@ class UserProfileIndex(indexes.SearchIndex, indexes.Indexable):
     username = indexes.CharField(model_attr='user__username', indexed=True, stored=True)
     company = indexes.CharField(model_attr='company', null=True, indexed=True, stored=True)
     location = indexes.CharField(model_attr='location', null=True, indexed=True, stored=True)
+    date_joined = indexes.DateTimeField(model_attr='created_at', indexed=True, stored=True)
+    num_stars = indexes.IntegerField(model_attr='num_stars', indexed=True, stored=True)
 
     def get_model(self):
         return UserProfile
