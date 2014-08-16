@@ -62,8 +62,8 @@ class SourceVersionListView(SourceVersionBaseView,
                             ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = SourceVersionListSerializer
         self.permission_classes = (CanViewConceptDictionary,)
+        self.serializer_class = SourceVersionDetailSerializer if self.is_verbose(request) else SourceVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -155,9 +155,9 @@ class SourceVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMix
     pk_field = 'mnemonic'
     model = SourceVersion
     permission_classes = (HasAccessToVersionedObject,)
-    serializer_class = SourceVersionListSerializer
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = SourceVersionDetailSerializer if self.is_verbose(request) else SourceVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):

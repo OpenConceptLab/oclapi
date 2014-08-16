@@ -62,8 +62,8 @@ class CollectionVersionListView(CollectionVersionBaseView,
                                 ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = CollectionVersionListSerializer
         self.permission_classes = (CanViewConceptDictionary,)
+        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(request) else CollectionVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -156,6 +156,7 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeader
     serializer_class = CollectionVersionListSerializer
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(request) else CollectionVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):

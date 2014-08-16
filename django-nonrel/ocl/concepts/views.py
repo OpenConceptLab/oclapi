@@ -126,6 +126,7 @@ class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
     permission_classes = (CanViewParentDictionary,)
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -146,6 +147,7 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     permission_classes = (CanViewParentDictionary,)
 
     def get(self, request, *args, **kwargs):
+        self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
 
 
