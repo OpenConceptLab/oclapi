@@ -6,6 +6,7 @@ class SearchQuerySetWrapper(object):
 
     def __init__(self, sqs):
         self.sqs = sqs
+        self.sqs._fill_cache(0,10)
 
     def __len__(self):
         return len(self.sqs)

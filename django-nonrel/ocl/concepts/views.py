@@ -2,9 +2,11 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
+from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptCreateSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
+from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin, ChildResourceMixin
 from sources.models import SourceVersion
 
@@ -79,10 +81,20 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
 class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
+    filter_backends = [HaystackSearchFilter]
+    solr_fields = {
+        'name': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
+    }
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(ConceptVersionListAllView, self).get_queryset()
+        return queryset.filter(is_latest_version=True)
 
 
 class ConceptCreateView(ConceptBaseView,
@@ -145,6 +157,12 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
 class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
+    filter_backends = [LimitSourceVersionFilter,]
+    solr_fields = {
+        'name': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
+    }
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer

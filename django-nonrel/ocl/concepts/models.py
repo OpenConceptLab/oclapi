@@ -55,6 +55,10 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     def num_versions(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.id).count()
 
+    @property
+    def num_stars(self):
+        return 0
+
     @classmethod
     def resource_type(cls):
         return CONCEPT_TYPE
@@ -133,6 +137,7 @@ class ConceptVersion(ResourceVersionModel):
     descriptions = ListField(EmbeddedModelField('LocalizedText'))
     retired = models.BooleanField(default=False)
     root_version = models.ForeignKey('self', null=True, blank=True)
+    is_latest_version = models.BooleanField(default=True)
 
     def clone(self):
         return ConceptVersion(
@@ -148,6 +153,7 @@ class ConceptVersion(ResourceVersionModel):
             previous_version=self,
             parent_version=self.parent_version,
             root_version=self.root_version,
+            is_latest_version=self.is_latest_version,
         )
 
     @property
@@ -206,6 +212,8 @@ class ConceptVersion(ResourceVersionModel):
     @classmethod
     def persist_clone(cls, obj, **kwargs):
         errors = dict()
+        previous_version = obj.previous_version
+        previous_was_latest = previous_version.is_latest_version and obj.is_latest_version
         source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)
         persisted = False
         errored_action = 'saving new concept version'
@@ -213,6 +221,11 @@ class ConceptVersion(ResourceVersionModel):
             obj.save(**kwargs)
             obj.mnemonic = obj.id
             obj.save()
+
+            errored_action = "updating 'is_latest_version' attribute on previous version"
+            if previous_was_latest:
+                previous_version.is_latest_version = False
+                previous_version.save()
 
             errored_action = 'replacing previous version in latest version of source'
             source_version.update_concept_version(obj)
@@ -222,6 +235,9 @@ class ConceptVersion(ResourceVersionModel):
         finally:
             if not persisted:
                 source_version.update_concept_version(obj.previous_version)
+                if previous_was_latest:
+                    previous_version.is_latest_version = True
+                    previous_version.save()
                 obj.delete()
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
         return errors

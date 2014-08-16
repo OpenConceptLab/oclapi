@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from collection.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from collection.models import Collection, CollectionVersion
