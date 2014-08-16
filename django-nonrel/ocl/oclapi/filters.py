@@ -75,15 +75,15 @@ class HaystackSearchFilter(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         use_sqs = False
         terms = self.get_search_terms(request)
-        use_sqs != len(terms)
+        use_sqs |= len(terms)
         filters = self.get_filters(request, view)
-        use_sqs != len(terms)
+        use_sqs |= len(terms)
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
             if sort and desc:
                 sort = '-' + sort
-        use_sqs != sort is not None
+        use_sqs |= sort is not None
         if use_sqs:
             sqs = RelatedSearchQuerySet()
             for term in terms:

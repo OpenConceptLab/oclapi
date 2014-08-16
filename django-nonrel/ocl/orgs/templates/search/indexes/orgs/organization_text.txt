@@ -1,0 +1,4 @@
+{{ object.name }}
+{% if object.company %}
+  {{ object.company }}
+{% endif %}

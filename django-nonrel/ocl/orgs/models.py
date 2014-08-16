@@ -34,6 +34,10 @@ class Organization(BaseResourceModel):
     def public_sources(self):
         return Source.objects.filter(~Q(public_access=NONE_ACCESS_TYPE), parent_id=self.id).count()
 
+    @property
+    def num_stars(self):
+        return 0
+
     @staticmethod
     def get_url_kwarg():
         return 'org'

@@ -120,6 +120,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    # Core OCL app
+    'oclapi',
     # Third-party apps:
     'djangotoolbox',
     'django_mongodb_engine',
@@ -127,7 +129,6 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'haystack',
     # Project-specific apps:
-    'oclapi',
     'users',
     'orgs',
     'sources',
@@ -168,7 +169,7 @@ REST_FRAMEWORK = {
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
         'URL': 'http://127.0.0.1:8983/solr'
         # ...or for multicore...
         # 'URL': 'http://127.0.0.1:8983/solr/mysite',

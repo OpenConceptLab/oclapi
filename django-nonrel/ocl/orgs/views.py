@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
+from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasOwnership
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView, ListWithHeadersMixin
@@ -13,7 +14,14 @@ from users.models import UserProfile
 class OrganizationListView(BaseAPIView,
                            ListWithHeadersMixin,
                            mixins.CreateModelMixin):
+    model = Organization
     queryset = Organization.objects.filter(is_active=True)
+    filter_backends = [HaystackSearchFilter]
+    solr_fields = {
+        'name': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
+    }
 
     def initial(self, request, *args, **kwargs):
         self.user_is_self = kwargs.pop('user_is_self', False)
