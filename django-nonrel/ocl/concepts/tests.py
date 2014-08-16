@@ -215,6 +215,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.concepts))
@@ -336,6 +337,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.concepts))
@@ -365,6 +367,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.source2.parent_resource_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.concepts))
@@ -399,6 +402,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertEquals(concept_version, concept_version.root_version)
 
         version1 = SourceVersion.objects.get(id=version1.id)
         self.assertEquals(1, len(version1.concepts))
@@ -641,6 +645,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(3, self.concept1.num_versions)
         self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
         self.assertEquals(self.concept_version, version2.previous_version)
+        self.assertEquals(self.concept_version.root_version, version2.root_version)
 
         source_version.update_concept_version(version2)
         self.assertEquals(1, len(source_version.concepts))

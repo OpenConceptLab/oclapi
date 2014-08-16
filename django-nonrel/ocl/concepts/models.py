@@ -64,6 +64,7 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         initial_version = ConceptVersion.for_concept(obj, '_TEMP')
         initial_version.save()
         initial_version.mnemonic = initial_version.id
+        initial_version.root_version = initial_version
         initial_version.released = True
         initial_version.save()
         return initial_version
@@ -131,6 +132,7 @@ class ConceptVersion(ResourceVersionModel):
     names = ListField(EmbeddedModelField('LocalizedText'))
     descriptions = ListField(EmbeddedModelField('LocalizedText'))
     retired = models.BooleanField(default=False)
+    root_version = models.ForeignKey('self', null=True, blank=True)
 
     def clone(self):
         return ConceptVersion(
@@ -144,7 +146,8 @@ class ConceptVersion(ResourceVersionModel):
             versioned_object_type=self.versioned_object_type,
             released=self.released,
             previous_version=self,
-            parent_version=self.parent_version
+            parent_version=self.parent_version,
+            root_version=self.root_version,
         )
 
     @property

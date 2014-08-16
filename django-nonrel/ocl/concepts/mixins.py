@@ -57,7 +57,7 @@ class DictionaryItemMixin(object):
         finally:
             if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
-                setattr(parent_resource_version, initial_parent_children)
+                setattr(parent_resource_version, child_list_attribute, initial_parent_children)
                 parent_resource_version.save()
                 if initial_version:
                     initial_version.delete()
