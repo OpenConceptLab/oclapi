@@ -59,7 +59,7 @@ class CollectionVersionBaseView(ResourceVersionMixin):
 
 class CollectionVersionListView(CollectionVersionBaseView,
                                 mixins.CreateModelMixin,
-                                mixins.ListModelMixin):
+                                ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionVersionListSerializer
@@ -148,12 +148,15 @@ class CollectionVersionRetrieveUpdateDestroyView(CollectionVersionRetrieveUpdate
         return super(CollectionVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
 
 
-class CollectionVersionChildListView(ResourceAttributeChildMixin, ListAPIView):
+class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
     model = CollectionVersion
     permission_classes = (HasAccessToVersionedObject,)
     serializer_class = CollectionVersionListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = super(CollectionVersionChildListView, self).get_queryset()

@@ -59,7 +59,7 @@ class SourceVersionBaseView(ResourceVersionMixin):
 
 class SourceVersionListView(SourceVersionBaseView,
                             mixins.CreateModelMixin,
-                            mixins.ListModelMixin):
+                            ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionListSerializer
@@ -150,12 +150,15 @@ class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, De
         return super(SourceVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
 
 
-class SourceVersionChildListView(ResourceAttributeChildMixin, ListAPIView):
+class SourceVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
     model = SourceVersion
     permission_classes = (HasAccessToVersionedObject,)
     serializer_class = SourceVersionListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = super(SourceVersionChildListView, self).get_queryset()

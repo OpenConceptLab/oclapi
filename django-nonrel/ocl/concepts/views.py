@@ -1,6 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, ListAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.response import Response
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
@@ -121,9 +121,12 @@ class ConceptCreateView(ConceptBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ConceptVersionsView(ConceptDictionaryMixin, ListAPIView):
+class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id)
@@ -138,9 +141,12 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     child_list_attribute = 'concepts'
 
 
-class ConceptVersionListView(ConceptVersionBaseView, ListAPIView):
+class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
@@ -167,14 +173,14 @@ class ConceptReferenceBaseView(VersionedResourceChildMixin):
     child_list_attribute = 'concept_references'
 
 
-class ConceptReferenceListCreateView(ConceptReferenceBaseView, ListCreateAPIView):
+class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, ListWithHeadersMixin):
     permission_classes = (CanEditParentDictionary,)
     serializer_class = ConceptReferenceCreateSerializer
 
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewParentDictionary,)
         self.serializer_class = ConceptReferenceDetailSerializer
-        return super(ConceptReferenceListCreateView, self).get(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
