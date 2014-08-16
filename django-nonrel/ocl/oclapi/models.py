@@ -179,6 +179,10 @@ class ConceptContainerModel(SubResourceBaseModel):
     def num_versions(self):
         return self.get_version_model().objects.filter(versioned_object_id=self.id).count()
 
+    @property
+    def num_stars(self):
+        return 0
+
     @classmethod
     def persist_new(cls, obj, **kwargs):
         errors = dict()

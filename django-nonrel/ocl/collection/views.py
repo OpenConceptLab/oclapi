@@ -41,7 +41,10 @@ class CollectionListView(CollectionBaseView,
     serializer_class = CollectionCreateSerializer
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
-        'collection_type': {'sortable': False, 'filterable': True}
+        'collection_type': {'sortable': False, 'filterable': True},
+        'name': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
     }
 
     def get(self, request, *args, **kwargs):

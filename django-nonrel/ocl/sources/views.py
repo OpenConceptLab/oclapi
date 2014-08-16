@@ -41,7 +41,10 @@ class SourceListView(SourceBaseView,
     serializer_class = SourceCreateSerializer
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
-        'source_type': {'sortable': False, 'filterable': True}
+        'source_type': {'sortable': False, 'filterable': True},
+        'name': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'filterable': False},
+        'num_stars': {'sortable': True, 'filterable': False},
     }
 
     def get(self, request, *args, **kwargs):

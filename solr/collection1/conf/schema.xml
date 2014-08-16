@@ -170,9 +170,11 @@
 
     <field name="last_update" type="date" indexed="true" stored="true" multiValued="false" />
 
+    <field name="source_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
     <field name="full_name" type="text_en" indexed="true" stored="true" multiValued="false" />
 
-    <field name="source_type" type="text_en" indexed="true" stored="true" multiValued="false" />
+    <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
   </fields>
 
