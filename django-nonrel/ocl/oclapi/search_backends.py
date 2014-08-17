@@ -1,11 +1,15 @@
 from haystack.backends.solr_backend import SolrSearchBackend, SolrEngine
-from haystack.fields import CharField
+from haystack.fields import CharField, MultiValueField
 
 __author__ = 'misternando'
 
 
-class SortField(CharField):
-    field_type = 'sortable_text'
+class SortOrFilterField(CharField):
+    field_type = 'lowercase'
+
+
+class FilterField(MultiValueField):
+    field_type = 'lowercase'
 
 
 class OCLSolrBackend(SolrSearchBackend):
@@ -43,13 +47,11 @@ class OCLSolrBackend(SolrSearchBackend):
                 field_data['type'] = 'edge_ngram'
             elif field_class.field_type == 'location':
                 field_data['type'] = 'location'
+            elif field_class.field_type == 'lowercase':
+                field_data['type'] = 'lowercase'
 
             if field_class.is_multivalued:
                 field_data['multi_valued'] = 'true'
-
-            if field_class.field_type == 'sortable_text':
-                field_data['type'] = 'lowercase'
-                field_data['multi_valued'] = 'false';
 
             if field_class.stored is False:
                 field_data['stored'] = 'false'

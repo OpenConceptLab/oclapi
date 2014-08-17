@@ -2,7 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from haystack import indexes
 from haystack.fields import MultiValueField
 from concepts.models import ConceptVersion
-from oclapi.search_backends import SortField
+from oclapi.search_backends import SortOrFilterField
 from sources.models import SourceVersion, Source
 
 __author__ = 'misternando'
@@ -10,7 +10,7 @@ __author__ = 'misternando'
 
 class ConceptVersionIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
-    name = SortField(model_attr='name', indexed=True, stored=True)
+    name = SortOrFilterField(model_attr='name', indexed=True, stored=True)
     last_update = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
     num_stars = indexes.IntegerField(model_attr='versioned_object__num_stars', indexed=True, stored=True)
     source_version = MultiValueField()

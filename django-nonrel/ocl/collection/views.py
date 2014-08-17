@@ -45,6 +45,7 @@ class CollectionListView(CollectionBaseView,
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
+        'language': {'sortable': False, 'filterable': True}
     }
 
     def get(self, request, *args, **kwargs):

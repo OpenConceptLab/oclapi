@@ -1,6 +1,6 @@
 from __future__ import with_statement
 import os
-from fabric.api import local, settings, abort, run, cd
+from fabric.api import local, run, cd
 from fabric.context_managers import prefix
 from fabric.operations import sudo
 from fabric.state import env

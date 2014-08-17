@@ -78,7 +78,7 @@ class HaystackSearchFilter(BaseFilterBackend):
         terms = self.get_search_terms(request)
         use_sqs |= len(terms)
         filters = self.get_filters(request, view)
-        use_sqs |= len(terms)
+        use_sqs |= len(filters)
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
