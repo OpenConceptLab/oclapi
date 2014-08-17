@@ -73,6 +73,14 @@ class HaystackSearchFilter(BaseFilterBackend):
             return attrs.get('sortable', False)
         return False
 
+    def get_default_sort(self, view):
+        for field in view.solr_fields:
+            attrs = view.solr_fields[field]
+            if 'sortable' in attrs and 'default' in attrs:
+                prefix = '-' if 'desc' == attrs['default'] else ''
+                return prefix + field
+        return None
+
     def filter_queryset(self, request, queryset, view):
         use_sqs = False
         terms = self.get_search_terms(request)
@@ -93,9 +101,16 @@ class HaystackSearchFilter(BaseFilterBackend):
                 sqs = sqs.filter(**filters)
             if sort:
                 sqs = sqs.order_by(sort)
+            else:
+                default_sort = self.get_default_sort(view)
+                if default_sort:
+                    sqs = sqs.order_by(default_sort)
             sqs = sqs.models(view.model)
             sqs = sqs.load_all()
             sqs = sqs.load_all_queryset(view.model, queryset)
             return SearchQuerySetWrapper(sqs)
 
-        return queryset
+        if hasattr(view, 'default_order_by'):
+            return queryset.order_by(view.default_order_by)
+        else:
+            return queryset

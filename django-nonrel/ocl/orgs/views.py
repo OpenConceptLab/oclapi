@@ -19,7 +19,7 @@ class OrganizationListView(BaseAPIView,
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
     }
 

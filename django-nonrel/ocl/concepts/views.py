@@ -84,7 +84,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
         'concept_class': {'sortable': False, 'filterable': True},
         'datatype': {'sortable': False, 'filterable': True},
@@ -163,7 +163,7 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     filter_backends = [LimitSourceVersionFilter,]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
         'concept_class': {'sortable': False, 'filterable': True},
         'datatype': {'sortable': False, 'filterable': True},

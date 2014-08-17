@@ -43,7 +43,7 @@ class CollectionListView(CollectionBaseView,
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'filterable': False},
+        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
         'language': {'sortable': False, 'filterable': True}
     }

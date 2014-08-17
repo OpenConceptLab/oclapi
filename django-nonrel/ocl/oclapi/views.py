@@ -41,6 +41,7 @@ class PathWalkerMixin():
 
 class ListWithHeadersMixin(ListModelMixin):
     verbose_param = 'verbose'
+    default_order_by = 'created_at'
 
     def is_verbose(self, request):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
