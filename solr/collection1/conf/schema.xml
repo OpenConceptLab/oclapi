@@ -176,7 +176,13 @@
 
     <field name="full_name" type="text_en" indexed="true" stored="true" multiValued="false" />
 
-    <field name="source_version" type="text_en" indexed="true" stored="true" multiValued="true" />
+    <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="concept_class" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="locale" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
