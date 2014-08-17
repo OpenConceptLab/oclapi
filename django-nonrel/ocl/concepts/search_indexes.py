@@ -1,8 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from haystack import indexes
-from haystack.fields import MultiValueField
 from concepts.models import ConceptVersion
-from oclapi.search_backends import SortOrFilterField
+from oclapi.search_backends import SortOrFilterField, FilterField
 from sources.models import SourceVersion, Source
 
 __author__ = 'misternando'
@@ -13,10 +12,20 @@ class ConceptVersionIndex(indexes.SearchIndex, indexes.Indexable):
     name = SortOrFilterField(model_attr='name', indexed=True, stored=True)
     last_update = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
     num_stars = indexes.IntegerField(model_attr='versioned_object__num_stars', indexed=True, stored=True)
-    source_version = MultiValueField()
+    concept_class = SortOrFilterField(model_attr='concept_class', indexed=True, stored=True)
+    datatype = SortOrFilterField(model_attr='datatype', null=True, indexed=True, stored=True)
+    locale = FilterField()
+    source_version = FilterField()
 
     def get_model(self):
         return ConceptVersion
+
+    def prepare_locale(self, obj):
+        locales = set()
+        for name in obj.names:
+            if name.locale is not None:
+                locales.add(name.locale)
+        return list(locales)
 
     def prepare_source_version(self, obj):
         source_version_ids = []

@@ -86,6 +86,9 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
+        'concept_class': {'sortable': False, 'filterable': True},
+        'datatype': {'sortable': False, 'filterable': True},
+        'locale': {'sortable': False, 'filterable': True},
     }
 
     def get(self, request, *args, **kwargs):
@@ -162,6 +165,9 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
+        'concept_class': {'sortable': False, 'filterable': True},
+        'datatype': {'sortable': False, 'filterable': True},
+        'locale': {'sortable': False, 'filterable': True},
     }
 
     def get(self, request, *args, **kwargs):
