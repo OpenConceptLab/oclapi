@@ -1,7 +1,4 @@
 {{ object.name }}
-{% if object.source_type %}
-  {{ object.source_type }}
-{% endif %}
 {% if object.full_name %}
   {{ object.full_name }}
 {% endif %}
