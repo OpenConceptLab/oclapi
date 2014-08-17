@@ -172,6 +172,8 @@
 
     <field name="source_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="language" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
     <field name="full_name" type="text_en" indexed="true" stored="true" multiValued="false" />
 
     <field name="source_version" type="text_en" indexed="true" stored="true" multiValued="true" />
