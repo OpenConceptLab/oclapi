@@ -1,4 +1,5 @@
 from urlparse import urljoin
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -54,6 +55,22 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     @property
     def num_versions(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.id).count()
+
+    @property
+    def names_for_default_locale(self):
+        names = []
+        for name in self.names:
+            if settings.DEFAULT_LOCALE == name.locale:
+                names.append(name.name)
+        return names
+
+    @property
+    def descriptions_for_default_locale(self):
+        descriptions = []
+        for desc in self.descriptions:
+            if settings.DEFAULT_LOCALE == desc.locale:
+                descriptions.append(desc.name)
+        return descriptions
 
     @property
     def num_stars(self):
@@ -191,6 +208,22 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def mappings_url(self):
         return reverse_resource(self.versioned_object, 'mapping-list')
+
+    @property
+    def names_for_default_locale(self):
+        names = []
+        for name in self.names:
+            if settings.DEFAULT_LOCALE == name.locale:
+                names.append(name.name)
+        return names
+
+    @property
+    def descriptions_for_default_locale(self):
+        descriptions = []
+        for desc in self.descriptions:
+            if settings.DEFAULT_LOCALE == desc.locale:
+                descriptions.append(desc.name)
+        return descriptions
 
     @classmethod
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
