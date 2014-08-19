@@ -65,3 +65,9 @@ class OrganizationUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
+
+    def restore_object(self, attrs, instance=None):
+        instance.name = attrs.get('name', instance.name)
+        instance.company = attrs.get('company', instance.company)
+        instance.website = attrs.get('website', instance.website)
+        return instance
