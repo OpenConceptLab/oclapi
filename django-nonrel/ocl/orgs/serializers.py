@@ -40,6 +40,7 @@ class OrganizationCreateSerializer(serializers.Serializer):
         organization = Organization(name=attrs.get('name'), mnemonic=mnemonic)
         organization.company = attrs.get('company', None)
         organization.website = attrs.get('website', None)
+        organization.extras = attrs.get('extras', None)
         return organization
 
 
@@ -74,4 +75,5 @@ class OrganizationDetailSerializer(serializers.Serializer):
         instance.name = attrs.get('name', instance.name)
         instance.company = attrs.get('company', instance.company)
         instance.website = attrs.get('website', instance.website)
+        instance.extras = attrs.get('extras', instance.extras)
         return instance

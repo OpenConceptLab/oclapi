@@ -1,13 +1,13 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, ListAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ListWithHeadersMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin
 from sources.models import Source, SourceVersion
-from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceUpdateSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
+from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 
 
 class SourceBaseView():
@@ -24,14 +24,13 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
                                       RetrieveAPIView,
                                       DestroyAPIView,
                                       ConceptDictionaryUpdateMixin):
+    serializer_class = SourceDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewConceptDictionary,)
-            self.serializer_class = SourceDetailSerializer
         else:
             self.permission_classes = (CanEditConceptDictionary,)
-            self.serializer_class = SourceUpdateSerializer
         super(SourceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
 
