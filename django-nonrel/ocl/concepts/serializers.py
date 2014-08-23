@@ -41,6 +41,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     owner = serializers.CharField(source='owner_name')
     owner_type = serializers.CharField()
     owner_url = serializers.URLField()
+    extras = serializers.WritableField()
 
     class Meta:
         model = Concept
@@ -66,6 +67,7 @@ class ConceptCreateSerializer(serializers.Serializer):
         concept.extras = attrs.get('extras', concept.extras)
         concept.names = attrs.get('names', concept.names)  # Is this desired behavior??
         concept.descriptions = attrs.get('descriptions', concept.descriptions)  # Is this desired behavior??
+        concept.extras = attrs.get('extras', concept.extras)
         return concept
 
     def save_object(self, obj, **kwargs):
@@ -112,6 +114,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     owner_url = serializers.URLField()
     mappings_url = serializers.URLField()
     version = serializers.CharField(source='mnemonic')
+    extras = serializers.WritableField()
 
     class Meta:
         model = ConceptVersion
@@ -145,6 +148,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
 class ConceptReferenceCreateSerializer(serializers.Serializer):
     url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
     id = serializers.CharField(source='mnemonic', required=False)
+    extras = serializers.WritableField(read_only=False)
 
     class Meta:
         model = ConceptReference
@@ -152,6 +156,7 @@ class ConceptReferenceCreateSerializer(serializers.Serializer):
 
     def restore_object(self, attrs, instance=None):
         concept_reference = instance if instance else ConceptReference()
+        concept_reference.extras = attrs.get('extras', concept_reference.extras)
         concept = attrs.get('concept', None)
         if concept:
             concept_reference.concept = concept
@@ -182,6 +187,7 @@ class ConceptReferenceDetailSerializer(serializers.Serializer):
     display_locale = serializers.CharField(read_only=True)
     version = serializers.CharField(read_only=True, source='concept_version')
     is_current_version = serializers.BooleanField(read_only=True)
+    extras = serializers.WritableField(required=False)
 
     class Meta:
         model = ConceptReference
