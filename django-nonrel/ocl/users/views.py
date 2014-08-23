@@ -7,7 +7,7 @@ from oclapi.filters import HaystackSearchFilter
 from oclapi.views import BaseAPIView, ListWithHeadersMixin
 from orgs.models import Organization
 from users.models import UserProfile
-from users.serializers import UserListSerializer, UserCreateSerializer, UserUpdateSerializer, UserDetailSerializer
+from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer
 
 
 class UserListView(BaseAPIView,
@@ -70,7 +70,6 @@ class UserDetailView(UserBaseView,
         return super(UserDetailView, self).get_object(queryset)
 
     def post(self, request, *args, **kwargs):
-        self.serializer_class = UserUpdateSerializer
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):

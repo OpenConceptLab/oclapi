@@ -15,35 +15,6 @@ class UserListSerializer(serializers.Serializer):
         model = UserProfile
 
 
-class UserDetailSerializer(serializers.Serializer):
-    type = serializers.CharField(source='resource_type')
-    uuid = serializers.CharField(source='id')
-    username = serializers.CharField()
-    name = serializers.CharField()
-    company = serializers.CharField()
-    location = serializers.CharField()
-    preferred_locale = serializers.CharField()
-    email = serializers.CharField()
-    orgs = serializers.IntegerField()
-    public_sources = serializers.IntegerField()
-    created_on = serializers.DateTimeField(source='created_at')
-    updated_on = serializers.DateTimeField(source='updated_at')
-    url = serializers.CharField()
-    extras = serializers.WritableField()
-
-    class Meta:
-        model = UserProfile
-
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(UserDetailSerializer, self).get_default_fields()
-        fields.update({
-            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
-            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list'),
-            'orgs_url': HyperlinkedResourceIdentityField(view_name='userprofile-orgs'),
-        })
-        return fields
-
-
 class UserCreateSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     name = serializers.CharField(required=True)
@@ -76,14 +47,33 @@ class UserCreateSerializer(serializers.Serializer):
         obj.save(**kwargs)
 
 
-class UserUpdateSerializer(serializers.Serializer):
-    username = serializers.CharField(required=False, source='mnemonic')
-    name = serializers.CharField(required=False, source='full_name')
+class UserDetailSerializer(serializers.Serializer):
+    type = serializers.CharField(source='resource_type', read_only=True)
+    uuid = serializers.CharField(source='id', read_only=True)
+    username = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
     email = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     preferred_locale = serializers.CharField(required=False)
+    orgs = serializers.IntegerField(read_only=True)
+    public_sources = serializers.IntegerField(read_only=True)
+    created_on = serializers.DateTimeField(source='created_at', read_only=True)
+    updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    url = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
+
+    class Meta:
+        model = UserProfile
+
+    def get_default_fields(self, *args, **kwargs):
+        fields = super(UserDetailSerializer, self).get_default_fields()
+        fields.update({
+            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
+            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list'),
+            'orgs_url': HyperlinkedResourceIdentityField(view_name='userprofile-orgs'),
+        })
+        return fields
 
     def restore_object(self, attrs, instance=None):
         if 'email' in attrs or 'mnemonic' in attrs:
@@ -99,6 +89,6 @@ class UserUpdateSerializer(serializers.Serializer):
         return instance
 
     def save_object(self, obj, **kwargs):
-        super(UserUpdateSerializer, self).save_object(obj, **kwargs)
+        super(UserDetailSerializer, self).save_object(obj, **kwargs)
         user = obj.user
         user.save()
