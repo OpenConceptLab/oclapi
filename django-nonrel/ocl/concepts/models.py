@@ -284,7 +284,7 @@ class ConceptVersion(ResourceVersionModel):
         return VERSION_TYPE
 
     @classmethod
-    def versioned_object_type(cls):
+    def versioned_resource_type(cls):
         return CONCEPT_TYPE
 
     @staticmethod

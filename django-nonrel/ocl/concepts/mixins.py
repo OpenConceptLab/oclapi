@@ -53,6 +53,10 @@ class DictionaryItemMixin(object):
             setattr(parent_resource_version, child_list_attribute, parent_children)
             parent_resource_version.save()
 
+            # Save the initial version again to trigger the Solr update
+            if initial_version is not None:
+                initial_version.save()
+
             persisted = True
         finally:
             if not persisted:

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptCreateSerializer, ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
+from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin, ChildResourceMixin
 from sources.models import SourceVersion
@@ -111,7 +111,7 @@ class ConceptCreateView(ConceptBaseView,
         return super(ConceptCreateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.serializer_class = ConceptCreateSerializer
+        self.serializer_class = ConceptDetailSerializer
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

@@ -70,13 +70,13 @@ class ResourceVersionSerializer(serializers.Serializer):
 
         ret = self._dict_class()
 
-        if 'versionUrl' not in fields:
+        if 'version_url' not in fields:
             url_field = HyperlinkedResourceVersionIdentityField(
                 view_name=self.opts.view_name,
             )
-            ret['versionUrl'] = url_field
+            ret['version_url'] = url_field
 
-        versioned_object_field_name = self.opts.versioned_object_field_name or 'versionedObjectUrl'
+        versioned_object_field_name = self.opts.versioned_object_field_name or 'versioned_object_url'
         if versioned_object_field_name not in fields:
             url_field = HyperlinkedVersionedResourceIdentityField(
                 view_name=self.opts.versioned_object_view_name,
