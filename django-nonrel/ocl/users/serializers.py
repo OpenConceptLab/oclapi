@@ -24,9 +24,9 @@ class UserDetailSerializer(serializers.Serializer):
     location = serializers.CharField()
     email = serializers.CharField()
     orgs = serializers.IntegerField()
-    publicSources = serializers.IntegerField(source='public_sources')
-    createdOn = serializers.DateTimeField(source='created_at')
-    updatedOn = serializers.DateTimeField(source='updated_at')
+    public_sources = serializers.IntegerField()
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
     url = serializers.CharField()
     extras = serializers.WritableField()
 
@@ -49,7 +49,7 @@ class UserCreateSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
-    preferredLocale = serializers.CharField(required=False, source='preferred_locale')
+    preferred_locale = serializers.CharField(required=False)
     extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
@@ -81,7 +81,7 @@ class UserUpdateSerializer(serializers.Serializer):
     email = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
-    preferredLocale = serializers.CharField(required=False, source='preferred_locale')
+    preferred_locale = serializers.CharField(required=False)
     extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):

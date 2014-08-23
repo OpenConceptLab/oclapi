@@ -22,10 +22,10 @@ class OrganizationDetailSerializer(serializers.Serializer):
     company = serializers.CharField()
     website = serializers.CharField()
     members = serializers.IntegerField(source='num_members')
-    publicCollections = serializers.IntegerField(source='public_collections')
-    publicSources = serializers.IntegerField(source='public_sources')
-    createdOn = serializers.DateTimeField(source='created_at')
-    updatedOn = serializers.DateTimeField(source='updated_at')
+    public_collections = serializers.IntegerField()
+    public_sources = serializers.IntegerField()
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
     url = serializers.CharField()
 
     class Meta:
