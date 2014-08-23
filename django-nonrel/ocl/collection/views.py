@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
-from collection.serializers import CollectionDetailSerializer, CollectionUpdateSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
+from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from collection.models import Collection, CollectionVersion
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 from oclapi.filters import HaystackSearchFilter
@@ -24,14 +24,13 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
                                           RetrieveAPIView,
                                           DestroyAPIView,
                                           ConceptDictionaryUpdateMixin):
+    serializer_class = CollectionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
             self.permission_classes = (CanViewConceptDictionary,)
-            self.serializer_class = CollectionDetailSerializer
         else:
             self.permission_classes = (CanEditConceptDictionary,)
-            self.serializer_class = CollectionUpdateSerializer
         super(CollectionRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
 

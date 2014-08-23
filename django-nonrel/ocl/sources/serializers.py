@@ -117,6 +117,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     owner_url = serializers.CharField(source='parent_url')
     created_on = serializers.DateTimeField(source='created_at')
     updated_on = serializers.DateTimeField(source='updated_at')
+    extras = serializers.WritableField()
 
     class Meta:
         model = SourceVersion
@@ -165,6 +166,7 @@ class SourceVersionUpdateSerializer(SourceVersionCreateOrUpdateSerializer):
     description = serializers.CharField(required=False)
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
+    extras = serializers.WritableField(required=False)
 
 
 class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
@@ -173,6 +175,7 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
     description = serializers.CharField(required=False)
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
+    extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
         version = SourceVersion()

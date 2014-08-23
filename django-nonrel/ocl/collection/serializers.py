@@ -20,31 +20,6 @@ class CollectionListSerializer(serializers.Serializer):
         model = Collection
 
 
-class CollectionDetailSerializer(serializers.Serializer):
-    type = serializers.CharField(required=True, source='resource_type')
-    uuid = serializers.CharField(required=True, source='id')
-    id = serializers.CharField(required=True, source='mnemonic')
-    short_code = serializers.CharField(required=True, source='mnemonic')
-    name = serializers.CharField(required=True)
-    url = serializers.CharField()
-    full_name = serializers.CharField()
-    collection_type = serializers.CharField()
-    public_access = serializers.CharField()
-    default_locale = serializers.CharField()
-    supported_locales = serializers.CharField()
-    website = serializers.CharField()
-    description = serializers.CharField()
-    owner = serializers.CharField(source='parent_resource')
-    owner_type = serializers.CharField(source='parent_resource_type')
-    owner_url = serializers.CharField(source='parent_url')
-    versions = serializers.IntegerField(source='num_versions')
-    created_on = serializers.DateTimeField(source='created_at')
-    updated_on = serializers.DateTimeField(source='updated_at')
-
-    class Meta:
-        model = Collection
-
-
 class CollectionCreateOrUpdateSerializer(serializers.Serializer):
     class Meta:
         model = Collection
@@ -61,11 +36,15 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.default_locale=attrs.get('default_locale', collection.default_locale or DEFAULT_LOCALE)
         collection.website = attrs.get('website', collection.website)
         collection.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else collection.supported_locales
+        collection.extras = attrs.get('extras', collection.extras)
         return collection
 
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
+    type = serializers.CharField(source='resource_type', read_only=True)
+    uuid = serializers.CharField(source='id', read_only=True)
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    short_code = serializers.CharField(source='mnemonic', read_only=True)
     name = serializers.CharField(required=True)
     full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
@@ -74,15 +53,26 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     default_locale = serializers.CharField(required=False)
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
+    url = serializers.CharField(read_only=True)
+    owner = serializers.CharField(source='parent_resource', read_only=True)
+    owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
+    owner_url = serializers.CharField(source='parent_url', read_only=True)
+    versions = serializers.IntegerField(source='num_versions', read_only=True)
+    created_on = serializers.DateTimeField(source='created_at', read_only=True)
+    updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    extras = serializers.WritableField(required=False)
 
     def save_object(self, obj, **kwargs):
         errors = Collection.persist_new(obj, **kwargs)
         self._errors.update(errors)
 
 
-class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
-    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
-    name = serializers.CharField(required=True)
+class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
+    type = serializers.CharField(source='resource_type', read_only=True)
+    uuid = serializers.CharField(source='id', read_only=True)
+    id = serializers.CharField(required=False, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    short_code = serializers.CharField(source='mnemonic', read_only=True)
+    name = serializers.CharField(required=False)
     full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     collection_type = serializers.CharField(required=False)
@@ -90,6 +80,14 @@ class CollectionUpdateSerializer(CollectionCreateOrUpdateSerializer):
     default_locale = serializers.CharField(required=False)
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
+    url = serializers.CharField(read_only=True)
+    owner = serializers.CharField(source='parent_resource', read_only=True)
+    owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
+    owner_url = serializers.CharField(source='parent_url', read_only=True)
+    versions = serializers.IntegerField(source='num_versions', read_only=True)
+    created_on = serializers.DateTimeField(source='created_at', read_only=True)
+    updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    extras = serializers.WritableField(required=False)
 
     def save_object(self, obj, **kwargs):
         errors = Collection.persist_changes(obj, **kwargs)
@@ -119,6 +117,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     owner_url = serializers.CharField(source='parent_url')
     created_on = serializers.DateTimeField(source='created_at')
     updated_on = serializers.DateTimeField(source='updated_at')
+    extras = serializers.WritableField()
 
     class Meta:
         model = CollectionVersion
@@ -153,6 +152,7 @@ class CollectionVersionCreateOrUpdateSerializer(serializers.Serializer):
         instance._was_released = was_released
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
+        instance.extras = attrs.get('extras', instance.extras)
         return instance
 
     def save_object(self, obj, **kwargs):
@@ -166,6 +166,7 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     description = serializers.CharField(required=False)
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
+    extras = serializers.WritableField(required=False)
 
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):
@@ -174,6 +175,7 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
     description = serializers.CharField(required=False)
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
+    extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
         version = CollectionVersion()
