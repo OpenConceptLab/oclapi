@@ -16,12 +16,19 @@ class UserListSerializer(serializers.Serializer):
 
 
 class UserCreateSerializer(serializers.Serializer):
+    type = serializers.CharField(source='resource_type', read_only=True)
+    uuid = serializers.CharField(source='id', read_only=True)
     username = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     name = serializers.CharField(required=True)
     email = serializers.CharField(required=True)
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     preferred_locale = serializers.CharField(required=False)
+    orgs = serializers.IntegerField(read_only=True)
+    public_sources = serializers.IntegerField(read_only=True)
+    created_on = serializers.DateTimeField(source='created_at', read_only=True)
+    updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    url = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):

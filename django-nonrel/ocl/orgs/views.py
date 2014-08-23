@@ -7,7 +7,7 @@ from oclapi.permissions import HasOwnership
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView, ListWithHeadersMixin
 from orgs.models import Organization
-from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer, OrganizationUpdateSerializer
+from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer
 from users.models import UserProfile
 
 
@@ -85,7 +85,6 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
         super(OrganizationDetailView, self).initial(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.serializer_class = OrganizationUpdateSerializer
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
