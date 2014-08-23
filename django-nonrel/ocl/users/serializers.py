@@ -22,6 +22,7 @@ class UserDetailSerializer(serializers.Serializer):
     name = serializers.CharField()
     company = serializers.CharField()
     location = serializers.CharField()
+    preferred_locale = serializers.CharField()
     email = serializers.CharField()
     orgs = serializers.IntegerField()
     public_sources = serializers.IntegerField()
