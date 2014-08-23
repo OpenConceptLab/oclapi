@@ -7,20 +7,21 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
+from oclapi.utils import reverse_resource
 
 SOURCE_TYPE = 'Source'
 
-DICTIONARY_SRC_TYPE = 'dictionary'
-REFERENCE_SRC_TYPE = 'reference'
-EXTERNAL_DICT_SRC_TYPE = 'externalDictionary'
-DEFAULT_SRC_TYPE = DICTIONARY_SRC_TYPE
-SRC_TYPE_CHOICES = ((DICTIONARY_SRC_TYPE, 'Dictionary'),
-                    (REFERENCE_SRC_TYPE, 'Reference'),
-                    (EXTERNAL_DICT_SRC_TYPE, 'External Dictionary'))
-
 
 class Source(ConceptContainerModel):
-    source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)
+    source_type = models.TextField(blank=True)
+
+    @property
+    def concepts_url(self):
+        return reverse_resource(self, 'concept-create')
+
+    @property
+    def versions_url(self):
+        return reverse_resource(self, 'sourceversion-list')
 
     @classmethod
     def resource_type(cls):
@@ -39,7 +40,7 @@ SOURCE_VERSION_TYPE = 'Source Version'
 
 
 class SourceVersion(ConceptContainerVersionModel):
-    source_type = models.TextField(choices=SRC_TYPE_CHOICES, default=DEFAULT_SRC_TYPE, blank=True)
+    source_type = models.TextField(blank=True)
     concepts = ListField()
 
     def update_concept_version(self, concept_version):

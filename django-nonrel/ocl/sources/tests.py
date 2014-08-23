@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
 from orgs.models import Organization
-from sources.models import Source, DICTIONARY_SRC_TYPE, SourceVersion, REFERENCE_SRC_TYPE
+from sources.models import Source, SourceVersion
 from users.models import UserProfile
 
 
@@ -55,7 +55,7 @@ class SourceTest(SourceBaseTest):
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type=DICTIONARY_SRC_TYPE, public_access=EDIT_ACCESS_TYPE)
+                        source_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -68,23 +68,16 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
         self.assertEquals(0, source.num_versions)
 
-    def test_create_source_negative__invalid_source_type(self):
-        with self.assertRaises(ValidationError):
-            source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                            source_type='INVALID', public_access=EDIT_ACCESS_TYPE)
-            source.full_clean()
-            source.save()
-
     def test_create_source_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
             source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                            source_type=DICTIONARY_SRC_TYPE, public_access='INVALID')
+                            source_type='Dictionary', public_access='INVALID')
             source.full_clean()
             source.save()
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type=DICTIONARY_SRC_TYPE, public_access=EDIT_ACCESS_TYPE)
+                        source_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -164,7 +157,7 @@ class SourceClassMethodTest(SourceBaseTest):
             name='source1',
             mnemonic='source1',
             full_name='Source One',
-            source_type=DICTIONARY_SRC_TYPE,
+            source_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -234,7 +227,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.name = "%s_prime" % name
         self.new_source.mnemonic = "%s-prime" % mnemonic
         self.new_source.full_name = "%s_prime" % full_name
-        self.new_source.source_type = REFERENCE_SRC_TYPE
+        self.new_source.source_type = 'Reference'
         self.new_source.public_access = VIEW_ACCESS_TYPE
         self.new_source.default_locale = "%s_prime" % default_locale
         self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
@@ -261,56 +254,6 @@ class SourceClassMethodTest(SourceBaseTest):
         self.assertNotEquals(website, self.new_source.website)
         self.assertNotEquals(description, self.new_source.description)
 
-    def test_persist_changes_negative__illegal_value(self):
-        kwargs = {
-            'owner': self.user1,
-            'parent_resource': self.userprofile1
-        }
-        errors = Source.persist_new(self.new_source, **kwargs)
-        self.assertEquals(0, len(errors))
-
-        id = self.new_source.id
-        name = self.new_source.name
-        mnemonic = self.new_source.mnemonic
-        full_name = self.new_source.full_name
-        source_type = self.new_source.source_type
-        public_access = self.new_source.public_access
-        default_locale = self.new_source.default_locale
-        supported_locales = self.new_source.supported_locales
-        website = self.new_source.website
-        description = self.new_source.description
-
-        self.new_source.name = "%s_prime" % name
-        self.new_source.mnemonic = "%s-prime" % mnemonic
-        self.new_source.full_name = "%s_prime" % full_name
-        self.new_source.source_type = "ILLEGAL VALUE"
-        self.new_source.public_access = VIEW_ACCESS_TYPE
-        self.new_source.default_locale = "%s_prime" % default_locale
-        self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
-        self.new_source.website = "%s_prime" % website
-        self.new_source.description = "%s_prime" % description
-
-        del(kwargs['owner'])
-        errors = Source.persist_changes(self.new_source, **kwargs)
-        self.assertEquals(1, len(errors))
-        self.assertTrue(errors.has_key('source_type'))
-        self.assertTrue(Source.objects.filter(id=id).exists())
-        self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
-        source_version = SourceVersion.objects.get(versioned_object_id=id)
-        self.assertEquals(1, self.new_source.num_versions)
-        self.assertEquals(source_version, SourceVersion.get_latest_version_of(self.new_source))
-
-        self.new_source = Source.objects.get(id=id)
-        self.assertEquals(name, self.new_source.name)
-        self.assertEquals(mnemonic, self.new_source.mnemonic)
-        self.assertEquals(full_name, self.new_source.full_name)
-        self.assertEquals(source_type, self.new_source.source_type)
-        self.assertEquals(public_access, self.new_source.public_access)
-        self.assertEquals(default_locale, self.new_source.default_locale)
-        self.assertEquals(supported_locales, self.new_source.supported_locales)
-        self.assertEquals(website, self.new_source.website)
-        self.assertEquals(description, self.new_source.description)
-
     def test_persist_changes_negative__repeated_mnemonic(self):
         kwargs = {
             'owner': self.user1,
@@ -323,7 +266,7 @@ class SourceClassMethodTest(SourceBaseTest):
             name='source2',
             mnemonic='source2',
             full_name='Source Two',
-            source_type=DICTIONARY_SRC_TYPE,
+            source_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -349,7 +292,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.mnemonic = 'source1'
         self.new_source.name = "%s_prime" % name
         self.new_source.full_name = "%s_prime" % full_name
-        self.new_source.source_type = REFERENCE_SRC_TYPE
+        self.new_source.source_type = 'Reference'
         self.new_source.public_access = VIEW_ACCESS_TYPE
         self.new_source.default_locale = "%s_prime" % default_locale
         self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
@@ -666,7 +609,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             owner=self.user1,
             parent=self.org1,
             full_name='Source One',
-            source_type=DICTIONARY_SRC_TYPE,
+            source_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -679,7 +622,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             owner=self.user1,
             parent=self.userprofile1,
             full_name='Source Two',
-            source_type=DICTIONARY_SRC_TYPE,
+            source_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='fr',
             supported_locales=['fr'],

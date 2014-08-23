@@ -13,7 +13,7 @@ from collection.models import CollectionVersion, Collection
 from concepts.models import Concept, LocalizedText, ConceptVersion, ConceptReference
 from orgs.models import Organization
 from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
-from sources.models import Source, DICTIONARY_SRC_TYPE, REFERENCE_SRC_TYPE, SourceVersion
+from sources.models import Source, SourceVersion
 from users.models import UserProfile
 
 
@@ -43,7 +43,7 @@ class ConceptBaseTest(TestCase):
             name='source1',
             mnemonic='source1',
             full_name='Source One',
-            source_type=DICTIONARY_SRC_TYPE,
+            source_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -61,7 +61,7 @@ class ConceptBaseTest(TestCase):
             name='source2',
             mnemonic='source2',
             full_name='Source Two',
-            source_type=REFERENCE_SRC_TYPE,
+            source_type='Reference',
             public_access=VIEW_ACCESS_TYPE,
             default_locale='fr',
             supported_locales=['fr'],
@@ -808,7 +808,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             name='collection1',
             mnemonic='collection1',
             full_name='Collection One',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -826,7 +826,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             name='collection2',
             mnemonic='collection2',
             full_name='Collection Two',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],

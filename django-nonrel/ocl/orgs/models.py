@@ -13,6 +13,7 @@ class Organization(BaseResourceModel):
     name = models.TextField()
     company = models.TextField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
     members = ListField()
 
     def __unicode__(self):

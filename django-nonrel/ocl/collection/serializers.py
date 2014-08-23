@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from concepts.models import ConceptReference
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -21,6 +22,10 @@ class CollectionListSerializer(serializers.Serializer):
 
 
 class CollectionCreateOrUpdateSerializer(serializers.Serializer):
+    class ActiveConceptsField(serializers.IntegerField):
+        def field_to_native(self, obj, field_name):
+            return ConceptReference.objects.filter(is_active=True, parent_id=obj.id).count()
+
     class Meta:
         model = Collection
         lookup_field = 'mnemonic'
@@ -54,6 +59,9 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
     url = serializers.CharField(read_only=True)
+    versions_url = serializers.CharField(read_only=True)
+    concepts_url = serializers.CharField(read_only=True)
+    active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -81,6 +89,9 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
     url = serializers.CharField(read_only=True)
+    versions_url = serializers.CharField(read_only=True)
+    concepts_url = serializers.CharField(read_only=True)
+    active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)

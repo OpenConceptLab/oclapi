@@ -11,7 +11,6 @@ from djangotoolbox.fields import ListField, EmbeddedModelField
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from oclapi.utils import reverse_resource, reverse_resource_version
-from orgs.models import Organization
 from sources.models import SourceVersion
 
 
@@ -120,6 +119,10 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
                 concept.save()
         return retired
 
+    @classmethod
+    def count_for_source(cls, src, is_active=True, retired=False):
+        return cls.objects.filter(parent_id=src.id, is_active=is_active, retired=retired)
+
     @staticmethod
     def get_url_kwarg():
         return 'concept'
@@ -179,11 +182,12 @@ class ConceptVersion(ResourceVersionModel):
 
     @property
     def owner_url(self):
-        if isinstance(self.versioned_object.owner, Organization):
-            return reverse_resource(self.versioned_object.owner, 'organization-detail')
-        else:
+        owner = self.versioned_object.owner
+        if hasattr(owner, 'username'):
             kwargs = {'user': self.versioned_object.owner.username}
             return reverse('userprofile-detail', kwargs=kwargs)
+        else:
+            return reverse_resource(self.versioned_object.owner, 'organization-detail')
 
     @property
     def owner_name(self):

@@ -16,12 +16,12 @@ class Collection(ConceptContainerModel):
     collection_type = models.TextField(blank=True)
 
     @property
-    def versions_url(self):
-        return reverse_resource(self, 'collectionversion-list')
+    def concepts_url(self):
+        return reverse_resource(self, 'collection-concept-list')
 
     @property
-    def concepts_url(self):
-        return reverse_resource(self, 'concept-create')
+    def versions_url(self):
+        return reverse_resource(self, 'collectionversion-list')
 
     @property
     def resource_type(self):

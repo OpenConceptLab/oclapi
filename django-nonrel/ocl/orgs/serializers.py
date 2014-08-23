@@ -21,6 +21,7 @@ class OrganizationCreateSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
     members = serializers.IntegerField(source='num_members', read_only=True)
     public_collections = serializers.IntegerField(read_only=True)
     public_sources = serializers.IntegerField(read_only=True)
@@ -40,6 +41,7 @@ class OrganizationCreateSerializer(serializers.Serializer):
         organization = Organization(name=attrs.get('name'), mnemonic=mnemonic)
         organization.company = attrs.get('company', None)
         organization.website = attrs.get('website', None)
+        organization.location = attrs.get('location', None)
         organization.extras = attrs.get('extras', None)
         return organization
 
@@ -51,6 +53,7 @@ class OrganizationDetailSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
     members = serializers.IntegerField(source='num_members', read_only=True)
     public_collections = serializers.IntegerField(read_only=True)
     public_sources = serializers.IntegerField(read_only=True)
@@ -75,5 +78,6 @@ class OrganizationDetailSerializer(serializers.Serializer):
         instance.name = attrs.get('name', instance.name)
         instance.company = attrs.get('company', instance.company)
         instance.website = attrs.get('website', instance.website)
+        instance.location = attrs.get('location', instance.website)
         instance.extras = attrs.get('extras', instance.extras)
         return instance

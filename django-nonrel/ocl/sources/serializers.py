@@ -1,10 +1,11 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from concepts.models import Concept
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
-from sources.models import Source, SourceVersion, SRC_TYPE_CHOICES, DEFAULT_SRC_TYPE
+from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 
 
@@ -21,6 +22,10 @@ class SourceListSerializer(serializers.Serializer):
 
 
 class SourceCreateOrUpdateSerializer(serializers.Serializer):
+    class ActiveConceptsField(serializers.IntegerField):
+        def field_to_native(self, obj, field_name):
+            return Concept.objects.filter(is_active=True, retired=False, parent_id=obj.id).count()
+
     class Meta:
         model = Source
         lookup_field = 'mnemonic'
@@ -31,7 +36,7 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.name = attrs.get('name', source.name)
         source.full_name = attrs.get('full_name', source.full_name)
         source.description = attrs.get('description', source.description)
-        source.source_type = attrs.get('source_type', source.source_type or DEFAULT_SRC_TYPE)
+        source.source_type = attrs.get('source_type', source.source_type)
         source.public_access = attrs.get('public_access', source.public_access or DEFAULT_ACCESS_TYPE)
         source.default_locale=attrs.get('default_locale', source.default_locale or DEFAULT_LOCALE)
         source.website = attrs.get('website', source.website)
@@ -48,12 +53,15 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     name = serializers.CharField(required=True)
     full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
+    source_type = serializers.ChoiceField(required=False)
     public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
     default_locale = serializers.CharField(required=False)
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
     url = serializers.CharField(read_only=True)
+    versions_url = serializers.CharField(read_only=True)
+    concepts_url = serializers.CharField(read_only=True)
+    active_concepts = SourceCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -75,12 +83,15 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     name = serializers.CharField(required=False)
     full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    source_type = serializers.ChoiceField(required=False, choices=SRC_TYPE_CHOICES)
+    source_type = serializers.ChoiceField(required=False)
     public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
     default_locale = serializers.CharField(required=False)
     supported_locales = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
     url = serializers.CharField(read_only=True)
+    versions_url = serializers.CharField(read_only=True)
+    concepts_url = serializers.CharField(read_only=True)
+    active_concepts = SourceCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)

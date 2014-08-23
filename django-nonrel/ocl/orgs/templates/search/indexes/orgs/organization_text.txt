@@ -1,4 +1,2 @@
-{{ object.name }}
-{% if object.company %}
-  {{ object.company }}
-{% endif %}
+{{ object.name }}{% if object.company %} {{ object.company }}{% endif %}{% if object.location %}  {{ object.location }}{% endif %}
+

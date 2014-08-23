@@ -12,9 +12,7 @@ from django.test import TestCase
 from collection.models import Collection, CollectionVersion
 from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
 from orgs.models import Organization
-from sources.models import DICTIONARY_SRC_TYPE, REFERENCE_SRC_TYPE
 from users.models import UserProfile
-
 
 class CollectionBaseTest(TestCase):
     def setUp(self):
@@ -56,7 +54,7 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type=DICTIONARY_SRC_TYPE, public_access=EDIT_ACCESS_TYPE)
+                        collection_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -72,13 +70,13 @@ class CollectionTest(CollectionBaseTest):
     def test_create_collection_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
             collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                            collection_type=DICTIONARY_SRC_TYPE, public_access='INVALID')
+                            collection_type='Dictionary', public_access='INVALID')
             collection.full_clean()
             collection.save()
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type=DICTIONARY_SRC_TYPE, public_access=EDIT_ACCESS_TYPE)
+                        collection_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -158,7 +156,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             name='collection1',
             mnemonic='collection1',
             full_name='Collection One',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -228,7 +226,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.name = "%s_prime" % name
         self.new_collection.mnemonic = "%s-prime" % mnemonic
         self.new_collection.full_name = "%s_prime" % full_name
-        self.new_collection.collection_type = REFERENCE_SRC_TYPE
+        self.new_collection.collection_type = 'Reference'
         self.new_collection.public_access = VIEW_ACCESS_TYPE
         self.new_collection.default_locale = "%s_prime" % default_locale
         self.new_collection.supported_locales = ["%s_prime" % supported_locales[0]]
@@ -315,7 +313,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             name='collection2',
             mnemonic='collection2',
             full_name='Collection Two',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -341,7 +339,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.mnemonic = 'collection1'
         self.new_collection.name = "%s_prime" % name
         self.new_collection.full_name = "%s_prime" % full_name
-        self.new_collection.collection_type = REFERENCE_SRC_TYPE
+        self.new_collection.collection_type = 'Reference'
         self.new_collection.public_access = VIEW_ACCESS_TYPE
         self.new_collection.default_locale = "%s_prime" % default_locale
         self.new_collection.supported_locales = ["%s_prime" % supported_locales[0]]
@@ -658,7 +656,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             owner=self.user1,
             parent=self.org1,
             full_name='Collection One',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='en',
             supported_locales=['en'],
@@ -671,7 +669,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             owner=self.user1,
             parent=self.userprofile1,
             full_name='Collection Two',
-            collection_type=DICTIONARY_SRC_TYPE,
+            collection_type='Dictionary',
             public_access=EDIT_ACCESS_TYPE,
             default_locale='fr',
             supported_locales=['fr'],
