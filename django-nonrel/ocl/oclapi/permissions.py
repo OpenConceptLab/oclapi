@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from users.models import UserProfile
 
@@ -63,7 +63,7 @@ class CanViewConceptDictionary(HasPrivateAccess):
     """
 
     def has_object_permission(self, request, view, obj):
-        if EDIT_ACCESS_TYPE == obj.public_access or VIEW_ACCESS_TYPE == obj.public_access:
+        if ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access:
             return True
         return super(CanViewConceptDictionary, self).has_object_permission(request, view, obj)
 
@@ -74,6 +74,6 @@ class CanEditConceptDictionary(HasPrivateAccess):
     """
 
     def has_object_permission(self, request, view, obj):
-        if EDIT_ACCESS_TYPE == obj.public_access:
+        if ACCESS_TYPE_EDIT == obj.public_access:
             return True
         return super(CanEditConceptDictionary, self).has_object_permission(request, view, obj)

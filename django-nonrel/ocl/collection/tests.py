@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 
 from django.test import TestCase
 from collection.models import Collection, CollectionVersion
-from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from users.models import UserProfile
 
@@ -54,7 +54,7 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
+                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -76,7 +76,7 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
+                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -157,7 +157,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             mnemonic='collection1',
             full_name='Collection One',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.collection1.com',
@@ -227,7 +227,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.mnemonic = "%s-prime" % mnemonic
         self.new_collection.full_name = "%s_prime" % full_name
         self.new_collection.collection_type = 'Reference'
-        self.new_collection.public_access = VIEW_ACCESS_TYPE
+        self.new_collection.public_access = ACCESS_TYPE_VIEW
         self.new_collection.default_locale = "%s_prime" % default_locale
         self.new_collection.supported_locales = ["%s_prime" % supported_locales[0]]
         self.new_collection.website = "%s_prime" % website
@@ -314,7 +314,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             mnemonic='collection2',
             full_name='Collection Two',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.collection2.com',
@@ -340,7 +340,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.name = "%s_prime" % name
         self.new_collection.full_name = "%s_prime" % full_name
         self.new_collection.collection_type = 'Reference'
-        self.new_collection.public_access = VIEW_ACCESS_TYPE
+        self.new_collection.public_access = ACCESS_TYPE_VIEW
         self.new_collection.default_locale = "%s_prime" % default_locale
         self.new_collection.supported_locales = ["%s_prime" % supported_locales[0]]
         self.new_collection.website = "%s_prime" % website
@@ -657,7 +657,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             parent=self.org1,
             full_name='Collection One',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.collection1.com',
@@ -670,7 +670,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             parent=self.userprofile1,
             full_name='Collection Two',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='fr',
             supported_locales=['fr'],
             website='www.collection2.com',

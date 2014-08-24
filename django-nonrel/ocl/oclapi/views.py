@@ -7,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, UpdateModelMixin
 from rest_framework.response import Response
-from oclapi.models import ResourceVersionModel, EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.permissions import HasPrivateAccess
 
 
@@ -142,7 +142,7 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
 
 
 class ConceptDictionaryMixin(SubResourceMixin):
-    base_or_clause = [Q(public_access=EDIT_ACCESS_TYPE), Q(public_access=VIEW_ACCESS_TYPE)]
+    base_or_clause = [Q(public_access=ACCESS_TYPE_EDIT), Q(public_access=ACCESS_TYPE_VIEW)]
     permission_classes = (HasPrivateAccess,)
 
     def get_queryset(self):

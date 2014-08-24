@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from oclapi.fields import HyperlinkedResourceIdentityField
-from oclapi.models import NAMESPACE_REGEX
+from oclapi.models import NAMESPACE_REGEX, DEFAULT_ACCESS_TYPE, ACCESS_TYPE_CHOICES
 from orgs.models import Organization
 
 
@@ -18,6 +18,7 @@ class OrganizationCreateSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type', read_only=True)
     uuid = serializers.CharField(source='id', read_only=True)
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE)
     name = serializers.CharField(required=True)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
@@ -39,6 +40,7 @@ class OrganizationCreateSerializer(serializers.Serializer):
             self._errors['mnemonic'] = 'Organization with mnemonic %s already exists.' % mnemonic
             return None
         organization = Organization(name=attrs.get('name'), mnemonic=mnemonic)
+        organization.public_access = attrs.get('public_access', DEFAULT_ACCESS_TYPE)
         organization.company = attrs.get('company', None)
         organization.website = attrs.get('website', None)
         organization.location = attrs.get('location', None)
@@ -50,6 +52,7 @@ class OrganizationDetailSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type', read_only=True)
     uuid = serializers.CharField(source='id', read_only=True)
     id = serializers.CharField(source='mnemonic', read_only=True)
+    public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE)
     name = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     website = serializers.CharField(required=False)
@@ -75,6 +78,7 @@ class OrganizationDetailSerializer(serializers.Serializer):
         return fields
 
     def restore_object(self, attrs, instance=None):
+        instance.public_access = attrs.get('public_access', instance.public_access)
         instance.name = attrs.get('name', instance.name)
         instance.company = attrs.get('company', instance.company)
         instance.website = attrs.get('website', instance.website)

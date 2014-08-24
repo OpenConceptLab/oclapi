@@ -1,8 +1,10 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
+from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.permissions import HasOwnership
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView, ListWithHeadersMixin
@@ -31,17 +33,19 @@ class OrganizationListView(BaseAPIView,
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = OrganizationDetailSerializer if self.is_verbose(request) else OrganizationListSerializer
-        restrict_to = None
+        if request.user.is_staff:
+            return self.list(request, *args, **kwargs)
         if self.user_is_self:
-            restrict_to = request.user.get_profile().organizations
+            self.queryset = self.queryset.filter(id__in=request.user.get_profile().organizations)
+        elif self.related_object_type and self.related_object_kwarg:
+            org_ids = []
+            related_object_key = kwargs.pop(self.related_object_kwarg)
+            if UserProfile == self.related_object_type:
+                userprofile = UserProfile.objects.get(mnemonic=related_object_key)
+                org_ids = userprofile.organizations
+            self.queryset = self.queryset.filter(id__in=org_ids)
         else:
-            if self.related_object_type and self.related_object_kwarg:
-                related_object_key = kwargs.pop(self.related_object_kwarg)
-                if UserProfile == self.related_object_type:
-                    userprofile = UserProfile.objects.get(mnemonic=related_object_key)
-                    restrict_to = userprofile.organizations
-        if restrict_to is not None:
-            self.queryset = self.queryset.filter(id__in=restrict_to)
+            self.queryset = self.queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

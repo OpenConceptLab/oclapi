@@ -12,7 +12,7 @@ from django.test import TestCase
 from collection.models import CollectionVersion, Collection
 from concepts.models import Concept, LocalizedText, ConceptVersion, ConceptReference
 from orgs.models import Organization
-from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
 
@@ -44,7 +44,7 @@ class ConceptBaseTest(TestCase):
             mnemonic='source1',
             full_name='Source One',
             source_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
@@ -62,7 +62,7 @@ class ConceptBaseTest(TestCase):
             mnemonic='source2',
             full_name='Source Two',
             source_type='Reference',
-            public_access=VIEW_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_VIEW,
             default_locale='fr',
             supported_locales=['fr'],
             website='www.source2.com',
@@ -809,7 +809,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             mnemonic='collection1',
             full_name='Collection One',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.collection1.com',
@@ -827,7 +827,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             mnemonic='collection2',
             full_name='Collection Two',
             collection_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.collection2.com',

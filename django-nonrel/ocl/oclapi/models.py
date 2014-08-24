@@ -14,11 +14,19 @@ from settings import DEFAULT_LOCALE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
+ACCESS_TYPE_VIEW = 'View'
+ACCESS_TYPE_EDIT = 'Edit'
+ACCESS_TYPE_NONE = 'None'
+DEFAULT_ACCESS_TYPE = ACCESS_TYPE_VIEW
+ACCESS_TYPE_CHOICES = ((ACCESS_TYPE_VIEW, 'View'),
+                       (ACCESS_TYPE_EDIT, 'Edit'),
+                       (ACCESS_TYPE_NONE, 'None'))
 
 class BaseModel(models.Model):
     """
     Base model from which all resources inherit.  Contains timestamps and is_active field for logical deletion.
     """
+    public_access = models.CharField(max_length=16, choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -154,19 +162,9 @@ class ResourceVersionModel(BaseModel):
         return versions[0] if versions else None
 
 
-VIEW_ACCESS_TYPE = 'View'
-EDIT_ACCESS_TYPE = 'Edit'
-NONE_ACCESS_TYPE = 'None'
-DEFAULT_ACCESS_TYPE = VIEW_ACCESS_TYPE
-ACCESS_TYPE_CHOICES = ((VIEW_ACCESS_TYPE, 'View'),
-                       (EDIT_ACCESS_TYPE, 'Edit'),
-                       (NONE_ACCESS_TYPE, 'None'))
-
-
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
-    public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
     default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
@@ -242,7 +240,6 @@ class ConceptContainerModel(SubResourceBaseModel):
 class ConceptContainerVersionModel(ResourceVersionModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
-    public_access = models.TextField(choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
     default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)

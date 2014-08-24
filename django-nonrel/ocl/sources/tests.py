@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from django.test import TestCase
-from oclapi.models import EDIT_ACCESS_TYPE, VIEW_ACCESS_TYPE
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
@@ -55,7 +55,7 @@ class SourceTest(SourceBaseTest):
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
+                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -77,7 +77,7 @@ class SourceTest(SourceBaseTest):
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type='Dictionary', public_access=EDIT_ACCESS_TYPE)
+                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -158,7 +158,7 @@ class SourceClassMethodTest(SourceBaseTest):
             mnemonic='source1',
             full_name='Source One',
             source_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
@@ -228,7 +228,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.mnemonic = "%s-prime" % mnemonic
         self.new_source.full_name = "%s_prime" % full_name
         self.new_source.source_type = 'Reference'
-        self.new_source.public_access = VIEW_ACCESS_TYPE
+        self.new_source.public_access = ACCESS_TYPE_VIEW
         self.new_source.default_locale = "%s_prime" % default_locale
         self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
         self.new_source.website = "%s_prime" % website
@@ -267,7 +267,7 @@ class SourceClassMethodTest(SourceBaseTest):
             mnemonic='source2',
             full_name='Source Two',
             source_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.source2.com',
@@ -293,7 +293,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.name = "%s_prime" % name
         self.new_source.full_name = "%s_prime" % full_name
         self.new_source.source_type = 'Reference'
-        self.new_source.public_access = VIEW_ACCESS_TYPE
+        self.new_source.public_access = ACCESS_TYPE_VIEW
         self.new_source.default_locale = "%s_prime" % default_locale
         self.new_source.supported_locales = ["%s_prime" % supported_locales[0]]
         self.new_source.website = "%s_prime" % website
@@ -610,7 +610,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             parent=self.org1,
             full_name='Source One',
             source_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
@@ -623,7 +623,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             parent=self.userprofile1,
             full_name='Source Two',
             source_type='Dictionary',
-            public_access=EDIT_ACCESS_TYPE,
+            public_access=ACCESS_TYPE_EDIT,
             default_locale='fr',
             supported_locales=['fr'],
             website='www.source2.com',
