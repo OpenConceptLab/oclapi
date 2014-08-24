@@ -2,10 +2,11 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
+from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ListWithHeadersMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 

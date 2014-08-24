@@ -9,7 +9,8 @@ from mappings.models import Mapping
 from mappings.permissions import CanEditParentSource, CanViewParentSource
 from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer
 from oclapi.filters import HaystackSearchFilter
-from oclapi.views import ListWithHeadersMixin, ChildResourceMixin
+from oclapi.mixins import ListWithHeadersMixin
+from oclapi.views import ChildResourceMixin
 
 
 class MappingBaseView(ChildResourceMixin):

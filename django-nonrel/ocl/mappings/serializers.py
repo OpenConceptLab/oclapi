@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from concepts.views import ConceptBaseView
+from concepts.fields import ConceptReferenceField
+from concepts.models import Concept
 from mappings.models import Mapping
 from oclapi.fields import HyperlinkedRelatedField
 
@@ -14,7 +15,7 @@ class MappingBaseSerializer(serializers.Serializer):
     from_source = HyperlinkedRelatedField(source='from_source', read_only=True, view_name='source-detail')
     from_source_name = serializers.CharField(read_only=True)
     from_source_owner = serializers.CharField(read_only=True)
-    to_concept = HyperlinkedRelatedField(view_name='concept-detail', queryset=ConceptBaseView.queryset, lookup_kwarg='concept', lookup_field='concept', required=False)
+    to_concept = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False)
     to_source_name = serializers.CharField(read_only=True)
     to_source_owner = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)

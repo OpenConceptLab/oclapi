@@ -1,7 +1,6 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from collection.fields import ConceptReferenceField
-from concepts.fields import LocalizedTextListField
+from concepts.fields import LocalizedTextListField, ConceptReferenceField
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from oclapi.fields import HyperlinkedRelatedField
 from oclapi.models import NAMESPACE_REGEX

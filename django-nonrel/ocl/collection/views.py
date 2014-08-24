@@ -4,10 +4,11 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from collection.models import Collection, CollectionVersion
+from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ListWithHeadersMixin
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin
 
 
 class CollectionBaseView():

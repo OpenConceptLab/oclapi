@@ -4,7 +4,8 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
-from oclapi.views import BaseAPIView, ListWithHeadersMixin
+from oclapi.mixins import ListWithHeadersMixin
+from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from users.models import UserProfile
 from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer

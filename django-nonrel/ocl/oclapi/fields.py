@@ -81,7 +81,3 @@ class HyperlinkedResourceVersionIdentityField(HyperlinkedIdentityField):
 
     def get_url(self, obj, view_name, request, format):
         return reverse_resource_version(obj, view_name, request=request, format=format)
-
-
-
-

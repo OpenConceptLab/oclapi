@@ -4,10 +4,11 @@ from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
+from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.permissions import HasOwnership
 from oclapi.utils import add_user_to_org, remove_user_from_org
-from oclapi.views import BaseAPIView, ListWithHeadersMixin
+from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer
 from users.models import UserProfile
