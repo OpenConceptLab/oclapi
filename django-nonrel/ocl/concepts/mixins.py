@@ -22,6 +22,7 @@ class DictionaryItemMixin(object):
             return errors
         obj.owner = user
         obj.parent = parent_resource
+        obj.public_access = parent_resource.public_access
         try:
             obj.full_clean()
         except ValidationError as e:

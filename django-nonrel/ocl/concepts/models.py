@@ -11,7 +11,7 @@ from djangotoolbox.fields import ListField, EmbeddedModelField
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from oclapi.utils import reverse_resource, reverse_resource_version
-from sources.models import SourceVersion
+from sources.models import SourceVersion, Source
 
 
 class LocalizedText(models.Model):
@@ -162,6 +162,7 @@ class ConceptVersion(ResourceVersionModel):
     def clone(self):
         return ConceptVersion(
             mnemonic='_TEMP',
+            public_access=self.public_access,
             concept_class=self.concept_class,
             datatype=self.datatype,
             names=self.names,
@@ -233,6 +234,7 @@ class ConceptVersion(ResourceVersionModel):
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
         return ConceptVersion(
             mnemonic=label,
+            public_access=concept.public_access,
             concept_class=concept.concept_class,
             datatype=concept.datatype,
             extras=concept.extras,
@@ -359,3 +361,13 @@ def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     else:
         for concept in Concept.objects.filter(owner=instance):
             concept.soft_delete()
+
+@receiver(post_save, sender=Source)
+def propagate_public_access(sender, instance=None, created=False, **kwargs):
+    for concept in Concept.objects.filter(parent_id=instance.id):
+        if concept.public_access != instance.public_access:
+            concept.public_access = instance.public_access
+            for concept_version in ConceptVersion.objects.filter(versioned_object_id=concept.id):
+                concept_version.public_access = concept.public_access
+                concept_version.save()
+            concept.save()

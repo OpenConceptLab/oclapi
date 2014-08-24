@@ -188,6 +188,26 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
 
+    def test_concept_access_changes_with_source(self):
+        public_access = self.source1.public_access
+        concept = Concept(
+            mnemonic='concept1',
+            owner=self.user1,
+            parent=self.source1,
+            public_access=public_access,
+            concept_class='First',
+        )
+        concept.full_clean()
+        concept.save()
+
+        self.assertEquals(self.source1.public_access, concept.public_access)
+        self.source1.public_access = ACCESS_TYPE_VIEW
+        self.source1.save()
+
+        concept = Concept.objects.get(id=concept.id)
+        self.assertNotEquals(public_access, self.source1.public_access)
+        self.assertEquals(self.source1.public_access, concept.public_access)
+
 
 class ConceptClassMethodsTest(ConceptBaseTest):
 
@@ -213,6 +233,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source1.parent_resource, concept.owner_name)
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
         self.assertEquals(concept_version, concept_version.root_version)
@@ -287,6 +308,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source1.parent_resource, concept.owner_name)
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
 
@@ -335,6 +357,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source1.parent_resource, concept.owner_name)
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
         self.assertEquals(concept_version, concept_version.root_version)
@@ -365,6 +388,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source2.parent_resource, concept.owner_name)
         self.assertEquals(self.source2.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source2.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
         self.assertEquals(concept_version, concept_version.root_version)
@@ -400,6 +424,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source1.parent_resource, concept.owner_name)
         self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
         self.assertEquals(concept_version, concept_version.root_version)
@@ -573,6 +598,7 @@ class ConceptVersionTest(ConceptBaseTest):
         self.assertEquals(3, self.concept1.num_versions)
         self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
         self.assertEquals(concept_version, version2.previous_version)
+        self.assertEquals(concept_version.public_access, version2.public_access)
 
         self.assertEquals(self.concept1, version2.versioned_object)
         self.assertEquals(self.concept1.mnemonic, version2.name)
@@ -581,12 +607,32 @@ class ConceptVersionTest(ConceptBaseTest):
         self.assertEquals(self.concept1.display_name, version2.display_name)
         self.assertEquals(self.concept1.display_locale, version2.display_locale)
 
+    def test_concept_version_inherits_public_access__positive(self):
+        public_access = self.source1.public_access
+        self.assertEquals(1, self.concept1.num_versions)
+        concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=self.concept1,
+            concept_class='First',
+            public_access=public_access,
+            names=self.concept1.names,
+        )
+        concept_version.full_clean()
+        concept_version.save()
+
+        self.assertEquals(self.source1.public_access, concept_version.public_access)
+        self.source1.public_access = ACCESS_TYPE_VIEW
+        self.source1.save()
+
+        self.assertNotEquals(public_access, self.source1.public_access)
+        concept_version = ConceptVersion.objects.get(id=concept_version.id)
+        self.assertEquals(self.source1.public_access, concept_version.public_access)
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def setUp(self):
         super(ConceptVersionStaticMethodsTest, self).setUp()
-        self.concept1 = Concept(mnemonic='concept1', concept_class='First')
+        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
         display_name = LocalizedText(name='concept1', locale='en')
         self.concept1.names.append(display_name)
         kwargs = {
@@ -627,6 +673,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept1.names, version.names)
         self.assertEquals(self.concept1.descriptions, version.descriptions)
         self.assertEquals(self.concept1.retired, version.retired)
+        self.assertEquals(self.concept1.public_access, version.public_access)
         self.assertFalse(version.released)
 
     def test_persist_clone_positive(self):
@@ -644,6 +691,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
         self.assertEquals(3, self.concept1.num_versions)
         self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(self.concept_version.public_access, version2.public_access)
         self.assertEquals(self.concept_version, version2.previous_version)
         self.assertEquals(self.concept_version.root_version, version2.root_version)
 

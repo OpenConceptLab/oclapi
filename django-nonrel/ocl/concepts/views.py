@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
@@ -7,6 +8,7 @@ from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
 from oclapi.filters import HaystackSearchFilter
+from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ListWithHeadersMixin, ChildResourceMixin
 from sources.models import SourceVersion
 
@@ -97,7 +99,10 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
 
     def get_queryset(self):
         queryset = super(ConceptVersionListAllView, self).get_queryset()
-        return queryset.filter(is_latest_version=True)
+        queryset = queryset.filter(is_latest_version=True)
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
+        return queryset
 
 
 class ConceptCreateView(ConceptBaseView,
