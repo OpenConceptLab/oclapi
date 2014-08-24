@@ -171,6 +171,8 @@ class ChildResourceMixin(SubResourceMixin):
                 self.parent_resource = self.parent_resource.versioned_object
             parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
+        else:
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset
 
 

@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from concepts.models import Concept
 from oclapi.models import SubResourceBaseModel
 from oclapi.utils import reverse_resource
@@ -101,6 +103,7 @@ class Mapping(SubResourceBaseModel):
         if parent_resource is None:
             non_field_errors.append('Must specify a parent resource (the "from" concept).')
         obj.parent = parent_resource
+        obj.public_access = parent_resource.public_access
         if non_field_errors:
             errors['non_field_errors'] = non_field_errors
             return errors
@@ -108,3 +111,9 @@ class Mapping(SubResourceBaseModel):
         return cls.persist_changes(obj)
 
 
+@receiver(post_save, sender=Concept)
+def propagate_public_access(sender, instance=None, created=False, **kwargs):
+    for mapping in Mapping.objects.filter(parent_id=instance.id):
+        if instance.public_access != mapping.public_access:
+            mapping.public_access = instance.public_access
+            mapping.save()
