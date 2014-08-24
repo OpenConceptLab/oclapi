@@ -12,7 +12,7 @@ class MappingSearchFilter(HaystackSearchFilter):
 
         map_type = request.QUERY_PARAMS.get('map_type','')
         if map_type:
-            sqs.append(SQ(map_type=map_type))
+            sqs.append(SQ(map_type__exact=map_type))
 
         source = request.QUERY_PARAMS.get('source', '')
         source_sqs = []

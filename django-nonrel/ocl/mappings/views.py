@@ -34,6 +34,7 @@ class MappingListView(MappingBaseView,
                       ListWithHeadersMixin,
                       mixins.CreateModelMixin):
     serializer_class = MappingCreateSerializer
+    solr_fields = {}
     filter_backends = [MappingSearchFilter]
     include_inverse_mappings = False
 
