@@ -1,0 +1,1 @@
+{{ object.mnemonic }} {{ object.from_source_shorthand }} {{ object.from_concept_shorthand }}{% if object.to_concept %} {{object.to_source_shorthand}} {{object.to_concept_shorthand}}{% endif %}

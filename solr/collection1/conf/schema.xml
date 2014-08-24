@@ -186,6 +186,16 @@
 
     <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="from_concept" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="map_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="to_concept" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="from_source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="to_source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
   </fields>
 
   <!-- field to use to determine and enforce document uniqueness. -->

@@ -58,6 +58,30 @@ class Mapping(SubResourceBaseModel):
         return self.parent.parent.mnemonic
 
     @property
+    def from_source_shorthand(self):
+        source = self.from_source
+        owner = source.parent
+        return "%s:%s" % (owner.mnemonic, source.mnemonic)
+
+    @property
+    def from_concept_shorthand(self):
+        return "%s:%s" % (self.from_source_shorthand, self.parent.mnemonic)
+
+    @property
+    def to_source_shorthand(self):
+        if not self.to_concept:
+            return None
+        source = self.to_concept.parent
+        owner = source.parent
+        return "%s:%s" % (owner.mnemonic, source.mnemonic)
+
+    @property
+    def to_concept_shorthand(self):
+        if not self.to_concept:
+            return None
+        return "%s:%s" % (self.to_source_shorthand, self.to_concept.mnemonic)
+
+    @property
     def from_source_owner(self):
         return self.parent.parent.parent.mnemonic
 

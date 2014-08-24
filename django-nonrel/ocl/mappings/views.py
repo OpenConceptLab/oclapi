@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
+from mappings.filters import MappingSearchFilter
 from mappings.models import Mapping
 from mappings.permissions import CanEditParentSource, CanViewParentSource
 from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer
@@ -33,10 +34,7 @@ class MappingListView(MappingBaseView,
                       ListWithHeadersMixin,
                       mixins.CreateModelMixin):
     serializer_class = MappingCreateSerializer
-    filter_backends = [HaystackSearchFilter]
-    solr_fields = {
-        'map_type': {'sortable': True, 'filterable': True}
-    }
+    filter_backends = [MappingSearchFilter]
     include_inverse_mappings = False
 
     def get(self, request, *args, **kwargs):
