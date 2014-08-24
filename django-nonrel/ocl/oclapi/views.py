@@ -7,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, UpdateModelMixin
 from rest_framework.response import Response
-from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.permissions import HasPrivateAccess
 
 
@@ -147,22 +147,14 @@ class ConceptDictionaryMixin(SubResourceMixin):
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
-        or_clauses = []
-        if self.user:
-            or_clauses.append(Q(owner=self.user))
-        if self.userprofile:
-            or_clauses += map(lambda x: Q(parent_id=x), self.userprofile.organizations)
-        or_clauses += self.base_or_clause
-        if or_clauses:
-            if len(or_clauses) > 1:
-                queryset = queryset.filter(reduce(lambda x, y: x | y, or_clauses[1:], or_clauses[0]))
-            else:
-                queryset = queryset.filter(or_clauses[0])
+        parent_is_self = self.parent_resource and self.userprofile and self.parent_resource == self.userprofile
         if self.parent_resource:
             if hasattr(self.parent_resource, 'versioned_object'):
                 self.parent_resource = self.parent_resource.versioned_object
             parent_resource_type = ContentType.objects.get_for_model(self.parent_resource)
             queryset = queryset.filter(parent_type__pk=parent_resource_type.id, parent_id=self.parent_resource.id)
+        if not(self.user.is_staff or parent_is_self):
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset
 
 
