@@ -22,9 +22,9 @@ class SourceBaseView():
 
 
 class SourceRetrieveUpdateDestroyView(SourceBaseView,
+                                      ConceptDictionaryUpdateMixin,
                                       RetrieveAPIView,
-                                      DestroyAPIView,
-                                      ConceptDictionaryUpdateMixin):
+                                      DestroyAPIView):
     serializer_class = SourceDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
