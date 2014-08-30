@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
-from oclapi.utils import reverse_resource
+from oclapi.utils import reverse_resource, reverse_resource_version
 from settings import DEFAULT_LOCALE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
@@ -21,6 +21,7 @@ DEFAULT_ACCESS_TYPE = ACCESS_TYPE_VIEW
 ACCESS_TYPE_CHOICES = ((ACCESS_TYPE_VIEW, 'View'),
                        (ACCESS_TYPE_EDIT, 'Edit'),
                        (ACCESS_TYPE_NONE, 'None'))
+
 
 class BaseModel(models.Model):
     """
@@ -141,8 +142,16 @@ class ResourceVersionModel(BaseModel):
             raise ValidationError('version cannot be its own parent')
 
     @property
+    def url(self):
+        return reverse_resource_version(self, self.view_name)
+
+    @property
     def previous_version_mnemonic(self):
         return self.previous_version.mnemonic if self.previous_version else None
+
+    @property
+    def previous_version_url(self):
+        return reverse_resource_version(self.previous_version, self.view_name) if self.previous_version else None
 
     @property
     def parent_version_mnemonic(self):

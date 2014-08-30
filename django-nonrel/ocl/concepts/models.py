@@ -158,6 +158,8 @@ class ConceptVersion(ResourceVersionModel):
     retired = models.BooleanField(default=False)
     root_version = models.ForeignKey('self', null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
+    version_created_by = models.TextField()
+    update_comment = models.TextField(null=True, blank=True)
 
     def clone(self):
         return ConceptVersion(
@@ -230,6 +232,10 @@ class ConceptVersion(ResourceVersionModel):
                 descriptions.append(desc.name)
         return descriptions
 
+    @property
+    def is_root_version(self):
+        return self == self.root_version
+
     @classmethod
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
         return ConceptVersion(
@@ -245,7 +251,8 @@ class ConceptVersion(ResourceVersionModel):
             versioned_object_type=ContentType.objects.get_for_model(Concept),
             released=False,
             previous_version=previous_version,
-            parent_version=parent_version
+            parent_version=parent_version,
+            version_created_by=concept.owner_name
         )
 
     @classmethod

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer
+from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
@@ -147,7 +147,7 @@ class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
     permission_classes = (CanViewParentDictionary,)
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
+        self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionsSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):

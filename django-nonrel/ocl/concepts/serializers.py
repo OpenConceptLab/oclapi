@@ -63,6 +63,18 @@ class ConceptDetailSerializer(serializers.Serializer):
         self._errors.update(errors)
 
 
+class ConceptVersionsSerializer(serializers.Serializer):
+    version = serializers.CharField(source='mnemonic')
+    previous_version = serializers.CharField(source='previous_version_mnemonic')
+    url = serializers.URLField()
+    previous_version_url = serializers.URLField()
+    version_created_on = serializers.DateTimeField(source='created_at')
+    version_created_by = serializers.CharField()
+    is_latest_concept_version = serializers.BooleanField(source='is_latest_version')
+    is_root_concept_version = serializers.BooleanField(source='is_root_version')
+    update_comment = serializers.CharField()
+
+
 class ConceptVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='name')
     concept_class = serializers.CharField()
@@ -117,6 +129,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False, name_override='description')
     extras = serializers.WritableField(required=False)
+    update_comment = serializers.CharField(required=False)
 
     class Meta:
         model = ConceptVersion
@@ -125,11 +138,14 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         instance.concept_class = attrs.get('concept_class', instance.concept_class)
         instance.datatype = attrs.get('datatype', instance.datatype)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.update_comment = attrs.get('update_comment')
         instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
         instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
         return instance
 
     def save_object(self, obj, **kwargs):
+        user = self.context['request'].user
+        obj.version_created_by = user.username
         errors = ConceptVersion.persist_clone(obj, **kwargs)
         self._errors.update(errors)
 
