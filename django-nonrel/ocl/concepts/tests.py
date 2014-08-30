@@ -522,6 +522,7 @@ class ConceptVersionTest(ConceptBaseTest):
             versioned_object=self.concept1,
             concept_class='First',
             names=self.concept1.names,
+            version_created_by=self.user1.username
         )
         concept_version.full_clean()
         concept_version.save()
@@ -573,6 +574,7 @@ class ConceptVersionTest(ConceptBaseTest):
             versioned_object=self.concept1,
             concept_class='First',
             names=self.concept1.names,
+            version_created_by=self.user1.username
         )
         concept_version.full_clean()
         concept_version.save()
@@ -592,6 +594,7 @@ class ConceptVersionTest(ConceptBaseTest):
 
         version2 = concept_version.clone()
         version2.mnemonic = 'version2'
+        version2.version_created_by = self.user2.username
         version2.full_clean()
         version2.save()
 
@@ -616,6 +619,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_class='First',
             public_access=public_access,
             names=self.concept1.names,
+            version_created_by=self.user1.username
         )
         concept_version.full_clean()
         concept_version.save()
@@ -655,6 +659,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
             concept_class='First',
             names=self.concept1.names,
             previous_version=initial_version,
+            version_created_by=self.user1.username
         )
         self.concept_version.full_clean()
         self.concept_version.save()
