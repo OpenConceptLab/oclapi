@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionVersionListView
-from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView
+from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptNameRetrieveUpdateDestroyView
 from mappings.views import MappingListView, MappingDetailView
 from orgs.views import OrganizationListView
 from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView
@@ -19,6 +19,8 @@ urlpatterns = patterns('',
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptCreateView.as_view(), name='concept-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/mappings/$', MappingListView.as_view(), name='mapping-list'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/names/$', ConceptNameListCreateView.as_view(), name='concept-names'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/names/(?P<uuid>[a-zA-Z0-9\-\.]+)/$', ConceptNameRetrieveUpdateDestroyView.as_view(), name='concept-name'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/mappings/(?P<mapping>[a-zA-Z0-9\-\.]+)/$', MappingDetailView.as_view(), name='mapping-detail'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/versions/$', ConceptVersionsView.as_view(), name='concept-version-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/(?P<concept_version>[a-zA-Z0-9\-\.]+)/$', ConceptVersionRetrieveView.as_view(), name='conceptversion-detail'),

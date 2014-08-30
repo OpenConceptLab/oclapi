@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
@@ -213,6 +214,45 @@ class ConceptNameListCreateView(ConceptBaseView, VersionedResourceChildMixin, Li
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
+    model = LocalizedText
+    serializer_class = ConceptNameSerializer
+
+    def get_object(self, queryset=None):
+        uuid = self.kwargs.get('uuid')
+        parent = self.parent_resource
+        for name in parent.names:
+            if uuid == unicode(name.uuid):
+                return name
+        raise Http404()
+
+    def update(self, request, *args, **kwargs):
+        partial = True
+        self.object = self.get_object()
+        success_status_code = status.HTTP_200_OK
+
+        serializer = self.get_serializer(self.object, data=request.DATA,
+                                         files=request.FILES, partial=partial)
+
+        if serializer.is_valid():
+            self.parent_resource.save()
+            return Response(serializer.data, status=success_status_code)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        index_to_remove = -1
+        for i, name in enumerate(self.parent_resource.names):
+            if name.uuid == obj.uuid:
+                index_to_remove = i
+                break
+        if index_to_remove >= 0:
+            del self.parent_resource.names[index_to_remove]
+            self.parent_resource.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ConceptReferenceBaseView(VersionedResourceChildMixin):
