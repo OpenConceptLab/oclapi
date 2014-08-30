@@ -188,7 +188,9 @@ class VersionedResourceChildMixin(ConceptDictionaryMixin):
     child_list_attribute = None
 
     def initialize(self, request, path_info_segment, **kwargs):
-        levels = 1 if self.model.get_url_kwarg() in kwargs else 0
+        levels = 0
+        if hasattr(self.model, 'get_url_kwarg') and self.model.get_url_kwarg() in kwargs:
+            levels += 1
         levels = levels + 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else levels + 2
         self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=levels)
         self.parent_resource = None

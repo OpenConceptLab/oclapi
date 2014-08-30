@@ -1,12 +1,12 @@
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
 from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
-from concepts.models import Concept, ConceptVersion, ConceptReference
+from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer
+from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
@@ -196,6 +196,23 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
             filter_kwargs = {'versioned_object_id': self.versioned_object.id}
             return get_object_or_404(queryset, **filter_kwargs)
         return super(ConceptVersionRetrieveView, self).get_object()
+
+
+class ConceptNameListCreateView(ConceptBaseView, VersionedResourceChildMixin, ListWithHeadersMixin, ListCreateAPIView):
+    model = LocalizedText
+    serializer_class = ConceptNameSerializer
+
+    def get_queryset(self):
+        return self.parent_resource.names
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        if serializer.is_valid():
+            self.parent_resource.names.append(serializer.object)
+            self.parent_resource.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConceptReferenceBaseView(VersionedResourceChildMixin):

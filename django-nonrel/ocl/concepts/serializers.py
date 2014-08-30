@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.fields import LocalizedTextListField, ConceptReferenceField
-from concepts.models import Concept, ConceptVersion, ConceptReference
+from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from oclapi.fields import HyperlinkedRelatedField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -148,6 +148,27 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         obj.version_created_by = user.username
         errors = ConceptVersion.persist_clone(obj, **kwargs)
         self._errors.update(errors)
+
+
+class ConceptNameSerializer(serializers.Serializer):
+    uuid = serializers.CharField(read_only=True)
+    name = serializers.CharField(required=True)
+    locale = serializers.CharField(required=True)
+    locale_preferred = serializers.BooleanField(required=False, default=False)
+    name_type = serializers.CharField(required=False, source='type')
+
+    def to_native(self, obj):
+        ret = super(ConceptNameSerializer, self).to_native(obj)
+        ret.update({"type": "ConceptName"})
+        return ret
+
+    def restore_object(self, attrs, instance=None):
+        concept_name = instance if instance else LocalizedText()
+        concept_name.name = attrs.get('name', concept_name.name)
+        concept_name.locale = attrs.get('locale', concept_name.locale)
+        concept_name.locale_preferred = attrs.get('locale_preferred', concept_name.locale_preferred)
+        concept_name.type = attrs.get('type', concept_name.type)
+        return concept_name
 
 
 class ConceptReferenceCreateSerializer(serializers.Serializer):

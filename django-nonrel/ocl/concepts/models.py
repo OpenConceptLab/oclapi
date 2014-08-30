@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
+from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
 from oclapi.utils import reverse_resource, reverse_resource_version
@@ -15,10 +16,11 @@ from sources.models import SourceVersion, Source
 
 
 class LocalizedText(models.Model):
+    uuid = UUIDField(auto=True)
     name = models.TextField()
+    type = models.TextField(null=True, blank=True)
     locale = models.TextField()
     locale_preferred = models.BooleanField(default=False)
-    type = models.TextField(null=True, blank=True)
 
 
 CONCEPT_TYPE = 'Concept'

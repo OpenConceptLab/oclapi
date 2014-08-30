@@ -55,7 +55,7 @@ class LocalizedTextListField(ListField):
             msg = self.error_messages['invalid'] % element
             raise ValidationError(msg)
         lt.locale = locale
-        lt.locale_preferred = element.get('localePreferred', False)
+        lt.locale_preferred = element.get('locale_preferred', False)
         lt.type = element.get('type', None)
         return lt
 
@@ -63,7 +63,7 @@ class LocalizedTextListField(ListField):
         return {
             self.name_attr: element.name,
             'locale': element.locale,
-            'localePreferred': element.locale_preferred,
+            'locale_preferred': element.locale_preferred,
             'type': element.type
         }
 
