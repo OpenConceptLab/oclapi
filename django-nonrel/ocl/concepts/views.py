@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer
+from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
@@ -199,35 +199,47 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
         return super(ConceptVersionRetrieveView, self).get_object()
 
 
-class ConceptNameListCreateView(ConceptBaseView, VersionedResourceChildMixin, ListWithHeadersMixin, ListCreateAPIView):
+class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin, ListWithHeadersMixin, ListCreateAPIView):
     model = LocalizedText
-    serializer_class = ConceptNameSerializer
+    parent_list_attribute = None
 
     def get_queryset(self):
-        return self.parent_resource_version.names
+        return getattr(self.parent_resource_version, self.parent_list_attribute)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             new_version = self.parent_resource_version.clone()
-            new_version.names.append(serializer.object)
-            new_version.update_comment = 'Added name %s.' % serializer.object.name
+            labels = getattr(new_version, self.parent_list_attribute)
+            labels.append(serializer.object)
+            new_version.update_comment = 'Added to %s: %s.' % (self.parent_list_attribute, serializer.object.name)
             ConceptVersion.persist_clone(new_version)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
-    model = LocalizedText
+class ConceptNameListCreateView(ConceptLabelListCreateView):
     serializer_class = ConceptNameSerializer
+    parent_list_attribute = 'names'
+
+
+class ConceptDescriptionListCreateView(ConceptLabelListCreateView):
+    serializer_class = ConceptDescriptionSerializer
+    parent_list_attribute = 'descriptions'
+
+
+class ConceptLabelRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
+    model = LocalizedText
+    parent_list_attribute = None
 
     def get_object(self, queryset=None):
         uuid = self.kwargs.get('uuid')
         self.parent_resource_version = self.parent_resource_version.clone()
-        for name in self.parent_resource_version.names:
-            if uuid == unicode(name.uuid):
-                return name
+        labels = getattr(self.parent_resource_version, self.parent_list_attribute)
+        for label in labels:
+            if uuid == unicode(label.uuid):
+                return label
         raise Http404()
 
     def update(self, request, *args, **kwargs):
@@ -239,7 +251,7 @@ class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChi
                                          files=request.FILES, partial=partial)
 
         if serializer.is_valid():
-            self.parent_resource_version.update_comment = 'Updated name %s.' % self.object.name
+            self.parent_resource_version.update_comment = 'Updated %s in %s.' % (self.object.name, self.parent_list_attribute)
             ConceptVersion.persist_clone(self.parent_resource_version)
             return Response(serializer.data, status=success_status_code)
 
@@ -248,15 +260,26 @@ class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChi
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
         index_to_remove = -1
-        for i, name in enumerate(self.parent_resource_version.names):
-            if name.uuid == obj.uuid:
+        labels = getattr(self.parent_resource_version, self.parent_list_attribute)
+        for i, label in enumerate(labels):
+            if label.uuid == obj.uuid:
                 index_to_remove = i
                 break
         if index_to_remove >= 0:
-            del self.parent_resource_version.names[index_to_remove]
-            self.parent_resource_version.update_comment = 'Deleted name %s.' % obj.name
+            del labels[index_to_remove]
+            self.parent_resource_version.update_comment = 'Deleted %s from %s.' % (obj.name, self.parent_list_attribute)
             ConceptVersion.persist_clone(self.parent_resource_version)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ConceptNameRetrieveUpdateDestroyView(ConceptLabelRetrieveUpdateDestroyView):
+    parent_list_attribute = 'names'
+    serializer_class = ConceptNameSerializer
+
+
+class ConceptDescriptionRetrieveUpdateDestroyView(ConceptLabelRetrieveUpdateDestroyView):
+    parent_list_attribute = 'descriptions'
+    serializer_class = ConceptDescriptionSerializer
 
 
 class ConceptReferenceBaseView(VersionedResourceChildMixin):

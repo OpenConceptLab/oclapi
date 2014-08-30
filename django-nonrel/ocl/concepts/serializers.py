@@ -171,6 +171,27 @@ class ConceptNameSerializer(serializers.Serializer):
         return concept_name
 
 
+class ConceptDescriptionSerializer(serializers.Serializer):
+    uuid = serializers.CharField(read_only=True)
+    description = serializers.CharField(required=True, source='name')
+    locale = serializers.CharField(required=True)
+    locale_preferred = serializers.BooleanField(required=False, default=False)
+    description_type = serializers.CharField(required=False, source='type')
+
+    def to_native(self, obj):
+        ret = super(ConceptDescriptionSerializer, self).to_native(obj)
+        ret.update({"type": "ConceptDescription"})
+        return ret
+
+    def restore_object(self, attrs, instance=None):
+        concept_desc = instance if instance else LocalizedText()
+        concept_desc.name = attrs.get('name', concept_desc.name)
+        concept_desc.locale = attrs.get('locale', concept_desc.locale)
+        concept_desc.locale_preferred = attrs.get('locale_preferred', concept_desc.locale_preferred)
+        concept_desc.type = attrs.get('type', concept_desc.type)
+        return concept_desc
+
+
 class ConceptReferenceCreateSerializer(serializers.Serializer):
     url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
     id = serializers.CharField(source='mnemonic', required=False)
