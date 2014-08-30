@@ -24,11 +24,11 @@ class LocalizedText(models.Model):
 
     def clone(self):
         return LocalizedText(
-            uuid = self.uuid,
-            name = self.name,
-            type = self.type,
-            locale = self.locale,
-            locale_preferred = self.locale_preferred
+            uuid=self.uuid,
+            name=self.name,
+            type=self.type,
+            locale=self.locale,
+            locale_preferred=self.locale_preferred
         )
 
 
@@ -188,6 +188,7 @@ class ConceptVersion(ResourceVersionModel):
             parent_version=self.parent_version,
             root_version=self.root_version,
             is_latest_version=self.is_latest_version,
+            extras=self.extras
         )
 
     @property

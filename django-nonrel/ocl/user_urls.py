@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionVersionListView
-from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView
+from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView, ConceptExtrasView, ConceptExtraRetrieveUpdateDestroyView
 from mappings.views import MappingListView, MappingDetailView
 from orgs.views import OrganizationListView
 from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView
@@ -18,8 +18,10 @@ urlpatterns = patterns('',
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/$', SourceRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-source-detail'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptCreateView.as_view(), name='concept-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
-    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/descriptions/$', ConceptDescriptionListCreateView.as_view(), name='concept-names'),
-    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/descriptions/(?P<uuid>[a-zA-Z0-9\-\.]+)/$', ConceptDescriptionRetrieveUpdateDestroyView.as_view(), name='concept-name'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/descriptions/$', ConceptDescriptionListCreateView.as_view(), name='concept-descriptions'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/descriptions/(?P<uuid>[a-zA-Z0-9\-\.]+)/$', ConceptDescriptionRetrieveUpdateDestroyView.as_view(), name='concept-description'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/extras/$', ConceptExtrasView.as_view(), name='concept-extras'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/extras/(?P<extra>[_a-zA-Z0-9\-\.]+)/$', ConceptExtraRetrieveUpdateDestroyView.as_view(), name='concept-extra'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/mappings/$', MappingListView.as_view(), name='mapping-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/names/$', ConceptNameListCreateView.as_view(), name='concept-names'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/names/(?P<uuid>[a-zA-Z0-9\-\.]+)/$', ConceptNameRetrieveUpdateDestroyView.as_view(), name='concept-name'),

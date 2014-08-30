@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView, ListAPIView
 from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
@@ -10,7 +10,7 @@ from concepts.permissions import CanViewParentDictionary, CanEditParentDictionar
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.models import ACCESS_TYPE_NONE
+from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
 from sources.models import SourceVersion
 
@@ -197,6 +197,64 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
             filter_kwargs = {'versioned_object_id': self.versioned_object.id}
             return get_object_or_404(queryset, **filter_kwargs)
         return super(ConceptVersionRetrieveView, self).get_object()
+
+
+class ConceptExtrasView(ConceptBaseView, ListAPIView):
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=1)
+        self.parent_resource = None
+        if self.parent_path_info and '/' != self.parent_path_info:
+            self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
+        if hasattr(self.parent_resource, 'versioned_object'):
+            self.parent_resource_version = self.parent_resource
+            self.parent_resource = self.parent_resource_version.versioned_object
+        else:
+            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
+
+    def list(self, request, *args, **kwargs):
+        extras = self.parent_resource_version.extras
+        return Response(extras)
+
+
+class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=2)
+        self.parent_resource = None
+        if self.parent_path_info and '/' != self.parent_path_info:
+            self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
+        if hasattr(self.parent_resource, 'versioned_object'):
+            self.parent_resource_version = self.parent_resource
+            self.parent_resource = self.parent_resource_version.versioned_object
+        else:
+            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
+        self.key = kwargs.get('extra')
+        self.parent_resource_version = self.parent_resource_version.clone()
+        self.extras = self.parent_resource_version.extras
+
+    def retrieve(self, request, *args, **kwargs):
+        if self.key in self.extras:
+            return Response({self.key: self.extras[self.key]})
+        return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, *args, **kwargs):
+        value = request.DATA.get(self.key)
+        if not value:
+            return Response(['Must specify %s param in body.' % self.key], status=status.HTTP_400_BAD_REQUEST)
+
+        self.extras[self.key] = value
+        self.parent_resource_version.update_comment = 'Updated extras: %s=%s.' % (self.key, value)
+        ConceptVersion.persist_clone(self.parent_resource_version)
+        return Response({self.key: self.extras[self.key]})
+
+    def delete(self, request, *args, **kwargs):
+        if self.key in self.extras:
+            del self.extras[self.key]
+            self.parent_resource_version.update_comment = 'Deleted extra %s.' % self.key
+            ConceptVersion.persist_clone(self.parent_resource_version)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Not found."}, status.HTTP_404_NOT_FOUND)
 
 
 class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin, ListWithHeadersMixin, ListCreateAPIView):
