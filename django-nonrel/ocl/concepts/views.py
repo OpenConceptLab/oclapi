@@ -204,13 +204,15 @@ class ConceptNameListCreateView(ConceptBaseView, VersionedResourceChildMixin, Li
     serializer_class = ConceptNameSerializer
 
     def get_queryset(self):
-        return self.parent_resource.names
+        return self.parent_resource_version.names
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
-            self.parent_resource.names.append(serializer.object)
-            self.parent_resource.save()
+            new_version = self.parent_resource_version.clone()
+            new_version.names.append(serializer.object)
+            new_version.update_comment = 'Added name %s.' % serializer.object.name
+            ConceptVersion.persist_clone(new_version)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -222,8 +224,8 @@ class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChi
 
     def get_object(self, queryset=None):
         uuid = self.kwargs.get('uuid')
-        parent = self.parent_resource
-        for name in parent.names:
+        self.parent_resource_version = self.parent_resource_version.clone()
+        for name in self.parent_resource_version.names:
             if uuid == unicode(name.uuid):
                 return name
         raise Http404()
@@ -237,7 +239,8 @@ class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChi
                                          files=request.FILES, partial=partial)
 
         if serializer.is_valid():
-            self.parent_resource.save()
+            self.parent_resource_version.update_comment = 'Updated name %s.' % self.object.name
+            ConceptVersion.persist_clone(self.parent_resource_version)
             return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -245,13 +248,14 @@ class ConceptNameRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChi
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
         index_to_remove = -1
-        for i, name in enumerate(self.parent_resource.names):
+        for i, name in enumerate(self.parent_resource_version.names):
             if name.uuid == obj.uuid:
                 index_to_remove = i
                 break
         if index_to_remove >= 0:
-            del self.parent_resource.names[index_to_remove]
-            self.parent_resource.save()
+            del self.parent_resource_version.names[index_to_remove]
+            self.parent_resource_version.update_comment = 'Deleted name %s.' % obj.name
+            ConceptVersion.persist_clone(self.parent_resource_version)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

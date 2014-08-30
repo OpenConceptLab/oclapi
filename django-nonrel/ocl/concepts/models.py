@@ -22,6 +22,15 @@ class LocalizedText(models.Model):
     locale = models.TextField()
     locale_preferred = models.BooleanField(default=False)
 
+    def clone(self):
+        return LocalizedText(
+            uuid = self.uuid,
+            name = self.name,
+            type = self.type,
+            locale = self.locale,
+            locale_preferred = self.locale_preferred
+        )
+
 
 CONCEPT_TYPE = 'Concept'
 
@@ -169,8 +178,8 @@ class ConceptVersion(ResourceVersionModel):
             public_access=self.public_access,
             concept_class=self.concept_class,
             datatype=self.datatype,
-            names=self.names,
-            descriptions=self.descriptions,
+            names=map(lambda n: n.clone(), self.names),
+            descriptions=map(lambda d: d.clone(), self.descriptions),
             retired=self.retired,
             versioned_object_id=self.versioned_object_id,
             versioned_object_type=self.versioned_object_type,
