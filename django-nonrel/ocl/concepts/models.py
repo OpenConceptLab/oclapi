@@ -289,6 +289,9 @@ class ConceptVersion(ResourceVersionModel):
             source_version.update_concept_version(obj)
             source_version.save()
 
+            # Mark versioned object as updated
+            obj.versioned_object.save()
+
             persisted = True
         finally:
             if not persisted:
