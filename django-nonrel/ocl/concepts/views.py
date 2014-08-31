@@ -1,3 +1,4 @@
+import dateutil.parser
 from django.db.models import Q
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -13,6 +14,18 @@ from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
 from sources.models import SourceVersion
+
+UPDATED_SINCE_PARAM = 'updated_since'
+INCLUDE_RETIRED_PARAM = 'include_retired'
+
+
+def parse_updated_since_param(request):
+    updated_since = request.QUERY_PARAMS.get(UPDATED_SINCE_PARAM)
+    if updated_since:
+        try:
+            return dateutil.parser.parse(updated_since)
+        except ValueError: pass
+    return None
 
 
 class ConceptBaseView(ChildResourceMixin):
@@ -94,13 +107,21 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         'datatype': {'sortable': False, 'filterable': True},
         'locale': {'sortable': False, 'filterable': True},
     }
+    updated_since = None
+    include_retired = False
 
     def get(self, request, *args, **kwargs):
+        self.updated_since = parse_updated_since_param(request)
+        self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = super(ConceptVersionListAllView, self).get_queryset()
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
+        if self.updated_since:
+            queryset = queryset.filter(updated_at__gte=self.updated_since)
         queryset = queryset.filter(is_latest_version=True)
         if not self.request.user.is_staff:
             queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
@@ -176,10 +197,22 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
         'datatype': {'sortable': False, 'filterable': True},
         'locale': {'sortable': False, 'filterable': True},
     }
+    updated_since = None
+    include_retired = False
 
     def get(self, request, *args, **kwargs):
+        self.updated_since = parse_updated_since_param(request)
+        self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
         return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(ConceptVersionListView, self).get_queryset()
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
+        if self.updated_since:
+            queryset = queryset.filter(updated_at__gte=self.updated_since)
+        return queryset
 
 
 class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
