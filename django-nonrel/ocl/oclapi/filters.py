@@ -18,7 +18,8 @@ class SearchQuerySetWrapper(object):
         return result.object
 
     def __iter__(self):
-        yield self.sqs.__iter__().object
+      for result in self.sqs:
+          yield result.object
 
 
 class HaystackSearchFilter(BaseFilterBackend):
