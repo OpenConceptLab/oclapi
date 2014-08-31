@@ -9,7 +9,6 @@ from mappings.filters import MappingSearchFilter
 from mappings.models import Mapping
 from mappings.permissions import CanEditParentSource, CanViewParentSource
 from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer
-from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.views import ChildResourceMixin
 

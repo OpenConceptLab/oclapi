@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from concepts.models import Concept
+from concepts.models import Concept, ConceptVersion
 from oclapi.models import SubResourceBaseModel
 from oclapi.utils import reverse_resource
 
@@ -95,9 +95,10 @@ class Mapping(SubResourceBaseModel):
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
-        is_update = kwargs.get('force_update', False)
+        created = kwargs.get('created', False)
         errors = dict()
         try:
+            obj.updated_by = updated_by
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
@@ -107,9 +108,17 @@ class Mapping(SubResourceBaseModel):
         try:
             obj.updated_by = updated_by
             obj.save(**kwargs)
-            if not is_update:
+            if created:
                 obj.mnemonic = obj.id
                 obj.save(**kwargs)
+
+            # Create a new version of the "from" concept
+            concept_version = ConceptVersion.get_latest_version_of(obj.parent)
+            new_version = concept_version.clone()
+            action = 'Added' if created else 'Updated'
+            new_version.update_comment = "%s mapping: %s" % (action, obj.mnemonic)
+            ConceptVersion.persist_clone(new_version)
+
             persisted = True
         finally:
             if not persisted:
@@ -117,7 +126,7 @@ class Mapping(SubResourceBaseModel):
         return errors
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
+    def persist_new(cls, obj, updated_by, **kwargs):
         errors = dict()
         non_field_errors = []
         owner = kwargs.pop('owner', None)
@@ -134,7 +143,8 @@ class Mapping(SubResourceBaseModel):
             errors['non_field_errors'] = non_field_errors
             return errors
         obj.mnemonic = 'TEMP'
-        return cls.persist_changes(obj)
+        kwargs.update({'created': True})
+        return cls.persist_changes(obj, updated_by, **kwargs)
 
 
 @receiver(post_save, sender=Concept)

@@ -45,7 +45,8 @@ class MappingCreateSerializer(MappingBaseSerializer):
     to_source_url = serializers.URLField(required=False)
 
     def save_object(self, obj, **kwargs):
-        errors = Mapping.persist_new(obj, **kwargs)
+        request_user = self.context['request'].user
+        errors = Mapping.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
 
 
