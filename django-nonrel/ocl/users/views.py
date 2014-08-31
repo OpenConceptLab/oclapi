@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from rest_framework import mixins, status
+from rest_framework import mixins, status, views
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -79,6 +79,27 @@ class UserDetailView(UserBaseView,
         obj = self.get_object()
         obj.soft_delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserLoginView(views.APIView):
+
+    def post(self, request, *args, **kwargs):
+        errors = {}
+        username = request.DATA.get('username')
+        if not username:
+            errors['username'] = ['This field is required.']
+        password = request.DATA.get('password')
+        if not password:
+            errors['password'] = ['This field is required.']
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            profile = UserProfile.objects.get(mnemonic=username)
+            if password != profile.hashed_password:
+                return Response({'detail': 'Passwords did not match.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UserReactivateView(UserBaseView, UpdateAPIView):

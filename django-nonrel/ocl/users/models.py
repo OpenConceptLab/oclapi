@@ -12,6 +12,7 @@ ORG_OBJECT_TYPE = 'Organization'
 
 class UserProfile(BaseResourceModel):
     user = models.OneToOneField(User)
+    hashed_password = models.TextField(null=True, blank=True)
     full_name = models.TextField(null=True, blank=True)
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)

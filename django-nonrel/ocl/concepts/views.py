@@ -200,6 +200,7 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
 
 
 class ConceptExtrasView(ConceptBaseView, ListAPIView):
+    permission_classes = (CanViewParentDictionary,)
 
     def initialize(self, request, path_info_segment, **kwargs):
         self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=1)
@@ -220,6 +221,8 @@ class ConceptExtrasView(ConceptBaseView, ListAPIView):
 class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
 
     def initialize(self, request, path_info_segment, **kwargs):
+        if 'GET' == request.method:
+            self.permission_classes = (CanViewParentDictionary,)
         self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=2)
         self.parent_resource = None
         if self.parent_path_info and '/' != self.parent_path_info:
@@ -260,6 +263,12 @@ class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
 class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin, ListWithHeadersMixin, ListCreateAPIView):
     model = LocalizedText
     parent_list_attribute = None
+    permission_classes = (CanEditParentDictionary,)
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        if 'GET' == request.method:
+            self.permission_classes = (CanViewParentDictionary,)
+        super(ConceptLabelListCreateView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_queryset(self):
         return getattr(self.parent_resource_version, self.parent_list_attribute)
@@ -290,6 +299,12 @@ class ConceptDescriptionListCreateView(ConceptLabelListCreateView):
 class ConceptLabelRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
     model = LocalizedText
     parent_list_attribute = None
+    permission_classes = (CanEditParentDictionary,)
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        if 'GET' == request.method:
+            self.permission_classes = (CanViewParentDictionary,)
+        super(ConceptLabelRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_object(self, queryset=None):
         uuid = self.kwargs.get('uuid')
