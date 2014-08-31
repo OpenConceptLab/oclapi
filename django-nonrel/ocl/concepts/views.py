@@ -393,6 +393,7 @@ class ConceptReferenceBaseView(VersionedResourceChildMixin):
     pk_field = 'mnemonic'
     model = ConceptReference
     child_list_attribute = 'concept_references'
+    updated_since = None
 
 
 class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, ListWithHeadersMixin):
@@ -400,6 +401,7 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
     serializer_class = ConceptReferenceCreateSerializer
 
     def get(self, request, *args, **kwargs):
+        self.updated_since = parse_updated_since_param(request)
         self.permission_classes = (CanViewParentDictionary,)
         self.serializer_class = ConceptReferenceDetailSerializer
         return self.list(request, *args, **kwargs)
@@ -423,6 +425,12 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
                                 headers=headers)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        queryset = super(ConceptReferenceListCreateView, self).get_queryset()
+        if self.updated_since:
+            queryset = queryset.filter(updated_at__gte=self.updated_since)
+        return queryset
 
 
 class ConceptReferenceRetrieveUpdateDestroyView(ConceptReferenceBaseView, RetrieveUpdateDestroyAPIView):
