@@ -35,11 +35,14 @@ class OrganizationCreateSerializer(serializers.Serializer):
         model = Organization
 
     def restore_object(self, attrs, instance=None):
+        request_user = self.context['request'].user
         mnemonic = attrs.get('mnemonic', None)
         if Organization.objects.filter(mnemonic=mnemonic).exists():
             self._errors['mnemonic'] = 'Organization with mnemonic %s already exists.' % mnemonic
             return None
         organization = Organization(name=attrs.get('name'), mnemonic=mnemonic)
+        organization.created_by = request_user
+        organization.updated_by = request_user
         organization.public_access = attrs.get('public_access', DEFAULT_ACCESS_TYPE)
         organization.company = attrs.get('company', None)
         organization.website = attrs.get('website', None)
@@ -78,10 +81,12 @@ class OrganizationDetailSerializer(serializers.Serializer):
         return fields
 
     def restore_object(self, attrs, instance=None):
+        request_user = self.context['request'].user
         instance.public_access = attrs.get('public_access', instance.public_access)
         instance.name = attrs.get('name', instance.name)
         instance.company = attrs.get('company', instance.company)
         instance.website = attrs.get('website', instance.website)
         instance.location = attrs.get('location', instance.website)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.updated_by = request_user
         return instance

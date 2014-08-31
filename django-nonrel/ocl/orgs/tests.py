@@ -18,25 +18,25 @@ class OrganizationTestCase(TestCase):
 
     def test_create_organization_positive(self):
         self.assertFalse(Organization.objects.filter(mnemonic='org1').exists())
-        org = Organization(mnemonic='org1', name='My Organization')
+        org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
         self.assertTrue(Organization.objects.filter(mnemonic='org1').exists())
 
     def test_create_organization_negative__no_name(self):
         with self.assertRaises(ValidationError):
-            org = Organization(mnemonic='org1')
+            org = Organization(mnemonic='org1', created_by='user1', updated_by='user1')
             org.full_clean()
             org.save()
 
     def test_create_organization_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
-            org = Organization(name='My Organization')
+            org = Organization(name='My Organization', created_by='user1', updated_by='user1')
             org.full_clean()
             org.save()
 
     def test_organization_delete(self):
-        org = Organization(mnemonic='org1', name='My Organization')
+        org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
         org_id = org.id
@@ -50,14 +50,14 @@ class OrganizationTestCase(TestCase):
         self.assertFalse(Organization.objects.filter(id=org_id).exists())
 
     def test_resource_type(self):
-        org = Organization(mnemonic='org1', name='My Organization')
+        org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
 
         self.assertEquals(ORG_OBJECT_TYPE, org.resource_type())
 
     def test_org_num_members(self):
-        org = Organization(mnemonic='org1', name='My Organization')
+        org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
 
@@ -75,7 +75,7 @@ class OrganizationTestCase(TestCase):
             first_name='User'
         )
 
-        org = Organization(mnemonic='org1', name='My Organization')
+        org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
 
@@ -88,7 +88,7 @@ class OrganizationTestCase(TestCase):
         )
         self.assertEquals(1, org.public_sources)
 
-        org2 = Organization(mnemonic='org2', name='Your Organization')
+        org2 = Organization(mnemonic='org2', name='Your Organization', created_by='user1', updated_by='user1')
         org2.full_clean()
         org2.save()
 
@@ -114,8 +114,8 @@ class OrganizationTestCase(TestCase):
             last_name='One',
             first_name='User'
         )
-        userprofile = UserProfile.objects.create(user=user, mnemonic='user1')
-        org = Organization.objects.create(name='org1', mnemonic='org1')
+        userprofile = UserProfile.objects.create(user=user, mnemonic='user1', created_by='user1', updated_by='user1')
+        org = Organization.objects.create(name='org1', mnemonic='org1', created_by='user1', updated_by='user1')
 
         self.assertEquals(0, userprofile.orgs)
         self.assertEquals(0, org.num_members)

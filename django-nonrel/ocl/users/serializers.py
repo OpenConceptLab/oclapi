@@ -29,10 +29,13 @@ class UserCreateSerializer(serializers.Serializer):
     public_sources = serializers.IntegerField(read_only=True)
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    created_by = serializers.CharField(read_only=True)
+    updated_by = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
 
     def restore_object(self, attrs, instance=None):
+        request_user = self.context['request'].user
         username = attrs.get('username')
         if UserProfile.objects.filter(mnemonic=username).exists():
             self._errors['username'] = 'User with username %s already exists.' % username
@@ -40,6 +43,8 @@ class UserCreateSerializer(serializers.Serializer):
         email = attrs.get('email')
         user = User(username=username, email=email)
         profile = UserProfile(full_name=attrs.get('name'), mnemonic=username)
+        profile.created_by = request_user
+        profile.updated_by = request_user
         profile.company = attrs.get('company', None)
         profile.location = attrs.get('location', None)
         profile.preferred_locale = attrs.get('preferred_locale', None)
@@ -69,6 +74,8 @@ class UserDetailSerializer(serializers.Serializer):
     public_sources = serializers.IntegerField(read_only=True)
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    created_by = serializers.CharField(read_only=True)
+    updated_by = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
 
@@ -85,6 +92,7 @@ class UserDetailSerializer(serializers.Serializer):
         return fields
 
     def restore_object(self, attrs, instance=None):
+        request_user = self.context['request'].user
         if 'email' in attrs or 'mnemonic' in attrs:
             user = instance.user
             user.email = attrs.get('email', user.email)
@@ -95,6 +103,7 @@ class UserDetailSerializer(serializers.Serializer):
         instance.mnemonic = attrs.get('mnemonic', instance.mnemonic)
         instance.preferred_locale = attrs.get('preferred_locale', instance.preferred_locale)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.updated_by = request_user
         return instance
 
     def save_object(self, obj, **kwargs):

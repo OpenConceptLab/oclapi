@@ -40,7 +40,7 @@ class SourceBaseTest(TestCase):
 class SourceTest(SourceBaseTest):
 
     def test_create_source_positive(self):
-        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1)
+        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -55,7 +55,7 @@ class SourceTest(SourceBaseTest):
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
+                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -71,13 +71,13 @@ class SourceTest(SourceBaseTest):
     def test_create_source_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
             source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                            source_type='Dictionary', public_access='INVALID')
+                            source_type='Dictionary', public_access='INVALID', updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1,
-                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
+                        source_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertTrue(Source.objects.filter(
@@ -92,40 +92,40 @@ class SourceTest(SourceBaseTest):
 
     def test_create_source_negative__no_name(self):
         with self.assertRaises(ValidationError):
-            source = Source(mnemonic='source1', owner=self.user1, parent=self.org1)
+            source = Source(mnemonic='source1', owner=self.user1, parent=self.org1, updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_source_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
-            source = Source(name='source1', owner=self.user1, parent=self.org1)
+            source = Source(name='source1', owner=self.user1, parent=self.org1, updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_source_negative__no_owner(self):
         with self.assertRaises(ValidationError):
-            source = Source(name='source1', mnemonic='source1', parent=self.org1)
+            source = Source(name='source1', mnemonic='source1', parent=self.org1, updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_source_negative__no_parent(self):
         with self.assertRaises(ValidationError):
-            source = Source(name='source1', mnemonic='source1', owner=self.user1)
+            source = Source(name='source1', mnemonic='source1', owner=self.user1, updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_source_negative__mnemonic_exists(self):
-        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1)
+        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertEquals(0, source.num_versions)
         with self.assertRaises(ValidationError):
-            source = Source(name='source1', mnemonic='source1', owner=self.user2, parent=self.org1)
+            source = Source(name='source1', mnemonic='source1', owner=self.user2, parent=self.org1, updated_by=self.user1)
             source.full_clean()
             source.save()
 
     def test_create_positive__mnemonic_exists(self):
-        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1)
+        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertEquals(1, Source.objects.filter(
@@ -135,7 +135,7 @@ class SourceTest(SourceBaseTest):
         ).count())
         self.assertEquals(0, source.num_versions)
 
-        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1)
+        source = Source(name='source1', mnemonic='source1', owner=self.user1, parent=self.userprofile1, updated_by=self.user1)
         source.full_clean()
         source.save()
         self.assertEquals(1, Source.objects.filter(
@@ -235,7 +235,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.description = "%s_prime" % description
 
         del(kwargs['owner'])
-        errors = Source.persist_changes(self.new_source, **kwargs)
+        errors = Source.persist_changes(self.new_source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Source.objects.filter(id=id).exists())
         self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
@@ -300,7 +300,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.description = "%s_prime" % description
 
         del(kwargs['owner'])
-        errors = Source.persist_changes(self.new_source, **kwargs)
+        errors = Source.persist_changes(self.new_source, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
         self.assertTrue(errors.has_key('__all__'))
         self.assertTrue(Source.objects.filter(id=id).exists())

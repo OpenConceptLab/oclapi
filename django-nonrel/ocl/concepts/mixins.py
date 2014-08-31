@@ -21,6 +21,7 @@ class DictionaryItemMixin(object):
         if errors:
             return errors
         obj.owner = user
+        obj.updated_by = user
         obj.parent = parent_resource
         obj.public_access = parent_resource.public_access
         try:

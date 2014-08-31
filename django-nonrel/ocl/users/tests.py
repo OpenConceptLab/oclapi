@@ -26,25 +26,25 @@ class UserProfileTest(TestCase):
 
     def test_create_userprofile_positive(self):
         self.assertFalse(UserProfile.objects.filter(mnemonic='user1').exists())
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
         self.assertTrue(UserProfile.objects.filter(mnemonic='user1').exists())
 
     def test_create_userprofile_negative__no_user(self):
         with self.assertRaises(ValidationError):
-            user = UserProfile(mnemonic='user1')
+            user = UserProfile(mnemonic='user1', created_by=self.user1, updated_by=self.user1)
             user.full_clean()
             user.save()
 
     def test_create_userprofile_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
-            user = UserProfile(user=self.user1)
+            user = UserProfile(user=self.user1, created_by=self.user1, updated_by=self.user1)
             user.full_clean()
             user.save()
 
     def test_profile_name_overrides_user_name(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
@@ -53,14 +53,14 @@ class UserProfileTest(TestCase):
         self.assertEquals('John Q. Test', user.name)
 
     def test_resource_type(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
         self.assertEquals(USER_OBJECT_TYPE, user.resource_type())
 
     def test_mnemonic_overrides_username(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
@@ -69,14 +69,14 @@ class UserProfileTest(TestCase):
         self.assertEquals('johnnytest', user.username)
 
     def test_inherits_email_from_user(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
         self.assertEquals(self.user1.email, user.email)
 
     def test_user_orgs(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
@@ -87,7 +87,7 @@ class UserProfileTest(TestCase):
         self.assertEquals(0, user.orgs)
 
     def test_user_public_sources(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 
@@ -115,7 +115,7 @@ class UserProfileTest(TestCase):
         self.assertEquals(2, user.public_sources)
 
     def test_delete(self):
-        user = UserProfile(user=self.user1, mnemonic='user1')
+        user = UserProfile(user=self.user1, mnemonic='user1', created_by=self.user1, updated_by=self.user1)
         user.full_clean()
         user.save()
 

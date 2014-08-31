@@ -82,6 +82,7 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept(
             mnemonic='concept1',
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -100,6 +101,7 @@ class ConceptTest(ConceptBaseTest):
         with self.assertRaises(ValidationError):
             concept = Concept(
                 owner=self.user1,
+                updated_by=self.user1,
                 parent=self.source1,
                 concept_class='First',
             )
@@ -111,6 +113,7 @@ class ConceptTest(ConceptBaseTest):
             concept = Concept(
                 mnemonic='concept1',
                 parent=self.source1,
+                updated_by=self.user1,
                 concept_class='First',
             )
             concept.full_clean()
@@ -121,6 +124,7 @@ class ConceptTest(ConceptBaseTest):
             concept = Concept(
                 mnemonic='concept1',
                 owner=self.user1,
+                updated_by=self.user1,
                 concept_class='First',
             )
             concept.full_clean()
@@ -131,6 +135,7 @@ class ConceptTest(ConceptBaseTest):
             concept = Concept(
                 mnemonic='concept1',
                 owner=self.user1,
+                updated_by=self.user1,
                 parent=self.source1,
             )
             concept.full_clean()
@@ -140,6 +145,7 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept(
             mnemonic='concept1',
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -163,6 +169,7 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept(
             mnemonic='concept1',
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -193,6 +200,7 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept(
             mnemonic='concept1',
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             public_access=public_access,
             concept_class='First',
@@ -632,6 +640,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion.objects.get(id=concept_version.id)
         self.assertEquals(self.source1.public_access, concept_version.public_access)
 
+
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def setUp(self):
@@ -749,6 +758,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_is_current__positive(self):
         concept_reference = ConceptReference(
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
             concept=self.concept1
@@ -770,6 +780,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_concept_version__positive(self):
         concept_reference = ConceptReference(
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
             concept=self.concept1,
@@ -793,6 +804,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         source_version = SourceVersion.get_latest_version_of(self.source1)
         concept_reference = ConceptReference(
             owner=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
             concept=self.concept1,
@@ -816,6 +828,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         with self.assertRaises(ValidationError):
             concept_reference = ConceptReference(
                 owner=self.user1,
+                updated_by=self.user1,
                 parent=self.source1,
                 mnemonic='reference1',
                 concept=self.concept1,
@@ -829,6 +842,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         with self.assertRaises(ValidationError):
             concept = ConceptReference(
                 owner=self.user1,
+                updated_by=self.user1,
                 parent=self.source1,
             )
             concept.full_clean()
@@ -837,6 +851,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_negative__no_owner(self):
         with self.assertRaises(ValidationError):
             concept = ConceptReference(
+                updated_by=self.user1,
                 mnemonic='concept1',
                 parent=self.source1,
             )

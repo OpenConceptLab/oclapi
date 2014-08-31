@@ -21,6 +21,8 @@ class MappingBaseSerializer(serializers.Serializer):
     url = serializers.CharField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
+    created_by = serializers.CharField(source='owner', read_only=True)
+    updated_by = serializers.CharField(read_only=True)
 
     def restore_object(self, attrs, instance=None):
         mapping = instance if instance else Mapping()
@@ -61,5 +63,6 @@ class MappingUpdateSerializer(MappingBaseSerializer):
     to_source_url = serializers.URLField(required=False)
 
     def save_object(self, obj, **kwargs):
-        errors = Mapping.persist_changes(obj)
+        request_user = self.context['request'].user
+        errors = Mapping.persist_changes(obj, request_user)
         self._errors.update(errors)

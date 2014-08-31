@@ -115,6 +115,8 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     version = serializers.CharField(source='mnemonic')
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    version_created_on = serializers.DateTimeField(source='created_at')
+    version_created_by = serializers.CharField()
     extras = serializers.WritableField()
 
     class Meta:

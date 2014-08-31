@@ -94,7 +94,7 @@ class Mapping(SubResourceBaseModel):
         return 'mapping'
 
     @classmethod
-    def persist_changes(cls, obj, **kwargs):
+    def persist_changes(cls, obj, updated_by, **kwargs):
         is_update = kwargs.get('force_update', False)
         errors = dict()
         try:
@@ -105,6 +105,7 @@ class Mapping(SubResourceBaseModel):
 
         persisted = False
         try:
+            obj.updated_by = updated_by
             obj.save(**kwargs)
             if not is_update:
                 obj.mnemonic = obj.id
@@ -123,6 +124,7 @@ class Mapping(SubResourceBaseModel):
         if owner is None:
             non_field_errors.append('Must specify an owner')
         obj.owner = owner
+        obj.updated_by = owner
         parent_resource = kwargs.pop('parent_resource', None)
         if parent_resource is None:
             non_field_errors.append('Must specify a parent resource (the "from" concept).')

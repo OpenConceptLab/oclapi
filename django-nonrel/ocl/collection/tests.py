@@ -39,7 +39,7 @@ class CollectionBaseTest(TestCase):
 class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_positive(self):
-        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1)
+        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -54,7 +54,7 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
+                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -70,13 +70,13 @@ class CollectionTest(CollectionBaseTest):
     def test_create_collection_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
             collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                            collection_type='Dictionary', public_access='INVALID')
+                            collection_type='Dictionary', public_access='INVALID', updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT)
+                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -91,40 +91,40 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_negative__no_name(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(mnemonic='collection1', owner=self.user1, parent=self.org1)
+            collection = Collection(mnemonic='collection1', owner=self.user1, parent=self.org1, updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', owner=self.user1, parent=self.org1)
+            collection = Collection(name='collection1', owner=self.user1, parent=self.org1, updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_negative__no_owner(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', parent=self.org1)
+            collection = Collection(name='collection1', mnemonic='collection1', parent=self.org1, updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_negative__no_parent(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1)
+            collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_negative__mnemonic_exists(self):
-        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1)
+        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(0, collection.num_versions)
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', owner=self.user2, parent=self.org1)
+            collection = Collection(name='collection1', mnemonic='collection1', owner=self.user2, parent=self.org1, updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_positive__mnemonic_exists(self):
-        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1)
+        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.org1, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(1, Collection.objects.filter(
@@ -134,7 +134,7 @@ class CollectionTest(CollectionBaseTest):
         ).count())
         self.assertEquals(0, collection.num_versions)
 
-        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1)
+        collection = Collection(name='collection1', mnemonic='collection1', owner=self.user1, parent=self.userprofile1, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(1, Collection.objects.filter(
@@ -234,7 +234,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.description = "%s_prime" % description
 
         del(kwargs['owner'])
-        errors = Collection.persist_changes(self.new_collection, **kwargs)
+        errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Collection.objects.filter(id=id).exists())
         self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
@@ -283,7 +283,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.description = "%s_prime" % description
 
         del(kwargs['owner'])
-        errors = Collection.persist_changes(self.new_collection, **kwargs)
+        errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertTrue(Collection.objects.filter(id=id).exists())
         self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
         collection_version = CollectionVersion.objects.get(versioned_object_id=id)
@@ -347,7 +347,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.description = "%s_prime" % description
 
         del(kwargs['owner'])
-        errors = Collection.persist_changes(self.new_collection, **kwargs)
+        errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
         self.assertTrue(errors.has_key('__all__'))
         self.assertTrue(Collection.objects.filter(id=id).exists())

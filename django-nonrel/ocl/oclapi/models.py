@@ -75,6 +75,8 @@ class BaseResourceModel(BaseModel):
     (An Organization is a base resource, but a Concept is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
+    created_by = models.TextField()
+    updated_by = models.TextField()
 
     class Meta:
         abstract = True
@@ -91,6 +93,7 @@ class SubResourceBaseModel(BaseModel):
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     owner = models.ForeignKey(User, db_index=False)
+    updated_by = models.TextField()
     parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
@@ -204,6 +207,7 @@ class ConceptContainerModel(SubResourceBaseModel):
 
         obj.parent = parent_resource
         obj.owner = user
+        obj.updated_by = user
         try:
             obj.full_clean()
         except ValidationError as e:
@@ -231,7 +235,7 @@ class ConceptContainerModel(SubResourceBaseModel):
         return errors
 
     @classmethod
-    def persist_changes(cls, obj, **kwargs):
+    def persist_changes(cls, obj, updated_by, **kwargs):
         errors = dict()
         parent_resource = kwargs.pop('parent_resource', obj.parent)
         if not parent_resource:
@@ -242,6 +246,7 @@ class ConceptContainerModel(SubResourceBaseModel):
             errors.update(e.message_dict)
         if errors:
             return errors
+        obj.updated_by = updated_by
         obj.save(**kwargs)
         return errors
 
