@@ -249,6 +249,11 @@ class ConceptVersion(ResourceVersionModel):
         return self == self.root_version
 
     @classmethod
+    def get_latest_version_of(cls, concept):
+        versions = ConceptVersion.objects.filter(versioned_object_id=concept.id, is_latest_version=True).order_by('-created_at')
+        return versions[0] if versions else None
+
+    @classmethod
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
         return ConceptVersion(
             mnemonic=label,
