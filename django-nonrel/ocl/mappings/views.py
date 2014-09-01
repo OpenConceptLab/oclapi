@@ -38,8 +38,8 @@ class MappingListView(MappingBaseView,
     include_inverse_mappings = False
 
     def get(self, request, *args, **kwargs):
-        include_inverse_param = request.GET.get('includeInverseMappings', '0')
-        self.include_inverse_mappings = '1' == include_inverse_param
+        include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
+        self.include_inverse_mappings = 'true' == include_inverse_param
         self.serializer_class = MappingRetrieveDestroySerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
 
