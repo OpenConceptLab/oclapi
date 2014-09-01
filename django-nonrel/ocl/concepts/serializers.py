@@ -210,9 +210,9 @@ class ConceptDescriptionSerializer(serializers.Serializer):
 
 
 class ConceptReferenceCreateSerializer(serializers.Serializer):
-    url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
+    concept_reference_url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
     id = serializers.CharField(source='mnemonic', required=False)
-    extras = serializers.WritableField(read_only=False)
+    extras = serializers.WritableField(required=False)
 
     class Meta:
         model = ConceptReference

@@ -1,10 +1,12 @@
 from urlparse import urljoin
+from xmlrpclib import DateTime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
@@ -402,3 +404,31 @@ def propagate_public_access(sender, instance=None, created=False, **kwargs):
                 concept_version.public_access = concept.public_access
                 concept_version.save()
             concept.save()
+
+@receiver(post_save, sender=ConceptVersion)
+def update_references(sender, instance=None, created=False, **kwargs):
+    #Update all references...
+
+    # WHERE concept_version_id = this ConceptVersion ID
+    or_clauses = [Q(concept_version_id=instance.id)]
+
+    # OR concept_id = this ConceptVersion's Concept ID,
+    #    AND source_version_id refers to one of the source versions containing this ConceptVersion
+    concept = instance.versioned_object
+    source_versions = SourceVersion.objects.filter(versioned_object_id=concept.parent_id)
+    source_versions_with_concept = []
+    for source_version in source_versions:
+        if instance.id in source_version.concepts:
+            source_versions_with_concept.append(source_version.id)
+    or_clauses.append(Q(concept_id=concept.id, source_version_id__in=source_versions_with_concept))
+
+    # Do the update
+    for ref in ConceptReference.objects.filter(reduce(lambda x, y: x | y, or_clauses[1:], or_clauses[0])):
+        ref.save()
+
+    # OR if ConceptVersion is the latest version
+    if instance.is_latest_version:
+        # Updated all references that don't specify a concept version
+        for ref in ConceptReference.objects.filter(concept_id=instance.versioned_object_id):
+            if ref.is_current_version:
+                ref.save()
