@@ -149,6 +149,12 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'oclapi.renderers.ZippedJSONRenderer',
+    ),
+    'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'oclapi.negotiation.OptionallyCompressContentNegotiation',
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
     'DEFAULT_MODEL_SERIALIZER_CLASS':

@@ -442,6 +442,18 @@ class ConceptReferenceRetrieveUpdateDestroyView(ConceptReferenceBaseView, Retrie
     permission_classes = (CanEditParentDictionary,)
     serializer_class = ConceptReferenceDetailSerializer
 
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.reference_only = request.QUERY_PARAMS.get('reference', False)
+        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=2)
+        self.parent_resource = None
+        if self.parent_path_info and '/' != self.parent_path_info:
+            self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
+        if hasattr(self.parent_resource, 'versioned_object'):
+            self.parent_resource_version = self.parent_resource
+            self.parent_resource = self.parent_resource_version.versioned_object
+        else:
+            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
+
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewParentDictionary,)
         self.serializer_class = ConceptReferenceDetailSerializer if self.reference_only else ConceptVersionDetailSerializer

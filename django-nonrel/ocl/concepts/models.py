@@ -352,6 +352,10 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
         return self.concept.parent if self.concept else None
 
     @property
+    def collection(self):
+        return self.parent.mnemonic if self.parent else None
+
+    @property
     def owner_name(self):
         return self.parent.parent_resource if self.parent else None
 

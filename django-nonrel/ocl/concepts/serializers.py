@@ -2,7 +2,7 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.fields import LocalizedTextListField, ConceptReferenceField
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
-from oclapi.fields import HyperlinkedRelatedField
+from oclapi.fields import HyperlinkedRelatedField, HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 from sources.models import Source
@@ -125,7 +125,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
         versioned_object_view_name = 'concept-detail'
 
 
-class ReferencesToVersionsSerializer(ConceptVersionDetailSerializer):
+class ReferencesToVersionsSerializer(ConceptVersionListSerializer):
 
     def to_native(self, obj):
         field = obj
@@ -239,21 +239,14 @@ class ConceptReferenceCreateSerializer(serializers.Serializer):
 
 
 class ConceptReferenceDetailSerializer(serializers.Serializer):
-    id = serializers.CharField(source='mnemonic')
+    concept_reference_id = serializers.CharField(source='mnemonic')
     concept_reference_url = serializers.URLField(read_only=True)
-    concept_class = serializers.CharField(read_only=True)
-    data_type = serializers.CharField(read_only=True)
-    source = serializers.CharField(read_only=True)
-    owner = serializers.CharField(read_only=True, source='owner_name')
-    owner_type = serializers.CharField(read_only=True)
-    owner_url = serializers.URLField(read_only=True)
-    display_name = serializers.CharField(read_only=True)
-    display_locale = serializers.CharField(read_only=True)
-    version = serializers.CharField(read_only=True, source='concept_version')
-    is_current_version = serializers.BooleanField(read_only=True)
+    url = HyperlinkedResourceIdentityField(view_name='collection-concept-detail')
+    collection = serializers.CharField(source='collection')
+    collection_owner = serializers.CharField(read_only=True, source='owner_name')
+    collection_owner_type = serializers.CharField(read_only=True, source='owner_type')
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
-    extras = serializers.WritableField(required=False)
 
     class Meta:
         model = ConceptReference
