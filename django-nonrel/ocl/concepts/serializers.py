@@ -125,6 +125,21 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
         versioned_object_view_name = 'concept-detail'
 
 
+class ReferencesToVersionsSerializer(ConceptVersionDetailSerializer):
+
+    def to_native(self, obj):
+        field = obj
+        if isinstance(obj, ConceptReference):
+            concept = obj.concept
+            if obj.is_current_version:
+                field = ConceptVersion.get_latest_version_of(concept)
+            elif obj.source_version:
+                field = ConceptVersion.objects.get(versioned_object_id=concept.id, id__in=obj.source_version.concepts)
+            else:
+                field = obj.concept_version
+        return super(ReferencesToVersionsSerializer, self).to_native(field)
+
+
 class ConceptVersionUpdateSerializer(serializers.Serializer):
     concept_class = serializers.CharField(required=True)
     datatype = serializers.CharField(required=False)

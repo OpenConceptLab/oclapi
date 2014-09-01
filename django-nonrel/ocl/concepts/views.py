@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
-from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer
+from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer, ReferencesToVersionsSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
@@ -394,6 +394,11 @@ class ConceptReferenceBaseView(VersionedResourceChildMixin):
     model = ConceptReference
     child_list_attribute = 'concept_references'
     updated_since = None
+    reference_only = False
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.reference_only = request.QUERY_PARAMS.get('reference', False)
+        super(ConceptReferenceBaseView, self).initialize(request, path_info_segment, **kwargs)
 
 
 class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, ListWithHeadersMixin):
@@ -403,7 +408,7 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
     def get(self, request, *args, **kwargs):
         self.updated_since = parse_updated_since_param(request)
         self.permission_classes = (CanViewParentDictionary,)
-        self.serializer_class = ConceptReferenceDetailSerializer
+        self.serializer_class = ConceptReferenceDetailSerializer if self.reference_only else ReferencesToVersionsSerializer
         return self.list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -436,11 +441,6 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
 class ConceptReferenceRetrieveUpdateDestroyView(ConceptReferenceBaseView, RetrieveUpdateDestroyAPIView):
     permission_classes = (CanEditParentDictionary,)
     serializer_class = ConceptReferenceDetailSerializer
-    reference_only = False
-
-    def initialize(self, request, path_info_segment, **kwargs):
-        self.reference_only = request.QUERY_PARAMS.get('reference', False)
-        super(ConceptReferenceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewParentDictionary,)
