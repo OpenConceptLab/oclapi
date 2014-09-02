@@ -1,5 +1,4 @@
 from urlparse import urljoin
-from xmlrpclib import DateTime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -275,6 +274,79 @@ class ConceptVersion(ResourceVersionModel):
         )
 
     @classmethod
+    def diff(cls, v1, v2):
+        diffs = {}
+        if v1.public_access != v2.public_access:
+            diffs['public_access'] = {'was': v1.public_access, 'is': v2.public_access}
+        if v1.concept_class != v2.concept_class:
+            diffs['concept_class'] = {'was': v1.concept_class, 'is': v2.concept_class}
+        if v1.datatype != v2.datatype:
+            diffs['datatype'] = {'was': v1.datatype, 'is': v2.datatype}
+
+        # Diff names
+        names1 = v1.names
+        names2 = v2.names
+        diff = len(names1) != len(names2)
+        if not diff:
+            n1 = sorted(names1, key=lambda n: n.name)
+            n2 = sorted(names2, key=lambda n: n.name)
+            for i, n in enumerate(n1):
+                if n.name != n2[i].name:
+                    diff = True
+                    break
+                if n.type != n2[i].type:
+                    diff = True
+                    break
+                if n.locale != n2[i].locale:
+                    diff = True
+                    break
+                if n.locale_preferred != n2[i].locale_preferred:
+                    diff = True
+                    break
+        if diff:
+            diffs['names'] = True
+
+        # Diff descriptions
+        names1 = v1.descriptions
+        names2 = v2.descriptions
+        diff = len(names1) != len(names2)
+        if not diff:
+            n1 = sorted(names1, key=lambda n: n.name)
+            n2 = sorted(names2, key=lambda n: n.name)
+            for i, n in enumerate(n1):
+                if n.name != n2[i].name:
+                    diff = True
+                    break
+                if n.type != n2[i].type:
+                    diff = True
+                    break
+                if n.locale != n2[i].locale:
+                    diff = True
+                    break
+                if n.locale_preferred != n2[i].locale_preferred:
+                    diff = True
+                    break
+        if diff:
+            diffs['descriptions'] = True
+
+        # Diff extras
+        extras1 = v1.extras
+        extras2 = v2.extras
+        diff = len(extras1) != len(extras2)
+        if not diff:
+            for key in extras1:
+                if key not in extras2:
+                    diff = True
+                    break
+                if extras2[key] != extras1[key]:
+                    diff = True
+                    break
+        if diff:
+            diffs['extras'] = {'was': extras1, 'is': extras2}
+
+        return diffs
+
+    @classmethod
     def persist_clone(cls, obj, **kwargs):
         errors = dict()
         previous_version = obj.previous_version
@@ -306,7 +378,8 @@ class ConceptVersion(ResourceVersionModel):
                 if previous_was_latest:
                     previous_version.is_latest_version = True
                     previous_version.save()
-                obj.delete()
+                if obj.id:
+                    obj.delete()
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
         return errors
 

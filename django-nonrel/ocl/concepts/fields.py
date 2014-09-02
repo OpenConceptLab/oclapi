@@ -55,8 +55,9 @@ class LocalizedTextListField(ListField):
             msg = self.error_messages['invalid'] % element
             raise ValidationError(msg)
         lt.locale = locale
-        lt.locale_preferred = element.get('locale_preferred', False)
-        lt.type = element.get('type', None)
+        locale_preferred = element.get('locale_preferred', False)
+        lt.locale_preferred = locale_preferred in ['True', 'true', 'TRUE']
+        lt.type = element.get(self.type_attr, None)
         return lt
 
     def element_to_native(self, element):
@@ -64,12 +65,16 @@ class LocalizedTextListField(ListField):
             self.name_attr: element.name,
             'locale': element.locale,
             'locale_preferred': element.locale_preferred,
-            'type': element.type
+            self.type_attr: element.type
         }
 
     @property
     def name_attr(self):
         return 'name' if self.name_override is None else self.name_override
+
+    @property
+    def type_attr(self):
+        return '%s_type' % self.name_attr
 
 
 class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):

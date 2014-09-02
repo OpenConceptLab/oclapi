@@ -99,6 +99,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
     filter_backends = [HaystackSearchFilter]
+    queryset = ConceptVersion.objects.filter(is_active=True)
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
@@ -173,7 +174,7 @@ class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id)
+        return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id, is_active=True)
 
 
 class ConceptVersionBaseView(VersionedResourceChildMixin):
@@ -208,6 +209,7 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
 
     def get_queryset(self):
         queryset = super(ConceptVersionListView, self).get_queryset()
+        queryset = queryset.filter(is_active=True)
         if not self.include_retired:
             queryset = queryset.filter(~Q(retired=True))
         if self.updated_since:

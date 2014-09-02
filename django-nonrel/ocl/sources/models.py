@@ -83,10 +83,6 @@ class SourceVersion(ConceptContainerVersionModel):
             parent_version=parent_version
         )
 
-
-admin.site.register(Source)
-admin.site.register(SourceVersion)
-
 @receiver(post_save, sender=User)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     if instance.is_active:
