@@ -21,6 +21,7 @@ class UserCreateSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     name = serializers.CharField(required=True)
     email = serializers.CharField(required=True)
+    hashed_password = serializers.CharField(required=False)
     company = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     preferred_locale = serializers.CharField(required=False)
@@ -45,6 +46,7 @@ class UserCreateSerializer(serializers.Serializer):
         profile = UserProfile(full_name=attrs.get('name'), mnemonic=username)
         profile.created_by = request_user
         profile.updated_by = request_user
+        profile.hashed_password = attrs.get('hashed_password', None)
         profile.company = attrs.get('company', None)
         profile.location = attrs.get('location', None)
         profile.preferred_locale = attrs.get('preferred_locale', None)
