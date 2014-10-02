@@ -161,7 +161,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         return instance
 
     def save_object(self, obj, **kwargs):
-        user = kwargs.pop('user')
+        user = kwargs.pop('user', None)
         if not user:
             user = self.context['request'].user
         obj.version_created_by = user.username
