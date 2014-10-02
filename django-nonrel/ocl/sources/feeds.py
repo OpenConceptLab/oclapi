@@ -26,13 +26,13 @@ class SourceFeed(Feed):
         try:
             self.org = Organization.objects.get(mnemonic=org_id)
         except Organization.DoesNotExist: pass
-        if not self.user or self.org:
+        if not (self.user or self.org):
             raise Http404("Source owner does not exist")
         source_id = kwargs.get('source')
         if self.user:
             return get_object_or_404(Source, mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
-            return get_object_or_404(Source, mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(Organization))
+            return get_object_or_404(Source, mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
 
     def title(self, obj):
         return "Updates to %s" % obj.mnemonic
