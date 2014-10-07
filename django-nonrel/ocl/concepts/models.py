@@ -270,7 +270,7 @@ class ConceptVersion(ResourceVersionModel):
             released=False,
             previous_version=previous_version,
             parent_version=parent_version,
-            version_created_by=concept.owner_name
+            version_created_by=concept.owner.username
         )
 
     @classmethod
