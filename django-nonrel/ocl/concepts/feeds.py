@@ -49,6 +49,9 @@ class ConceptFeed(Feed):
     def items(self, obj):
         return ConceptVersion.objects.filter(versioned_object_id=obj.id).order_by('-updated_at')
 
+    def item_author_name(self, item):
+        return item.version_created_by
+
     def item_title(self, item):
         return item.mnemonic
 
@@ -57,3 +60,6 @@ class ConceptFeed(Feed):
 
     def item_link(self, item):
         return reverse_resource_version(item, 'conceptversion-detail')
+
+    def item_pubdate(self, item):
+        return item.created_at
