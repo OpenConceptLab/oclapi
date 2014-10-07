@@ -47,7 +47,7 @@ class ConceptFeed(Feed):
         return "Updates to concept %s in source %s" % (obj.mnemonic, self.source.mnemonic)
 
     def items(self, obj):
-        return ConceptVersion.objects.filter(versioned_object_id=obj.id).order_by('-updated_at')[:30]
+        return ConceptVersion.objects.filter(versioned_object_id=obj.id).order_by('-updated_at')
 
     def item_title(self, item):
         return item.mnemonic

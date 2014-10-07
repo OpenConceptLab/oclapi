@@ -44,7 +44,7 @@ class CollectionFeed(Feed):
         return "Updates to concepts within collection %s" % obj.mnemonic
 
     def items(self, obj):
-        return ConceptReference.objects.filter(parent_id=obj.id).order_by('-updated_at')[:30]
+        return ConceptReference.objects.filter(parent_id=obj.id).order_by('-updated_at')
 
     def item_title(self, item):
         return item.mnemonic
