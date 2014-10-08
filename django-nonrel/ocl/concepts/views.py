@@ -249,7 +249,7 @@ class ConceptExtrasView(ConceptBaseView, ListAPIView):
             self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
 
     def list(self, request, *args, **kwargs):
-        extras = self.parent_resource_version.extras
+        extras = self.parent_resource_version.extras or {}
         return Response(extras)
 
 
