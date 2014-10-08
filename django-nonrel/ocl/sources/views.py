@@ -3,9 +3,8 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary
+from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
-from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
@@ -66,13 +65,13 @@ class SourceVersionListView(SourceVersionBaseView,
                             ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
-        self.permission_classes = (CanViewConceptDictionary,)
+        self.permission_classes = (CanViewConceptDictionaryVersion,)
         self.serializer_class = SourceVersionDetailSerializer if self.is_verbose(request) else SourceVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionCreateSerializer
-        self.permission_classes = (CanEditConceptDictionary,)
+        self.permission_classes = (CanEditConceptDictionaryVersion,)
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -97,10 +96,10 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
 
     def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:
-            self.permission_classes = (CanViewConceptDictionary,)
+            self.permission_classes = (CanViewConceptDictionaryVersion,)
             self.serializer_class = SourceVersionDetailSerializer
         else:
-            self.permission_classes = (CanEditConceptDictionary,)
+            self.permission_classes = (CanEditConceptDictionaryVersion,)
             self.serializer_class = SourceVersionUpdateSerializer
         self.is_latest = kwargs.pop('is_latest', False)
         super(SourceVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
