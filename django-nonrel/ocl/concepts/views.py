@@ -269,6 +269,8 @@ class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
             self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
         self.key = kwargs.get('extra')
         self.parent_resource_version = self.parent_resource_version.clone()
+        if not self.parent_resource_version.extras:
+            self.parent_resource_version.extras = dict()
         self.extras = self.parent_resource_version.extras
 
     def retrieve(self, request, *args, **kwargs):
