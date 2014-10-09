@@ -39,7 +39,7 @@ class ConceptFeed(Feed, FeedFilterMixin):
             self.source = get_object_or_404(Source, mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
         concept_id = kwargs.get('concept')
         self.updated_since = request.GET.get('updated_since', None)
-        self.limit = request.GET.get('limit', 0)
+        self.limit = request.GET.get('limit', None)
         return get_object_or_404(Concept, parent_id=self.source.id, mnemonic=concept_id)
 
     def title(self, obj):

@@ -33,7 +33,7 @@ class SourceFeed(Feed, FeedFilterMixin):
             raise Http404("Source owner does not exist")
         source_id = kwargs.get('source')
         self.updated_since = request.GET.get('updated_since', None)
-        self.limit = request.GET.get('limit', 0)
+        self.limit = request.GET.get('limit', None)
         if self.user:
             return get_object_or_404(Source, mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
         else:

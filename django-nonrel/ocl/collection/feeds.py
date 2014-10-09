@@ -33,7 +33,7 @@ class CollectionFeed(Feed, FeedFilterMixin):
             raise Http404("Collection owner does not exist")
         collection_id = kwargs.get('collection')
         self.updated_since = request.GET.get('updated_since', None)
-        self.limit = request.GET.get('limit', 0)
+        self.limit = request.GET.get('limit', None)
         if self.user:
             return get_object_or_404(Collection, mnemonic=collection_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
