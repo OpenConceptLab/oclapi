@@ -4,6 +4,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from concepts.models import ConceptVersion, Concept
+from oclapi.feeds import FeedFilterMixin
 from oclapi.utils import reverse_resource
 from orgs.models import Organization
 from sources.models import Source
@@ -12,10 +13,12 @@ from users.models import UserProfile
 __author__ = 'misternando'
 
 
-class SourceFeed(Feed):
+class SourceFeed(Feed, FeedFilterMixin):
     feed_type = Atom1Feed
     user = None
     org = None
+    updated_since = None
+    limit = 0
 
     def get_object(self, request, *args, **kwargs):
         user_id = kwargs.get('user')
@@ -29,6 +32,8 @@ class SourceFeed(Feed):
         if not (self.user or self.org):
             raise Http404("Source owner does not exist")
         source_id = kwargs.get('source')
+        self.updated_since = request.GET.get('updated_since', None)
+        self.limit = request.GET.get('limit', 0)
         if self.user:
             return get_object_or_404(Source, mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
@@ -44,7 +49,7 @@ class SourceFeed(Feed):
         return "Updates to concepts within source %s" % obj.mnemonic
 
     def items(self, obj):
-        return Concept.objects.filter(parent_id=obj.id).order_by('-updated_at')
+        return self.filter_queryset(Concept.objects.filter(parent_id=obj.id))
 
     def item_title(self, item):
         return item.mnemonic

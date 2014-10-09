@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from collection.models import Collection
 from concepts.models import ConceptReference
+from oclapi.feeds import FeedFilterMixin
 from oclapi.utils import reverse_resource
 from orgs.models import Organization
 from users.models import UserProfile
@@ -12,10 +13,12 @@ from users.models import UserProfile
 __author__ = 'misternando'
 
 
-class CollectionFeed(Feed):
+class CollectionFeed(Feed, FeedFilterMixin):
     feed_type = Atom1Feed
     user = None
     org = None
+    updated_since = None
+    limit = 0
 
     def get_object(self, request, *args, **kwargs):
         user_id = kwargs.get('user')
@@ -29,6 +32,8 @@ class CollectionFeed(Feed):
         if not (self.user or self.org):
             raise Http404("Collection owner does not exist")
         collection_id = kwargs.get('collection')
+        self.updated_since = request.GET.get('updated_since', None)
+        self.limit = request.GET.get('limit', 0)
         if self.user:
             return get_object_or_404(Collection, mnemonic=collection_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
@@ -44,7 +49,7 @@ class CollectionFeed(Feed):
         return "Updates to concepts within collection %s" % obj.mnemonic
 
     def items(self, obj):
-        return ConceptReference.objects.filter(parent_id=obj.id).order_by('-updated_at')
+        return self.filter_queryset(ConceptReference.objects.filter(parent_id=obj.id))
 
     def item_title(self, item):
         return item.mnemonic
