@@ -1,15 +1,14 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView, ListAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
 from collection.models import Collection, CollectionVersion
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.models import ResourceVersionModel
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, SubResourceMixin
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
 
 
 class CollectionBaseView():
@@ -54,21 +53,12 @@ class CollectionListView(CollectionBaseView,
         return self.list(request, *args, **kwargs)
 
 
-class CollectionExtrasView(CollectionBaseView, ListAPIView, SubResourceMixin):
-    permission_classes = (CanViewConceptDictionary,)
+class CollectionExtrasView(ConceptDictionaryExtrasView):
+    pass
 
-    def initialize(self, request, path_info_segment, **kwargs):
-        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=1)
-        self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
-        if hasattr(self.parent_resource, 'versioned_object'):
-            self.parent_resource_version = self.parent_resource
-            self.parent_resource = self.parent_resource_version.versioned_object
-        else:
-            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
 
-    def list(self, request, *args, **kwargs):
-        extras = self.parent_resource_version.extras or {}
-        return Response(extras)
+class CollectionExtraRetrieveUpdateDestroyView(ConceptDictionaryExtraRetrieveUpdateDestroyView):
+    concept_dictionary_version_class = CollectionVersion
 
 
 class CollectionVersionBaseView(ResourceVersionMixin):

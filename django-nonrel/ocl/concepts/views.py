@@ -254,6 +254,7 @@ class ConceptExtrasView(ConceptBaseView, ListAPIView):
 
 
 class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceChildMixin, RetrieveUpdateDestroyAPIView):
+    permission_classes = (CanEditParentDictionary,)
 
     def initialize(self, request, path_info_segment, **kwargs):
         if 'GET' == request.method:

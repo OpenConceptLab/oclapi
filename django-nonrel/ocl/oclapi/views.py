@@ -2,12 +2,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics, status
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from oclapi.mixins import PathWalkerMixin
 from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
-from oclapi.permissions import HasPrivateAccess
+from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary
 
 
 class BaseAPIView(generics.GenericAPIView):
@@ -159,6 +159,66 @@ class ConceptDictionaryUpdateMixin(ConceptDictionaryMixin):
 
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
         pass
+
+
+class ConceptDictionaryExtrasMixin(SubResourceMixin):
+    levels = 1
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=self.levels)
+        self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
+        if hasattr(self.parent_resource, 'versioned_object'):
+            self.parent_resource_version = self.parent_resource
+            self.parent_resource = self.parent_resource_version.versioned_object
+        else:
+            self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
+
+
+class ConceptDictionaryExtrasView(ConceptDictionaryExtrasMixin, ListAPIView):
+    permission_classes = (CanViewConceptDictionary,)
+    levels = 1
+
+    def list(self, request, *args, **kwargs):
+        extras = self.parent_resource_version.extras or {}
+        return Response(extras)
+
+
+class ConceptDictionaryExtraRetrieveUpdateDestroyView(ConceptDictionaryExtrasMixin, RetrieveUpdateDestroyAPIView):
+    concept_dictionary_version_class = None
+    permission_classes = (CanEditConceptDictionary,)
+    levels = 2
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(ConceptDictionaryExtraRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
+        if 'GET' == request.method:
+            self.permission_classes = (CanViewConceptDictionary,)
+        self.key = kwargs.get('extra')
+        if not self.parent_resource_version.extras:
+            self.parent_resource_version.extras = dict()
+        self.extras = self.parent_resource_version.extras
+
+    def retrieve(self, request, *args, **kwargs):
+        if self.key in self.extras:
+            return Response({self.key: self.extras[self.key]})
+        return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, *args, **kwargs):
+        value = request.DATA.get(self.key)
+        if not value:
+            return Response(['Must specify %s param in body.' % self.key], status=status.HTTP_400_BAD_REQUEST)
+
+        self.extras[self.key] = value
+        self.parent_resource_version.update_comment = 'Updated extras: %s=%s.' % (self.key, value)
+        self.concept_dictionary_version_class.persist_changes(self.parent_resource_version)
+        return Response({self.key: self.extras[self.key]})
+
+    def delete(self, request, *args, **kwargs):
+        if self.key in self.extras:
+            del self.extras[self.key]
+            self.parent_resource_version.update_comment = 'Deleted extra %s.' % self.key
+            self.concept_dictionary_version_class.persist_changes(self.parent_resource_version)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Not found."}, status.HTTP_404_NOT_FOUND)
 
 
 class ChildResourceMixin(SubResourceMixin):
