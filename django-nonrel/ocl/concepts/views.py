@@ -107,9 +107,11 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         'concept_class': {'sortable': False, 'filterable': True},
         'datatype': {'sortable': False, 'filterable': True},
         'locale': {'sortable': False, 'filterable': True},
+        'is_latest_version': {'sortable': False, 'filterable': True},
     }
     updated_since = None
     include_retired = False
+    default_filters = {'is_latest_version': True}
 
     def get(self, request, *args, **kwargs):
         self.updated_since = parse_updated_since_param(request)
@@ -123,7 +125,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
             queryset = queryset.filter(~Q(retired=True))
         if self.updated_since:
             queryset = queryset.filter(updated_at__gte=self.updated_since)
-        queryset = queryset.filter(is_latest_version=True)
+        queryset = queryset.filter(**self.default_filters)
         if not self.request.user.is_staff:
             queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset

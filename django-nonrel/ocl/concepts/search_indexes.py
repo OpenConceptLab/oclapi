@@ -16,6 +16,7 @@ class ConceptVersionIndex(indexes.SearchIndex, indexes.Indexable):
     datatype = SortOrFilterField(model_attr='datatype', null=True, indexed=True, stored=True)
     locale = FilterField()
     source_version = FilterField()
+    is_latest_version = indexes.BooleanField(model_attr='is_latest_version', indexed=True, stored=True)
 
     def get_model(self):
         return ConceptVersion

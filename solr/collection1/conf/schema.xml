@@ -182,6 +182,8 @@
 
     <field name="locale" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
+    <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
+
     <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
