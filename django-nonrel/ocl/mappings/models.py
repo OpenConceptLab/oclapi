@@ -95,7 +95,7 @@ class Mapping(SubResourceBaseModel):
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
-        created = kwargs.get('created', False)
+        created = kwargs.pop('created', False)
         errors = dict()
         try:
             obj.updated_by = updated_by
