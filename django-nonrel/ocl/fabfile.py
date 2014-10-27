@@ -62,7 +62,9 @@ def provision():
 
 
 def restart():
-    sudo('/etc/init.d/httpd restart')
+    """ Restart API server """
+#    sudo('/etc/init.d/httpd restart')
+    run('supervisorctl restart ocl_api')
 
 
 def deploy():
