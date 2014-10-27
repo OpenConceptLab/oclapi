@@ -9,4 +9,5 @@ pymongo==2.6
 pysolr==3.2.0
 wsgiref==0.1.2
 python-dateutil==2.2
+gunicorn==18.0
 
