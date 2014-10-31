@@ -33,6 +33,16 @@ class ListField(WritableField):
         return element
 
 
+class MappingListField(ListField):
+    type_name = 'MappingListField'
+
+    def element_to_native(self, element):
+        module = __import__('mappings.serializers', fromlist=['models'])
+        serializer_class = getattr(module, 'MappingRetrieveDestroySerializer')
+        serializer = serializer_class(element)
+        return serializer.data
+
+
 class LocalizedTextListField(ListField):
     type_name = 'LocalizedTextListField'
 

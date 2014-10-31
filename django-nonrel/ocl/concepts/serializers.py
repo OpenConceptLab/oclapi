@@ -1,6 +1,6 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from concepts.fields import LocalizedTextListField, ConceptReferenceField
+from concepts.fields import LocalizedTextListField, ConceptReferenceField, MappingListField
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from oclapi.fields import HyperlinkedRelatedField, HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
@@ -87,11 +87,25 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     display_name = serializers.CharField()
     display_locale = serializers.CharField()
     version = serializers.CharField(source='mnemonic')
+    mappings = MappingListField(read_only=True)
 
     class Meta:
         model = ConceptVersion
         versioned_object_field_name = 'url'
         versioned_object_view_name = 'concept-detail'
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.get('context', {})
+        include_direct_mappings = context.get('include_direct_mappings', False)
+        include_indirect_mappings = context.get('include_indirect_mappings', False)
+        super(ConceptVersionListSerializer, self).__init__(*args, **kwargs)
+        mappings_field = self.fields.get('mappings')
+        if include_indirect_mappings:
+            mappings_field.source = 'get_bidirectional_mappings'
+        elif include_direct_mappings:
+            mappings_field.source = 'get_unidirectional_mappings'
+        else:
+            mappings_field.source = 'get_empty_mappings'
 
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
@@ -118,11 +132,25 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     version_created_on = serializers.DateTimeField(source='created_at')
     version_created_by = serializers.CharField()
     extras = serializers.WritableField()
+    mappings = MappingListField(read_only=True)
 
     class Meta:
         model = ConceptVersion
         versioned_object_field_name = 'url'
         versioned_object_view_name = 'concept-detail'
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.get('context', {})
+        include_direct_mappings = context.get('include_direct_mappings', False)
+        include_indirect_mappings = context.get('include_indirect_mappings', False)
+        super(ConceptVersionDetailSerializer, self).__init__(*args, **kwargs)
+        mappings_field = self.fields.get('mappings')
+        if include_indirect_mappings:
+            mappings_field.source = 'get_bidirectional_mappings'
+        elif include_direct_mappings:
+            mappings_field.source = 'get_unidirectional_mappings'
+        else:
+            mappings_field.source = 'get_empty_mappings'
 
 
 class ReferencesToVersionsSerializer(ConceptVersionListSerializer):

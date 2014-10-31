@@ -11,7 +11,7 @@ MAPPING_RESOURCE_TYPE = 'Mapping'
 
 class Mapping(SubResourceBaseModel):
     map_type = models.TextField()
-    to_concept = models.ForeignKey(Concept, null=True, blank=True)
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to')
     to_source_url = models.URLField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     to_concept_code = models.TextField(null=True, blank=True)

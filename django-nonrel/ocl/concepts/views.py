@@ -113,6 +113,13 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     include_retired = False
     default_filters = {'is_latest_version': True}
 
+    def get_serializer_context(self):
+        if self.request.GET.get('include_indirect_mappings'):
+            return {'include_indirect_mappings': True}
+        if self.request.GET.get('include_direct_mappings'):
+            return {'include_direct_mappings': True}
+        return {}
+
     def get(self, request, *args, **kwargs):
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
@@ -186,6 +193,15 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     parent_resource_version_model = SourceVersion
     permission_classes = (CanEditParentDictionary,)
     child_list_attribute = 'concepts'
+
+    def get_serializer_context(self):
+        if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
+            if self.request.GET.get('include_indirect_mappings'):
+                return {'include_indirect_mappings': True}
+            if self.request.GET.get('include_direct_mappings'):
+                return {'include_direct_mappings': True}
+        return {}
+
 
 
 class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):

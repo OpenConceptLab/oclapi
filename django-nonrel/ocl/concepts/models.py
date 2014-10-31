@@ -1,3 +1,4 @@
+from itertools import chain
 from urlparse import urljoin
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -86,6 +87,21 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     @property
     def num_stars(self):
         return 0
+
+    def get_bidirectional_mappings(self):
+        module = __import__('mappings.models', fromlist=['models'])
+        class_ = getattr(module, 'Mapping')
+        to_mappings = class_.objects.filter(to_concept=self)
+        return list(chain(self.get_unidirectional_mappings(), to_mappings))
+
+    def get_unidirectional_mappings(self):
+        module = __import__('mappings.models', fromlist=['models'])
+        class_ = getattr(module, 'Mapping')
+        my_content_type = ContentType.objects.get_for_model(self.__class__)
+        return class_.objects.filter(parent_id=self.id, parent_type=my_content_type)
+
+    def get_empty_mappings(self):
+        return []
 
     @classmethod
     def resource_type(cls):
@@ -248,6 +264,15 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def is_root_version(self):
         return self == self.root_version
+
+    def get_empty_mappings(self):
+        return self.versioned_object.get_empty_mappings()
+
+    def get_unidirectional_mappings(self):
+        return self.versioned_object.get_unidirectional_mappings()
+
+    def get_bidirectional_mappings(self):
+        return self.versioned_object.get_bidirectional_mappings()
 
     @classmethod
     def get_latest_version_of(cls, concept):
