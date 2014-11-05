@@ -1,0 +1,20 @@
+# Basics
+*.py[cod]
+*.pyc
+__pycache__
+
+# Translations
+*.mo
+*.pot
+
+# Pycharm
+.idea
+
+# Vim
+*~
+*.swp
+*.swo
+
+
+# Ours
+*.sublime-*

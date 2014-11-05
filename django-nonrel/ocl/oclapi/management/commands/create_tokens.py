@@ -47,7 +47,9 @@ class Command(BaseCommand):
 
 
     def print_tokens(self):
-        """ Just print out the tokens """
+        """ Just print out the tokens, in a form that easily put
+            in a shell script.
+        """
 
         for t in Token.objects.all():
             res = User.objects.filter(id=t.user_id)
@@ -55,8 +57,10 @@ class Command(BaseCommand):
                 un = res[0].username
             else:
                 un = 'n/a'
-            print '%-10s %s' % (un, t.key)
-
+            if un == 'admin':
+                print "export OCL_API_TOKEN='%s'" % t.key
+            if un == 'anonymous':
+                print "export OCL_ANON_API_TOKEN='%s'" % t.key
 
 
     def handle(self, *args, **options):
