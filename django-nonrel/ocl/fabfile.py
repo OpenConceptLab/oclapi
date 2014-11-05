@@ -1,5 +1,17 @@
+"""
+    Control API server
+
+    e.g.
+
+    # to checkout code to the API server on dev
+    fab dev checkout
+
+    # to restart the staging API server
+    fab staging restart
+
+"""
 from __future__ import with_statement
-import os
+from time import sleep
 from fabric.api import local, run, cd
 from fabric.context_managers import prefix
 from fabric.operations import sudo
@@ -11,9 +23,41 @@ BACKUP_DIR = '/var/backups/ocl'
 CHECKOUT_DIR = '/var/tmp'
 DEPLOY_DIR = '/opt/deploy'
 
-env.user = os.environ['FAB_USER']
-env.password = os.environ['FAB_PASSWORD']
-env.hosts = [os.environ['OCL_STAGING_HOST']]
+
+def dev():
+    """
+    Make this the first task when calling fab to
+    perform operations on dev machine.
+    This "task" defines key variables for all the operations on that
+    particular server.
+
+    e.g.:
+        fab dev release_web_app
+    """
+    env.hosts = ['dev.openconceptlab.org', ]
+    env.user = 'deploy'
+    env.web_domain = 'dev.openconceptlab.com'
+    env.api_domain = 'api.dev.openconceptlab.com'
+
+
+def staging():
+    """
+    Make this the first task when calling fab to
+    perform operations on staging machine.
+    """
+    env.hosts = ['staging.openconceptlab.org', ]
+    env.user = 'deploy'
+    env.web_domain = 'staging.openconceptlab.com'
+    env.api_domain = 'api.staging.openconceptlab.com'
+
+
+def production():
+    """
+    Make this the first task when calling fab to
+    perform operations on staging machine.
+    """
+    env.hosts = ['www.openconceptlab.org', ]
+    env.user = 'deploy'
 
 
 def hello(name="World"):
@@ -30,10 +74,11 @@ def test_local():
 
 
 def backup():
+    """ Backup source to /var/backups/ocl """
     with cd(DEPLOY_DIR):
-        run("tar -czvf ocl_`date +%Y%m%d`.tgz django solr/collection1/conf")
+        run("tar -czvf ocl_`date +%Y%m%d`.tgz ocl_api solr/collection1/conf")
         run("mv ocl_*.tgz %s" % BACKUP_DIR)
-        run("rm -rf django solr/collection1/conf")
+        run("rm -rf ocl_api solr/collection1/conf")
 
 
 def checkout():
@@ -44,12 +89,12 @@ def checkout():
 
 def provision():
     with cd(CHECKOUT_DIR):
-        run("cp -r oclapi/django-nonrel %s/django" % DEPLOY_DIR)
+        run("cp -r oclapi/django-nonrel %s/ocl_api" % DEPLOY_DIR)
         run("cp -r oclapi/solr/collection1/conf %s/solr/collection1" % DEPLOY_DIR)
-        sudo("chown -R solr:wheel %s/solr" % DEPLOY_DIR)
-    with cd("%s/django/ocl" % DEPLOY_DIR):
+
+    with cd("%s/ocl_api/ocl" % DEPLOY_DIR):
         run("cp settings.py.deploy settings.py")
-        with prefix("source /opt/virtualenvs/ocl/bin/activate"):
+        with prefix("source /opt/virtualenvs/ocl_api/bin/activate"):
             run("pip install -r requirements.txt")
             run("./manage.py test users")
             run("./manage.py test orgs")
@@ -58,12 +103,12 @@ def provision():
             run("./manage.py test concepts")
             run("./manage.py build_solr_schema > /opt/deploy/solr/collection1/conf/schema.xml")
             sudo('/etc/init.d/jetty restart')
+            sleep(5)
             run("./manage.py rebuild_index")
 
 
 def restart():
     """ Restart API server """
-#    sudo('/etc/init.d/httpd restart')
     run('supervisorctl restart ocl_api')
 
 
