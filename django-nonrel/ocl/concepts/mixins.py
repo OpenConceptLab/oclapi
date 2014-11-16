@@ -67,5 +67,6 @@ class DictionaryItemMixin(object):
                 parent_resource_version.save()
                 if initial_version:
                     initial_version.delete()
-                obj.delete()
+                if obj.id:
+                    obj.delete()
         return errors
