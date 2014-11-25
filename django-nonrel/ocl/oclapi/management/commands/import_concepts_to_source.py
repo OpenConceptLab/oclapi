@@ -10,10 +10,12 @@ from sources.models import Source, SourceVersion
 __author__ = 'misternando'
 
 
-class IllegalInputException(BaseException): pass
+class IllegalInputException(BaseException):
+    pass
 
 
-class InvalidStateException(BaseException): pass
+class InvalidStateException(BaseException):
+    pass
 
 
 class Command(BaseCommand):
@@ -43,6 +45,9 @@ class Command(BaseCommand):
 
         try:
             self.input = open(input_file, 'rb')
+            # get total record count
+            total = sum(1 for line in self.input)
+            self.input.seek(0)
         except IOError:
             raise CommandError('Could not open input file %s' % input_file)
 
@@ -60,11 +65,16 @@ class Command(BaseCommand):
         self.user = User.objects.filter(is_superuser=True)[0]
         self.concept_version_ids = set(self.source_version.concepts)
         self.stdout.write('Adding/updating new concepts...\n')
+        cnt = 0
         for line in self.input:
             data = json.loads(line)
+            cnt += 1
+            # simple progress bar
+            if (cnt % 100) == 0:
+                self.stdout.write('%d of %d' % (cnt, total), ending='\r')
+                self.stdout.flush()
             try:
                 self.handle_concept(data)
-                self.stdout.write('.')
             except IllegalInputException as e:
                 self.stderr.write('\n%s' % e.message)
                 self.stderr.write('\nFailed to parse line %s.  Skipping it...\n' % data)
