@@ -64,13 +64,13 @@ class Command(BaseCommand):
 
         self.user = User.objects.filter(is_superuser=True)[0]
         self.concept_version_ids = set(self.source_version.concepts)
-        self.stdout.write('Adding/updating new concepts...\n')
+        self.stdout.write('Adding/updating %d new concepts...\n' % total)
         cnt = 0
         for line in self.input:
             data = json.loads(line)
             cnt += 1
             # simple progress bar
-            if (cnt % 100) == 0:
+            if (cnt % 10) == 0:
                 self.stdout.write('%d of %d' % (cnt, total), ending='\r')
                 self.stdout.flush()
             try:
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 self.remove_concept_version(version_id)
             except InvalidStateException as e:
                 self.stderr.write('Failed to inactivate concept! %s' % e.message)
-            self.stdout.write('.')
+            # self.stdout.write('.')
 
         self.stdout.write('\nFinished importing concepts!\n')
 
