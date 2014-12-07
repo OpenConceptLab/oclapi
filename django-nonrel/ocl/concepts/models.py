@@ -12,7 +12,7 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE
+from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import reverse_resource, reverse_resource_version
 from sources.models import SourceVersion, Source
 
@@ -264,6 +264,10 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def is_root_version(self):
         return self == self.root_version
+
+    @property
+    def public_can_view(self):
+        return self.source.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
 
     def get_empty_mappings(self):
         return self.versioned_object.get_empty_mappings()

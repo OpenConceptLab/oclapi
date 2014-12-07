@@ -5,11 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, get_object_or_404, UpdateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView, ListAPIView
 from rest_framework.response import Response
-from concepts.filters import LimitSourceVersionFilter
+from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilter
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer, ReferencesToVersionsSerializer
-from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
@@ -98,7 +97,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
 class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
-    filter_backends = [HaystackSearchFilter]
+    filter_backends = [PublicConceptsSearchFilter]
     queryset = ConceptVersion.objects.filter(is_active=True)
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
@@ -201,7 +200,6 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
             if self.request.GET.get('include_direct_mappings'):
                 return {'include_direct_mappings': True}
         return {}
-
 
 
 class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):

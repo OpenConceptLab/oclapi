@@ -1,4 +1,4 @@
-from haystack.query import RelatedSearchQuerySet
+from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
 
@@ -22,7 +22,7 @@ class SearchQuerySetWrapper(object):
             yield result.object
 
 
-class HaystackSearchFilter(BaseFilterBackend):
+class BaseHaystackSearchFilter(BaseFilterBackend):
     search_param = 'q'  # The URL query parameter used for the search.
     sort_asc_param = 'sortAsc'
     sort_desc_param = 'sortDesc'
@@ -84,7 +84,7 @@ class HaystackSearchFilter(BaseFilterBackend):
                 return prefix + field
         return None
 
-    def filter_queryset(self, request, queryset, view):
+    def _filter_queryset(self, request, queryset, view, sqs):
         use_sqs = False
         terms = self.get_search_terms(request)
         use_sqs |= len(terms)
@@ -97,7 +97,6 @@ class HaystackSearchFilter(BaseFilterBackend):
                 sort = '-' + sort
         use_sqs |= sort is not None
         if use_sqs:
-            sqs = RelatedSearchQuerySet()
             for term in terms:
                 sqs = sqs.filter(content=term)
             if filters:
@@ -110,10 +109,21 @@ class HaystackSearchFilter(BaseFilterBackend):
                     sqs = sqs.order_by(default_sort)
             sqs = sqs.models(view.model)
             sqs = sqs.load_all()
-            sqs = sqs.load_all_queryset(view.model, queryset)
+            if hasattr(sqs, 'load_all_queryset'):
+                sqs = sqs.load_all_queryset(view.model, queryset)
             return SearchQuerySetWrapper(sqs)
 
         if hasattr(view, 'default_order_by'):
             return queryset.order_by(view.default_order_by)
         else:
             return queryset
+
+
+class SimpleHaystackSearchFilter(BaseHaystackSearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        return self._filter_queryset(request, queryset, view, SearchQuerySet())
+
+
+class HaystackSearchFilter(BaseHaystackSearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        return self._filter_queryset(request, queryset, view, RelatedSearchQuerySet())
