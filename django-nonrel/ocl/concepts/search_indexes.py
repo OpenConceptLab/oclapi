@@ -18,6 +18,7 @@ class ConceptVersionIndex(indexes.SearchIndex, indexes.Indexable):
     source_version = FilterField()
     is_latest_version = indexes.BooleanField(model_attr='is_latest_version', indexed=True, stored=True)
     public_can_view = indexes.BooleanField(model_attr='public_can_view', indexed=True, stored=True)
+    retired = indexes.BooleanField(model_attr='retired', indexed=True, stored=True)
 
     def get_model(self):
         return ConceptVersion

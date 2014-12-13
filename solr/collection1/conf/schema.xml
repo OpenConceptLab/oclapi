@@ -176,6 +176,8 @@
 
     <field name="full_name" type="text_en" indexed="true" stored="true" multiValued="false" />
 
+    <field name="retired" type="boolean" indexed="true" stored="true" multiValued="false" />
+
     <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="concept_class" type="lowercase" indexed="true" stored="true" multiValued="false" />
