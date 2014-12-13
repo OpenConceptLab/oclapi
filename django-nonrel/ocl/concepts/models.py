@@ -125,27 +125,8 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         latest_version = ConceptVersion.get_latest_version_of(concept)
         retired_version = latest_version.clone()
         retired_version.retired = True
-        latest_source_version = SourceVersion.get_latest_version_of(concept.parent)
-        latest_source_version_concepts = latest_source_version.concepts
-        retired = False
-        try:
-            concept.save()
-
-            retired_version.save()
-            retired_version.mnemonic = retired_version.id
-            retired_version.save()
-
-            latest_source_version.update_concept_version(retired_version)
-            latest_source_version.save()
-            retired = True
-        finally:
-            if not retired:
-                latest_source_version.concepts = latest_source_version_concepts
-                latest_source_version.save()
-                retired_version.delete()
-                concept.retired = False
-                concept.save()
-        return retired
+        errors = ConceptVersion.persist_clone(retired_version)
+        return not errors
 
     @classmethod
     def count_for_source(cls, src, is_active=True, retired=False):
@@ -395,7 +376,6 @@ class ConceptVersion(ResourceVersionModel):
 
             errored_action = 'replacing previous version in latest version of source'
             source_version.update_concept_version(obj)
-            source_version.save()
 
             # Mark versioned object as updated
             obj.versioned_object.save()

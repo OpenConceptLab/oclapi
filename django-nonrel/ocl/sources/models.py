@@ -45,11 +45,17 @@ class SourceVersion(ConceptContainerVersionModel):
 
     def update_concept_version(self, concept_version):
         previous_version = concept_version.previous_version
+        save_previous_version = False
         if previous_version and previous_version.id in self.concepts:
+            save_previous_version = True
             index = self.concepts.index(previous_version.id)
             self.concepts[index] = concept_version.id
         else:
             self.concepts.append(concept_version.id)
+        self.save()
+        concept_version.save()
+        if save_previous_version:
+            previous_version.save()
 
     def seed_concepts(self):
         seed_concepts_from = self.previous_version or self.parent_version
