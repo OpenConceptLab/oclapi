@@ -1,10 +1,8 @@
 from itertools import chain
 from urlparse import urljoin
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
@@ -53,16 +51,20 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         return self.get_display_locale_for(self)
 
     @property
+    def owner(self):
+        return self.parent.owner
+
+    @property
     def owner_name(self):
-        return self.parent.parent_resource
+        return self.parent.owner_name
 
     @property
     def owner_type(self):
-        return self.parent.parent_resource_type
+        return self.parent.owner_type
 
     @property
     def owner_url(self):
-        return self.parent.parent_url
+        return self.parent.owner_url
 
     @property
     def num_versions(self):
@@ -194,13 +196,8 @@ class ConceptVersion(ResourceVersionModel):
         return self.versioned_object.mnemonic
 
     @property
-    def owner_url(self):
-        owner = self.versioned_object.owner
-        if hasattr(owner, 'username'):
-            kwargs = {'user': self.versioned_object.owner.username}
-            return reverse('userprofile-detail', kwargs=kwargs)
-        else:
-            return reverse_resource(self.versioned_object.owner, 'organization-detail')
+    def owner(self):
+        return self.versioned_object.owner
 
     @property
     def owner_name(self):
@@ -209,6 +206,10 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def owner_type(self):
         return self.versioned_object.owner_type
+
+    @property
+    def owner_url(self):
+        return self.versioned_object.owner_url
 
     @property
     def display_name(self):
@@ -280,7 +281,9 @@ class ConceptVersion(ResourceVersionModel):
             released=False,
             previous_version=previous_version,
             parent_version=parent_version,
-            version_created_by=concept.owner.username
+            version_created_by=concept.created_by,
+            created_by=concept.created_by,
+            updated_by=concept.updated_by,
         )
 
     @classmethod
@@ -441,15 +444,15 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
 
     @property
     def owner_name(self):
-        return self.parent.parent_resource if self.parent else None
+        return self.parent.owner_name if self.parent else None
 
     @property
     def owner_type(self):
-        return self.parent.parent_resource_type if self.parent else None
+        return self.parent.owner_type if self.parent else None
 
     @property
     def owner_url(self):
-        return self.parent.parent_url if self.parent else None
+        return self.parent.owner_url if self.parent else None
 
     @property
     def display_name(self):
@@ -468,24 +471,25 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
         return 'concept'
 
 
-@receiver(post_save, sender=User)
-def propagate_owner_status(sender, instance=None, created=False, **kwargs):
-    if instance.is_active:
-        for concept in Concept.objects.filter(owner=instance):
-            concept.undelete()
-    else:
-        for concept in Concept.objects.filter(owner=instance):
-            concept.soft_delete()
-
 @receiver(post_save, sender=Source)
-def propagate_public_access(sender, instance=None, created=False, **kwargs):
+def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
+    if created:
+        return
     for concept in Concept.objects.filter(parent_id=instance.id):
+        update_index = False
+        if concept.is_active != instance.is_active:
+            update_index = True
+            concept.is_active = instance.is_active
         if concept.public_access != instance.public_access:
+            update_index |= True
             concept.public_access = instance.public_access
+        if update_index:
             for concept_version in ConceptVersion.objects.filter(versioned_object_id=concept.id):
-                concept_version.public_access = concept.public_access
+                concept_version.is_active = instance.is_active
+                concept_version.public_access = instance.public_access
                 concept_version.save()
             concept.save()
+
 
 @receiver(post_save, sender=ConceptVersion)
 def update_references(sender, instance=None, created=False, **kwargs):

@@ -12,15 +12,15 @@ class DictionaryItemMixin(object):
     @classmethod
     def persist_new(cls, obj, **kwargs):
         errors = dict()
-        user = kwargs.pop('owner', None)
+        user = kwargs.pop('creator', None)
         if not user:
-            errors['owner'] = 'Concept owner cannot be null.'
+            errors['creator'] = 'Concept creator cannot be null.'
         parent_resource = kwargs.pop('parent_resource', None)
         if not parent_resource:
             errors['parent'] = 'Concept parent cannot be null.'
         if errors:
             return errors
-        obj.owner = user
+        obj.created_by = user
         obj.updated_by = user
         obj.parent = parent_resource
         obj.public_access = parent_resource.public_access

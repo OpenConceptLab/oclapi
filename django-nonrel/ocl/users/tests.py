@@ -94,21 +94,18 @@ class UserProfileTest(TestCase):
         self.assertEquals(0, user.public_sources)
         Source.objects.create(
             mnemonic='source1',
-            owner=self.user1,
             parent=user,
             name='Source One',
         )
         self.assertEquals(1, user.public_sources)
         Source.objects.create(
             mnemonic='source1',
-            owner=self.user1,
             parent=self.user1,
             name='Source One',
         )
         self.assertEquals(1, user.public_sources)
         Source.objects.create(
             mnemonic='source2',
-            owner=self.user1,
             parent=user,
             name='Source Two',
         )

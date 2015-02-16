@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -71,18 +70,19 @@ class CollectionVersion(ConceptContainerVersionModel):
             versioned_object_type=ContentType.objects.get_for_model(Collection),
             released=released,
             previous_version=previous_version,
-            parent_version=parent_version
+            parent_version=parent_version,
+            created_by=collection.created_by,
+            updated_by=collection.updated_by,
         )
 
 
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
 
-@receiver(post_save, sender=User)
+@receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
-    if instance.is_active:
-        for collection in Collection.objects.filter(owner=instance):
-            collection.undelete()
-    else:
-        for collection in Collection.objects.filter(owner=instance):
-            collection.soft_delete()
+    if created:
+        return False
+    for collection in Collection.objects.filter(parent_id=instance.id, parent_type=ContentType.objects.get_for_model(sender)):
+        if instance.is_active != collection.is_active:
+            collection.undelete() if instance.is_active else collection.soft_delete()

@@ -82,7 +82,6 @@ class OrganizationTestCase(TestCase):
         self.assertEquals(0, org.public_sources)
         Source.objects.create(
             mnemonic='source1',
-            owner=user,
             parent=org,
             name='Source One',
         )
@@ -94,14 +93,12 @@ class OrganizationTestCase(TestCase):
 
         Source.objects.create(
             mnemonic='source1',
-            owner=user,
             parent=org2,
             name='Source One',
         )
         self.assertEquals(1, org.public_sources)
         Source.objects.create(
             mnemonic='source2',
-            owner=user,
             parent=org,
             name='Source Two',
         )

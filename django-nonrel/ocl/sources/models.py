@@ -1,5 +1,3 @@
-from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -86,14 +84,15 @@ class SourceVersion(ConceptContainerVersionModel):
             versioned_object_type=ContentType.objects.get_for_model(type(source)),
             released=released,
             previous_version=previous_version,
-            parent_version=parent_version
+            parent_version=parent_version,
+            created_by=source.created_by,
+            updated_by=source.updated_by
         )
 
-@receiver(post_save, sender=User)
+@receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
-    if instance.is_active:
-        for source in Source.objects.filter(owner=instance):
-            source.undelete()
-    else:
-        for source in Source.objects.filter(owner=instance):
-            source.soft_delete()
+    if created:
+        return False
+    for source in Source.objects.filter(parent_id=instance.id, parent_type=ContentType.objects.get_for_model(sender)):
+        if instance.is_active != source.is_active:
+            source.undelete() if instance.is_active else source.soft_delete()

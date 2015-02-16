@@ -2,34 +2,93 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from concepts.models import Concept, ConceptVersion
-from oclapi.models import SubResourceBaseModel
+from concepts.models import Concept
+from oclapi.models import BaseModel
 from oclapi.utils import reverse_resource
+from sources.models import Source
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 
 
-class Mapping(SubResourceBaseModel):
+class Mapping(BaseModel):
+    parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
+    from_concept = models.ForeignKey(Concept, related_name='mappings_from')
     to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to')
-    to_source_url = models.URLField(null=True, blank=True)
-    to_concept_name = models.TextField(null=True, blank=True)
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to')
     to_concept_code = models.TextField(null=True, blank=True)
+    to_concept_name = models.TextField(null=True, blank=True)
+    retired = models.BooleanField(default=False)
+    external_id = models.TextField(null=True, blank=True)
 
     class Meta:
         unique_together = (
-            ("parent_id", "parent_type", "map_type", "to_concept"),
-            ("parent_id", "parent_type", "map_type", "to_source_url", "to_concept_name", "to_concept_code")
+            ("parent", "map_type", "from_concept", "to_concept"),
+            ("parent", "map_type", "from_concept", "to_source", "to_concept_code", "to_concept_name")
         )
 
     def clean(self, exclude=None):
-        if not (self.to_concept or (self.to_source_url and self.to_concept_name and self.to_concept_code)):
-            raise ValidationError("Must specify either 'to_concept' or 'to_source_url', 'to_concept_name' & 'to_concept_code'")
-        if self.to_concept and self.to_source_url and self.to_concept_name and self.to_concept_code:
-            raise ValidationError("Must specify one of 'to_concept' or 'to_source_url', 'to_concept_name' & 'to_concept_code'.  Cannot specify both.")
+        messages = []
+        try:
+            self.from_concept
+        except Concept.DoesNotExist:
+            messages.append("Must specify a 'from_concept'.")
+        if not self.to_concept or (self.to_source and self.to_concept_code and self.to_concept_name):
+            messages.append("Must specify either 'to_concept' or 'to_source', 'to_concept_code' & 'to_concept_name'")
+        if self.to_concept and (self.to_source or self.to_concept_name or self.to_concept_code):
+            messages.append("Must specify one of 'to_concept' or 'to_source', 'to_concept_name' & 'to_concept_code'.  Cannot specify both.")
+        if messages:
+            raise ValidationError(' '.join(messages))
+
+    @property
+    def from_source(self):
+        return self.from_concept.parent
+
+    @property
+    def from_source_owner(self):
+        return self.from_source.owner_name
+
+    @property
+    def from_source_name(self):
+        return self.from_source.mnemonic
+
+    @property
+    def from_source_url(self):
+        return reverse_resource(self.from_source, 'source-detail')
+
+    @property
+    def from_source_shorthand(self):
+        return "%s:%s" % (self.from_source_owner, self.from_source_name)
+
+    @property
+    def from_concept_code(self):
+        return self.from_concept.mnemonic
+
+    @property
+    def from_concept_url(self):
+        return reverse_resource(self.from_concept, 'concept-detail')
+
+    @property
+    def from_concept_shorthand(self):
+        return "%s:%s" % (self.from_source_shorthand, self.from_concept_code)
+
+    def get_to_source(self):
+        return self.to_source or self.to_concept.parent
+
+    @property
+    def to_source_name(self):
+        return self.get_to_source().mnemonic
 
     def get_to_source_url(self):
-        return self.to_source_url or reverse_resource(self.to_concept.parent, 'source-detail')
+        return reverse_resource(self.get_to_source(), 'source-detail')
+
+    @property
+    def to_source_owner(self):
+        return unicode(self.get_to_source().parent)
+
+    @property
+    def to_source_shorthand(self):
+        return "%s:%s" % (self.to_source_owner, self.to_source_name)
 
     def get_to_concept_name(self):
         return self.to_concept_name or self.to_concept.display_name
@@ -37,53 +96,8 @@ class Mapping(SubResourceBaseModel):
     def get_to_concept_code(self):
         return self.to_concept_code or self.to_concept.mnemonic
 
-    @property
-    def to_source_name(self):
-        return self.to_concept.parent.mnemonic if self.to_concept else None
-
-    @property
-    def to_source_owner(self):
-        return self.to_concept.parent.parent.mnemonic if self.to_concept else None
-
-    @property
-    def from_concept_code(self):
-        return self.parent.mnemonic
-
-    @property
-    def from_source(self):
-        return self.parent.parent
-
-    @property
-    def from_source_name(self):
-        return self.parent.parent.mnemonic
-
-    @property
-    def from_source_shorthand(self):
-        source = self.from_source
-        owner = source.parent
-        return "%s:%s" % (owner.mnemonic, source.mnemonic)
-
-    @property
-    def from_concept_shorthand(self):
-        return "%s:%s" % (self.from_source_shorthand, self.parent.mnemonic)
-
-    @property
-    def to_source_shorthand(self):
-        if not self.to_concept:
-            return None
-        source = self.to_concept.parent
-        owner = source.parent
-        return "%s:%s" % (owner.mnemonic, source.mnemonic)
-
-    @property
     def to_concept_shorthand(self):
-        if not self.to_concept:
-            return None
-        return "%s:%s" % (self.to_source_shorthand, self.to_concept.mnemonic)
-
-    @property
-    def from_source_owner(self):
-        return self.parent.parent.parent.mnemonic
+        return "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
 
     @staticmethod
     def resource_type():
@@ -112,13 +126,6 @@ class Mapping(SubResourceBaseModel):
                 obj.mnemonic = obj.id
                 obj.save(**kwargs)
 
-            # Create a new version of the "from" concept
-            concept_version = ConceptVersion.get_latest_version_of(obj.parent)
-            new_version = concept_version.clone()
-            action = 'Added' if created else 'Updated'
-            new_version.update_comment = "%s mapping: %s" % (action, obj.mnemonic)
-            ConceptVersion.persist_clone(new_version)
-
             persisted = True
         finally:
             if not persisted:
@@ -136,7 +143,7 @@ class Mapping(SubResourceBaseModel):
         obj.updated_by = owner
         parent_resource = kwargs.pop('parent_resource', None)
         if parent_resource is None:
-            non_field_errors.append('Must specify a parent resource (the "from" concept).')
+            non_field_errors.append('Must specify a parent source')
         obj.parent = parent_resource
         obj.public_access = parent_resource.public_access
         if non_field_errors:
@@ -147,9 +154,26 @@ class Mapping(SubResourceBaseModel):
         return cls.persist_changes(obj, updated_by, **kwargs)
 
 
-@receiver(post_save, sender=Concept)
-def propagate_public_access(sender, instance=None, created=False, **kwargs):
+@receiver(post_save, sender=Source)
+def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
+    if created:
+        return
     for mapping in Mapping.objects.filter(parent_id=instance.id):
-        if instance.public_access != mapping.public_access:
+        update_index = False
+        if mapping.is_active != instance.is_active:
+            update_index = True
+            mapping.is_active = instance.is_active
+        if mapping.public_access != instance.public_access:
+            update_index |= True
             mapping.public_access = instance.public_access
+        if update_index:
+            mapping.save()
+
+
+@receiver(post_save, sender=Source)
+def propagate_owner_status(sender, instance=None, created=False, **kwargs):
+    if created:
+        return
+    for mapping in Mapping.objects.filter(parent_id=instance.id):
+        if (instance.is_active and not mapping.is_active) or (mapping.is_active and not instance.is_active):
             mapping.save()

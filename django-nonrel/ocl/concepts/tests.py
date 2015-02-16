@@ -51,7 +51,7 @@ class ConceptBaseTest(TestCase):
             description='This is the first test source'
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
         Source.persist_new(self.source1, **kwargs)
@@ -69,7 +69,7 @@ class ConceptBaseTest(TestCase):
             description='This is the second test source'
         )
         kwargs = {
-            'owner': self.user2,
+            'creator': self.user2,
             'parent_resource': self.org2,
         }
         Source.persist_new(self.source2, **kwargs)
@@ -81,7 +81,7 @@ class ConceptTest(ConceptBaseTest):
     def test_create_concept_positive(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
@@ -93,14 +93,14 @@ class ConceptTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
 
     def test_create_concept_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
             concept = Concept(
-                owner=self.user1,
+                created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
                 concept_class='First',
@@ -123,7 +123,7 @@ class ConceptTest(ConceptBaseTest):
         with self.assertRaises(ValidationError):
             concept = Concept(
                 mnemonic='concept1',
-                owner=self.user1,
+                created_by=self.user1,
                 updated_by=self.user1,
                 concept_class='First',
             )
@@ -134,7 +134,7 @@ class ConceptTest(ConceptBaseTest):
         with self.assertRaises(ValidationError):
             concept = Concept(
                 mnemonic='concept1',
-                owner=self.user1,
+                created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
             )
@@ -144,7 +144,7 @@ class ConceptTest(ConceptBaseTest):
     def test_concept_display_name(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
@@ -161,14 +161,14 @@ class ConceptTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertEquals(display_name.name, concept.display_name)
         self.assertEquals(display_name.locale, concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
 
     def test_concept_display_name_preferred(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
@@ -191,15 +191,15 @@ class ConceptTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertEquals(display_name1.name, concept.display_name)
         self.assertEquals(display_name1.locale, concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
 
     def test_concept_access_changes_with_source(self):
         public_access = self.source1.public_access
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             public_access=public_access,
@@ -222,14 +222,14 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_positive(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -239,8 +239,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
@@ -253,7 +253,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_negative__no_owner(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -264,7 +265,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         }
         errors = Concept.persist_new(concept, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertTrue('owner' in errors)
+        self.assertTrue('creator' in errors)
 
         self.assertFalse(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertEquals(0, concept.num_versions)
@@ -275,14 +276,15 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_negative__no_parent(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
         }
         errors = Concept.persist_new(concept, **kwargs)
         self.assertEquals(1, len(errors))
@@ -297,14 +299,15 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_negative__repeated_mnemonic(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -314,8 +317,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
@@ -327,12 +330,13 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         # Repeat with same mnemonic
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -346,14 +350,15 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_positive__repeated_mnemonic(self):
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -363,8 +368,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
@@ -377,14 +382,15 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         # Repeat with same mnemonic, different parent
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source2,
             concept_class='First',
         )
         source_version = SourceVersion.get_latest_version_of(self.source2)
         self.assertEquals(0, len(source_version.concepts))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source2,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -414,12 +420,13 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
             'parent_resource_version': version1
         }
@@ -430,8 +437,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept.retired)
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
-        self.assertEquals(self.source1.parent_resource, concept.owner_name)
-        self.assertEquals(self.source1.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)
@@ -450,12 +457,13 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(0, len(source_version.concepts))
         concept = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         errors = Concept.persist_new(concept, **kwargs)
@@ -496,7 +504,8 @@ class ConceptVersionTest(ConceptBaseTest):
         super(ConceptVersionTest, self).setUp()
         self.concept1 = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -506,19 +515,20 @@ class ConceptVersionTest(ConceptBaseTest):
         )
         self.concept1.names.append(display_name)
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         Concept.persist_new(self.concept1, **kwargs)
 
         self.concept2 = Concept(
             mnemonic='concept2',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='Second',
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept2, **kwargs)
@@ -530,6 +540,8 @@ class ConceptVersionTest(ConceptBaseTest):
             versioned_object=self.concept1,
             concept_class='First',
             names=self.concept1.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
             version_created_by=self.user1.username
         )
         concept_version.full_clean()
@@ -582,6 +594,8 @@ class ConceptVersionTest(ConceptBaseTest):
             versioned_object=self.concept1,
             concept_class='First',
             names=self.concept1.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
             version_created_by=self.user1.username
         )
         concept_version.full_clean()
@@ -602,7 +616,9 @@ class ConceptVersionTest(ConceptBaseTest):
 
         version2 = concept_version.clone()
         version2.mnemonic = 'version2'
-        version2.version_created_by = self.user2.username
+        version2.created_by = self.user1.username
+        version2.updated_by = self.user1.username
+        version2.version_created_by=self.user1.username
         version2.full_clean()
         version2.save()
 
@@ -627,6 +643,8 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_class='First',
             public_access=public_access,
             names=self.concept1.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
             version_created_by=self.user1.username
         )
         concept_version.full_clean()
@@ -649,7 +667,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         display_name = LocalizedText(name='concept1', locale='en')
         self.concept1.names.append(display_name)
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         Concept.persist_new(self.concept1, **kwargs)
@@ -657,7 +675,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
         self.concept2 = Concept(mnemonic='concept2', concept_class='Second')
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept2, **kwargs)
@@ -668,7 +686,9 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
             concept_class='First',
             names=self.concept1.names,
             previous_version=initial_version,
-            version_created_by=self.user1.username
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
+            version_created_by=self.user1.username,
         )
         self.concept_version.full_clean()
         self.concept_version.save()
@@ -720,7 +740,8 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
         super(ConceptReferenceBaseTest, self).setUp()
         self.concept1 = Concept(
             mnemonic='concept1',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
         )
@@ -730,7 +751,7 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
         )
         self.concept1.names.append(display_name)
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source1,
         }
         Concept.persist_new(self.concept1, **kwargs)
@@ -740,12 +761,13 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
 
         self.concept2 = Concept(
             mnemonic='concept2',
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.source1,
             concept_class='Second',
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept2, **kwargs)
@@ -757,7 +779,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
 
     def test_create_concept_reference_is_current__positive(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
@@ -779,7 +801,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
 
     def test_create_concept_reference_concept_version__positive(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
@@ -803,7 +825,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_source_version__positive(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
             mnemonic='reference1',
@@ -827,7 +849,7 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_concept_and_source_versions__negative(self):
         with self.assertRaises(ValidationError):
             concept_reference = ConceptReference(
-                owner=self.user1,
+                created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
                 mnemonic='reference1',
@@ -841,14 +863,14 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
     def test_create_concept_reference_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
             concept = ConceptReference(
-                owner=self.user1,
+                created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
             )
             concept.full_clean()
             concept.save()
 
-    def test_create_concept_reference_negative__no_owner(self):
+    def test_create_concept_reference_negative__no_created_by(self):
         with self.assertRaises(ValidationError):
             concept = ConceptReference(
                 updated_by=self.user1,
@@ -862,7 +884,8 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         with self.assertRaises(ValidationError):
             concept = ConceptReference(
                 mnemonic='concept1',
-                owner=self.user1,
+                created_by=self.user1,
+                updated_by=self.user1,
             )
             concept.full_clean()
             concept.save()
@@ -884,7 +907,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             description='This is the first test collection'
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
         Collection.persist_new(self.collection1, **kwargs)
@@ -902,7 +925,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             description='This is the second test collection'
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
         Collection.persist_new(self.collection2, **kwargs)
@@ -910,14 +933,15 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_positive(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
             'child_list_attribute': 'concept_references'
         }
@@ -931,7 +955,8 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_negative__no_owner(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
@@ -943,7 +968,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
         }
         errors = ConceptReference.persist_new(concept_reference, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertTrue('owner' in errors)
+        self.assertTrue('creator' in errors)
 
         self.assertFalse(ConceptReference.objects.filter(mnemonic='reference1').exists())
         collection_version = CollectionVersion.objects.get(id=collection_version.id)
@@ -952,14 +977,15 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_negative__no_parent(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'child_list_attribute': 'concept_references'
         }
         errors = ConceptReference.persist_new(concept_reference, **kwargs)
@@ -973,14 +999,15 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_negative__no_child_list_attribute(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
         }
         with self.assertRaises(AttributeError):
@@ -992,7 +1019,8 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_negative__repeated_mnemonic(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.collection1,
             mnemonic='reference1',
             concept=self.concept1
@@ -1000,7 +1028,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
             'child_list_attribute': 'concept_references'
         }
@@ -1014,14 +1042,15 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
         # Repeat with same mnemonic
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection2)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
             'child_list_attribute': 'concept_references'
         }
@@ -1034,7 +1063,8 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
     def test_persist_new_positive__repeated_mnemonic(self):
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             parent=self.collection1,
             mnemonic='reference1',
             concept=self.concept1
@@ -1042,7 +1072,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
             'child_list_attribute': 'concept_references'
         }
@@ -1056,14 +1086,15 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
         # Repeat with same mnemonic, different parent
         concept_reference = ConceptReference(
-            owner=self.user1,
+            created_by=self.user1,
+            updated_by=self.user1,
             mnemonic='reference1',
             concept=self.concept1
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection2)
         self.assertEquals(0, len(collection_version.concept_references))
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection2,
             'child_list_attribute': 'concept_references'
         }
@@ -1084,11 +1115,12 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
 
         concept_reference = ConceptReference(
             mnemonic='concept1',
-            owner=self.user1,
-            concept=self.concept1,
+            created_by=self.user1,
+            updated_by=self.user1,
+            concept=self.concept1
         )
         kwargs = {
-            'owner': self.user1,
+            'creator': self.user1,
             'parent_resource': self.collection1,
             'parent_resource_version': version1,
             'child_list_attribute': 'concept_references',

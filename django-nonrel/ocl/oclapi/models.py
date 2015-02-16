@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -30,6 +31,8 @@ class BaseModel(models.Model):
     public_access = models.CharField(max_length=16, choices=ACCESS_TYPE_CHOICES, default=DEFAULT_ACCESS_TYPE, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.TextField()
+    updated_by = models.TextField()
     is_active = models.BooleanField(default=True)
     extras = DictField(null=True, blank=True)
 
@@ -75,8 +78,6 @@ class BaseResourceModel(BaseModel):
     (An Organization is a base resource, but a Concept is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)], unique=True)
-    created_by = models.TextField()
-    updated_by = models.TextField()
 
     class Meta:
         abstract = True
@@ -92,8 +93,6 @@ class SubResourceBaseModel(BaseModel):
     (A Source is a sub-resource, but an Organization is not.)
     """
     mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
-    owner = models.ForeignKey(User, db_index=False)
-    updated_by = models.TextField()
     parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
@@ -186,6 +185,27 @@ class ConceptContainerModel(SubResourceBaseModel):
         abstract = True
 
     @property
+    def owner(self):
+        return self.parent
+
+    @property
+    def owner_name(self):
+        return unicode(self.owner)
+
+    @property
+    def owner_type(self):
+        return self.owner.resource_type
+
+    @property
+    def owner_url(self):
+        if hasattr(self.owner, 'username'):
+            kwargs = {'user': self.owner.username}
+            return reverse('userprofile-detail', kwargs=kwargs)
+        else:
+            return reverse_resource(self.owner, 'organization-detail')
+        pass
+
+    @property
     def num_versions(self):
         return self.get_version_model().objects.filter(versioned_object_id=self.id).count()
 
@@ -198,15 +218,15 @@ class ConceptContainerModel(SubResourceBaseModel):
         errors = dict()
         parent_resource = kwargs.pop('parent_resource', None)
         if not parent_resource:
-            errors['parent'] = 'Source parent cannot be None.'
-        user = kwargs.pop('owner', None)
+            errors['parent'] = 'Parent resource cannot be None.'
+        user = kwargs.pop('creator', None)
         if not user:
-            errors['owner'] = 'Source owner cannot be None.'
+            errors['creator'] = 'Creator cannot be None.'
         if errors:
             return errors
 
         obj.parent = parent_resource
-        obj.owner = user
+        obj.created_by = user
         obj.updated_by = user
         try:
             obj.full_clean()
@@ -261,6 +281,22 @@ class ConceptContainerVersionModel(ResourceVersionModel):
 
     class Meta(ResourceVersionModel.Meta):
         abstract = True
+
+    @property
+    def owner(self):
+        return self.versioned_object.owner
+
+    @property
+    def owner_name(self):
+        return self.versioned_object.ower_name
+
+    @property
+    def owner_type(self):
+        return self.versioned_object.owner_type
+
+    @property
+    def owner_url(self):
+        return self.versioned_object.owner_url
 
     @property
     def parent_resource(self):
