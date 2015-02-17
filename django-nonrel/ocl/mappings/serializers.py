@@ -10,6 +10,7 @@ __author__ = 'misternando'
 class MappingBaseSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type', read_only=True)
     id = serializers.CharField(read_only=True)
+    external_id = serializers.CharField(required=False)
     from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
     to_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
     to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
@@ -33,6 +34,7 @@ class MappingBaseSerializer(serializers.Serializer):
         mapping.to_source = attrs.get('to_source', mapping.to_source)
         mapping.to_concept_name = attrs.get('to_concept_name', mapping.to_concept_name)
         mapping.to_concept_code = attrs.get('to_concept_code', mapping.to_concept_code)
+        mapping.external_id = attrs.get('external_id', mapping.external_id)
         return mapping
 
     class Meta:

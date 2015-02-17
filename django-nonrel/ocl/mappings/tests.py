@@ -6,11 +6,13 @@ Replace this with more appropriate tests for your application.
 """
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 from django.test import TestCase
 from concepts.models import Concept
 from mappings.models import Mapping
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
@@ -19,15 +21,17 @@ from users.models import UserProfile
 class MappingBaseTest(TestCase):
 
     def setUp(self):
-        self.user1 = User.objects.create(
+        self.user1 = User.objects.create_user(
             username='user1',
             email='user1@test.com',
+            password='user1',
             last_name='One',
             first_name='User'
         )
-        self.user2 = User.objects.create(
+        self.user2 = User.objects.create_user(
             username='user2',
             email='user2@test.com',
+            password='user2',
             last_name='Two',
             first_name='User'
         )
@@ -37,6 +41,7 @@ class MappingBaseTest(TestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
+        add_user_to_org(self.userprofile2, self.org2)
 
         self.source1 = Source(
             name='source1',
@@ -615,3 +620,207 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertTrue(mapping.id in source_version.mappings)
 
 
+class MappingViewsTest(MappingBaseTest):
+
+    def test_mappings_list_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+
+    def test_mappings_create_negative__no_params(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 400)
+
+    def test_mappings_create_negative__no_from_concept(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As'
+        }
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 400)
+
+    def test_mappings_create_negative__no_map_type(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'from_concept_url': self.concept1.url
+        }
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 400)
+
+    def test_mappings_create_negative__no_to_concept(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+        }
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 400)
+
+    def test_mappings_create_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 201)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_positive__type2(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_source_url': self.source1.url,
+            'to_concept_code': '10101',
+            'to_concept_name': 'binary',
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 201)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_negative__both_types(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'to_source_url': self.source1.url,
+            'to_concept_code': '10101',
+            'to_concept_name': 'binary',
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 400)
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_negative__self_mapping(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept1.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 400)
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_negative__not_authorized(self):
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 404)
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_positive__user_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1.username,
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 201)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_negative__other_user_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user2.username,
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 404)
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_positive__org_owner(self):
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 201)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+
+    def test_mappings_create_negative__other_org_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 403)
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
