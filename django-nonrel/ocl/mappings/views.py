@@ -1,5 +1,6 @@
 from itertools import chain
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse
 from rest_framework import mixins, status
@@ -10,6 +11,7 @@ from mappings.models import Mapping
 from mappings.permissions import CanEditParentSource, CanViewParentSource
 from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer
 from oclapi.mixins import ListWithHeadersMixin
+from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ChildResourceMixin
 
 
@@ -63,13 +65,24 @@ class MappingListView(MappingBaseView,
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, owner=request.user, parent_resource=self.parent_resource)
+            self.object = serializer.save(force_insert=True, parent_resource=self.parent_resource)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)
                 serializer = MappingRetrieveDestroySerializer(self.object)
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        queryset = super(ChildResourceMixin, self).get_queryset()
+        if self.parent_resource:
+            # If we have a parent resource at this point, then the implication is that we have access to that resource
+            if hasattr(self.parent_resource, 'versioned_object'):
+                self.parent_resource = self.parent_resource.versioned_object
+            queryset = queryset.filter(parent_id=self.parent_resource.id)
+        else:
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
+        return queryset
 
     def get_inverse_queryset(self):
         if not self.parent_resource:

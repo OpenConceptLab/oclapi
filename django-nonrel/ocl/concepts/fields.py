@@ -87,6 +87,33 @@ class LocalizedTextListField(ListField):
         return '%s_type' % self.name_attr
 
 
+class SourceReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
+
+    def from_native(self, value):
+        try:
+            http_prefix = value.startswith(('http:', 'https:'))
+        except AttributeError:
+            msg = self.error_messages['incorrect_type']
+            raise ValidationError(msg % type(value).__name__)
+
+        if http_prefix:
+            # If needed convert absolute URLs to relative path
+            value = urlparse.urlparse(value).path
+            prefix = get_script_prefix()
+            if value.startswith(prefix):
+                value = '/' + value[len(prefix):]
+
+        request = self.context['request']
+        path_obj = self.get_object_for_path(value, request)
+        if hasattr(path_obj, 'versioned_object_id'):
+            obj = path_obj.versioned_object
+            obj._source_version = path_obj
+        else:
+            obj = path_obj
+
+        return obj
+
+
 class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
 
     def from_native(self, value):

@@ -59,6 +59,10 @@ class ConceptDetailSerializer(serializers.Serializer):
         return concept
 
     def save_object(self, obj, **kwargs):
+        request_user = self.context['request'].user
+        kwargs.update({
+            'creator': request_user
+        })
         errors = Concept.persist_new(obj, **kwargs)
         self._errors.update(errors)
 

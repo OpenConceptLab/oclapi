@@ -42,6 +42,10 @@ class Mapping(BaseModel):
             raise ValidationError(' '.join(messages))
 
     @property
+    def mnemonic(self):
+        return self.id
+
+    @property
     def from_source(self):
         return self.from_concept.parent
 
@@ -74,31 +78,32 @@ class Mapping(BaseModel):
         return "%s:%s" % (self.from_source_shorthand, self.from_concept_code)
 
     def get_to_source(self):
-        return self.to_source or self.to_concept.parent
+        return self.to_source or self.to_concept and self.to_concept.parent
 
     @property
     def to_source_name(self):
-        return self.get_to_source().mnemonic
+        return self.get_to_source() and self.get_to_source().mnemonic
 
-    def get_to_source_url(self):
-        return reverse_resource(self.get_to_source(), 'source-detail')
+    @property
+    def to_source_url(self):
+        return self.get_to_source() and reverse_resource(self.get_to_source(), 'source-detail')
 
     @property
     def to_source_owner(self):
-        return unicode(self.get_to_source().parent)
+        return self.get_to_source() and unicode(self.get_to_source().parent)
 
     @property
     def to_source_shorthand(self):
-        return "%s:%s" % (self.to_source_owner, self.to_source_name)
+        return self.get_to_source() and "%s:%s" % (self.to_source_owner, self.to_source_name)
 
     def get_to_concept_name(self):
-        return self.to_concept_name or self.to_concept.display_name
+        return self.to_concept_name or (self.to_concept and self.to_concept.display_name)
 
     def get_to_concept_code(self):
-        return self.to_concept_code or self.to_concept.mnemonic
+        return self.to_concept_code or (self.to_concept and self.to_concept.mnemonic)
 
     def to_concept_shorthand(self):
-        return "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
+        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
 
     @staticmethod
     def resource_type():
