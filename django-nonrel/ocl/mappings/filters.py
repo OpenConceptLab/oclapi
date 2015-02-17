@@ -9,7 +9,9 @@ class MappingSearchFilter(HaystackSearchFilter):
 
     def get_filters(self, request, view):
         sqs = []
-
+        #sqs = [SQ(source_version=view.parent_resource_version.id)]
+        #if not view.include_retired:
+        #    sqs.append(SQ(retired=False))
         map_type = request.QUERY_PARAMS.get('map_type','')
         if map_type:
             sqs.append(SQ(map_type__exact=map_type))
