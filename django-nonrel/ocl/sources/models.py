@@ -40,6 +40,7 @@ SOURCE_VERSION_TYPE = 'Source Version'
 class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     concepts = ListField()
+    mappings = ListField()
 
     def update_concept_version(self, concept_version):
         previous_version = concept_version.previous_version
@@ -59,6 +60,11 @@ class SourceVersion(ConceptContainerVersionModel):
         seed_concepts_from = self.previous_version or self.parent_version
         if seed_concepts_from:
             self.concepts = list(seed_concepts_from.concepts)
+
+    def seed_mappings(self):
+        seed_mappings_from = self.previous_version or self.parent_version
+        if seed_mappings_from:
+            self.mappings = list(seed_mappings_from.mappings)
 
     @property
     def resource_type(self):

@@ -323,6 +323,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     def persist_new(cls, obj, **kwargs):
         obj.is_active = True
         kwargs['seed_concepts'] = True
+        kwargs['seed_mappings'] = True
         return cls.persist_changes(obj, **kwargs)
 
     @classmethod
@@ -375,6 +376,11 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         seed_concepts = kwargs.pop('seed_concepts', False)
         if seed_concepts:
             obj.seed_concepts()
+
+        # Seed mappings from another version, if requested
+        seed_mappings = kwargs.pop('seed_mappings', False)
+        if seed_mappings:
+            obj.seed_mappings()
 
         # See if we need to toggle the released flag
         previous_release = None

@@ -56,6 +56,7 @@ class Command(BaseCommand):
             try:
                 new_version = SourceVersion.for_base_object(self.source, options['new_version'], previous_version=self.source_version)
                 new_version.seed_concepts()
+                new_version.seed_mappings()
                 new_version.full_clean()
                 new_version.save()
                 self.source_version = new_version

@@ -30,10 +30,11 @@ class Mapping(BaseModel):
     def clean(self, exclude=None):
         messages = []
         try:
-            self.from_concept
+            if self.from_concept == self.to_concept:
+                messages.append("Cannot map concept to itself.")
         except Concept.DoesNotExist:
             messages.append("Must specify a 'from_concept'.")
-        if not self.to_concept or (self.to_source and self.to_concept_code and self.to_concept_name):
+        if not (self.to_concept or (self.to_source and self.to_concept_code and self.to_concept_name)):
             messages.append("Must specify either 'to_concept' or 'to_source', 'to_concept_code' & 'to_concept_name'")
         if self.to_concept and (self.to_source or self.to_concept_name or self.to_concept_code):
             messages.append("Must specify one of 'to_concept' or 'to_source', 'to_concept_name' & 'to_concept_code'.  Cannot specify both.")
@@ -109,10 +110,9 @@ class Mapping(BaseModel):
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
-        created = kwargs.pop('created', False)
         errors = dict()
+        obj.updated_by = updated_by
         try:
-            obj.updated_by = updated_by
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
@@ -120,12 +120,7 @@ class Mapping(BaseModel):
 
         persisted = False
         try:
-            obj.updated_by = updated_by
             obj.save(**kwargs)
-            if created:
-                obj.mnemonic = obj.id
-                obj.save(**kwargs)
-
             persisted = True
         finally:
             if not persisted:
@@ -133,25 +128,62 @@ class Mapping(BaseModel):
         return errors
 
     @classmethod
-    def persist_new(cls, obj, updated_by, **kwargs):
+    def persist_new(cls, obj, created_by, **kwargs):
         errors = dict()
         non_field_errors = []
-        owner = kwargs.pop('owner', None)
-        if owner is None:
-            non_field_errors.append('Must specify an owner')
-        obj.owner = owner
-        obj.updated_by = owner
+
+        # Check for required fields
+        if not created_by:
+            non_field_errors.append('Must specify a creator')
         parent_resource = kwargs.pop('parent_resource', None)
-        if parent_resource is None:
+        if not parent_resource:
             non_field_errors.append('Must specify a parent source')
-        obj.parent = parent_resource
-        obj.public_access = parent_resource.public_access
         if non_field_errors:
             errors['non_field_errors'] = non_field_errors
             return errors
-        obj.mnemonic = 'TEMP'
-        kwargs.update({'created': True})
-        return cls.persist_changes(obj, updated_by, **kwargs)
+
+        # Populate required fields and validate
+        obj.created_by = created_by
+        obj.updated_by = created_by
+        obj.parent = parent_resource
+        obj.public_access = parent_resource.public_access
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+            return errors
+
+        # Get the parent source version and its initial list of mappings IDs
+        parent_resource_version = kwargs.pop('parent_resource_version', None)
+        if parent_resource_version is None:
+            parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
+        child_list_attribute = kwargs.pop('mapping_list_attribute', 'mappings')
+        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
+
+        errored_action = 'saving mapping'
+        persisted = False
+        try:
+            obj.save(**kwargs)
+
+            # Add the mapping to its parent source version
+            errored_action = 'associating mapping with parent resource'
+            parent_children = getattr(parent_resource_version, child_list_attribute) or []
+            parent_children.append(obj.id)
+            setattr(parent_resource_version, child_list_attribute, parent_children)
+            parent_resource_version.save()
+
+            # Save the mapping again to trigger the Solr update
+            errored_action = 'saving mapping to trigger Solr update'
+            obj.save()
+            persisted = True
+        finally:
+            if not persisted:
+                errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
+                setattr(parent_resource_version, child_list_attribute, initial_parent_children)
+                parent_resource_version.save()
+                if obj.id:
+                    obj.delete()
+        return errors
 
 
 @receiver(post_save, sender=Source)
