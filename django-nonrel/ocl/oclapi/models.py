@@ -194,7 +194,7 @@ class ConceptContainerModel(SubResourceBaseModel):
 
     @property
     def owner_type(self):
-        return self.owner.resource_type
+        return self.owner.resource_type()
 
     @property
     def owner_url(self):

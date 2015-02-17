@@ -14,8 +14,8 @@ class Mapping(BaseModel):
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')
-    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to')
-    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to')
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to', db_index=False)
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to', db_index=False)
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
@@ -46,12 +46,28 @@ class Mapping(BaseModel):
         return self.id
 
     @property
+    def source(self):
+        return self.parent.mnemonic
+
+    @property
+    def owner(self):
+        return self.parent.owner_name
+
+    @property
+    def owner_type(self):
+        return self.parent.owner_type
+
+    @property
     def from_source(self):
         return self.from_concept.parent
 
     @property
     def from_source_owner(self):
         return self.from_source.owner_name
+
+    @property
+    def from_source_owner_type(self):
+        return self.from_source.owner_type
 
     @property
     def from_source_name(self):
@@ -68,6 +84,10 @@ class Mapping(BaseModel):
     @property
     def from_concept_code(self):
         return self.from_concept.mnemonic
+
+    @property
+    def from_concept_name(self):
+        return self.from_concept.display_name
 
     @property
     def from_concept_url(self):
@@ -93,6 +113,10 @@ class Mapping(BaseModel):
         return self.get_to_source() and unicode(self.get_to_source().parent)
 
     @property
+    def to_source_owner_type(self):
+        return self.get_to_source() and self.get_to_source().owner_type
+
+    @property
     def to_source_shorthand(self):
         return self.get_to_source() and "%s:%s" % (self.to_source_owner, self.to_source_name)
 
@@ -102,6 +126,11 @@ class Mapping(BaseModel):
     def get_to_concept_code(self):
         return self.to_concept_code or (self.to_concept and self.to_concept.mnemonic)
 
+    @property
+    def to_concept_url(self):
+        return self.to_concept and reverse_resource(self.to_concept, 'concept-detail')
+
+    @property
     def to_concept_shorthand(self):
         return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
 

@@ -28,6 +28,17 @@ class MappingBaseView(ChildResourceMixin):
             self.permission_classes = (CanViewParentSource,)
         super(MappingBaseView, self).initialize(request, path_info_segment, **kwargs)
 
+    def get_queryset(self):
+        queryset = super(ChildResourceMixin, self).get_queryset()
+        if self.parent_resource:
+            # If we have a parent resource at this point, then the implication is that we have access to that resource
+            if hasattr(self.parent_resource, 'versioned_object'):
+                self.parent_resource = self.parent_resource.versioned_object
+            queryset = queryset.filter(parent_id=self.parent_resource.id)
+        else:
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
+        return queryset
+
 
 class MappingListView(MappingBaseView,
                       ListAPIView,
@@ -72,17 +83,6 @@ class MappingListView(MappingBaseView,
                 serializer = MappingRetrieveDestroySerializer(self.object)
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_queryset(self):
-        queryset = super(ChildResourceMixin, self).get_queryset()
-        if self.parent_resource:
-            # If we have a parent resource at this point, then the implication is that we have access to that resource
-            if hasattr(self.parent_resource, 'versioned_object'):
-                self.parent_resource = self.parent_resource.versioned_object
-            queryset = queryset.filter(parent_id=self.parent_resource.id)
-        else:
-            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
-        return queryset
 
     def get_inverse_queryset(self):
         if not self.parent_resource:

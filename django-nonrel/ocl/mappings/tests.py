@@ -4,6 +4,7 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import json
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -630,6 +631,139 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.get(reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
 
+    def test_mappings_get_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+        mapping = Mapping.objects.get(external_id='mapping1')
+
+        kwargs = {
+            'source': self.source1.mnemonic,
+            'mapping': mapping.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-detail', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(mapping.resource_type(), content['type'])
+        self.assertEquals(mapping.id, content['id'])
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_source_owner, content['from_source_owner'])
+        self.assertEquals(mapping.from_source_owner_type, content['from_source_owner_type'])
+        self.assertEquals(mapping.from_source_name, content['from_source_name'])
+        self.assertEquals(mapping.from_source_url, content['from_source_url'])
+        self.assertEquals(mapping.from_concept_code, content['from_concept_code'])
+        self.assertEquals(mapping.from_concept_name, content['from_concept_name'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_owner, content['to_source_owner'])
+        self.assertEquals(mapping.to_source_owner_type, content['to_source_owner_type'])
+        self.assertEquals(mapping.to_source_name, content['to_source_name'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+
+    def test_mappings_get_positive__user_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1,
+            'source': self.source1.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+        mapping = Mapping.objects.get(external_id='mapping1')
+
+        kwargs = {
+            'user': self.user1,
+            'source': self.source1.mnemonic,
+            'mapping': mapping.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-detail', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(mapping.resource_type(), content['type'])
+        self.assertEquals(mapping.id, content['id'])
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_source_owner, content['from_source_owner'])
+        self.assertEquals(mapping.from_source_owner_type, content['from_source_owner_type'])
+        self.assertEquals(mapping.from_source_name, content['from_source_name'])
+        self.assertEquals(mapping.from_source_url, content['from_source_url'])
+        self.assertEquals(mapping.from_concept_code, content['from_concept_code'])
+        self.assertEquals(mapping.from_concept_name, content['from_concept_name'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_owner, content['to_source_owner'])
+        self.assertEquals(mapping.to_source_owner_type, content['to_source_owner_type'])
+        self.assertEquals(mapping.to_source_name, content['to_source_name'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+
+    def test_mappings_get_positive__org_owner(self):
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept1.url,
+            'to_concept_url': self.concept2.url,
+            'external_id': 'mapping1',
+            'public_access': 'None',
+        }
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+        mapping = Mapping.objects.get(external_id='mapping1')
+
+        self.client.logout()
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic,
+            'mapping': mapping.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-detail', kwargs=kwargs), data)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(mapping.resource_type(), content['type'])
+        self.assertEquals(mapping.id, content['id'])
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_source_owner, content['from_source_owner'])
+        self.assertEquals(mapping.from_source_owner_type, content['from_source_owner_type'])
+        self.assertEquals(mapping.from_source_name, content['from_source_name'])
+        self.assertEquals(mapping.from_source_url, content['from_source_url'])
+        self.assertEquals(mapping.from_concept_code, content['from_concept_code'])
+        self.assertEquals(mapping.from_concept_name, content['from_concept_name'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_owner, content['to_source_owner'])
+        self.assertEquals(mapping.to_source_owner_type, content['to_source_owner_type'])
+        self.assertEquals(mapping.to_source_name, content['to_source_name'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+
     def test_mappings_create_negative__no_params(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -687,6 +821,26 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.post(reverse('mapping-list', kwargs=kwargs), data)
         self.assertEquals(response.status_code, 201)
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+        mapping = Mapping.objects.get(external_id='mapping1')
+        content = json.loads(response.content)
+        self.assertEquals(mapping.resource_type(), content['type'])
+        self.assertEquals(mapping.id, content['id'])
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_source_owner, content['from_source_owner'])
+        self.assertEquals(mapping.from_source_owner_type, content['from_source_owner_type'])
+        self.assertEquals(mapping.from_source_name, content['from_source_name'])
+        self.assertEquals(mapping.from_source_url, content['from_source_url'])
+        self.assertEquals(mapping.from_concept_code, content['from_concept_code'])
+        self.assertEquals(mapping.from_concept_name, content['from_concept_name'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_owner, content['to_source_owner'])
+        self.assertEquals(mapping.to_source_owner_type, content['to_source_owner_type'])
+        self.assertEquals(mapping.to_source_name, content['to_source_name'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
 
     def test_mappings_create_positive__type2(self):
         self.client.login(username='user1', password='user1')

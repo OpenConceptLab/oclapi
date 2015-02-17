@@ -129,7 +129,6 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     owner = serializers.CharField(source='owner_name')
     owner_type = serializers.CharField()
     owner_url = serializers.URLField()
-    mappings_url = serializers.URLField()
     version = serializers.CharField(source='mnemonic')
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)

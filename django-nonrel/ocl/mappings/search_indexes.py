@@ -11,7 +11,7 @@ class MappingIndex(indexes.SearchIndex, indexes.Indexable):
     from_source = SortOrFilterField(model_attr='from_source_shorthand', indexed=True, stored=True)
     to_source = SortOrFilterField(model_attr='to_source_shorthand', indexed=True, stored=True)
     from_concept = SortOrFilterField(model_attr='from_concept_shorthand', indexed=True, stored=True)
-    to_concept = SortOrFilterField(model_attr='to_concept_shorthand', indexed=True, stored=True)
+    to_concept = SortOrFilterField(model_attr='to_concept_shorthand', indexed=True, stored=True, null=True)
 
     def get_model(self):
         return Mapping

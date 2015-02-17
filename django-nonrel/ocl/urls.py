@@ -27,7 +27,6 @@ urlpatterns = patterns('',
     url(r'^collections/', include('collection.urls')),
     url(r'^concepts/', ConceptVersionListAllView.as_view(), name='all-concepts'),
     url(r'^orgs/', include('orgs.urls')),
-    url(r'^sources/', include('sources.urls')),
     url(r'^users/', include('users.urls')),
     url(r'^mappings/$', MappingListView.as_view(), name='all-mappings'),
 

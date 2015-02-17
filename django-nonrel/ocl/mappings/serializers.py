@@ -2,7 +2,6 @@ from rest_framework import serializers
 from concepts.fields import ConceptReferenceField, SourceReferenceField
 from concepts.models import Concept
 from mappings.models import Mapping
-from oclapi.fields import HyperlinkedRelatedField
 
 __author__ = 'misternando'
 
@@ -11,16 +10,32 @@ class MappingBaseSerializer(serializers.Serializer):
     type = serializers.CharField(source='resource_type', read_only=True)
     id = serializers.CharField(read_only=True)
     external_id = serializers.CharField(required=False)
-    from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
-    to_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
-    to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
-    from_concept_code = serializers.CharField(read_only=True)
-    from_source = HyperlinkedRelatedField(source='from_source', read_only=True, view_name='source-detail')
-    from_source_name = serializers.CharField(read_only=True)
+    retired = serializers.BooleanField(required=False)
+    map_type = serializers.CharField(required=True)
+
     from_source_owner = serializers.CharField(read_only=True)
-    to_source_name = serializers.CharField(read_only=True)
+    from_source_owner_type = serializers.CharField(read_only=True)
+    from_source_name = serializers.CharField(read_only=True)
+    from_source_url = serializers.URLField(read_only=True)
+    from_concept_code = serializers.CharField(read_only=True)
+    from_concept_name = serializers.CharField(read_only=True)
+    from_concept_url = serializers.URLField()
+
     to_source_owner = serializers.CharField(read_only=True)
+    to_source_owner_type = serializers.CharField(read_only=True)
+    to_source_name = serializers.CharField(read_only=True)
+    to_source_url = serializers.URLField(source='get_to_source_url')
+    to_concept_code = serializers.CharField(source='get_to_concept_code')
+    to_concept_name = serializers.CharField(source='get_to_concept_name')
+    to_concept_url = serializers.URLField()
+
+    source = serializers.CharField(read_only=True)
+    owner = serializers.CharField(read_only=True)
+    owner_type = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)
+
+    extras = serializers.WritableField(required=False)
+
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.CharField(read_only=True)
@@ -60,8 +75,6 @@ class MappingRetrieveDestroySerializer(MappingBaseSerializer):
     map_type = serializers.CharField(required=False)
     from_source_url = serializers.URLField(required=False)
     to_source_url = serializers.URLField(required=False)
-    to_concept_name = serializers.CharField(required=False, source='get_to_concept_name')
-    to_concept_code = serializers.CharField(required=False, source='get_to_concept_code')
 
 
 class MappingUpdateSerializer(MappingBaseSerializer):
