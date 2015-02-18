@@ -58,7 +58,6 @@ class MappingListView(MappingBaseView,
     serializer_class = MappingCreateSerializer
     solr_fields = {}
     filter_backends = [MappingSearchFilter]
-    include_inverse_mappings = False
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)

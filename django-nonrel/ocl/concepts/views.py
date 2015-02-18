@@ -1,5 +1,6 @@
 import dateutil.parser
 from django.db.models import Q
+from django.db.models.query import EmptyQuerySet
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
@@ -9,6 +10,9 @@ from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilte
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer, ReferencesToVersionsSerializer
+from mappings.filters import MappingSearchFilter
+from mappings.models import Mapping
+from mappings.serializers import MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
@@ -248,6 +252,48 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
             filter_kwargs = {'versioned_object_id': self.versioned_object.id}
             return get_object_or_404(queryset, **filter_kwargs)
         return super(ConceptVersionRetrieveView, self).get_object()
+
+
+class ConceptMappingsView(ConceptBaseView, ListAPIView):
+    serializer_class = MappingListSerializer
+    filter_backends = [MappingSearchFilter]
+    queryset = Mapping.objects.filter(is_active=True)
+    concept = None
+    include_inverse_mappings = False
+    include_retired = False
+    parent_resource_version = None
+    updated_since = None
+    solr_fields = {}
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
+        include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
+        self.include_inverse_mappings = 'true' == include_inverse_param
+        parent_path_info = self.get_parent_in_path(path_info_segment, levels=1)
+        if parent_path_info and '/' != parent_path_info:
+            self.concept = self.get_object_for_path(parent_path_info, self.request)
+            parent_path_info = self.get_parent_in_path(parent_path_info, levels=2)
+            if parent_path_info and '/' != parent_path_info:
+                self.parent_resource = self.get_object_for_path(parent_path_info, self.request)
+                if hasattr(self.parent_resource, 'versioned_object'):
+                    self.parent_resource_version = self.parent_resource
+                    self.parent_resource = self.parent_resource.versioned_object
+                else:
+                    self.parent_resource_version = SourceVersion.get_latest_version_of(self.parent_resource)
+
+    def get_queryset(self):
+        if not self.parent_resource:
+            # pathological case
+            return EmptyQuerySet()
+        queryset = super(ChildResourceMixin, self).get_queryset()
+        queryset = queryset.filter(parent_id=self.parent_resource.id)
+        if self.include_inverse_mappings:
+            queryset = queryset.filter(Q(from_concept=self.concept) | Q(to_concept=self.concept))
+        else:
+            queryset = queryset.filter(from_concept=self.concept)
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
+        return queryset
 
 
 class ConceptExtrasView(ConceptBaseView, ListAPIView):

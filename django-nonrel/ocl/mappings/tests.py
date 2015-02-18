@@ -15,7 +15,7 @@ from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 from concepts.models import Concept
 from mappings.models import Mapping
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
@@ -148,6 +148,18 @@ class MappingBaseTest(TestCase):
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept3, **kwargs)
+
+        self.concept4 = Concept(
+            mnemonic='concept4',
+            updated_by=self.user2,
+            parent=self.source2,
+            concept_class='Fourth',
+        )
+        kwargs = {
+            'creator': self.user1,
+            'parent_resource': self.source2,
+        }
+        Concept.persist_new(self.concept4, **kwargs)
 
 
 class MappingTest(MappingBaseTest):
@@ -1486,4 +1498,101 @@ class MappingViewsTest(MappingBaseTest):
             'mapping': self.mapping1.mnemonic,
         }
         response = self.client.get(reverse('mapping-detail', kwargs=kwargs))
+        self.assertEquals(response.status_code, 404)
+
+    def test_concept_mappings_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic,
+            'concept': self.concept1.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(2, len(content))
+
+    def test_concept_mappings_positive__user_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1.username,
+            'source': self.source1.mnemonic,
+            'concept': self.concept1.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(2, len(content))
+
+    def test_concept_mappings_positive__org_owner(self):
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic,
+        }
+        data = {
+            'map_type': 'Same As',
+            'from_concept_url': self.concept4.url,
+            'to_source_url': self.source1.url,
+            'to_concept_code': '30303',
+            'to_concept_name': 'quaternary',
+            'external_id': 'mapping6',
+        }
+        self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic,
+            'concept': self.concept4.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(1, len(content))
+
+    def test_concept_mappings_positive__include_inverse(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic,
+            'concept': self.concept2.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(0, len(content))
+
+        response = self.client.get("%s?include_inverse_mappings=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(1, len(content))
+
+    def test_concept_mappings_positive__include_retired(self):
+        self.client.login(username='user1', password='user1')
+        Mapping.retire(self.mapping2, self.user1)
+        kwargs = {
+            'source': self.source1.mnemonic,
+            'concept': self.concept1.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(1, len(content))
+
+        response = self.client.get("%s?include_retired=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(2, len(content))
+
+    def test_concept_mappings_negative__not_authorized(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic,
+            'concept': self.concept4.mnemonic,
+        }
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+
+        self.source2.public_access = ACCESS_TYPE_NONE
+        Source.persist_changes(self.source2, self.user2)
+        response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 404)
