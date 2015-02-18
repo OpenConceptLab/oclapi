@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionVersionListView
 from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView, ConceptExtrasView, ConceptExtraRetrieveUpdateDestroyView
 from mappings.views import MappingListView, MappingDetailView

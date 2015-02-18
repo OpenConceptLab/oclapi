@@ -401,7 +401,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertIsNone(concept.display_name)
         self.assertIsNone(concept.display_locale)
         self.assertEquals(self.source2.parent_resource, concept.owner_name)
-        self.assertEquals(self.source2.parent_resource_type, concept.owner_type)
+        self.assertEquals(self.source2.owner_type, concept.owner_type)
         self.assertEquals(self.source2.public_access, concept.public_access)
         self.assertEquals(1, concept.num_versions)
         concept_version = ConceptVersion.get_latest_version_of(concept)

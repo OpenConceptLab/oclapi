@@ -66,7 +66,7 @@ class OrganizationListView(BaseAPIView,
             self.object = serializer.save(force_insert=True)
             self.post_save(self.object, created=True)
             headers = self.get_success_headers(serializer.data)
-            serializer = OrganizationDetailSerializer(self.object)
+            serializer = OrganizationDetailSerializer(self.object, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED,
                             headers=headers)
 

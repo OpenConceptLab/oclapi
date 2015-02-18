@@ -81,7 +81,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
-                serializer = ConceptVersionDetailSerializer(self.object)
+                serializer = ConceptVersionDetailSerializer(self.object, context={'request': request})
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -445,7 +445,7 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
-                serializer = ConceptReferenceDetailSerializer(self.object)
+                serializer = ConceptReferenceDetailSerializer(self.object, context={'request': request})
                 headers = self.get_success_headers(serializer.data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED,
                                 headers=headers)

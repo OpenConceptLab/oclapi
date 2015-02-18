@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 from orgs.views import OrganizationListView
 from users.models import UserProfile
 from users.views import UserListView, UserDetailView, UserReactivateView, UserLoginView

@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from collection.feeds import CollectionFeed
 from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionListView, CollectionVersionRetrieveUpdateView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionExtrasView, CollectionExtraRetrieveUpdateDestroyView
 from concepts.views import ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView

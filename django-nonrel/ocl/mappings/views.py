@@ -91,7 +91,7 @@ class MappingListView(MappingBaseView,
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)
-                serializer = MappingDetailSerializer(self.object)
+                serializer = MappingDetailSerializer(self.object, context={'request': request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -138,7 +138,7 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
                 return Response(e.messages, status=status.HTTP_400_BAD_REQUEST)
             self.object = serializer.save(**save_kwargs)
             self.post_save(self.object, created=created)
-            serializer = MappingDetailSerializer(self.object)
+            serializer = MappingDetailSerializer(self.object, context={'request': request})
             return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

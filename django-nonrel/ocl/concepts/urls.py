@@ -1,5 +1,4 @@
-from django.conf.urls import include
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from concepts.feeds import ConceptFeed
 from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptExtrasView, ConceptExtraRetrieveUpdateDestroyView
 
