@@ -976,118 +976,6 @@ class MappingViewsTest(MappingBaseTest):
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
 
-    def test_mappings_list_positive(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'source': self.source1.mnemonic
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(2, len(content))
-
-    def test_mappings_list_positive__latest_version(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'source': self.source3.mnemonic
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(1, len(content))
-
-    def test_mappings_list_positive__explicit_version(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'source': self.source3.mnemonic,
-            'version': self.source_version2.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(1, len(content))
-
-    def test_mappings_list_negative__explicit_version(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'source': self.source3.mnemonic,
-            'version': self.source_version1.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(0, len(content))
-
-    def test_mappings_list_positive__user_owner(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'user': self.user1.username,
-            'source': self.source1.mnemonic
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(2, len(content))
-
-    def test_mappings_list_positive__explicit_user_and_version(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'user': self.user1.username,
-            'source': self.source3.mnemonic,
-            'version': self.source_version2.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(1, len(content))
-
-    def test_mappings_list_negative__explicit_user_and_version(self):
-        self.client.login(username='user1', password='user1')
-        kwargs = {
-            'user': self.user1.username,
-            'source': self.source3.mnemonic,
-            'version': self.source_version1.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(0, len(content))
-
-    def test_mappings_list_positive__org_owner(self):
-        self.client.login(username='user2', password='user2')
-        kwargs = {
-            'org': self.org2.mnemonic,
-            'source': self.source2.mnemonic
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(1, len(content))
-
-    def test_mappings_list_positive__explicit_org_and_version(self):
-        self.client.login(username='user2', password='user2')
-        kwargs = {
-            'org': self.org2.mnemonic,
-            'source': self.source4.mnemonic,
-            'version': self.source4_version2.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(1, len(content))
-
-    def test_mappings_list_negative__explicit_org_and_version(self):
-        self.client.login(username='user2', password='user2')
-        kwargs = {
-            'org': self.org2.mnemonic,
-            'source': self.source4.mnemonic,
-            'version': self.source4_version1.mnemonic,
-        }
-        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEquals(0, len(content))
-
     def test_mappings_get_positive(self):
         self.client.login(username='user1', password='user1')
         mapping = self.mapping1
@@ -1117,6 +1005,14 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.source, content['source'])
+        self.assertEquals(mapping.owner, content['owner'])
+        self.assertEquals(mapping.owner_type, content['owner_type'])
+        self.assertEquals(mapping.url, content['url'])
+        self.assertTrue(content['created_at'] in mapping.created_at.isoformat())
+        self.assertTrue(content['updated_at'] in mapping.updated_at.isoformat())
+        self.assertEquals(mapping.created_by, content['created_by'])
+        self.assertEquals(mapping.updated_by, content['updated_by'])
 
     def test_mappings_get_positive__user_owner(self):
         self.client.login(username='user1', password='user1')
@@ -1148,6 +1044,14 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.source, content['source'])
+        self.assertEquals(mapping.owner, content['owner'])
+        self.assertEquals(mapping.owner_type, content['owner_type'])
+        self.assertEquals(mapping.url, content['url'])
+        self.assertTrue(content['created_at'] in mapping.created_at.isoformat())
+        self.assertTrue(content['updated_at'] in mapping.updated_at.isoformat())
+        self.assertEquals(mapping.created_by, content['created_by'])
+        self.assertEquals(mapping.updated_by, content['updated_by'])
 
     def test_mappings_get_positive__org_owner(self):
         self.client.login(username='user1', password='user1')
@@ -1178,4 +1082,174 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.source, content['source'])
+        self.assertEquals(mapping.owner, content['owner'])
+        self.assertEquals(mapping.owner_type, content['owner_type'])
+        self.assertEquals(mapping.url, content['url'])
+        self.assertTrue(content['created_at'] in mapping.created_at.isoformat())
+        self.assertTrue(content['updated_at'] in mapping.updated_at.isoformat())
+        self.assertEquals(mapping.created_by, content['created_by'])
+        self.assertEquals(mapping.updated_by, content['updated_by'])
 
+    def test_mappings_list_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source1.mnemonic
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(2, len(content))
+
+    def test_mappings_list_positive__latest_version(self):
+        mapping = self.mapping4
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source3.mnemonic
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content_list = json.loads(response.content)
+        self.assertEquals(1, len(content_list))
+        content = content_list[0]
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.url, content['url'])
+
+    def test_mappings_list_positive__explicit_version(self):
+        mapping = self.mapping4
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source3.mnemonic,
+            'version': self.source_version2.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content_list = json.loads(response.content)
+        self.assertEquals(1, len(content_list))
+        content = content_list[0]
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.url, content['url'])
+
+    def test_mappings_list_negative__explicit_version(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'source': self.source3.mnemonic,
+            'version': self.source_version1.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(0, len(content))
+
+    def test_mappings_list_positive__user_owner(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1.username,
+            'source': self.source1.mnemonic
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(2, len(content))
+
+    def test_mappings_list_positive__explicit_user_and_version(self):
+        mapping = self.mapping4
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1.username,
+            'source': self.source3.mnemonic,
+            'version': self.source_version2.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content_list = json.loads(response.content)
+        self.assertEquals(1, len(content_list))
+        content = content_list[0]
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.url, content['url'])
+
+    def test_mappings_list_negative__explicit_user_and_version(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'user': self.user1.username,
+            'source': self.source3.mnemonic,
+            'version': self.source_version1.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(0, len(content))
+
+    def test_mappings_list_positive__org_owner(self):
+        mapping = self.mapping3
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source2.mnemonic
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content_list = json.loads(response.content)
+        self.assertEquals(1, len(content_list))
+        content = content_list[0]
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.url, content['url'])
+
+    def test_mappings_list_positive__explicit_org_and_version(self):
+        mapping = self.mapping5
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source4.mnemonic,
+            'version': self.source4_version2.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content_list = json.loads(response.content)
+        self.assertEquals(1, len(content_list))
+        content = content_list[0]
+        self.assertEquals(mapping.external_id, content['external_id'])
+        self.assertEquals(mapping.map_type, content['map_type'])
+        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping.url, content['url'])
+
+
+    def test_mappings_list_negative__explicit_org_and_version(self):
+        self.client.login(username='user2', password='user2')
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source4.mnemonic,
+            'version': self.source4_version1.mnemonic,
+        }
+        response = self.client.get(reverse('mapping-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(0, len(content))

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from concepts.permissions import CanEditParentDictionary, CanViewParentDictionary
 from mappings.filters import MappingSearchFilter
 from mappings.models import Mapping
-from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer
+from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin
@@ -63,7 +63,7 @@ class MappingListView(MappingBaseView,
     def get(self, request, *args, **kwargs):
         include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
         self.include_inverse_mappings = 'true' == include_inverse_param
-        self.serializer_class = MappingRetrieveDestroySerializer
+        self.serializer_class = MappingListSerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
@@ -90,7 +90,7 @@ class MappingListView(MappingBaseView,
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)
-                serializer = MappingRetrieveDestroySerializer(self.object)
+                serializer = MappingDetailSerializer(self.object)
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -109,7 +109,7 @@ class MappingListView(MappingBaseView,
 
 
 class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
-    serializer_class = MappingRetrieveDestroySerializer
+    serializer_class = MappingDetailSerializer
 
     def update(self, request, *args, **kwargs):
         self.serializer_class = MappingUpdateSerializer
