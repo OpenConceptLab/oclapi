@@ -9,10 +9,7 @@ class MappingSearchFilter(HaystackSearchFilter):
 
     def get_filters(self, request, view):
         sqs = []
-        #sqs = [SQ(source_version=view.parent_resource_version.id)]
-        #if not view.include_retired:
-        #    sqs.append(SQ(retired=False))
-        map_type = request.QUERY_PARAMS.get('map_type','')
+        map_type = request.QUERY_PARAMS.get('mapType','')
         if map_type:
             sqs.append(SQ(map_type__exact=map_type))
 
@@ -21,26 +18,26 @@ class MappingSearchFilter(HaystackSearchFilter):
         if source:
             sources = source.split(',')
             for s in sources:
-                source_sqs.append(SQ(from_source=s))
-                source_sqs.append(SQ(to_source=s))
+                source_sqs.append(SQ(from_source__exact=s))
+                source_sqs.append(SQ(to_source__exact=s))
         if source_sqs:
             sqs.append(reduce(lambda x, y: x | y, source_sqs[1:], source_sqs[0]))
 
-        from_source = request.QUERY_PARAMS.get('from_source', '')
+        from_source = request.QUERY_PARAMS.get('fromSource', '')
         from_source_sqs = []
         if from_source:
             sources = from_source.split(',')
             for s in sources:
-                from_source_sqs.append(SQ(from_source=s))
+                from_source_sqs.append(SQ(from_source__exact=s))
         if from_source_sqs:
             sqs.append(reduce(lambda x, y: x | y, from_source_sqs[1:], from_source_sqs[0]))
 
-        to_source = request.QUERY_PARAMS.get('to_source', '')
+        to_source = request.QUERY_PARAMS.get('toSource', '')
         to_source_sqs = []
         if to_source:
             sources = to_source.split(',')
             for s in sources:
-                to_source_sqs.append(SQ(to_source=s))
+                to_source_sqs.append(SQ(to_source__exact=s))
         if to_source_sqs:
             sqs.append(reduce(lambda x, y: x | y, to_source_sqs[1:], to_source_sqs[0]))
 
@@ -49,21 +46,21 @@ class MappingSearchFilter(HaystackSearchFilter):
         if concept:
             concepts = concept.split(',')
             for c in concepts:
-                concept_sqs.append(SQ(from_concept=c))
-                concept_sqs.append(SQ(to_concept=c))
+                concept_sqs.append(SQ(from_concept__exact=c))
+                concept_sqs.append(SQ(to_concept__exact=c))
         if concept_sqs:
             sqs.append(reduce(lambda x, y: x | y, concept_sqs[1:], concept_sqs[0]))
 
-        from_concept = request.QUERY_PARAMS.get('from_concept', '')
+        from_concept = request.QUERY_PARAMS.get('fromConcept', '')
         from_concept_sqs = []
         if from_concept:
             concepts = from_concept.split(',')
             for c in concepts:
-                from_concept_sqs.append(SQ(from_concept=c))
+                from_concept_sqs.append(SQ(from_concept__exact=c))
         if from_concept_sqs:
             sqs.append(reduce(lambda x, y: x | y, from_concept_sqs[1:], from_concept_sqs[0]))
 
-        to_concept = request.QUERY_PARAMS.get('to_concept', '')
+        to_concept = request.QUERY_PARAMS.get('toConcept', '')
         to_concept_sqs = []
         if to_concept:
             concepts = to_concept.split(',')
@@ -110,4 +107,3 @@ class MappingSearchFilter(HaystackSearchFilter):
             return queryset.order_by(view.default_order_by)
         else:
             return queryset
-

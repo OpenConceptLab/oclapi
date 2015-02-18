@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from concepts.models import Concept
-from oclapi.models import BaseModel
+from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import reverse_resource
 from sources.models import Source
 
@@ -66,6 +66,10 @@ class Mapping(BaseModel):
         return self.from_source.owner_name
 
     @property
+    def from_source_owner_mnemonic(self):
+        return self.from_source.owner.mnemonic
+
+    @property
     def from_source_owner_type(self):
         return self.from_source.owner_type
 
@@ -79,7 +83,7 @@ class Mapping(BaseModel):
 
     @property
     def from_source_shorthand(self):
-        return "%s:%s" % (self.from_source_owner, self.from_source_name)
+        return "%s:%s" % (self.from_source_owner_mnemonic, self.from_source_name)
 
     @property
     def from_concept_code(self):
@@ -113,12 +117,16 @@ class Mapping(BaseModel):
         return self.get_to_source() and unicode(self.get_to_source().parent)
 
     @property
+    def to_source_owner_mnemonic(self):
+        return self.get_to_source() and self.get_to_source().owner.mnemonic
+
+    @property
     def to_source_owner_type(self):
         return self.get_to_source() and self.get_to_source().owner_type
 
     @property
     def to_source_shorthand(self):
-        return self.get_to_source() and "%s:%s" % (self.to_source_owner, self.to_source_name)
+        return self.get_to_source() and "%s:%s" % (self.to_source_owner_mnemonic, self.to_source_name)
 
     def get_to_concept_name(self):
         return self.to_concept_name or (self.to_concept and self.to_concept.display_name)
@@ -133,6 +141,10 @@ class Mapping(BaseModel):
     @property
     def to_concept_shorthand(self):
         return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
+
+    @property
+    def public_can_view(self):
+        return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
 
     @staticmethod
     def resource_type():

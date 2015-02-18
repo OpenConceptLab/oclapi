@@ -18,8 +18,9 @@ from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
 from sources.models import SourceVersion
 
-UPDATED_SINCE_PARAM = 'updated_since'
-INCLUDE_RETIRED_PARAM = 'include_retired'
+UPDATED_SINCE_PARAM = 'updatedSince'
+INCLUDE_RETIRED_PARAM = 'includeRetired'
+INCLUDE_INVERSE_MAPPINGS_PARAM = 'includeInverseMappings'
 
 
 def parse_updated_since_param(request):
@@ -267,7 +268,7 @@ class ConceptMappingsView(ConceptBaseView, ListAPIView):
 
     def initialize(self, request, path_info_segment, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
+        include_inverse_param = request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM, 'false')
         self.include_inverse_mappings = 'true' == include_inverse_param
         parent_path_info = self.get_parent_in_path(path_info_segment, levels=1)
         if parent_path_info and '/' != parent_path_info:

@@ -1477,7 +1477,7 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
 
-        response = self.client.get("%s?include_retired=true" % reverse('mapping-list', kwargs=kwargs))
+        response = self.client.get("%s?includeRetired=true" % reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
@@ -1560,7 +1560,7 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(0, len(content))
 
-        response = self.client.get("%s?include_inverse_mappings=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        response = self.client.get("%s?includeInverseMappings=true" % reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
@@ -1577,7 +1577,7 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
 
-        response = self.client.get("%s?include_retired=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        response = self.client.get("%s?includeRetired=true" % reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
@@ -1596,3 +1596,10 @@ class MappingViewsTest(MappingBaseTest):
         Source.persist_changes(self.source2, self.user2)
         response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 404)
+
+    def test_all_mappings__positive(self):
+        self.client.login(username='user1', password='user1')
+        response = self.client.get(reverse('all-mappings'))
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(5, len(content))

@@ -12,10 +12,10 @@ from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
-from oclapi.views import ConceptDictionaryMixin
+from oclapi.views import ConceptDictionaryMixin, BaseAPIView
 from sources.models import SourceVersion
 
-INCLUDE_RETIRED_PARAM = 'include_retired'
+INCLUDE_RETIRED_PARAM = 'includeRetired'
 
 
 class MappingBaseView(ConceptDictionaryMixin):
@@ -50,6 +50,39 @@ class MappingBaseView(ConceptDictionaryMixin):
         return queryset
 
 
+class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
+    serializer_class = MappingDetailSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        Mapping.retire(obj, self.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        self.serializer_class = MappingUpdateSerializer
+        partial = True
+        self.object = self.get_object()
+
+        created = False
+        save_kwargs = {'force_update': True}
+        success_status_code = status.HTTP_200_OK
+
+        serializer = self.get_serializer(self.object, data=request.DATA,
+                                         files=request.FILES, partial=partial)
+
+        if serializer.is_valid():
+            try:
+                self.pre_save(serializer.object)
+            except ValidationError as e:
+                return Response(e.messages, status=status.HTTP_400_BAD_REQUEST)
+            self.object = serializer.save(**save_kwargs)
+            self.post_save(self.object, created=created)
+            serializer = MappingDetailSerializer(self.object, context={'request': request})
+            return Response(serializer.data, status=success_status_code)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class MappingListView(MappingBaseView,
                       ListAPIView,
                       CreateAPIView,
@@ -63,7 +96,7 @@ class MappingListView(MappingBaseView,
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
         self.include_inverse_mappings = 'true' == include_inverse_param
-        self.serializer_class = MappingListSerializer
+        self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
@@ -110,37 +143,25 @@ class MappingListView(MappingBaseView,
         return queryset
 
 
-class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
-    serializer_class = MappingDetailSerializer
+class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
+    model = Mapping
+    filter_backends = [MappingSearchFilter]
+    queryset = Mapping.objects.filter(is_active=True)
+    solr_fields = {
+        'map_type': {'sortable': False, 'filterable': True},
+        'external_id': {'sortable': False, 'filterable': True},
+    }
+    include_retired = False
 
-    def destroy(self, request, *args, **kwargs):
-        obj = self.get_object()
-        Mapping.retire(obj, self.user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get(self, request, *args, **kwargs):
+        self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
+        self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
+        return self.list(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        self.serializer_class = MappingUpdateSerializer
-        partial = True
-        self.object = self.get_object()
-
-        created = False
-        save_kwargs = {'force_update': True}
-        success_status_code = status.HTTP_200_OK
-
-        serializer = self.get_serializer(self.object, data=request.DATA,
-                                         files=request.FILES, partial=partial)
-
-        if serializer.is_valid():
-            try:
-                self.pre_save(serializer.object)
-            except ValidationError as e:
-                return Response(e.messages, status=status.HTTP_400_BAD_REQUEST)
-            self.object = serializer.save(**save_kwargs)
-            self.post_save(self.object, created=created)
-            serializer = MappingDetailSerializer(self.object, context={'request': request})
-            return Response(serializer.data, status=success_status_code)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+    def get_queryset(self):
+        queryset = super(MappingListAllView, self).get_queryset()
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
+        return queryset

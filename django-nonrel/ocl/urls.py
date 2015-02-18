@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.conf.urls import url, patterns, include
 from rest_framework import routers
 from concepts.views import ConceptVersionListAllView
-from mappings.views import MappingListView
+from mappings.views import MappingListAllView
 
 admin.autodiscover()
 
@@ -28,7 +28,7 @@ urlpatterns = patterns('',
     url(r'^concepts/', ConceptVersionListAllView.as_view(), name='all-concepts'),
     url(r'^orgs/', include('orgs.urls')),
     url(r'^users/', include('users.urls')),
-    url(r'^mappings/$', MappingListView.as_view(), name='all-mappings'),
+    url(r'^mappings/$', MappingListAllView.as_view(), name='all-mappings'),
 
     # Shortcuts to endpoints corresponding to the currently logged in user
     url(r'^user/', include('user_urls')),
