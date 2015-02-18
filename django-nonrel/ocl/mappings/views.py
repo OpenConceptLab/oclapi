@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from concepts.permissions import CanEditParentDictionary, CanViewParentDictionary
 from mappings.filters import MappingSearchFilter
 from mappings.models import Mapping
-from mappings.serializers import MappingCreateSerializer, MappingRetrieveDestroySerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
+from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin
@@ -61,6 +61,7 @@ class MappingListView(MappingBaseView,
     include_inverse_mappings = False
 
     def get(self, request, *args, **kwargs):
+        self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
         self.include_inverse_mappings = 'true' == include_inverse_param
         self.serializer_class = MappingListSerializer
@@ -97,6 +98,8 @@ class MappingListView(MappingBaseView,
     def get_queryset(self):
         all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
         queryset = queryset.filter(id__in=all_children)
         return queryset
 
@@ -111,19 +114,19 @@ class MappingListView(MappingBaseView,
 class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
     serializer_class = MappingDetailSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        Mapping.retire(obj, self.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def update(self, request, *args, **kwargs):
         self.serializer_class = MappingUpdateSerializer
         partial = True
-        self.object = self.get_object_or_none()
+        self.object = self.get_object()
 
-        if self.object is None:
-            created = True
-            save_kwargs = {'force_insert': True}
-            success_status_code = status.HTTP_201_CREATED
-        else:
-            created = False
-            save_kwargs = {'force_update': True}
-            success_status_code = status.HTTP_200_OK
+        created = False
+        save_kwargs = {'force_update': True}
+        success_status_code = status.HTTP_200_OK
 
         serializer = self.get_serializer(self.object, data=request.DATA,
                                          files=request.FILES, partial=partial)
@@ -135,7 +138,7 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
                 return Response(e.messages, status=status.HTTP_400_BAD_REQUEST)
             self.object = serializer.save(**save_kwargs)
             self.post_save(self.object, created=created)
-            serializer = MappingRetrieveDestroySerializer(self.object)
+            serializer = MappingDetailSerializer(self.object)
             return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -127,6 +127,8 @@ class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
             # If needed convert absolute URLs to relative path
             value = urlparse.urlparse(value).path
             prefix = get_script_prefix()
+            if value == prefix:
+                raise ValidationError(self.error_messages['no_match'])
             if value.startswith(prefix):
                 value = '/' + value[len(prefix):]
 

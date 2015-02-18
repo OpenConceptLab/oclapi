@@ -143,6 +143,15 @@ class Mapping(BaseModel):
         return 'mapping'
 
     @classmethod
+    def retire(cls, obj, updated_by, **kwargs):
+        if obj.retired:
+            return False
+        obj.retired = True
+        obj.updated_by = updated_by
+        obj.save(**kwargs)
+        return True
+
+    @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
         errors = dict()
         obj.updated_by = updated_by

@@ -1,13 +1,22 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db import DatabaseError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from rest_framework import generics, status
-from rest_framework.generics import get_object_or_404, RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import get_object_or_404 as generics_get_object_or_404
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from oclapi.mixins import PathWalkerMixin
 from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary
+
+
+def get_object_or_404(queryset, **filter_kwargs):
+    try:
+        return generics_get_object_or_404(queryset, **filter_kwargs)
+    except DatabaseError:
+        raise Http404
 
 
 class BaseAPIView(generics.GenericAPIView):

@@ -11,7 +11,11 @@ class MappingBaseSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         mapping = instance if instance else Mapping()
         mapping.map_type = attrs.get('map_type', mapping.map_type)
-        mapping.from_concept = attrs.get('from_concept', mapping.to_concept)
+        from_concept = None
+        try:
+            from_concept = mapping.from_concept
+        except Concept.DoesNotExist: pass
+        mapping.from_concept = attrs.get('from_concept', from_concept)
         mapping.to_concept = attrs.get('to_concept', mapping.to_concept)
         mapping.to_source = attrs.get('to_source', mapping.to_source)
         mapping.to_concept_name = attrs.get('to_concept_name', mapping.to_concept_name)
@@ -89,6 +93,7 @@ class MappingCreateSerializer(MappingBaseSerializer):
         errors = Mapping.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
 
+
 class MappingUpdateSerializer(MappingBaseSerializer):
     map_type = serializers.CharField(required=False)
     from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='from_concept')
@@ -101,9 +106,3 @@ class MappingUpdateSerializer(MappingBaseSerializer):
         request_user = self.context['request'].user
         errors = Mapping.persist_changes(obj, request_user)
         self._errors.update(errors)
-
-
-class MappingRetrieveDestroySerializer(MappingBaseSerializer):
-    map_type = serializers.CharField(required=False)
-    from_source_url = serializers.URLField(required=False)
-    to_source_url = serializers.URLField(required=False)
