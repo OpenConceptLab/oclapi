@@ -479,14 +479,15 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(1, len(source_version.concepts))
         self.assertEquals(concept_version.id, source_version.concepts[0])
 
-        retired = Concept.retire(concept)
-        self.assertTrue(retired)
+        errors = Concept.retire(concept, self.user1)
+        self.assertFalse(errors)
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertTrue(concept.retired)
         self.assertEquals(2, concept.num_versions)
 
         concept_version = ConceptVersion.get_latest_version_of(concept)
         self.assertTrue(concept_version.retired)
+        self.assertEquals(self.user1.username, concept_version.version_created_by)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(1, len(source_version.concepts))
@@ -495,7 +496,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
         self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=False).count())
 
-        self.assertFalse(Concept.retire(concept))
+        errors = Concept.retire(concept, self.user1)
+        self.assertEquals(1, len(errors))
 
 
 class ConceptVersionTest(ConceptBaseTest):
@@ -721,17 +723,37 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept_version.id, source_version.concepts[0])
 
         version2 = self.concept_version.clone()
-        ConceptVersion.persist_clone(version2)
+        errors = ConceptVersion.persist_clone(version2, self.user1)
+        self.assertEquals(0, len(errors))
 
         self.assertEquals(3, self.concept1.num_versions)
         self.assertEquals(version2, ConceptVersion.get_latest_version_of(self.concept1))
         self.assertEquals(self.concept_version.public_access, version2.public_access)
         self.assertEquals(self.concept_version, version2.previous_version)
         self.assertEquals(self.concept_version.root_version, version2.root_version)
+        self.assertEquals(self.user1.username, version2.version_created_by)
 
         source_version.update_concept_version(version2)
         self.assertEquals(1, len(source_version.concepts))
         self.assertEquals(version2.id, source_version.concepts[0])
+
+    def test_persist_clone_negative__no_user(self):
+        self.assertEquals(2, self.concept1.num_versions)
+        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+
+        source_version.update_concept_version(self.concept_version)
+        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(self.concept_version.id, source_version.concepts[0])
+
+        version2 = self.concept_version.clone()
+        errors = ConceptVersion.persist_clone(version2)
+        self.assertEquals(1, len(errors))
+        self.assertTrue('version_created_by' in errors)
+
+        self.assertEquals(2, self.concept1.num_versions)
+        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
 
 
 class ConceptReferenceBaseTest(ConceptBaseTest):

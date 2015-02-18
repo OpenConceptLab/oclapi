@@ -120,15 +120,15 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         return initial_version
 
     @classmethod
-    def retire(cls, concept):
+    def retire(cls, concept, user):
         if concept.retired:
-            return False
+            return {'__all__': 'Concept is already retired'}
         concept.retired = True
         latest_version = ConceptVersion.get_latest_version_of(concept)
         retired_version = latest_version.clone()
         retired_version.retired = True
-        errors = ConceptVersion.persist_clone(retired_version)
-        return not errors
+        errors = ConceptVersion.persist_clone(retired_version, user)
+        return errors
 
     @classmethod
     def count_for_source(cls, src, is_active=True, retired=False):
@@ -360,8 +360,12 @@ class ConceptVersion(ResourceVersionModel):
         return diffs
 
     @classmethod
-    def persist_clone(cls, obj, **kwargs):
+    def persist_clone(cls, obj, user=None, **kwargs):
         errors = dict()
+        if not user:
+            errors['version_created_by'] = 'Must specify which user is attempting to create a new concept version.'
+            return errors
+        obj.version_created_by = user.username
         previous_version = obj.previous_version
         previous_was_latest = previous_version.is_latest_version and obj.is_latest_version
         source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)

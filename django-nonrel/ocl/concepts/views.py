@@ -95,7 +95,9 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         concept = self.get_object_or_none()
         if concept is None:
             return Response({'non_field_errors': 'Could not find concept to retire'}, status=status.HTTP_404_NOT_FOUND)
-        Concept.retire(concept)
+        errors = Concept.retire(concept, request.user)
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -349,14 +351,18 @@ class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
 
         self.extras[self.key] = value
         self.parent_resource_version.update_comment = 'Updated extras: %s=%s.' % (self.key, value)
-        ConceptVersion.persist_clone(self.parent_resource_version)
+        errors = ConceptVersion.persist_clone(self.parent_resource_version, request.user)
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({self.key: self.extras[self.key]})
 
     def delete(self, request, *args, **kwargs):
         if self.key in self.extras:
             del self.extras[self.key]
             self.parent_resource_version.update_comment = 'Deleted extra %s.' % self.key
-            ConceptVersion.persist_clone(self.parent_resource_version)
+            errors = ConceptVersion.persist_clone(self.parent_resource_version, request.user)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "Not found."}, status.HTTP_404_NOT_FOUND)
 
@@ -381,7 +387,9 @@ class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin, L
             labels = getattr(new_version, self.parent_list_attribute)
             labels.append(serializer.object)
             new_version.update_comment = 'Added to %s: %s.' % (self.parent_list_attribute, serializer.object.name)
-            ConceptVersion.persist_clone(new_version)
+            errors = ConceptVersion.persist_clone(new_version, request.user)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -426,7 +434,9 @@ class ConceptLabelRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
 
         if serializer.is_valid():
             self.parent_resource_version.update_comment = 'Updated %s in %s.' % (self.object.name, self.parent_list_attribute)
-            ConceptVersion.persist_clone(self.parent_resource_version)
+            errors = ConceptVersion.persist_clone(self.parent_resource_version, request.user)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -442,7 +452,9 @@ class ConceptLabelRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
         if index_to_remove >= 0:
             del labels[index_to_remove]
             self.parent_resource_version.update_comment = 'Deleted %s from %s.' % (obj.name, self.parent_list_attribute)
-            ConceptVersion.persist_clone(self.parent_resource_version)
+            errors = ConceptVersion.persist_clone(self.parent_resource_version, request.user)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
