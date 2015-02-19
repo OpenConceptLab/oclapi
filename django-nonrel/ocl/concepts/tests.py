@@ -473,6 +473,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(1, concept.num_versions)
 
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertTrue(concept_version.is_latest_version)
         self.assertFalse(concept_version.retired)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
@@ -485,7 +486,12 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertTrue(concept.retired)
         self.assertEquals(2, concept.num_versions)
 
+        previous_version = ConceptVersion.objects.get(id=concept_version.id)
+        self.assertFalse(previous_version.is_latest_version)
+        self.assertFalse(previous_version.retired)
+
         concept_version = ConceptVersion.get_latest_version_of(concept)
+        self.assertTrue(concept_version.is_latest_version)
         self.assertTrue(concept_version.retired)
         self.assertEquals(self.user1.username, concept_version.version_created_by)
 
