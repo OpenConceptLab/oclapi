@@ -73,7 +73,8 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     extras = serializers.WritableField(required=False)
 
     def save_object(self, obj, **kwargs):
-        errors = Source.persist_new(obj, **kwargs)
+        request_user = self.context['request'].user
+        errors = Source.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
 
 

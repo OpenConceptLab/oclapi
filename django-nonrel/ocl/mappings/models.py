@@ -41,6 +41,22 @@ class Mapping(BaseModel):
         if messages:
             raise ValidationError(' '.join(messages))
 
+    def clone(self, user):
+        return Mapping(
+            created_by=user,
+            public_access=self.public_access,
+            extras=self.extras,
+            parent_id=self.parent_id,
+            map_type=self.map_type,
+            from_concept=self.from_concept,
+            to_concept=self.to_concept,
+            to_source=self.to_source,
+            to_concept_code=self.to_concept_code,
+            to_concept_name=self.to_concept_name,
+            retired=self.retired,
+            external_id=self.external_id,
+        )
+
     @property
     def mnemonic(self):
         return self.id
@@ -239,6 +255,41 @@ class Mapping(BaseModel):
                 if obj.id:
                     obj.delete()
         return errors
+
+    @classmethod
+    def diff(cls, v1, v2):
+        diffs = {}
+        if v1.public_access != v2.public_access:
+            diffs['public_access'] = {'was': v1.public_access, 'is': v2.public_access}
+        if v1.map_type != v2.map_type:
+            diffs['map_type'] = {'was': v1.map_type, 'is': v2.map_type}
+        if v1.from_concept != v2.from_concept:
+            diffs['from_concept'] = {'was': v1.from_concept, 'is': v2.from_concept}
+        if v1.to_concept != v2.to_concept:
+            diffs['to_concept'] = {'was': v1.to_concept, 'is': v2.to_concept}
+        if v1.to_source != v2.to_source:
+            diffs['to_source'] = {'was': v1.to_source, 'is': v2.to_source}
+        if v1.to_concept_code != v2.to_concept_code:
+            diffs['to_concept_code'] = {'was': v1.to_concept_code, 'is': v2.to_concept_code}
+        if v1.to_concept_name != v2.to_concept_name:
+            diffs['to_concept_name'] = {'was': v1.to_concept_name, 'is': v2.to_concept_name}
+
+        # Diff extras
+        extras1 = v1.extras
+        extras2 = v2.extras
+        diff = len(extras1) != len(extras2)
+        if not diff:
+            for key in extras1:
+                if key not in extras2:
+                    diff = True
+                    break
+                if extras2[key] != extras1[key]:
+                    diff = True
+                    break
+        if diff:
+            diffs['extras'] = {'was': extras1, 'is': extras2}
+
+        return diffs
 
 
 @receiver(post_save, sender=Source)

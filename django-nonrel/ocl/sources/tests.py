@@ -173,10 +173,9 @@ class SourceClassMethodTest(SourceBaseTest):
 
     def test_persist_new_positive(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Source.persist_new(self.new_source, **kwargs)
+        errors = Source.persist_new(self.new_source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Source.objects.filter(name='source1').exists())
         source = Source.objects.get(name='source1')
@@ -186,10 +185,7 @@ class SourceClassMethodTest(SourceBaseTest):
         self.assertEquals(source_version, SourceVersion.get_latest_version_of(source))
 
     def test_persist_new_negative__no_parent(self):
-        kwargs = {
-            'creator': self.user1
-        }
-        errors = Source.persist_new(self.new_source, **kwargs)
+        errors = Source.persist_new(self.new_source, self.user1)
         self.assertTrue(errors.has_key('parent'))
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
@@ -197,26 +193,24 @@ class SourceClassMethodTest(SourceBaseTest):
         kwargs = {
             'parent_resource': self.userprofile1
         }
-        errors = Source.persist_new(self.new_source, **kwargs)
-        self.assertTrue(errors.has_key('creator'))
+        errors = Source.persist_new(self.new_source, None, **kwargs)
+        self.assertTrue(errors.has_key('created_by'))
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
     def test_persist_new_negative__no_name(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
         self.new_source.name = None
-        errors = Source.persist_new(self.new_source, **kwargs)
+        errors = Source.persist_new(self.new_source, self.user1, **kwargs)
         self.assertTrue(errors.has_key('name'))
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
     def test_persist_changes_positive(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Source.persist_new(self.new_source, **kwargs)
+        errors = Source.persist_new(self.new_source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
         id = self.new_source.id
@@ -240,7 +234,6 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.website = "%s_prime" % website
         self.new_source.description = "%s_prime" % description
 
-        del(kwargs['creator'])
         errors = Source.persist_changes(self.new_source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Source.objects.filter(id=id).exists())
@@ -262,10 +255,9 @@ class SourceClassMethodTest(SourceBaseTest):
 
     def test_persist_changes_negative__repeated_mnemonic(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Source.persist_new(self.new_source, **kwargs)
+        errors = Source.persist_new(self.new_source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
         source = Source(
@@ -279,7 +271,7 @@ class SourceClassMethodTest(SourceBaseTest):
             website='www.source2.com',
             description='This is the second test source'
         )
-        errors = Source.persist_new(source, **kwargs)
+        errors = Source.persist_new(source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertEquals(2, Source.objects.all().count())
 
@@ -305,7 +297,6 @@ class SourceClassMethodTest(SourceBaseTest):
         self.new_source.website = "%s_prime" % website
         self.new_source.description = "%s_prime" % description
 
-        del(kwargs['creator'])
         errors = Source.persist_changes(self.new_source, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
         self.assertTrue(errors.has_key('__all__'))

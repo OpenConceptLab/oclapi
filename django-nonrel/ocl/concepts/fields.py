@@ -104,14 +104,17 @@ class SourceReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
                 value = '/' + value[len(prefix):]
 
         request = self.context['request']
-        path_obj = self.get_object_for_path(value, request)
-        if hasattr(path_obj, 'versioned_object_id'):
-            obj = path_obj.versioned_object
-            obj._source_version = path_obj
-        else:
-            obj = path_obj
+        try:
+            path_obj = self.get_object_for_path(value, request)
+            if hasattr(path_obj, 'versioned_object_id'):
+                obj = path_obj.versioned_object
+                obj._source_version = path_obj
+            else:
+                obj = path_obj
 
-        return obj
+            return obj
+        except Exception as e:
+            raise ValidationError(e)
 
 
 class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
@@ -133,15 +136,18 @@ class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
                 value = '/' + value[len(prefix):]
 
         request = self.context['request']
-        path_obj = self.get_object_for_path(value, request)
-        if hasattr(path_obj, 'versioned_object_id'):
-            obj = path_obj.versioned_object
-            obj._concept_version = path_obj
-        else:
-            obj = path_obj
-            parent_path = self.get_parent_in_path(value, levels=2)
-            parent = self.get_object_for_path(parent_path, request)
-            if hasattr(parent, 'versioned_object_id'):
-                obj._source_version = parent
+        try:
+            path_obj = self.get_object_for_path(value, request)
+            if hasattr(path_obj, 'versioned_object_id'):
+                obj = path_obj.versioned_object
+                obj._concept_version = path_obj
+            else:
+                obj = path_obj
+                parent_path = self.get_parent_in_path(value, levels=2)
+                parent = self.get_object_for_path(parent_path, request)
+                if hasattr(parent, 'versioned_object_id'):
+                    obj._source_version = parent
 
-        return obj
+            return obj
+        except Exception as e:
+            raise ValidationError(e)

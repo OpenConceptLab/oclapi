@@ -89,10 +89,9 @@ class MappingBaseTest(TestCase):
             description='This is the first test source',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        Source.persist_new(self.source1, **kwargs)
+        Source.persist_new(self.source1, self.user1, **kwargs)
         self.source1 = Source.objects.get(id=self.source1.id)
 
         self.source2 = Source(
@@ -107,10 +106,9 @@ class MappingBaseTest(TestCase):
             description='This is the second test source',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.org2,
         }
-        Source.persist_new(self.source2, **kwargs)
+        Source.persist_new(self.source2, self.user1, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
 
         self.concept1 = Concept(
@@ -120,10 +118,9 @@ class MappingBaseTest(TestCase):
             concept_class='First',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.source1,
         }
-        Concept.persist_new(self.concept1, **kwargs)
+        Concept.persist_new(self.concept1, self.user1, **kwargs)
 
         self.concept2 = Concept(
             mnemonic='concept2',
@@ -132,10 +129,9 @@ class MappingBaseTest(TestCase):
             concept_class='Second',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.source1,
         }
-        Concept.persist_new(self.concept2, **kwargs)
+        Concept.persist_new(self.concept2, self.user1, **kwargs)
 
         self.concept3 = Concept(
             mnemonic='concept3',
@@ -144,10 +140,9 @@ class MappingBaseTest(TestCase):
             concept_class='Third',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.source2,
         }
-        Concept.persist_new(self.concept3, **kwargs)
+        Concept.persist_new(self.concept3, self.user1, **kwargs)
 
         self.concept4 = Concept(
             mnemonic='concept4',
@@ -156,10 +151,9 @@ class MappingBaseTest(TestCase):
             concept_class='Fourth',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.source2,
         }
-        Concept.persist_new(self.concept4, **kwargs)
+        Concept.persist_new(self.concept4, self.user1, **kwargs)
 
 
 class MappingTest(MappingBaseTest):
@@ -965,11 +959,10 @@ class MappingViewsTest(MappingBaseTest):
             description='This is the first third source',
         )
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
 
-        Source.persist_new(self.source3, **kwargs)
+        Source.persist_new(self.source3, self.user1, **kwargs)
         self.source3 = Source.objects.get(id=self.source3.id)
         self.source_version1 = SourceVersion.get_latest_version_of(self.source3)
 
@@ -1028,10 +1021,9 @@ class MappingViewsTest(MappingBaseTest):
             description='This is the fourth third source',
         )
         kwargs = {
-            'creator': self.user2,
             'parent_resource': self.org2
         }
-        Source.persist_new(self.source4, **kwargs)
+        Source.persist_new(self.source4, self.user1, **kwargs)
         self.source4 = Source.objects.get(id=self.source4.id)
         self.source4_version1 = SourceVersion.get_latest_version_of(self.source4)
 

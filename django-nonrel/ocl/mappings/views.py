@@ -88,6 +88,7 @@ class MappingListView(MappingBaseView,
                       CreateAPIView,
                       ListWithHeadersMixin,
                       mixins.CreateModelMixin):
+    queryset = Mapping.objects.filter(is_active=True)
     serializer_class = MappingCreateSerializer
     solr_fields = {}
     filter_backends = [MappingSearchFilter]

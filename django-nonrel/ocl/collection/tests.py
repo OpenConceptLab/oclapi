@@ -172,10 +172,9 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
     def test_persist_new_positive(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Collection.objects.filter(name='collection1').exists())
         collection = Collection.objects.get(name='collection1')
@@ -185,10 +184,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.assertEquals(collection_version, CollectionVersion.get_latest_version_of(collection))
 
     def test_persist_new_negative__no_parent(self):
-        kwargs = {
-            'creator': self.user1
-        }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1)
         self.assertTrue(errors.has_key('parent'))
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
@@ -196,26 +192,24 @@ class CollectionClassMethodTest(CollectionBaseTest):
         kwargs = {
             'parent_resource': self.userprofile1
         }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
-        self.assertTrue(errors.has_key('creator'))
+        errors = Collection.persist_new(self.new_collection, None, **kwargs)
+        self.assertTrue(errors.has_key('created_by'))
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
     def test_persist_new_negative__no_name(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
         self.new_collection.name = None
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertTrue(errors.has_key('name'))
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
     def test_persist_changes_positive(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
         id = self.new_collection.id
@@ -239,7 +233,6 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.website = "%s_prime" % website
         self.new_collection.description = "%s_prime" % description
 
-        del(kwargs['creator'])
         errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Collection.objects.filter(id=id).exists())
@@ -261,10 +254,9 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
     def test_persist_changes_negative__illegal_value(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
         id = self.new_collection.id
@@ -288,7 +280,6 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.website = "%s_prime" % website
         self.new_collection.description = "%s_prime" % description
 
-        del(kwargs['creator'])
         errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertTrue(Collection.objects.filter(id=id).exists())
         self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
@@ -309,10 +300,9 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
     def test_persist_changes_negative__repeated_mnemonic(self):
         kwargs = {
-            'creator': self.user1,
             'parent_resource': self.userprofile1
         }
-        errors = Collection.persist_new(self.new_collection, **kwargs)
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
         collection = Collection(
@@ -326,7 +316,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             website='www.collection2.com',
             description='This is the second test collection'
         )
-        errors = Collection.persist_new(collection, **kwargs)
+        errors = Collection.persist_new(collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertEquals(2, Collection.objects.all().count())
 
@@ -352,7 +342,6 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.new_collection.website = "%s_prime" % website
         self.new_collection.description = "%s_prime" % description
 
-        del(kwargs['creator'])
         errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
         self.assertTrue(errors.has_key('__all__'))

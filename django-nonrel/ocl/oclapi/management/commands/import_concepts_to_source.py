@@ -117,7 +117,7 @@ class Command(BaseCommand):
         serializer = ConceptDetailSerializer(data=data)
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse new concept %s' % mnemonic)
-        serializer.save(force_insert=True, owner=self.user, parent_resource=self.source, child_list_attribute='concepts')
+        serializer.save(force_insert=True, parent_resource=self.source, child_list_attribute='concepts')
         if not serializer.is_valid():
             raise IllegalInputException('Could not persist new concept %s' % mnemonic)
 

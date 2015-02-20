@@ -119,7 +119,7 @@ class ConceptDictionaryCreateMixin(ConceptDictionaryMixin):
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, owner=request.user, parent_resource=self.parent_resource)
+            self.object = serializer.save(force_insert=True, parent_resource=self.parent_resource)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)

@@ -214,14 +214,14 @@ class ConceptContainerModel(SubResourceBaseModel):
         return 0
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
+    def persist_new(cls, obj, created_by, **kwargs):
         errors = dict()
         parent_resource = kwargs.pop('parent_resource', None)
         if not parent_resource:
             errors['parent'] = 'Parent resource cannot be None.'
-        user = kwargs.pop('creator', None)
+        user = created_by
         if not user:
-            errors['creator'] = 'Creator cannot be None.'
+            errors['created_by'] = 'Creator cannot be None.'
         if errors:
             return errors
 
