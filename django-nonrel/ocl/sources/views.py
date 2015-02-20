@@ -2,12 +2,20 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
+from concepts.models import ConceptVersion
+from concepts.serializers import ConceptVersionDetailSerializer
+from mappings.models import Mapping
+from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
+
+
+INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
+INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 
 
 class SourceBaseView():
@@ -32,6 +40,30 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         else:
             self.permission_classes = (CanEditConceptDictionary,)
         super(SourceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        super(SourceRetrieveUpdateDestroyView, self).retrieve(request, *args, **kwargs)
+        self.object = self.get_object()
+        serializer = self.get_serializer(self.object)
+        data = serializer.data
+        source_version = None
+        include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
+        if include_concepts:
+            queryset = ConceptVersion.objects.filter(is_active=True)
+            source_version = SourceVersion.get_latest_version_of(self.object)
+            all_children = source_version.concepts
+            queryset = queryset.filter(id__in=all_children)
+            serializer = ConceptVersionDetailSerializer(queryset, many=True)
+            data['concepts'] = serializer.data
+        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
+        if include_mappings:
+            queryset = Mapping.objects.filter(is_active=True)
+            source_version = source_version or SourceVersion.get_latest_version_of(self.object)
+            all_children = source_version.mappings
+            queryset = queryset.filter(id__in=all_children)
+            serializer = MappingDetailSerializer(queryset, many=True)
+            data['mappings'] = serializer.data
+        return Response(data)
 
 
 class SourceListView(SourceBaseView,
