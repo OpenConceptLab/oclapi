@@ -3,6 +3,7 @@ from django.conf.urls import url, patterns, include
 from rest_framework import routers
 from concepts.views import ConceptVersionListAllView
 from mappings.views import MappingListAllView
+from sources.views import SourceListView
 
 admin.autodiscover()
 
@@ -26,9 +27,10 @@ urlpatterns = patterns('',
     # Top-level resource endpoints
     url(r'^collections/', include('collection.urls')),
     url(r'^concepts/', ConceptVersionListAllView.as_view(), name='all-concepts'),
-    url(r'^orgs/', include('orgs.urls')),
-    url(r'^users/', include('users.urls')),
     url(r'^mappings/$', MappingListAllView.as_view(), name='all-mappings'),
+    url(r'^orgs/', include('orgs.urls')),
+    url(r'^sources/$', SourceListView.as_view(), name='source-list'),
+    url(r'^users/', include('users.urls')),
 
     # Shortcuts to endpoints corresponding to the currently logged in user
     url(r'^user/', include('user_urls')),
