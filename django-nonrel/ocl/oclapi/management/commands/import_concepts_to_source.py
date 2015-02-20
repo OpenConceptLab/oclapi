@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management import BaseCommand, CommandError
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSerializer
+from oclapi.importer import MockRequest
 from sources.models import Source, SourceVersion
 
 __author__ = 'misternando'
@@ -114,7 +115,7 @@ class Command(BaseCommand):
 
     def add_concept(self, data):
         mnemonic = data['id']
-        serializer = ConceptDetailSerializer(data=data)
+        serializer = ConceptDetailSerializer(data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse new concept %s' % mnemonic)
         serializer.save(force_insert=True, parent_resource=self.source, child_list_attribute='concepts')

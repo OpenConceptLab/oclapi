@@ -2,6 +2,7 @@ import json
 from django.core.management import CommandError
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
+from oclapi.importer import MockRequest
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
@@ -13,14 +14,6 @@ class IllegalInputException(BaseException):
 
 class InvalidStateException(BaseException):
     pass
-
-
-class MockRequest(object):
-    method = 'POST'
-    user = None
-
-    def __init__(self, user):
-        self.user = user
 
 
 class MappingsImporter(object):
