@@ -504,6 +504,7 @@ class ConceptVersionTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            external_id='EXTID',
         )
         display_name = LocalizedText(
             name='concept1',
@@ -590,7 +591,7 @@ class ConceptVersionTest(ConceptBaseTest):
             names=self.concept1.names,
             created_by=self.user1.username,
             updated_by=self.user1.username,
-            version_created_by=self.user1.username
+            version_created_by=self.user1.username,
         )
         concept_version.full_clean()
         concept_version.save()
@@ -700,6 +701,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept1.descriptions, version.descriptions)
         self.assertEquals(self.concept1.retired, version.retired)
         self.assertEquals(self.concept1.public_access, version.public_access)
+        self.assertEquals(self.concept1.external_id, version.external_id)
         self.assertFalse(version.released)
 
     def test_persist_clone_positive(self):
@@ -721,6 +723,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept_version.public_access, version2.public_access)
         self.assertEquals(self.concept_version, version2.previous_version)
         self.assertEquals(self.concept_version.root_version, version2.root_version)
+        self.assertEquals(self.concept_version.external_id, version2.external_id)
         self.assertEquals(self.user1.username, version2.version_created_by)
 
         source_version.update_concept_version(version2)

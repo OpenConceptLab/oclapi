@@ -10,6 +10,7 @@ from sources.models import Source
 
 class ConceptListSerializer(serializers.Serializer):
     id = serializers.CharField(source='mnemonic')
+    external_id = serializers.CharField()
     concept_class = serializers.CharField()
     datatype = serializers.CharField()
     url = serializers.URLField()
@@ -27,6 +28,7 @@ class ConceptListSerializer(serializers.Serializer):
 
 class ConceptDetailSerializer(serializers.Serializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    external_id = serializers.CharField(required=False)
     concept_class = serializers.CharField(required=False)
     datatype = serializers.CharField(required=False)
     display_name = serializers.CharField(read_only=True)
@@ -50,6 +52,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         concept = instance if instance else Concept()
         concept.mnemonic = attrs.get(self.Meta.lookup_field, concept.mnemonic)
+        concept.external_id = attrs.get('external_id', concept.external_id)
         concept.concept_class = attrs.get('concept_class', concept.concept_class)
         concept.datatype = attrs.get('datatype', concept.datatype)
         concept.extras = attrs.get('extras', concept.extras)
@@ -60,10 +63,7 @@ class ConceptDetailSerializer(serializers.Serializer):
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
-        kwargs.update({
-            'creator': request_user
-        })
-        errors = Concept.persist_new(obj, **kwargs)
+        errors = Concept.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
 
 
@@ -81,6 +81,7 @@ class ConceptVersionsSerializer(serializers.Serializer):
 
 class ConceptVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='name')
+    external_id = serializers.CharField()
     concept_class = serializers.CharField()
     datatype = serializers.CharField()
     retired = serializers.BooleanField()
@@ -116,6 +117,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     type = serializers.CharField(source='versioned_resource_type')
     uuid = serializers.CharField(source='id')
     id = serializers.CharField(source='name')
+    external_id = serializers.CharField()
     concept_class = serializers.CharField()
     datatype = serializers.CharField()
     display_name = serializers.CharField()
@@ -172,9 +174,10 @@ class ReferencesToVersionsSerializer(ConceptVersionListSerializer):
 
 
 class ConceptVersionUpdateSerializer(serializers.Serializer):
-    concept_class = serializers.CharField(required=True)
+    external_id = serializers.CharField(required=False)
+    concept_class = serializers.CharField(required=False)
     datatype = serializers.CharField(required=False)
-    names = LocalizedTextListField(required=True)
+    names = LocalizedTextListField(required=False)
     descriptions = LocalizedTextListField(required=False, name_override='description')
     extras = serializers.WritableField(required=False)
     update_comment = serializers.CharField(required=False)
@@ -199,6 +202,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
 
 class ConceptNameSerializer(serializers.Serializer):
     uuid = serializers.CharField(read_only=True)
+    external_id = serializers.CharField(required=False)
     name = serializers.CharField(required=True)
     locale = serializers.CharField(required=True)
     locale_preferred = serializers.BooleanField(required=False, default=False)
@@ -215,11 +219,13 @@ class ConceptNameSerializer(serializers.Serializer):
         concept_name.locale = attrs.get('locale', concept_name.locale)
         concept_name.locale_preferred = attrs.get('locale_preferred', concept_name.locale_preferred)
         concept_name.type = attrs.get('type', concept_name.type)
+        concept_name.external_id = attrs.get('external_id', concept_name.external_id)
         return concept_name
 
 
 class ConceptDescriptionSerializer(serializers.Serializer):
     uuid = serializers.CharField(read_only=True)
+    external_id = serializers.CharField(required=False)
     description = serializers.CharField(required=True, source='name')
     locale = serializers.CharField(required=True)
     locale_preferred = serializers.BooleanField(required=False, default=False)
@@ -236,6 +242,7 @@ class ConceptDescriptionSerializer(serializers.Serializer):
         concept_desc.locale = attrs.get('locale', concept_desc.locale)
         concept_desc.locale_preferred = attrs.get('locale_preferred', concept_desc.locale_preferred)
         concept_desc.type = attrs.get('type', concept_desc.type)
+        concept_desc.external_id = attrs.get('external_id', concept_desc.external_id)
         return concept_desc
 
 

@@ -275,8 +275,8 @@ class Mapping(BaseModel):
             diffs['to_concept_name'] = {'was': v1.to_concept_name, 'is': v2.to_concept_name}
 
         # Diff extras
-        extras1 = v1.extras
-        extras2 = v2.extras
+        extras1 = v1.extras or {}
+        extras2 = v2.extras or {}
         diff = len(extras1) != len(extras2)
         if not diff:
             for key in extras1:

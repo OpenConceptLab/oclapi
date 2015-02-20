@@ -17,6 +17,7 @@ from sources.models import SourceVersion, Source
 
 class LocalizedText(models.Model):
     uuid = UUIDField(auto=True)
+    external_id = models.TextField(null=True, blank=True)
     name = models.TextField()
     type = models.TextField(null=True, blank=True)
     locale = models.TextField()
@@ -25,6 +26,7 @@ class LocalizedText(models.Model):
     def clone(self):
         return LocalizedText(
             uuid=self.uuid,
+            external_id=self.external_id,
             name=self.name,
             type=self.type,
             locale=self.locale,
@@ -36,6 +38,7 @@ CONCEPT_TYPE = 'Concept'
 
 
 class Concept(SubResourceBaseModel, DictionaryItemMixin):
+    external_id = models.TextField(null=True, blank=True)
     concept_class = models.TextField()
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField(LocalizedText))
@@ -162,6 +165,7 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
 
 
 class ConceptVersion(ResourceVersionModel):
+    external_id = models.TextField(null=True, blank=True)
     concept_class = models.TextField()
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField('LocalizedText'))
@@ -176,6 +180,7 @@ class ConceptVersion(ResourceVersionModel):
         return ConceptVersion(
             mnemonic='_TEMP',
             public_access=self.public_access,
+            external_id=self.external_id,
             concept_class=self.concept_class,
             datatype=self.datatype,
             names=map(lambda n: n.clone(), self.names),
@@ -270,6 +275,7 @@ class ConceptVersion(ResourceVersionModel):
         return ConceptVersion(
             mnemonic=label,
             public_access=concept.public_access,
+            external_id=concept.external_id,
             concept_class=concept.concept_class,
             datatype=concept.datatype,
             extras=concept.extras,
@@ -291,6 +297,8 @@ class ConceptVersion(ResourceVersionModel):
         diffs = {}
         if v1.public_access != v2.public_access:
             diffs['public_access'] = {'was': v1.public_access, 'is': v2.public_access}
+        if v1.external_id != v2.external_id:
+            diffs['external_id'] = {'was': v1.external_id, 'is': v2.external_id}
         if v1.concept_class != v2.concept_class:
             diffs['concept_class'] = {'was': v1.concept_class, 'is': v2.concept_class}
         if v1.datatype != v2.datatype:
@@ -304,6 +312,9 @@ class ConceptVersion(ResourceVersionModel):
             n1 = sorted(names1, key=lambda n: n.name)
             n2 = sorted(names2, key=lambda n: n.name)
             for i, n in enumerate(n1):
+                if n.external_id != n2[i].external_id:
+                    diff = True
+                    break
                 if n.name != n2[i].name:
                     diff = True
                     break
@@ -327,6 +338,9 @@ class ConceptVersion(ResourceVersionModel):
             n1 = sorted(names1, key=lambda n: n.name)
             n2 = sorted(names2, key=lambda n: n.name)
             for i, n in enumerate(n1):
+                if n.external_id != n2[i].external_id:
+                    diff = True
+                    break
                 if n.name != n2[i].name:
                     diff = True
                     break
