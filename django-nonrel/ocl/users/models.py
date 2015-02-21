@@ -20,7 +20,7 @@ class UserProfile(BaseResourceModel):
     organizations = ListField()
 
     def __unicode__(self):
-        return self.name
+        return self.mnemonic
 
     def soft_delete(self):
         if self.user.is_active:

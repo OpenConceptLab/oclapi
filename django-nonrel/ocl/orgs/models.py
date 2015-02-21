@@ -17,7 +17,7 @@ class Organization(BaseResourceModel):
     members = ListField()
 
     def __unicode__(self):
-        return self.name
+        return self.mnemonic
 
     @classmethod
     def resource_type(cls):
