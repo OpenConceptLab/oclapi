@@ -367,7 +367,7 @@ class CollectionVersionTest(CollectionBaseTest):
 
     def setUp(self):
         super(CollectionVersionTest, self).setUp()
-        self.collection1 = Collection.objects.create(name='collection1', mnemonic='collection1', created_by=self.user1, updated_by=self.user1, parent=self.org1)
+        self.collection1 = Collection.objects.create(name='collection1', mnemonic='collection1', created_by=self.user1, updated_by=self.user1, parent=self.org1, external_id='EXTID1')
         self.collection2 = Collection.objects.create(name='collection2', mnemonic='collection2', created_by=self.user1, updated_by=self.user1, parent=self.userprofile1)
 
     def test_collection_version_create_positive(self):
@@ -691,6 +691,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             description='This is the first test collection',
             created_by=self.user1,
             updated_by=self.user1,
+            external_id='EXTID1',
         )
         self.collection2 = Collection.objects.create(
             name='collection2',
@@ -705,6 +706,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             description='This is the second test collection',
             created_by=self.user1,
             updated_by=self.user1,
+            external_id='EXTID2',
         )
 
     def test_for_base_object_positive(self):
@@ -721,6 +723,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(self.collection1.supported_locales, version1.supported_locales)
         self.assertEquals(self.collection1.website, version1.website)
         self.assertEquals(self.collection1.description, version1.description)
+        self.assertEquals(self.collection1.external_id, version1.external_id)
         self.assertFalse(version1.released)
         self.assertIsNone(version1.parent_version)
         self.assertIsNone(version1.previous_version)
@@ -766,11 +769,13 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version1)
         self.assertEquals(0, len(errors))
@@ -782,6 +787,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version1.mnemonic)
         self.assertNotEquals(released, version1.released)
         self.assertNotEquals(description, version1.description)
+        self.assertNotEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__bad_previous_version(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1', released=True)
@@ -791,12 +797,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._previous_version_mnemonic = 'No such version'
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -809,6 +817,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__previous_version_is_self(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1', released=True)
@@ -818,11 +827,13 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._previous_version_mnemonic = mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -835,6 +846,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__bad_parent_version(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1', released=True)
@@ -844,12 +856,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._parent_version_mnemonic = 'No such version'
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -862,6 +876,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__parent_version_is_self(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1', released=True)
@@ -871,11 +886,13 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._parent_version_mnemonic = mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -888,6 +905,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_positive__good_previous_version(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
@@ -902,12 +920,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._previous_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -920,6 +940,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
     def test_persist_changes_positive__good_parent_version(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
@@ -934,12 +955,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._parent_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -952,6 +975,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
@@ -967,12 +991,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._previous_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -986,6 +1012,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
         errors = CollectionVersion.persist_changes(version2, seed_concepts=True)
         self.assertEquals(0, len(errors))
@@ -1011,12 +1038,14 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._parent_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -1030,6 +1059,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
         errors = CollectionVersion.persist_changes(version2, seed_concepts=True)
         self.assertEquals(0, len(errors))
@@ -1060,6 +1090,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         mnemonic = version3.mnemonic
         released = version3.released
         description = version3.description
+        external_id = version3.external_id
 
         id = version3.id
         version3._parent_version_mnemonic = 'version2'
@@ -1067,6 +1098,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         version3.mnemonic = "%s-prime" % mnemonic
         version3.released = not released
         version3.description = "%s-prime" % description
+        version3.external_id = "%s-prime" % external_id
 
         errors = CollectionVersion.persist_changes(version3)
         self.assertEquals(0, len(errors))
@@ -1081,6 +1113,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(mnemonic, version3.mnemonic)
         self.assertNotEquals(released, version3.released)
         self.assertNotEquals(description, version3.description)
+        self.assertNotEquals(external_id, version3.external_id)
 
         errors = CollectionVersion.persist_changes(version3, seed_concepts=True)
         self.assertEquals(0, len(errors))

@@ -650,6 +650,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             description='This is the first test source',
             created_by=self.user1,
             updated_by=self.user1,
+            external_id='EXTID1',
         )
         self.source2 = Source.objects.create(
             name='source1',
@@ -664,6 +665,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
             description='This is the second test source',
             created_by=self.user1,
             updated_by=self.user1,
+            external_id='EXTID2',
         )
 
     def test_for_base_object_positive(self):
@@ -680,6 +682,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(self.source1.supported_locales, version1.supported_locales)
         self.assertEquals(self.source1.website, version1.website)
         self.assertEquals(self.source1.description, version1.description)
+        self.assertEquals(self.source1.external_id, version1.external_id)
         self.assertFalse(version1.released)
         self.assertIsNone(version1.parent_version)
         self.assertIsNone(version1.previous_version)
@@ -725,11 +728,13 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version1)
         self.assertEquals(0, len(errors))
@@ -741,6 +746,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version1.mnemonic)
         self.assertNotEquals(released, version1.released)
         self.assertNotEquals(description, version1.description)
+        self.assertNotEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__bad_previous_version(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
@@ -750,12 +756,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._previous_version_mnemonic = 'No such version'
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -768,6 +776,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__previous_version_is_self(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
@@ -777,11 +786,13 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._previous_version_mnemonic = mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -794,6 +805,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__bad_parent_version(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
@@ -803,12 +815,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._parent_version_mnemonic = 'No such version'
         version1.mnemonic = "%s-prime" % mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -821,6 +835,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_negative__parent_version_is_self(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1', released=True)
@@ -830,11 +845,13 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version1.mnemonic
         released = version1.released
         description = version1.description
+        external_id = version1.external_id
 
         id = version1.id
         version1._parent_version_mnemonic = mnemonic
         version1.released = not released
         version1.description = "%s-prime" % description
+        version1.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version1)
         self.assertEquals(1, len(errors))
@@ -847,6 +864,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(mnemonic, version1.mnemonic)
         self.assertEquals(released, version1.released)
         self.assertEquals(description, version1.description)
+        self.assertEquals(external_id, version1.external_id)
 
     def test_persist_changes_positive__good_previous_version(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1')
@@ -861,12 +879,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._previous_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -879,6 +899,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
     def test_persist_changes_positive__good_parent_version(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1')
@@ -893,12 +914,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._parent_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -911,6 +934,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = SourceVersion.for_base_object(self.source1, 'version1')
@@ -926,12 +950,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._previous_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -945,6 +971,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
         errors = SourceVersion.persist_changes(version2, seed_concepts=True)
         self.assertEquals(0, len(errors))
@@ -970,12 +997,14 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version2.mnemonic
         released = version2.released
         description = version2.description
+        external_id = version2.external_id
 
         id = version2.id
         version2._parent_version_mnemonic = 'version1'
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
+        version2.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version2)
         self.assertEquals(0, len(errors))
@@ -989,6 +1018,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
+        self.assertNotEquals(external_id, version2.external_id)
 
         errors = SourceVersion.persist_changes(version2, seed_concepts=True)
         self.assertEquals(0, len(errors))
@@ -1019,6 +1049,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         mnemonic = version3.mnemonic
         released = version3.released
         description = version3.description
+        external_id = version3.external_id
 
         id = version3.id
         version3._parent_version_mnemonic = 'version2'
@@ -1026,6 +1057,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         version3.mnemonic = "%s-prime" % mnemonic
         version3.released = not released
         version3.description = "%s-prime" % description
+        version3.external_id = "%s-prime" % external_id
 
         errors = SourceVersion.persist_changes(version3)
         self.assertEquals(0, len(errors))
@@ -1040,6 +1072,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(mnemonic, version3.mnemonic)
         self.assertNotEquals(released, version3.released)
         self.assertNotEquals(description, version3.description)
+        self.assertNotEquals(external_id, version3.external_id)
 
         errors = SourceVersion.persist_changes(version3, seed_concepts=True)
         self.assertEquals(0, len(errors))

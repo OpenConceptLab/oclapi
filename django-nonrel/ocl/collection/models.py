@@ -73,6 +73,7 @@ class CollectionVersion(ConceptContainerVersionModel):
             parent_version=parent_version,
             created_by=collection.created_by,
             updated_by=collection.updated_by,
+            external_id=collection.external_id,
         )
 
 

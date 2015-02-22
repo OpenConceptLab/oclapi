@@ -42,6 +42,7 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.website = attrs.get('website', source.website)
         source.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else source.supported_locales
         source.extras = attrs.get('extras', source.extras)
+        source.external_id = attrs.get('external_id', source.external_id)
         return source
 
 
@@ -71,6 +72,7 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     created_by = serializers.CharField(source='owner', read_only=True)
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -104,6 +106,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     created_by = serializers.CharField(source='owner', read_only=True)
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -135,6 +138,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     created_on = serializers.DateTimeField(source='created_at')
     updated_on = serializers.DateTimeField(source='updated_at')
     extras = serializers.WritableField()
+    external_id = serializers.CharField(required=False)
 
     class Meta:
         model = SourceVersion
@@ -170,6 +174,7 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.external_id = attrs.get('external_id', instance.external_id)
         return instance
 
     def save_object(self, obj, **kwargs):
@@ -184,6 +189,7 @@ class SourceVersionUpdateSerializer(SourceVersionCreateOrUpdateSerializer):
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
 
 class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
@@ -193,6 +199,7 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def restore_object(self, attrs, instance=None):
         version = SourceVersion()

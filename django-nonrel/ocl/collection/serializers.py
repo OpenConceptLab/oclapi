@@ -42,6 +42,7 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.website = attrs.get('website', collection.website)
         collection.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else collection.supported_locales
         collection.extras = attrs.get('extras', collection.extras)
+        collection.external_id = attrs.get('external_id', collection.external_id)
         return collection
 
 
@@ -71,6 +72,7 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -135,6 +137,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     created_on = serializers.DateTimeField(source='created_at')
     updated_on = serializers.DateTimeField(source='updated_at')
     extras = serializers.WritableField()
+    external_id = serializers.CharField(required=False)
 
     class Meta:
         model = CollectionVersion
@@ -170,6 +173,7 @@ class CollectionVersionCreateOrUpdateSerializer(serializers.Serializer):
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.external_id = attrs.get('external_id', instance.external_id)
         return instance
 
     def save_object(self, obj, **kwargs):
@@ -184,6 +188,7 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):
@@ -193,6 +198,7 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def restore_object(self, attrs, instance=None):
         version = CollectionVersion()
