@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import DatabaseError
 from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseForbidden
 from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404 as generics_get_object_or_404
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
@@ -9,7 +9,7 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from oclapi.mixins import PathWalkerMixin
 from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
-from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary
+from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary, HasOwnership
 
 
 def get_object_or_404(queryset, **filter_kwargs):
@@ -116,6 +116,9 @@ class ConceptDictionaryCreateMixin(ConceptDictionaryMixin):
     def create(self, request, *args, **kwargs):
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        permission = HasOwnership()
+        if not permission.has_object_permission(request, self, self.parent_resource):
+            return HttpResponseForbidden()
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
