@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
@@ -16,6 +17,8 @@ from sources.serializers import SourceCreateSerializer, SourceListSerializer, So
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
+LIMIT_PARAM = 'limit'
+INCLUDE_RETIRED_PARAM = 'includeRetired'
 
 
 class SourceBaseView():
@@ -46,23 +49,39 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         self.object = self.get_object()
         serializer = self.get_serializer(self.object)
         data = serializer.data
+
         source_version = None
+        limit = 0
+        include_retired = False
         include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
-        if include_concepts:
-            queryset = ConceptVersion.objects.filter(is_active=True)
+        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
+        if include_concepts or include_mappings:
             source_version = SourceVersion.get_latest_version_of(self.object)
-            all_children = source_version.concepts
-            queryset = queryset.filter(id__in=all_children)
+            limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 0)
+            include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
+
+        if include_concepts:
+            source_version_concepts = source_version.concepts
+            queryset = ConceptVersion.objects.filter(is_active=True)
+            if not include_retired:
+                queryset = queryset.filter(~Q(retired=True))
+            queryset = queryset.filter(id__in=source_version_concepts)
+            if limit:
+                queryset = queryset[0:limit]
             serializer = ConceptVersionDetailSerializer(queryset, many=True)
             data['concepts'] = serializer.data
-        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
+
         if include_mappings:
-            queryset = Mapping.objects.filter(is_active=True)
-            source_version = source_version or SourceVersion.get_latest_version_of(self.object)
             all_children = source_version.mappings
+            queryset = Mapping.objects.filter(is_active=True)
+            if not include_retired:
+                queryset = queryset.filter(~Q(retired=True))
             queryset = queryset.filter(id__in=all_children)
+            if limit:
+                queryset = queryset[0:limit]
             serializer = MappingDetailSerializer(queryset, many=True)
             data['mappings'] = serializer.data
+
         return Response(data)
 
 
