@@ -38,7 +38,7 @@ class MappingListField(ListField):
 
     def element_to_native(self, element):
         module = __import__('mappings.serializers', fromlist=['models'])
-        serializer_class = getattr(module, 'MappingRetrieveDestroySerializer')
+        serializer_class = getattr(module, 'MappingDetailSerializer')
         serializer = serializer_class(element)
         return serializer.data
 

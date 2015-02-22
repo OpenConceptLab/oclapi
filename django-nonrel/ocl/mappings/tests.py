@@ -13,6 +13,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
+from django.utils.unittest.case import skip
 from concepts.models import Concept
 from mappings.models import Mapping
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
@@ -1589,7 +1590,10 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 404)
 
+    @skip('Feature not ready.')
     def test_all_mappings__positive(self):
+        self.source2.public_access = ACCESS_TYPE_EDIT
+        Source.persist_changes(self.source2, self.user2)
         self.client.login(username='user1', password='user1')
         response = self.client.get(reverse('all-mappings'))
         self.assertEquals(response.status_code, 200)

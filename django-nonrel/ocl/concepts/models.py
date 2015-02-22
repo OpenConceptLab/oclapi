@@ -96,14 +96,13 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     def get_bidirectional_mappings(self):
         module = __import__('mappings.models', fromlist=['models'])
         class_ = getattr(module, 'Mapping')
-        to_mappings = class_.objects.filter(to_concept=self)
-        return list(chain(self.get_unidirectional_mappings(), to_mappings))
+        queryset = class_.objects.filter(parent=self.parent)
+        return queryset.filter(Q(from_concept=self) | Q(to_concept=self))
 
     def get_unidirectional_mappings(self):
         module = __import__('mappings.models', fromlist=['models'])
         class_ = getattr(module, 'Mapping')
-        my_content_type = ContentType.objects.get_for_model(self.__class__)
-        return class_.objects.filter(parent_id=self.id, parent_type=my_content_type)
+        return class_.objects.filter(parent=self.parent, from_concept=self)
 
     def get_empty_mappings(self):
         return []

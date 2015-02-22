@@ -20,6 +20,7 @@ from sources.models import SourceVersion
 
 UPDATED_SINCE_PARAM = 'updatedSince'
 INCLUDE_RETIRED_PARAM = 'includeRetired'
+INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 INCLUDE_INVERSE_MAPPINGS_PARAM = 'includeInverseMappings'
 
 
@@ -120,9 +121,9 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     default_filters = {'is_latest_version': True}
 
     def get_serializer_context(self):
-        if self.request.GET.get('include_indirect_mappings'):
+        if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
             return {'include_indirect_mappings': True}
-        if self.request.GET.get('include_direct_mappings'):
+        if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
             return {'include_direct_mappings': True}
         return {}
 
@@ -248,6 +249,13 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
     def initialize(self, request, path_info_segment, **kwargs):
         self.versioned_object = kwargs.pop('versioned_object', None)
         super(ConceptVersionRetrieveView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_serializer_context(self):
+        if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
+            return {'include_indirect_mappings': True}
+        if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
+            return {'include_direct_mappings': True}
+        return {}
 
     def get_object(self, queryset=None):
         if self.versioned_object:
