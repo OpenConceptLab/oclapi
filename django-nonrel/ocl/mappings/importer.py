@@ -67,7 +67,7 @@ class MappingsImporter(object):
         self.stdout.write('\nFinished importing mappings!\n')
 
     def handle_mapping(self, data):
-        external_id = data['external_id']
+        external_id = data.get('external_id')
         if not external_id:
             raise IllegalInputException('Must specify mapping external_id.')
         try:
