@@ -3,6 +3,8 @@ import os.path
 from django.core.management import BaseCommand, CommandError
 from rest_framework.authtoken.models import Token
 from mappings.importer import MappingsImporter
+from oclapi.importer import MockRequest
+from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
 
 __author__ = 'misternando'
@@ -55,6 +57,10 @@ class Command(BaseCommand):
             user = auth_token.user
         except Token.DoesNotExist:
             raise CommandError('Invalid token.')
+
+        permission = HasPrivateAccess()
+        if not permission.has_object_permission(MockRequest(user), None, source):
+            raise CommandError('User does not have permission to edit source.')
 
         try:
             input_file = open(input_file, 'rb')
