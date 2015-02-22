@@ -65,6 +65,8 @@ class OrganizationDetailSerializer(serializers.Serializer):
     public_sources = serializers.IntegerField(read_only=True)
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+    created_by = serializers.CharField(read_only=True)
+    updated_by = serializers.CharField(read_only=True)
     url = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
 
