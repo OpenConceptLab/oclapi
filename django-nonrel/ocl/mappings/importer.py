@@ -57,12 +57,15 @@ class MappingsImporter(object):
                 self.stderr.write('\n%s\n' % e)
 
         self.stdout.write('\nDeactivating old mappings...\n')
+        deactivated = 0
         for mapping_id in self.mapping_ids:
             try:
-                self.remove_mapping(mapping_id)
+                removed = self.remove_mapping(mapping_id)
+                if removed:
+                    deactivated += 1
             except InvalidStateException as e:
-                self.stderr.write('Failed to inactivate mapping! %s' % e.message)
-            self.stdout.write('.')
+                self.stderr.write('Failed to inactivate mapping! %s' % e)
+        self.stdout.write('\nDeactivated %s old mappings\n' % deactivated)
 
         self.stdout.write('\nFinished importing mappings!\n')
 
@@ -76,7 +79,7 @@ class MappingsImporter(object):
             self.add_mapping(data)
             return
         if mapping.id not in self.source_version.mappings:
-            raise InvalidStateException("Source %s has concept %s, but source version %s does not." %
+            raise InvalidStateException("Source %s has mapping %s, but source version %s does not." %
                                         (self.source.mnemonic, mapping.id, self.source_version.mnemonic))
 
         self.update_mapping(mapping, data)
@@ -113,9 +116,12 @@ class MappingsImporter(object):
     def remove_mapping(self, mapping_id):
         try:
             mapping = Mapping.objects.get(id=mapping_id)
-            mapping.is_active = False
-            mapping.save()
+            if mapping.is_active:
+                mapping.is_active = False
+                mapping.save()
+                return True
+            return False
         except:
-            raise InvalidStateException("Cannot delete concept version %s because it doesn't exist!" % mapping_id)
+            raise InvalidStateException("Cannot delete mapping %s because it doesn't exist!" % mapping_id)
 
 
