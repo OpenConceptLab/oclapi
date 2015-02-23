@@ -165,7 +165,6 @@ class ConceptCreateView(ConceptBaseView,
             self.pre_save(serializer.object)
             save_kwargs = {
                 'force_insert': True,
-                'owner': request.user,
                 'parent_resource': self.parent_resource,
                 'child_list_attribute': self.child_list_attribute
             }
@@ -505,7 +504,6 @@ class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, Li
             self.pre_save(serializer.object)
             save_kwargs = {
                 'force_insert': True,
-                'owner': request.user,
                 'parent_resource': self.parent_resource,
                 'child_list_attribute': self.child_list_attribute
             }
