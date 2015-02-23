@@ -127,7 +127,7 @@ class Command(BaseCommand):
         clone = concept_version.clone()
         if 'retired' in data and clone.retired != data['retired']:
             diffs['retired'] = {'was': clone.retired, 'is': data['retired']}
-        serializer = ConceptVersionUpdateSerializer(clone, data=data)
+        serializer = ConceptVersionUpdateSerializer(clone, data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse concept to update: %s.' % concept_version.mnemonic)
         if serializer.is_valid():
@@ -141,7 +141,7 @@ class Command(BaseCommand):
                 if 'descriptions' in diffs:
                     diffs['descriptions'] = {'is': data.get('descriptions')}
                 clone.update_comment = json.dumps(diffs)
-                serializer.save(user=self.user)
+                serializer.save()
                 if not serializer.is_valid():
                     raise IllegalInputException('Could not persist update to concept: %s' % concept_version.mnemonic)
 
