@@ -189,6 +189,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         instance.concept_class = attrs.get('concept_class', instance.concept_class)
         instance.datatype = attrs.get('datatype', instance.datatype)
         instance.extras = attrs.get('extras', instance.extras)
+        instance.external_id = attrs.get('external_id', instance.external_id)
         instance.update_comment = attrs.get('update_comment')
         instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
         instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
