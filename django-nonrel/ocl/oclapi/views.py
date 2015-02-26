@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from oclapi.mixins import PathWalkerMixin
 from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary, HasOwnership
+from users.models import UserProfile
 
 
 def get_object_or_404(queryset, **filter_kwargs):
@@ -76,10 +77,13 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
     def initialize(self, request, path_info_segment, **kwargs):
         super(SubResourceMixin, self).initialize(request, path_info_segment, **kwargs)
         self.user = request.user
-        if self.user and hasattr(self.user, 'get_profile'):
-            self.userprofile = self.user.get_profile()
-        if self.user_is_self and self.userprofile:
-            self.parent_resource = self.userprofile
+        if self.user_is_self:
+            try:
+                self.userprofile = self.user.get_profile()
+                if self.userprofile:
+                    self.parent_resource = self.userprofile
+                    return
+            except UserProfile.DoesNotExist: pass
         else:
             levels = 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else 2
             self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=levels)

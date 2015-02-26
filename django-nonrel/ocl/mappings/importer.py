@@ -1,5 +1,6 @@
 import json
 from django.core.management import CommandError
+from django.db.models import Q
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
 from oclapi.importer import MockRequest
@@ -70,11 +71,17 @@ class MappingsImporter(object):
         self.stdout.write('\nFinished importing mappings!\n')
 
     def handle_mapping(self, data):
-        external_id = data.get('external_id')
-        if not external_id:
-            raise IllegalInputException('Must specify mapping external_id.')
+        serializer = MappingCreateSerializer(data=data, context={'request': MockRequest(self.user)})
+        if not serializer.is_valid():
+            raise IllegalInputException('Could not parse mapping %s due to %s' % (data,serializer.errors))
         try:
-            mapping = Mapping.objects.get(parent_id=self.source.id, external_id=external_id)
+            mapping = serializer.save(commit=False)
+            query = Q(parent_id=self.source.id, map_type=mapping.map_type, from_concept=mapping.from_concept)
+            if mapping.to_concept:
+                query = query & Q(to_concept=mapping.to_concept)
+            else:
+                query = query & Q(to_source_id=mapping.to_source.id, to_concept_code=mapping.to_concept_code, to_concept_name=mapping.to_concept_name)
+            mapping = Mapping.objects.get(query)
         except Mapping.DoesNotExist:
             self.add_mapping(data)
             return
@@ -87,13 +94,10 @@ class MappingsImporter(object):
         return
 
     def add_mapping(self, data):
-        external_id = data['external_id']
         serializer = MappingCreateSerializer(data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException('Could not parse new mapping %s due to %s' % (data,serializer.errors))
+            raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
         serializer.save(force_insert=True, parent_resource=self.source)
-        if not serializer.is_valid():
-            raise IllegalInputException('Could not persist new mapping %s due to %s' % (external_id, serializer.errors))
 
     def update_mapping(self, mapping, data):
         diffs = {}
