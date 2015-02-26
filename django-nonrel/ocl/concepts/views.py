@@ -121,11 +121,12 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     default_filters = {'is_latest_version': True}
 
     def get_serializer_context(self):
+        context = {'verbose': True} if self.is_verbose(self.request) else {}
         if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
-            return {'include_indirect_mappings': True}
+            context.update({'include_indirect_mappings': True})
         if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
-            return {'include_direct_mappings': True}
-        return {}
+            context.update({'include_direct_mappings': True})
+        return context
 
     def get(self, request, *args, **kwargs):
         self.updated_since = parse_updated_since_param(request)
@@ -201,12 +202,15 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     child_list_attribute = 'concepts'
 
     def get_serializer_context(self):
+        context = {}
+        if self.request.GET.get('verbose'):
+            context.update({'verbose': True})
         if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
             if self.request.GET.get('include_indirect_mappings'):
-                return {'include_indirect_mappings': True}
+                context.update({'include_indirect_mappings': True})
             if self.request.GET.get('include_direct_mappings'):
-                return {'include_direct_mappings': True}
-        return {}
+                context.update({'include_direct_mappings': True})
+        return context
 
 
 class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
@@ -250,11 +254,14 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
         super(ConceptVersionRetrieveView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_serializer_context(self):
+        context = {}
+        if self.request.GET.get('verbose'):
+            context.update({'verbose': True})
         if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
-            return {'include_indirect_mappings': True}
+            context.update({'include_indirect_mappings': True})
         if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
-            return {'include_direct_mappings': True}
-        return {}
+            context.update({'include_direct_mappings': True})
+        return context
 
     def get_object(self, queryset=None):
         if self.versioned_object:
