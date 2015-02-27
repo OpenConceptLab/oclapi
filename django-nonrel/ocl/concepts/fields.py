@@ -56,6 +56,9 @@ class LocalizedTextListField(ListField):
             msg = self.error_messages['invalid'] % element
             raise ValidationError(msg)
         lt = LocalizedText()
+        external_id = element.get('external_id', None)
+        if external_id:
+            lt.external_id = external_id
         name = element.get(self.name_attr, None)
         if name is None or not isinstance(name, unicode):
             msg = self.error_messages['invalid'] % element
