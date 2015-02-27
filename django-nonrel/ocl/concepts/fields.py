@@ -72,12 +72,10 @@ class LocalizedTextListField(ListField):
         return lt
 
     def element_to_native(self, element):
-        return {
-            self.name_attr: element.name,
-            'locale': element.locale,
-            'locale_preferred': element.locale_preferred,
-            self.type_attr: element.type
-        }
+        module = __import__('concepts.serializers', fromlist=['models'])
+        serializer_class = getattr(module, 'ConceptDescriptionSerializer' if 'description' == self.name_attr else 'ConceptNameSerializer')
+        serializer = serializer_class(element)
+        return serializer.data
 
     @property
     def name_attr(self):

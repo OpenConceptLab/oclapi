@@ -121,7 +121,9 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     default_filters = {'is_latest_version': True}
 
     def get_serializer_context(self):
-        context = {'verbose': True} if self.is_verbose(self.request) else {}
+        context = {'request': self.request}
+        if self.is_verbose(self.request):
+            context.update({'verbose': True})
         if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
             context.update({'include_indirect_mappings': True})
         if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
@@ -202,7 +204,7 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     child_list_attribute = 'concepts'
 
     def get_serializer_context(self):
-        context = {}
+        context = {'request': self.request}
         if self.request.GET.get('verbose'):
             context.update({'verbose': True})
         if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
@@ -254,7 +256,7 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
         super(ConceptVersionRetrieveView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_serializer_context(self):
-        context = {}
+        context = {'request': self.request}
         if self.request.GET.get('verbose'):
             context.update({'verbose': True})
         if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
