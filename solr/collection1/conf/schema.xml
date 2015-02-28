@@ -186,25 +186,35 @@
 
     <field name="owner" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="conceptClass" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
     <field name="num_stars" type="long" indexed="true" stored="true" multiValued="false" />
 
     <field name="retired" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="conceptClass_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
-    <field name="concept_class" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="public_can_view" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="last_update" type="date" indexed="true" stored="true" multiValued="false" />
-
-    <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
+    <field name="retired_exact" type="boolean" indexed="true" stored="true" multiValued="false" />
 
     <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
-    <field name="public_can_view" type="boolean" indexed="true" stored="true" multiValued="false" />
+    <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="datatype_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="source_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
 
     <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="language" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="last_update" type="date" indexed="true" stored="true" multiValued="false" />
 
     <field name="from_source" type="lowercase" indexed="true" stored="true" multiValued="false" />
 

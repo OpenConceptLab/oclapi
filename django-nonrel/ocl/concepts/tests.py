@@ -73,6 +73,9 @@ class ConceptBaseTest(TestCase):
         Source.persist_new(self.source2, self.user2, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
 
+        self.name = LocalizedText.objects.create(name='Fred', locale='en')
+        self.description = LocalizedText.objects.create(name='guapo', locale='es')
+
 
 class ConceptTest(ConceptBaseTest):
 
@@ -83,14 +86,15 @@ class ConceptTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         concept.full_clean()
         concept.save()
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
@@ -102,6 +106,7 @@ class ConceptTest(ConceptBaseTest):
                 updated_by=self.user1,
                 parent=self.source1,
                 concept_class='First',
+                names=[self.name],
             )
             concept.full_clean()
             concept.save()
@@ -113,6 +118,7 @@ class ConceptTest(ConceptBaseTest):
                 parent=self.source1,
                 updated_by=self.user1,
                 concept_class='First',
+                names=[self.name],
             )
             concept.full_clean()
             concept.save()
@@ -124,6 +130,7 @@ class ConceptTest(ConceptBaseTest):
                 created_by=self.user1,
                 updated_by=self.user1,
                 concept_class='First',
+                names=[self.name],
             )
             concept.full_clean()
             concept.save()
@@ -135,6 +142,7 @@ class ConceptTest(ConceptBaseTest):
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
+                names=[self.name],
             )
             concept.full_clean()
             concept.save()
@@ -146,10 +154,12 @@ class ConceptTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         display_name = LocalizedText(
             name='concept1',
-            locale='en'
+            locale='en',
+            locale_preferred=True,
         )
         concept.names.append(display_name)
         concept.full_clean()
@@ -202,6 +212,7 @@ class ConceptTest(ConceptBaseTest):
             parent=self.source1,
             public_access=public_access,
             concept_class='First',
+            names=[self.name],
         )
         concept.full_clean()
         concept.save()
@@ -223,6 +234,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             created_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
@@ -234,8 +246,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
@@ -254,6 +266,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
@@ -277,6 +290,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
@@ -297,6 +311,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
@@ -308,8 +323,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
@@ -327,6 +342,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -346,6 +362,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
@@ -357,8 +374,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
@@ -377,6 +394,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source2,
             concept_class='First',
+            names=[self.name],
         )
         source_version = SourceVersion.get_latest_version_of(self.source2)
         self.assertEquals(0, len(source_version.concepts))
@@ -388,8 +406,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source2.parent_resource, concept.owner_name)
         self.assertEquals(self.source2.owner_type, concept.owner_type)
         self.assertEquals(self.source2.public_access, concept.public_access)
@@ -414,6 +432,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -424,8 +443,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
-        self.assertIsNone(concept.display_name)
-        self.assertIsNone(concept.display_locale)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(self.source1.public_access, concept.public_access)
@@ -450,6 +469,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -505,6 +525,7 @@ class ConceptVersionTest(ConceptBaseTest):
             parent=self.source1,
             concept_class='First',
             external_id='EXTID',
+            names=[self.name],
         )
         display_name = LocalizedText(
             name='concept1',
@@ -522,6 +543,7 @@ class ConceptVersionTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='Second',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source2,
@@ -537,7 +559,7 @@ class ConceptVersionTest(ConceptBaseTest):
             names=self.concept1.names,
             created_by=self.user1.username,
             updated_by=self.user1.username,
-            version_created_by=self.user1.username
+            version_created_by=self.user1.username,
         )
         concept_version.full_clean()
         concept_version.save()
@@ -560,6 +582,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version = ConceptVersion(
                 versioned_object=self.concept1,
                 concept_class='First',
+                names=[self.name],
             )
             concept_version.full_clean()
             concept_version.save()
@@ -569,6 +592,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version = ConceptVersion(
                 mnemonic='version1',
                 concept_class='First',
+                names=[self.name],
             )
             concept_version.full_clean()
             concept_version.save()
@@ -578,6 +602,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version = ConceptVersion(
                 mnemonic='version1',
                 versioned_object=self.concept1,
+                names=[self.name],
             )
             concept_version.full_clean()
             concept_version.save()
@@ -640,7 +665,7 @@ class ConceptVersionTest(ConceptBaseTest):
             names=self.concept1.names,
             created_by=self.user1.username,
             updated_by=self.user1.username,
-            version_created_by=self.user1.username
+            version_created_by=self.user1.username,
         )
         concept_version.full_clean()
         concept_version.save()
@@ -667,7 +692,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         Concept.persist_new(self.concept1, self.user1, **kwargs)
         initial_version = ConceptVersion.get_latest_version_of(self.concept1)
 
-        self.concept2 = Concept(mnemonic='concept2', concept_class='Second')
+        self.concept2 = Concept(mnemonic='concept2', concept_class='Second', names=[self.name])
         kwargs = {
             'parent_resource': self.source2,
         }
@@ -759,6 +784,7 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         display_name = LocalizedText(
             name='concept1',
@@ -779,6 +805,7 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='Second',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source2,
@@ -1011,7 +1038,7 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
             created_by=self.user1,
             updated_by=self.user1,
             mnemonic='reference1',
-            concept=self.concept1
+            concept=self.concept1,
         )
         collection_version = CollectionVersion.get_latest_version_of(self.collection1)
         self.assertEquals(0, len(collection_version.concept_references))

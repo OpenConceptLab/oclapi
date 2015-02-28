@@ -109,12 +109,15 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     queryset = ConceptVersion.objects.filter(is_active=True)
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
-        'num_stars': {'sortable': True, 'filterable': False},
-        'concept_class': {'sortable': False, 'filterable': True},
-        'datatype': {'sortable': False, 'filterable': True},
-        'locale': {'sortable': False, 'filterable': True},
+        'lastUpdate': {'sortable': True, 'filterable': False},
         'is_latest_version': {'sortable': False, 'filterable': True},
+        'conceptClass': {'sortable': False, 'filterable': True, 'facet': True},
+        'datatype': {'sortable': False, 'filterable': True, 'facet': True},
+        'locale': {'sortable': False, 'filterable': True, 'facet': True},
+        'retired': {'sortable': False, 'filterable': True, 'facet': True},
+        'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'owner': {'sortable': False, 'filterable': True, 'facet': True},
+        'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
     updated_since = None
     include_retired = False
@@ -221,11 +224,15 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     filter_backends = [LimitSourceVersionFilter,]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
-        'num_stars': {'sortable': True, 'filterable': False},
-        'concept_class': {'sortable': False, 'filterable': True},
-        'datatype': {'sortable': False, 'filterable': True},
-        'locale': {'sortable': False, 'filterable': True},
+        'lastUpdate': {'sortable': True, 'filterable': False},
+        'is_latest_version': {'sortable': False, 'filterable': True},
+        'conceptClass': {'sortable': False, 'filterable': True, 'facet': True},
+        'datatype': {'sortable': False, 'filterable': True, 'facet': True},
+        'locale': {'sortable': False, 'filterable': True, 'facet': True},
+        'retired': {'sortable': False, 'filterable': True, 'facet': True},
+        'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'owner': {'sortable': False, 'filterable': True, 'facet': True},
+        'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
     updated_since = None
     include_retired = False

@@ -14,7 +14,7 @@ from django.test import TestCase, Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 from django.utils.unittest.case import skip
-from concepts.models import Concept
+from concepts.models import Concept, LocalizedText
 from mappings.models import Mapping
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.utils import add_user_to_org
@@ -112,11 +112,14 @@ class MappingBaseTest(TestCase):
         Source.persist_new(self.source2, self.user1, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
 
+        self.name = LocalizedText.objects.create(name='Fred', locale='en')
+
         self.concept1 = Concept(
             mnemonic='concept1',
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -128,6 +131,7 @@ class MappingBaseTest(TestCase):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='Second',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -139,6 +143,7 @@ class MappingBaseTest(TestCase):
             updated_by=self.user1,
             parent=self.source2,
             concept_class='Third',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source2,
@@ -150,6 +155,7 @@ class MappingBaseTest(TestCase):
             updated_by=self.user2,
             parent=self.source2,
             concept_class='Fourth',
+            names=[self.name],
         )
         kwargs = {
             'parent_resource': self.source2,
