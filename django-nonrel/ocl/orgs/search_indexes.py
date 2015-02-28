@@ -9,8 +9,8 @@ class OrganizationIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     name = SortOrFilterField(model_attr='name', indexed=True, stored=True)
     company = SortOrFilterField(model_attr='company', null=True, indexed=True, stored=True)
-    last_update = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
-    num_stars = indexes.IntegerField(model_attr='num_stars', indexed=True, stored=True)
+    location = SortOrFilterField(model_attr='location', null=True, indexed=True, stored=True)
+    lastUpdate = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
 
     def get_model(self):
         return Organization

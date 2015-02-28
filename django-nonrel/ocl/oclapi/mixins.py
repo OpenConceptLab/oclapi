@@ -35,7 +35,7 @@ class PathWalkerMixin():
 
 class ListWithHeadersMixin(ListModelMixin):
     verbose_param = 'verbose'
-    default_order_by = 'created_at'
+    facets = None
 
     def is_verbose(self, request):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
@@ -45,6 +45,11 @@ class ListWithHeadersMixin(ListModelMixin):
 
         # Skip pagination if compressed results are requested
         meta = request._request.META
+        include_facets = meta.get('HTTP_INCLUDEFACETS', False)
+        facets = None
+        if include_facets and hasattr(self.object_list, 'facets'):
+            facets = self.object_list.facets
+
         skip_pagination = meta.get('HTTP_COMPRESS', False)
 
         # Switch between paginated or standard style responses
@@ -52,10 +57,18 @@ class ListWithHeadersMixin(ListModelMixin):
             page = self.paginate_queryset(self.object_list)
             if page is not None:
                 serializer = self.get_pagination_serializer(page)
-                return Response(serializer.data, headers=serializer.headers)
+                results = serializer.data
+                if facets:
+                    return Response({'results': results, 'facets': facets}, headers=serializer.headers)
+                else:
+                    return Response(results, headers=serializer.headers)
 
         serializer = self.get_serializer(self.object_list, many=True)
-        return Response(serializer.data)
+        results = serializer.data
+        if facets:
+            return Response({'results': results, 'facets': facets}, headers=serializer.headers)
+        else:
+            return Response(results, headers=serializer.headers)
 
 
 

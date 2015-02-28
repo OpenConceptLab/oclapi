@@ -20,7 +20,8 @@ class UserListView(BaseAPIView,
     solr_fields = {
         'username': {'sortable': True, 'filterable': False},
         'date_joined': {'sortable': True, 'default': 'asc', 'filterable': False},
-        'num_stars': {'sortable': True, 'filterable': False},
+        'company': {'sortable': False, 'filterable': True},
+        'location': {'sortable': False, 'filterable': True},
     }
 
     def initial(self, request, *args, **kwargs):

@@ -7,6 +7,7 @@ class SearchQuerySetWrapper(object):
     def __init__(self, sqs):
         self.sqs = sqs
         self.sqs._fill_cache(0,10)
+        self.facets = sqs.facet_counts()
 
     def __len__(self):
         return len(self.sqs)
@@ -34,6 +35,15 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
         """
         params = request.QUERY_PARAMS.get(self.search_param, '')
         return params.replace(',', ' ').split()
+
+    def get_facets(self, request, view):
+        facets = []
+        include_facets = request.META.get('HTTP_INCLUDEFACETS', False)
+        if include_facets:
+            for k, v in view.solr_fields.iteritems():
+                if v.get('facet', False):
+                    facets.append(k)
+        return facets
 
     def get_filters(self, request, view):
         filters = {}
@@ -86,6 +96,8 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
 
     def _filter_queryset(self, request, queryset, view, sqs):
         use_sqs = False
+        facets = self.get_facets(request, view)
+        use_sqs |= len(facets)
         terms = self.get_search_terms(request)
         use_sqs |= len(terms)
         filters = self.get_filters(request, view)
@@ -99,6 +111,8 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
         if use_sqs:
             for term in terms:
                 sqs = sqs.filter(content=term)
+            for f in facets:
+                sqs = sqs.facet(f)
             if filters:
                 sqs = sqs.filter(**filters)
             if sort:
@@ -114,9 +128,9 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
             return SearchQuerySetWrapper(sqs)
 
         if hasattr(view, 'default_order_by'):
-            return queryset.order_by(view.default_order_by)
-        else:
-            return queryset
+            queryset = queryset.order_by(view.default_order_by)
+
+        return queryset
 
 
 class SimpleHaystackSearchFilter(BaseHaystackSearchFilter):

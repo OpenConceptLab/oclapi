@@ -23,7 +23,8 @@ class OrganizationListView(BaseAPIView,
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
-        'num_stars': {'sortable': True, 'filterable': False},
+        'company': {'sortable': False, 'filterable': True},
+        'location': {'sortable': False, 'filterable': True},
     }
 
     def initial(self, request, *args, **kwargs):
