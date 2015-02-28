@@ -206,7 +206,7 @@ class ConceptDictionaryExtraRetrieveUpdateDestroyView(ConceptDictionaryExtrasMix
 
     def initialize(self, request, path_info_segment, **kwargs):
         super(ConceptDictionaryExtraRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionary,)
         self.key = kwargs.get('extra')
         if not self.parent_resource_version.extras:

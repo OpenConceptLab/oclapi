@@ -30,7 +30,7 @@ class MappingBaseView(ConceptDictionaryMixin):
     child_list_attribute = 'mappings'
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewParentDictionary,)
         super(MappingBaseView, self).initialize(request, path_info_segment, **kwargs)
         if self.parent_resource:

@@ -28,7 +28,7 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
     serializer_class = CollectionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionary,)
         else:
             self.permission_classes = (CanEditConceptDictionary,)
@@ -103,7 +103,7 @@ class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPI
     is_latest = False
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionaryVersion,)
             self.serializer_class = CollectionVersionDetailSerializer
         else:

@@ -41,7 +41,7 @@ class ConceptBaseView(ChildResourceMixin):
     child_list_attribute = 'concepts'
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if request.method == 'GET':
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewParentDictionary,)
         super(ConceptBaseView, self).initialize(request, path_info_segment, **kwargs)
 
@@ -51,7 +51,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        if request.method == 'GET':
+        if request.method in ['GET', 'HEAD']:
             self.kwargs = kwargs
             self.request = self.initialize_request(request, *args, **kwargs)
             self.initial(self.request, *args, **kwargs)
@@ -338,7 +338,7 @@ class ConceptExtraRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
     permission_classes = (CanEditParentDictionary,)
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewParentDictionary,)
         self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=2)
         self.parent_resource = None
@@ -389,7 +389,7 @@ class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin, L
     permission_classes = (CanEditParentDictionary,)
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewParentDictionary,)
         super(ConceptLabelListCreateView, self).initialize(request, path_info_segment, **kwargs)
 
@@ -427,7 +427,7 @@ class ConceptLabelRetrieveUpdateDestroyView(ConceptBaseView, VersionedResourceCh
     permission_classes = (CanEditParentDictionary,)
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewParentDictionary,)
         super(ConceptLabelRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 

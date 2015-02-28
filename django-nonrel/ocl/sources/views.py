@@ -38,7 +38,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
     serializer_class = SourceDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionary,)
         else:
             self.permission_classes = (CanEditConceptDictionary,)
@@ -154,7 +154,7 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
     is_latest = False
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if 'GET' == request.method:
+        if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionaryVersion,)
             self.serializer_class = SourceVersionDetailSerializer
         else:
