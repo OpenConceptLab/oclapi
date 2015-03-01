@@ -49,8 +49,6 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
         filters = {}
         if not view.solr_fields:
             return filters
-        if hasattr(view, 'default_filters'):
-            filters.update(view.default_filters)
         for k in request.QUERY_PARAMS:
             v = request.QUERY_PARAMS.get(k,'')
             if k in view.solr_fields:
@@ -113,6 +111,8 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                 sqs = sqs.filter(content=term)
             for f in facets:
                 sqs = sqs.facet(f)
+            if hasattr(view, 'default_filters'):
+                filters.update(view.default_filters)
             if filters:
                 sqs = sqs.filter(**filters)
             if sort:

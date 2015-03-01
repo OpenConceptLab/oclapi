@@ -10,9 +10,9 @@ from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilte
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionListSerializer, ConceptVersionDetailSerializer, ConceptVersionUpdateSerializer, ConceptReferenceCreateSerializer, ConceptReferenceDetailSerializer, ConceptVersionsSerializer, ConceptNameSerializer, ConceptDescriptionSerializer, ReferencesToVersionsSerializer
-from mappings.filters import MappingSearchFilter
 from mappings.models import Mapping
 from mappings.serializers import MappingListSerializer
+from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
@@ -121,7 +121,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
     }
     updated_since = None
     include_retired = False
-    default_filters = {'is_latest_version': True}
+    default_filters = {'is_active':True, 'is_latest_version': True}
 
     def get_serializer_context(self):
         context = {'request': self.request}
@@ -282,7 +282,7 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
 
 class ConceptMappingsView(ConceptBaseView, ListAPIView):
     serializer_class = MappingListSerializer
-    filter_backends = [MappingSearchFilter]
+    filter_backends = [HaystackSearchFilter,]
     queryset = Mapping.objects.filter(is_active=True)
     concept = None
     include_inverse_mappings = False

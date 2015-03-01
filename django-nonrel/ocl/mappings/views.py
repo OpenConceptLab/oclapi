@@ -7,7 +7,7 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from concepts.permissions import CanEditParentDictionary, CanViewParentDictionary
-from mappings.filters import MappingSearchFilter
+from mappings.filters import PublicMappingsSearchFilter, SourceRestrictedMappingsFilter
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
@@ -91,7 +91,7 @@ class MappingListView(MappingBaseView,
     queryset = Mapping.objects.filter(is_active=True)
     serializer_class = MappingCreateSerializer
     solr_fields = {}
-    filter_backends = [MappingSearchFilter]
+    filter_backends = [SourceRestrictedMappingsFilter,]
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
@@ -146,11 +146,23 @@ class MappingListView(MappingBaseView,
 
 class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
     model = Mapping
-    filter_backends = [MappingSearchFilter]
+    filter_backends = [PublicMappingsSearchFilter,]
     queryset = Mapping.objects.filter(is_active=True)
     solr_fields = {
-        'map_type': {'sortable': False, 'filterable': True},
-        'external_id': {'sortable': False, 'filterable': True},
+        'retired': {'sortable': False, 'filterable': True, 'facet': True},
+        'mapType': {'sortable': False, 'filterable': True, 'facet': True},
+        'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'owner': {'sortable': False, 'filterable': True, 'facet': True},
+        'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
     include_retired = False
 

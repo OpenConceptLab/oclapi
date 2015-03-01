@@ -13,6 +13,7 @@ class CollectionIndex(indexes.SearchIndex, indexes.Indexable):
     last_update = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
     num_stars = indexes.IntegerField(model_attr='num_stars', indexed=True, stored=True)
     language = FilterField(model_attr='supported_locales', null=True, indexed=True, stored=True)
+    is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
 
     def get_model(self):
         return Collection

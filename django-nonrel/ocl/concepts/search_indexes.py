@@ -22,6 +22,7 @@ class ConceptVersionIndex(indexes.SearchIndex, indexes.Indexable):
     owner = SortOrFilterField(model_attr='owner_name', indexed=True, stored=True, faceted=True)
     ownerType = SortOrFilterField(model_attr='owner_type', indexed=True, stored=True, faceted=True)
     source_version = FilterField()
+    is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
 
     def get_model(self):
         return ConceptVersion
