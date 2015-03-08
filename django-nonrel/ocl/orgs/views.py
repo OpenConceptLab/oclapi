@@ -100,14 +100,18 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
 
 
 class OrganizationMemberView(generics.GenericAPIView):
+    userprofile = None
+    user_in_org = False
 
     def initial(self, request, *args, **kwargs):
         org_id = kwargs.pop('org')
         self.organization = Organization.objects.get(mnemonic=org_id)
         userprofile_id = kwargs.pop('user')
-        self.userprofile = UserProfile.objects.get(mnemonic=userprofile_id)
+        try:
+            self.userprofile = UserProfile.objects.get(mnemonic=userprofile_id)
+            self.user_in_org = request.user.is_authenticated and self.userprofile.id in self.organization.members
+        except UserProfile.DoesNotExist: pass
         super(OrganizationMemberView, self).initial(request, *args, **kwargs)
-        self.user_in_org = request.user.is_authenticated and request.user.get_profile().id in self.organization.members
 
     def get(self, request, *args, **kwargs):
         self.initial(request, *args, **kwargs)
@@ -121,6 +125,8 @@ class OrganizationMemberView(generics.GenericAPIView):
     def put(self, request, *args, **kwargs):
         if not request.user.is_staff and not self.user_in_org:
             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        if not self.userprofile:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
         add_user_to_org(self.userprofile, self.organization)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 

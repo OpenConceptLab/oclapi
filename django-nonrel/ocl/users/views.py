@@ -37,8 +37,9 @@ class UserListView(BaseAPIView,
             related_object_key = kwargs.pop(self.related_object_kwarg)
             if Organization == self.related_object_type:
                 organization = Organization.objects.get(mnemonic=related_object_key)
-                if request.user.get_profile().id not in organization.members and not request.user.is_staff:
-                    return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+                if not request.user.is_staff:
+                    if request.user.get_profile().id not in organization.members:
+                        return HttpResponse(status=status.HTTP_403_FORBIDDEN)
                 self.queryset = UserProfile.objects.filter(id__in=organization.members)
         return self.list(request, *args, **kwargs)
 
