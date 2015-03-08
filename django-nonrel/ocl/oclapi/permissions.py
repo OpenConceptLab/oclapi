@@ -29,10 +29,10 @@ class HasPrivateAccess(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
-        if request.user == obj.owner:
-            return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
+            if profile == obj.owner:
+                return True
             if obj.parent_id in profile.organizations:
                 return True
         return False

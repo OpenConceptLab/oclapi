@@ -3,7 +3,7 @@ from django.core.management import CommandError
 from django.db.models import Q
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
-from oclapi.importer import MockRequest
+from oclapi.management.commands import MockRequest
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
