@@ -1,3 +1,4 @@
+from haystack.inputs import Raw
 from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
@@ -28,13 +29,12 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
     sort_asc_param = 'sortAsc'
     sort_desc_param = 'sortDesc'
 
-    def get_search_terms(self, request):
+    def get_search_query(self, request):
         """
-        Search terms are set by a ?search=... query parameter,
-        and may be comma and/or whitespace delimited.
+        Search terms are set by a ?q=... query parameter,
+        and may be expressed using the full Lucene query syntax
         """
-        params = request.QUERY_PARAMS.get(self.search_param, '')
-        return params.replace(',', ' ').split()
+        return request.QUERY_PARAMS.get(self.search_param, '')
 
     def get_facets(self, request, view):
         facets = []
@@ -95,20 +95,20 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
     def _filter_queryset(self, request, queryset, view, sqs):
         use_sqs = False
         facets = self.get_facets(request, view)
-        use_sqs |= len(facets)
-        terms = self.get_search_terms(request)
-        use_sqs |= len(terms)
+        use_sqs = use_sqs or facets
+        search_query = self.get_search_query(request)
+        use_sqs = use_sqs or search_query
         filters = self.get_filters(request, view)
-        use_sqs |= len(filters)
+        use_sqs = use_sqs or filters
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
             if sort and desc:
                 sort = '-' + sort
-        use_sqs |= sort is not None
+        use_sqs = use_sqs or sort
         if use_sqs:
-            for term in terms:
-                sqs = sqs.filter(content=term)
+            if search_query:
+                sqs = sqs.filter(content=Raw("(%s)" % search_query))
             for f in facets:
                 sqs = sqs.facet(f)
             if hasattr(view, 'default_filters'):

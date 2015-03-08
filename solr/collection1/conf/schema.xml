@@ -156,13 +156,15 @@
 
     <field name="username" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="location" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
     <field name="text" type="text_en" indexed="true" stored="true" multiValued="false" />
 
     <field name="company" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
-    <field name="dateJoined" type="date" indexed="true" stored="true" multiValued="false" />
+    <field name="is_active" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="location" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="dateJoined" type="date" indexed="true" stored="true" multiValued="false" />
 
     <field name="lastUpdate" type="date" indexed="true" stored="true" multiValued="false" />
 
@@ -196,13 +198,11 @@
 
     <field name="public_can_view" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="retired_exact" type="boolean" indexed="true" stored="true" multiValued="false" />
-
     <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
-    <field name="datatype_exact" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="retired_exact" type="boolean" indexed="true" stored="true" multiValued="false" />
 
     <field name="source_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
@@ -210,21 +210,65 @@
 
     <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="datatype_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
     <field name="language" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="last_update" type="date" indexed="true" stored="true" multiValued="false" />
 
-    <field name="from_source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
-    <field name="to_source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="conceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
-    <field name="from_concept" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="concept" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
-    <field name="to_concept" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="toConceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
-    <field name="map_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="concept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptSource_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptSource_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptOwner_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="mapType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConcept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="mapType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptSource" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptOwner" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConcept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptSource" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConcept" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="toConcept" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="toConceptOwner_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptOwner" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptSource" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptSource_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptOwner_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptOwner" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
     <field name="external_id" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
