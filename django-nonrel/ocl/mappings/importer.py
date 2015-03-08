@@ -26,7 +26,7 @@ class MappingsImporter(object):
         self.stderr = error_stream
         self.user = user
 
-    def import_mappings(self, new_version=False, total=0):
+    def import_mappings(self, new_version=False, total=0, **kwargs):
         self.source_version = SourceVersion.get_latest_version_of(self.source)
         if new_version:
             try:
