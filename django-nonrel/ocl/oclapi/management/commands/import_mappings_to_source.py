@@ -9,4 +9,4 @@ class Command(ImportCommand):
 
     def do_import(self, user, source, input_file, options):
         importer = MappingsImporter(source, input_file, self.stdout, self.stderr, user)
-        importer.import_mappings(options['new_version'])
+        importer.import_mappings(**options)

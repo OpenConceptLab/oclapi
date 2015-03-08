@@ -26,7 +26,7 @@ class MappingsImporter(object):
         self.stderr = error_stream
         self.user = user
 
-    def import_mappings(self, new_version=False):
+    def import_mappings(self, new_version=False, total=0):
         self.source_version = SourceVersion.get_latest_version_of(self.source)
         if new_version:
             try:
@@ -46,7 +46,7 @@ class MappingsImporter(object):
             cnt += 1
             # simple progress bar
             if (cnt % 10) == 0:
-                self.stdout.write('%d of %d' % (cnt, self.limit), ending='\r')
+                self.stdout.write('%d of %d' % (cnt, total), ending='\r')
                 self.stdout.flush()
             try:
                 self.handle_mapping(data)
@@ -98,6 +98,8 @@ class MappingsImporter(object):
         if not serializer.is_valid():
             raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
         serializer.save(force_insert=True, parent_resource=self.source)
+        if not serializer.is_valid():
+            raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
 
     def update_mapping(self, mapping, data):
         diffs = {}
