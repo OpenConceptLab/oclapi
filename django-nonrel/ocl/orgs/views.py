@@ -117,7 +117,7 @@ class OrganizationMemberView(generics.GenericAPIView):
         self.initial(request, *args, **kwargs)
         if not self.user_in_org and not request.user.is_staff:
             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
-        if self.userprofile.id in self.organization.members:
+        if self.userprofile and self.userprofile.id in self.organization.members:
             return HttpResponse(status=status.HTTP_204_NO_CONTENT)
         else:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
