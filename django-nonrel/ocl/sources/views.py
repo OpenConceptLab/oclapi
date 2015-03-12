@@ -25,6 +25,7 @@ class SourceBaseView():
     lookup_field = 'source'
     pk_field = 'mnemonic'
     model = Source
+    permission_classes = (CanViewConceptDictionary,)
     queryset = Source.objects.filter(is_active=True)
 
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
@@ -36,13 +37,6 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
                                       RetrieveAPIView,
                                       DestroyAPIView):
     serializer_class = SourceDetailSerializer
-
-    def initialize(self, request, path_info_segment, **kwargs):
-        if request.method in ['GET', 'HEAD']:
-            self.permission_classes = (CanViewConceptDictionary,)
-        else:
-            self.permission_classes = (CanEditConceptDictionary,)
-        super(SourceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         super(SourceRetrieveUpdateDestroyView, self).retrieve(request, *args, **kwargs)
@@ -153,18 +147,15 @@ class SourceVersionListView(SourceVersionBaseView,
 
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
+    permission_classes = (CanViewConceptDictionaryVersion,)
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if request.method in ['GET', 'HEAD']:
-            self.permission_classes = (CanViewConceptDictionaryVersion,)
-            self.serializer_class = SourceVersionDetailSerializer
-        else:
-            self.permission_classes = (CanEditConceptDictionaryVersion,)
-            self.serializer_class = SourceVersionUpdateSerializer
         self.is_latest = kwargs.pop('is_latest', False)
         super(SourceVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditConceptDictionaryVersion,)
+        self.serializer_class = SourceVersionUpdateSerializer
         if not self.versioned_object:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -206,6 +197,7 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
 class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditConceptDictionaryVersion,)
         version = self.get_object()
         if version.released:
             errors = {'non_field_errors' : ['Cannot deactivate a version that is currently released.  Please release another version before deactivating this one.']}

@@ -24,14 +24,12 @@ class MappingBaseView(ConceptDictionaryMixin):
     model = Mapping
     child_list_attribute = 'mappings'
     include_retired = False
-    permission_classes = (CanEditParentDictionary,)
+    permission_classes = (CanViewParentDictionary,)
     parent_resource_version = None
     parent_resource_version_model = SourceVersion
     child_list_attribute = 'mappings'
 
     def initialize(self, request, path_info_segment, **kwargs):
-        if request.method in ['GET', 'HEAD']:
-            self.permission_classes = (CanViewParentDictionary,)
         super(MappingBaseView, self).initialize(request, path_info_segment, **kwargs)
         if self.parent_resource:
             if hasattr(self.parent_resource, 'versioned_object'):
@@ -54,11 +52,13 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
     serializer_class = MappingDetailSerializer
 
     def destroy(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         obj = self.get_object()
         Mapping.retire(obj, self.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         self.serializer_class = MappingUpdateSerializer
         partial = True
         self.object = self.get_object()
@@ -115,6 +115,7 @@ class MappingListView(MappingBaseView,
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)

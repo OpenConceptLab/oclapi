@@ -37,13 +37,8 @@ class ConceptBaseView(ChildResourceMixin):
     lookup_field = 'concept'
     pk_field = 'mnemonic'
     model = Concept
-    permission_classes = (CanEditParentDictionary,)
+    permission_classes = (CanViewParentDictionary,)
     child_list_attribute = 'concepts'
-
-    def initialize(self, request, path_info_segment, **kwargs):
-        if request.method in ['GET', 'HEAD']:
-            self.permission_classes = (CanViewParentDictionary,)
-        super(ConceptBaseView, self).initialize(request, path_info_segment, **kwargs)
 
 
 class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
@@ -62,6 +57,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         return super(ConceptRetrieveUpdateDestroyView, self).dispatch(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         if hasattr(self.parent_resource, 'versioned_object'):
             parent_versioned_object = self.parent_resource.versioned_object
             if self.parent_resource != type(self.parent_resource).get_latest_version_of(parent_versioned_object):
@@ -93,6 +89,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView, UpdateA
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         concept = self.get_object_or_none()
         if concept is None:
             return Response({'non_field_errors': 'Could not find concept to retire'}, status=status.HTTP_404_NOT_FOUND)
@@ -162,6 +159,7 @@ class ConceptCreateView(ConceptBaseView,
         return super(ConceptCreateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
         self.serializer_class = ConceptDetailSerializer
         return self.create(request, *args, **kwargs)
 
@@ -203,7 +201,7 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     pk_field = 'mnemonic'
     model = ConceptVersion
     parent_resource_version_model = SourceVersion
-    permission_classes = (CanEditParentDictionary,)
+    permission_classes = (CanViewParentDictionary,)
     child_list_attribute = 'concepts'
 
     def get_serializer_context(self):
