@@ -24,7 +24,7 @@ class Mapping(BaseModel):
     class Meta:
         unique_together = (
             ("parent", "map_type", "from_concept", "to_concept"),
-            ("parent", "map_type", "from_concept", "to_source", "to_concept_code", "to_concept_name")
+            ("parent", "map_type", "from_concept", "to_source", "to_concept_code")
         )
 
     def clean(self, exclude=None):
@@ -34,10 +34,10 @@ class Mapping(BaseModel):
                 messages.append("Cannot map concept to itself.")
         except Concept.DoesNotExist:
             messages.append("Must specify a 'from_concept'.")
-        if not (self.to_concept or (self.to_source and self.to_concept_code and self.to_concept_name)):
-            messages.append("Must specify either 'to_concept' or 'to_source', 'to_concept_code' & 'to_concept_name'")
-        if self.to_concept and (self.to_source or self.to_concept_name or self.to_concept_code):
-            messages.append("Must specify one of 'to_concept' or 'to_source', 'to_concept_name' & 'to_concept_code'.  Cannot specify both.")
+        if not (self.to_concept or (self.to_source and self.to_concept_code)):
+            messages.append("Must specify either 'to_concept' or 'to_source' & 'to_concept_code")
+        if self.to_concept and (self.to_source or self.to_concept_code):
+            messages.append("Must specify one of 'to_concept' or 'to_source' & 'to_concept_code'.  Cannot specify both.")
         if messages:
             raise ValidationError(' '.join(messages))
 
