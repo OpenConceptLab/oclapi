@@ -101,6 +101,7 @@ class MappingUpdateSerializer(MappingBaseSerializer):
     to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
     to_concept_code = serializers.CharField(required=False)
     to_concept_name = serializers.CharField(required=False)
+    external_id = serializers.CharField(required=False)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
