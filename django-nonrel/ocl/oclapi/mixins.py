@@ -51,7 +51,9 @@ class ListWithHeadersMixin(ListModelMixin):
         if include_facets and hasattr(self.object_list, 'facets'):
             facets = self.object_list.facets
 
-        skip_pagination = meta.get('HTTP_COMPRESS', False)
+        compress = meta.get('HTTP_COMPRESS', False)
+        return_all = self.get_paginate_by() == 0
+        skip_pagination = compress or return_all
 
         # Switch between paginated or standard style responses
         if not skip_pagination:
@@ -67,9 +69,9 @@ class ListWithHeadersMixin(ListModelMixin):
         serializer = self.get_serializer(self.object_list, many=True)
         results = serializer.data
         if facets:
-            return Response({'results': results, 'facets': facets}, headers=serializer.headers)
+            return Response({'results': results, 'facets': facets})
         else:
-            return Response(results, headers=serializer.headers)
+            return Response(results)
 
 
 
