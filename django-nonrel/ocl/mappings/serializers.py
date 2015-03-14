@@ -15,6 +15,7 @@ class MappingBaseSerializer(serializers.Serializer):
         try:
             from_concept = mapping.from_concept
         except Concept.DoesNotExist: pass
+        mapping.retired = attrs.get('retired', mapping.retired)
         mapping.from_concept = attrs.get('from_concept', from_concept)
         mapping.to_concept = attrs.get('to_concept', mapping.to_concept)
         mapping.to_source = attrs.get('to_source', mapping.to_source)
@@ -96,6 +97,7 @@ class MappingCreateSerializer(MappingBaseSerializer):
 
 class MappingUpdateSerializer(MappingBaseSerializer):
     map_type = serializers.CharField(required=False)
+    retired = serializers.BooleanField(required=False)
     from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='from_concept')
     to_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
     to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')

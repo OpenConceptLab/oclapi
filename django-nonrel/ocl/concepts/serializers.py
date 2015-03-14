@@ -179,6 +179,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
     datatype = serializers.CharField(required=False)
     names = LocalizedTextListField(required=False)
     descriptions = LocalizedTextListField(required=False, name_override='description')
+    retired = serializers.BooleanField(required=False)
     extras = serializers.WritableField(required=False)
     update_comment = serializers.CharField(required=False)
 
@@ -193,6 +194,7 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         instance.update_comment = attrs.get('update_comment')
         instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
         instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
+        instance.retired = attrs.get('retired', instance.retired)
         return instance
 
     def save_object(self, obj, **kwargs):
