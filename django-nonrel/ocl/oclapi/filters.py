@@ -54,7 +54,9 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
             if k in view.solr_fields:
                 attrs = view.solr_fields[k]
                 if attrs.get('filterable', False):
-                    filters["%s__exact" % k] = v
+                    vals = v.split(',')
+                    clause = "(%s)" % ' OR '.join(vals)
+                    filters["%s__exact" % k] = Raw(clause)
         return filters
 
     def get_sort_and_desc(self, request):
