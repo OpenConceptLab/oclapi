@@ -148,6 +148,7 @@ class SourceVersionListView(SourceVersionBaseView,
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
     permission_classes = (CanViewConceptDictionaryVersion,)
+    serializer_class = SourceVersionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
         self.is_latest = kwargs.pop('is_latest', False)
