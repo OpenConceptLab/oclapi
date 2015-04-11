@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from djangotoolbox.fields import ListField
@@ -34,6 +35,18 @@ class Organization(BaseResourceModel):
     @property
     def public_sources(self):
         return Source.objects.filter(~Q(public_access=ACCESS_TYPE_NONE), parent_id=self.id).count()
+
+    @property
+    def members_url(self):
+        return reverse('organization-members', kwargs={'org': self.mnemonic})
+
+    @property
+    def sources_url(self):
+        return reverse('source-list', kwargs={'org': self.mnemonic})
+
+    @property
+    def collections_url(self):
+        return reverse('collection-list', kwargs={'org': self.mnemonic})
 
     @property
     def num_stars(self):

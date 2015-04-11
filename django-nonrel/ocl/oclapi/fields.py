@@ -4,7 +4,6 @@ Serializer fields that deal with relationships among entities
 """
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
-from oclapi.utils import reverse_resource, reverse_resource_version
 
 
 class HyperlinkedRelatedField(HyperlinkedRelatedField):
@@ -24,7 +23,7 @@ class HyperlinkedRelatedField(HyperlinkedRelatedField):
         return queryset.get(**filter_kwargs)
 
     def get_url(self, obj, view_name, request, format):
-        return reverse_resource(obj, view_name, request=request, format=format)
+        return obj.url
 
 
 class HyperlinkedResourceIdentityField(HyperlinkedIdentityField):
@@ -35,20 +34,7 @@ class HyperlinkedResourceIdentityField(HyperlinkedIdentityField):
     "url": "https://api.openconceptlab.org/v1/orgs/My-Organization"
     """
     def get_url(self, obj, view_name, request, format):
-        return reverse_resource(obj, view_name, request=request, format=format)
-
-
-class HyperlinkedResourceOwnerField(HyperlinkedResourceIdentityField):
-    """
-    This is a field that generates a URL for the parent of a sub-resource.
-    e.g. GET /orgs/:org/sources/:source
-    returns a Source resource that has a "ownerUrl" field denoting its owner Organization:
-    "ownerUrl": "https://api.openconceptlab.org/v1/orgs/WHO"
-    """
-    def get_url(self, obj, view_name, request, format):
-        if not hasattr(obj, 'parent'):
-            raise Exception('Cannot get parent URL for %s.  %s has no parent.' % obj)
-        return reverse_resource(obj.parent, view_name, request=request, format=format)
+        return obj.url
 
 
 class HyperlinkedVersionedResourceIdentityField(HyperlinkedIdentityField):
@@ -59,7 +45,7 @@ class HyperlinkedVersionedResourceIdentityField(HyperlinkedIdentityField):
     "sourceUrl": "https://api.openconceptlab.org/v1/orgs/Regenstrief/sources/loinc2"
     """
     def get_url(self, obj, view_name, request, format):
-        return reverse_resource(obj.versioned_object, view_name, request=request, format=format)
+        return obj.versioned_object.url
 
 
 class HyperlinkedResourceVersionIdentityField(HyperlinkedIdentityField):
@@ -80,4 +66,4 @@ class HyperlinkedResourceVersionIdentityField(HyperlinkedIdentityField):
         return super(HyperlinkedResourceVersionIdentityField, self).field_to_native(o, field_name) if o else None
 
     def get_url(self, obj, view_name, request, format):
-        return reverse_resource_version(obj, view_name, request=request, format=format)
+        return obj.url

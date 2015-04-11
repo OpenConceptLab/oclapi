@@ -2,10 +2,9 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.fields import LocalizedTextListField, ConceptReferenceField, MappingListField
 from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
-from oclapi.fields import HyperlinkedRelatedField, HyperlinkedResourceIdentityField
+from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
-from sources.models import Source
 
 
 class ConceptListSerializer(serializers.Serializer):
@@ -127,7 +126,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     extras = serializers.WritableField()
     retired = serializers.BooleanField()
     source = serializers.CharField(source='parent_resource')
-    source_url = HyperlinkedRelatedField(source='source', view_name='source-detail', queryset=Source.objects.all())
+    source_url = serializers.URLField(source='parent_url')
     owner = serializers.CharField(source='owner_name')
     owner_type = serializers.CharField()
     owner_url = serializers.URLField()

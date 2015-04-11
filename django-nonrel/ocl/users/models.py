@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models
 from djangotoolbox.fields import ListField
 from collection.models import Collection
@@ -61,6 +62,19 @@ class UserProfile(BaseResourceModel):
     @property
     def public_sources(self):
         return Source.objects.filter(parent_id=self.id).count()
+
+    @property
+    def organizations_url(self):
+        return reverse('userprofile-orgs', kwargs={'user': self.mnemonic})
+
+    @property
+    def sources_url(self):
+        return reverse('source-list', kwargs={'user': self.mnemonic})
+
+    @property
+    def collections_url(self):
+        return reverse('collection-list', kwargs={'user': self.mnemonic})
+
 
     @property
     def num_stars(self):

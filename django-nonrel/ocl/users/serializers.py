@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from oclapi.fields import HyperlinkedResourceIdentityField
 from users.models import UserProfile
 from oclapi.models import NAMESPACE_REGEX
 
@@ -78,20 +77,14 @@ class UserDetailSerializer(serializers.Serializer):
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
-    url = serializers.CharField(read_only=True)
+    url = serializers.URLField(read_only=True)
+    organizations_url = serializers.URLField(read_only=True)
+    sources_url = serializers.URLField(read_only=True)
+    collections_url = serializers.URLField(read_only=True)
     extras = serializers.WritableField(required=False)
 
     class Meta:
         model = UserProfile
-
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(UserDetailSerializer, self).get_default_fields()
-        fields.update({
-            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
-            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list'),
-            'orgs_url': HyperlinkedResourceIdentityField(view_name='userprofile-orgs'),
-        })
-        return fields
 
     def restore_object(self, attrs, instance=None):
         request_user = self.context['request'].user

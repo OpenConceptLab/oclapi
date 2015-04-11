@@ -1,6 +1,5 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX, DEFAULT_ACCESS_TYPE, ACCESS_TYPE_CHOICES
 from orgs.models import Organization
 
@@ -67,20 +66,14 @@ class OrganizationDetailSerializer(serializers.Serializer):
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
-    url = serializers.CharField(read_only=True)
+    url = serializers.URLField(read_only=True)
+    members_url = serializers.URLField(read_only=True)
+    sources_url = serializers.URLField(read_only=True)
+    collections_url = serializers.URLField(read_only=True)
     extras = serializers.WritableField(required=False)
 
     class Meta:
         model = Organization
-
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(OrganizationDetailSerializer, self).get_default_fields()
-        fields.update({
-            'members_url': HyperlinkedResourceIdentityField(view_name='organization-members'),
-            'sources_url': HyperlinkedResourceIdentityField(view_name='source-list'),
-            'collections_url': HyperlinkedResourceIdentityField(view_name='collection-list')
-        })
-        return fields
 
     def restore_object(self, attrs, instance=None):
         request_user = self.context['request'].user

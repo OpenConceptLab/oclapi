@@ -168,6 +168,10 @@ class ResourceVersionModel(BaseModel):
     def parent_resource_type(self):
         return self.versioned_object.parent_resource_type
 
+    @property
+    def parent_url(self):
+        return self.versioned_object.parent_url
+
     @classmethod
     def get_latest_version_of(cls, versioned_object):
         versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, is_active=True).order_by('-created_at')
