@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
@@ -35,13 +35,14 @@ class BaseModel(models.Model):
     updated_by = models.TextField()
     is_active = models.BooleanField(default=True)
     extras = DictField(null=True, blank=True)
+    uri = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True
 
     @property
     def url(self):
-        return reverse_resource(self, self.view_name)
+        return self.uri or reverse_resource(self, self.view_name)
 
     @property
     def view_name(self):
@@ -249,8 +250,8 @@ class ConceptContainerModel(SubResourceBaseModel):
             persisted = True
         finally:
             if not persisted:
-                errors['non_field_errors'] = "An error occurred while trying to persist new %s." % cls.name
-                if version:
+                errors['non_field_errors'] = "An error occurred while trying to persist new %s." % cls.__name__
+                if version and version.id:
                     version.delete()
                 obj.delete()
         return errors
@@ -411,3 +412,12 @@ class ConceptContainerVersionModel(ResourceVersionModel):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if instance and created:
         Token.objects.create(user=instance)
+
+
+@receiver(pre_save)
+def stamp_uri(sender, instance, **kwargs):
+    if issubclass(sender, BaseModel):
+        if hasattr(instance, 'parent'):
+            instance.uri = reverse_resource(instance, instance.view_name)
+        elif hasattr(instance, 'versioned_object'):
+            instance.uri = reverse_resource_version(instance, instance.view_name)

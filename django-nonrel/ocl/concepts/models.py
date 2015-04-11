@@ -113,7 +113,7 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
 
     @classmethod
     def create_initial_version(cls, obj, **kwargs):
-        initial_version = ConceptVersion.for_concept(obj, '_TEMP')
+        initial_version = ConceptVersion.for_concept(obj, '--TEMP--')
         initial_version.save()
         initial_version.mnemonic = initial_version.id
         initial_version.root_version = initial_version
@@ -177,7 +177,7 @@ class ConceptVersion(ResourceVersionModel):
 
     def clone(self):
         return ConceptVersion(
-            mnemonic='_TEMP',
+            mnemonic='--TEMP--',
             public_access=self.public_access,
             external_id=self.external_id,
             concept_class=self.concept_class,

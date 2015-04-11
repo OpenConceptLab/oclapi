@@ -777,6 +777,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 class ConceptReferenceBaseTest(ConceptBaseTest):
 
     def setUp(self):
+        self.skipTest('Collections and concept references not yet supported.')
         super(ConceptReferenceBaseTest, self).setUp()
         self.concept1 = Concept(
             mnemonic='concept1',
