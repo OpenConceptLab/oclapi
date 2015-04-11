@@ -107,7 +107,7 @@ class SubResourceBaseModel(BaseModel):
 
     @property
     def parent_url(self):
-        return reverse_resource(self.parent, self.parent.view_name)
+        return self.parent.url
 
     @property
     def parent_resource(self):
@@ -146,7 +146,7 @@ class ResourceVersionModel(BaseModel):
 
     @property
     def url(self):
-        return reverse_resource_version(self, self.view_name)
+        return self.uri or reverse_resource_version(self, self.view_name)
 
     @property
     def previous_version_mnemonic(self):
@@ -154,7 +154,7 @@ class ResourceVersionModel(BaseModel):
 
     @property
     def previous_version_url(self):
-        return reverse_resource_version(self.previous_version, self.view_name) if self.previous_version else None
+        return self.previous_version.url if self.previous_version else None
 
     @property
     def parent_version_mnemonic(self):
