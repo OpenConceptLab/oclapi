@@ -1,11 +1,12 @@
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
-from oclapi.utils import reverse_resource
 
 SOURCE_TYPE = 'Source'
 
@@ -15,11 +16,15 @@ class Source(ConceptContainerModel):
 
     @property
     def concepts_url(self):
-        return reverse_resource(self, 'concept-create')
+        owner = self.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def versions_url(self):
-        return reverse_resource(self, 'sourceversion-list')
+        owner = self.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('sourceversion-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @classmethod
     def resource_type(cls):

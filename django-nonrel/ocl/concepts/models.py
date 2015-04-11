@@ -1,8 +1,10 @@
 from itertools import chain
 from urlparse import urljoin
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
@@ -229,7 +231,11 @@ class ConceptVersion(ResourceVersionModel):
 
     @property
     def mappings_url(self):
-        return reverse_resource(self.versioned_object, 'mapping-list')
+        concept = self.versioned_object
+        source = concept.parent
+        owner = source.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('concept-mapping-list', kwargs={'concept': concept.mnemonic, 'source': source.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def names_for_default_locale(self):

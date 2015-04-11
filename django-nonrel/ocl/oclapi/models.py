@@ -200,12 +200,8 @@ class ConceptContainerModel(SubResourceBaseModel):
 
     @property
     def owner_url(self):
-        if hasattr(self.owner, 'username'):
-            kwargs = {'user': self.owner.username}
-            return reverse('userprofile-detail', kwargs=kwargs)
-        else:
-            return reverse_resource(self.owner, 'organization-detail')
-        pass
+        owner = self.owner.get_profile() if isinstance(self.owner, User) else self.owner
+        return owner.url
 
     @property
     def num_versions(self):
@@ -413,11 +409,10 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if instance and created:
         Token.objects.create(user=instance)
 
-
 @receiver(pre_save)
 def stamp_uri(sender, instance, **kwargs):
     if issubclass(sender, BaseModel):
-        if hasattr(instance, 'parent'):
-            instance.uri = reverse_resource(instance, instance.view_name)
-        elif hasattr(instance, 'versioned_object'):
+        if hasattr(instance, 'versioned_object'):
             instance.uri = reverse_resource_version(instance, instance.view_name)
+        else:
+            instance.uri = reverse_resource(instance, instance.view_name)

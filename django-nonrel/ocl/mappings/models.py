@@ -4,7 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from concepts.models import Concept
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import reverse_resource
 from sources.models import Source
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
@@ -95,7 +94,7 @@ class Mapping(BaseModel):
 
     @property
     def from_source_url(self):
-        return reverse_resource(self.from_source, 'source-detail')
+        self.from_source.url
 
     @property
     def from_source_shorthand(self):
@@ -111,7 +110,7 @@ class Mapping(BaseModel):
 
     @property
     def from_concept_url(self):
-        return reverse_resource(self.from_concept, 'concept-detail')
+        return self.from_concept.url
 
     @property
     def from_concept_shorthand(self):
@@ -126,7 +125,8 @@ class Mapping(BaseModel):
 
     @property
     def to_source_url(self):
-        return self.get_to_source() and reverse_resource(self.get_to_source(), 'source-detail')
+        to_source = self.get_to_source()
+        return to_source.url if to_source else None
 
     @property
     def to_source_owner(self):
@@ -152,7 +152,7 @@ class Mapping(BaseModel):
 
     @property
     def to_concept_url(self):
-        return self.to_concept and reverse_resource(self.to_concept, 'concept-detail')
+        return self.to_concept.url if self.to_concept else None
 
     @property
     def to_concept_shorthand(self):

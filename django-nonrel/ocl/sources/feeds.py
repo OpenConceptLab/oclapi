@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from concepts.models import ConceptVersion, Concept
 from oclapi.feeds import FeedFilterMixin
-from oclapi.utils import reverse_resource
 from orgs.models import Organization
 from sources.models import Source
 from users.models import UserProfile
@@ -43,7 +42,7 @@ class SourceFeed(Feed, FeedFilterMixin):
         return "Updates to %s" % obj.mnemonic
 
     def link(self, obj):
-        return reverse_resource(obj, 'source-detail')
+        return obj.url
 
     def description(self, obj):
         return "Updates to concepts within source %s" % obj.mnemonic
@@ -59,5 +58,5 @@ class SourceFeed(Feed, FeedFilterMixin):
         return item.update_comment
 
     def item_link(self, item):
-        return reverse_resource(item, 'concept-detail')
+        return item.url
 
