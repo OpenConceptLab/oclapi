@@ -1,3 +1,5 @@
+from boto.s3.connection import S3Connection
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -7,6 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
+from oclapi.utils import S3ConnectionFactory
 
 SOURCE_TYPE = 'Source'
 
@@ -70,6 +73,16 @@ class SourceVersion(ConceptContainerVersionModel):
         seed_mappings_from = self.previous_version or self.parent_version
         if seed_mappings_from:
             self.mappings = list(seed_mappings_from.mappings)
+
+    def has_export(self):
+        bucket = S3ConnectionFactory.get_export_bucket()
+        return bucket.get_key(self.export_path)
+
+    @property
+    def export_path(self):
+        last_update = self.updated_at.strftime('%Y%m%d%H%M%S')
+        source = self.versioned_object
+        return "%s/%s_%s.%s.tgz" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
 
     @property
     def resource_type(self):

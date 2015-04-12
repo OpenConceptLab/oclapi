@@ -1,7 +1,24 @@
+from boto.s3.connection import S3Connection
+from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 
 __author__ = 'misternando'
+
+
+class S3ConnectionFactory:
+    s3_connection = None
+
+    @classmethod
+    def get_s3_connection(cls):
+        if not cls.s3_connection:
+            cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        return cls.s3_connection
+
+    @classmethod
+    def get_export_bucket(cls):
+        conn = cls.get_s3_connection()
+        return conn.get_bucket(settings.AWS_STORAGE_BUCKET_NAME)
 
 
 def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):

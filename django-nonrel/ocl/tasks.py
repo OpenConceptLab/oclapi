@@ -2,16 +2,15 @@ import json
 import os
 import tarfile
 import tempfile
-from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from bson import json_util
 from celery import Celery
 from celery.utils.log import get_task_logger
-from django.conf import settings
 from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
+from oclapi.utils import S3ConnectionFactory
 from sources.models import SourceVersion
 from sources.serializers import SourceDetailSerializer
 
@@ -20,21 +19,13 @@ logger = get_task_logger(__name__)
 
 @celery.task
 def export_source(version_id):
-    logger.info("Getting S3 connection...")
-    conn = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-    logger.info("Getting export bucket...")
-    bucket = conn.get_bucket(settings.AWS_STORAGE_BUCKET_NAME)
-    k = Key(bucket)
-
-
     logger.info('Finding source version...')
     version = SourceVersion.objects.get(id=version_id)
     logger.info('Found source version %s.  Looking up source...' % version.mnemonic)
     source = version.versioned_object
     logger.info('Found source %s.  Exporting...' % source.mnemonic)
-    last_update = version.updated_at.strftime('%Y%m%d%H%M%S')
-    k.key = "%s/%s_%s_%s.tgz" % (source.owner_name, source.mnemonic, version.mnemonic, last_update)
 
+    logger.info('Serializing source attributes...')
     serializer = SourceDetailSerializer(source)
     data = serializer.data
 
@@ -61,6 +52,8 @@ def export_source(version_id):
     with tarfile.open('export.tgz', 'w:gz') as tar:
         tar.add('export.json')
     logger.info('Done compressing.  Uploading...')
+    k = Key(S3ConnectionFactory.get_export_bucket())
+    k.key = version.export_path
     k.set_contents_from_filename('export.tgz')
     os.chdir(cwd)
     logger.info('Export complete!')
