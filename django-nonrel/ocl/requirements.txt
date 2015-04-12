@@ -1,6 +1,9 @@
 git+https://github.com/django-nonrel/django@nonrel-1.5
 git+https://github.com/django-nonrel/djangotoolbox
 git+https://github.com/django-nonrel/mongodb-engine
+boto==2.38.0
+celery==3.1.17
+django-celery==3.0.11
 django-haystack==2.1.0
 django-uuidfield==0.4.0
 djangorestframework==2.3.7
@@ -10,4 +13,3 @@ pysolr==3.2.0
 wsgiref==0.1.2
 python-dateutil==2.2
 gunicorn==18.0
-
