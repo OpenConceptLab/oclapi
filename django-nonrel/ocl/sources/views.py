@@ -1,14 +1,14 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView, RetrieveDestroyAPIView, GenericAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion
+from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
 from sources.models import Source, SourceVersion
@@ -230,8 +230,11 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
     def get(self, request, *args, **kwargs):
         version = self.get_object()
-        if version.has_export():
-            pass
+        key = version.get_export_key()
+        if key:
+            response = HttpResponse()
+            response['exportURL'] = key.generate_url(60)
+            return response
         else:
             export_source.delay(version.id)
             return HttpResponse(status=204)
@@ -247,6 +250,6 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
     def head(self, request, *args, **kwargs):
         version = self.get_object()
         response = HttpResponse()
-        response['exportReady'] = bool(version.has_export())
+        response['exportReady'] = version.has_export()
         return response
 

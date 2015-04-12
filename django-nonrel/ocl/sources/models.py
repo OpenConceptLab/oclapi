@@ -74,9 +74,12 @@ class SourceVersion(ConceptContainerVersionModel):
         if seed_mappings_from:
             self.mappings = list(seed_mappings_from.mappings)
 
-    def has_export(self):
+    def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()
         return bucket.get_key(self.export_path)
+
+    def has_export(self):
+        return bool(self.get_export_key())
 
     @property
     def export_path(self):
