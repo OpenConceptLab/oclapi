@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView, RetrieveDestroyAPIView, GenericAPIView
 from rest_framework.response import Response
 from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
@@ -13,6 +13,7 @@ from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
+from tasks import export_source
 
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
@@ -219,3 +220,33 @@ class SourceVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMix
     def get_queryset(self):
         queryset = super(SourceVersionChildListView, self).get_queryset()
         return queryset.filter(parent_version=self.resource_version, is_active=True)
+
+
+class SourceVersionExportView(ResourceAttributeChildMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = SourceVersion
+    permission_classes = (HasAccessToVersionedObject,)
+
+    def get(self, request, *args, **kwargs):
+        version = self.get_object()
+        if version.has_export():
+            pass
+        else:
+            export_source.delay(version.id)
+            return HttpResponse(status=204)
+
+    def post(self, request, *args, **kwargs):
+        version = self.get_object()
+        if version.has_export():
+            return HttpResponse(status=204)
+        else:
+            export_source.delay(version.id)
+            return HttpResponse(status=200)
+
+    def head(self, request, *args, **kwargs):
+        version = self.get_object()
+        response = HttpResponse()
+        response['exportReady'] = bool(version.has_export())
+        return response
+
