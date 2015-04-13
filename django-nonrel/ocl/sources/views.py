@@ -246,10 +246,3 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         else:
             export_source.delay(version.id)
             return HttpResponse(status=200)
-
-    def head(self, request, *args, **kwargs):
-        version = self.get_object()
-        response = HttpResponse()
-        response['exportReady'] = version.has_export()
-        return response
-
