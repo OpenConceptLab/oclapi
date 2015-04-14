@@ -1,20 +1,27 @@
 # Django settings for the ocl project.
+# We need to switch to use django-configuration soon.
+#
 import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    ('Jon Payne', 'paynejd@gmail.com'),
+    ('PK Shiu', 'pk@pkshiu.com'),
 )
 
 MANAGERS = ADMINS
 
+# Set this to something else for personal development
+# This value is used in several places.
+# e.g. DATABASE_HOST = 'api.dev.openconceptlab.org'
+DATABASE_HOST = 'localhost'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
-        #'HOST': '65.99.230.144',
-        'HOST': 'api.dev.openconceptlab.org',
+        'HOST': DATABASE_HOST,
         'NAME': 'ocl',
     }
 }
@@ -187,7 +194,8 @@ HAYSTACK_CONNECTIONS = {
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 # Celery settings
-BROKER_URL = 'django://'
+# BROKER_URL = 'django://'
+BROKER_URL = 'mongodb://%s:27017/ocl' % DATABASE_HOST
 CELERY_RESULT_BACKEND = "mongodb"
 # Set these in your postactivate hook if you use virtualenvwrapper
 AWS_ACCESS_KEY_ID=os.environ['AWS_ACCESS_KEY_ID']
