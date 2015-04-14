@@ -1,4 +1,5 @@
 # Django settings for the ocl project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -13,6 +14,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
         #'HOST': '65.99.230.144',
+        'HOST': 'api.dev.openconceptlab.org',
         'NAME': 'ocl',
     }
 }
@@ -183,6 +185,15 @@ HAYSTACK_CONNECTIONS = {
 }
 
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# Celery settings
+BROKER_URL = 'django://'
+CELERY_RESULT_BACKEND = "mongodb"
+# Set these in your postactivate hook if you use virtualenvwrapper
+AWS_ACCESS_KEY_ID=os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY=os.environ['AWS_SECRET_ACCESS_KEY']
+AWS_STORAGE_BUCKET_NAME=os.environ['AWS_STORAGE_BUCKET_NAME']
+
 
 # Model that stores auxiliary user profile attributes.
 # A user must have a profile in order to access the system.
