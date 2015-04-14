@@ -198,9 +198,9 @@ HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 BROKER_URL = 'mongodb://%s:27017/ocl' % DATABASE_HOST
 CELERY_RESULT_BACKEND = "mongodb"
 # Set these in your postactivate hook if you use virtualenvwrapper
-AWS_ACCESS_KEY_ID=os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY=os.environ['AWS_SECRET_ACCESS_KEY']
-AWS_STORAGE_BUCKET_NAME=os.environ['AWS_STORAGE_BUCKET_NAME']
+AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 
 
 # Model that stores auxiliary user profile attributes.
