@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
@@ -231,13 +231,14 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
     def get(self, request, *args, **kwargs):
         version = self.get_object()
         key = version.get_export_key()
+        url, status = None, 204
         if key:
-            response = HttpResponse()
-            response['exportURL'] = key.generate_url(60)
-            return response
+            url, status = key.generate_url(60), 200
         else:
             export_source.delay(version.id)
-            return HttpResponse(status=204)
+        response = HttpResponse(status=status)
+        response['exportURL'] = url
+        return response
 
     def post(self, request, *args, **kwargs):
         version = self.get_object()
@@ -246,3 +247,13 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         else:
             export_source.delay(version.id)
             return HttpResponse(status=200)
+
+    def delete(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return HttpResponseForbidden()
+        version = self.get_object()
+        if version.has_export():
+            key = version.get_export_key()
+            key.delete()
+        return HttpResponse(status=204)
+
