@@ -16,5 +16,6 @@ __pycache__
 *.swo
 
 
+logs
 # Ours
 *.sublime-*

@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import mixins, status
@@ -20,6 +22,8 @@ INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 LIMIT_PARAM = 'limit'
 INCLUDE_RETIRED_PARAM = 'includeRetired'
+
+logger = logging.getLogger('oclapi')
 
 
 class SourceBaseView():
@@ -230,6 +234,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
     def get(self, request, *args, **kwargs):
         version = self.get_object()
+        logger.debug('Source Export requested for version %s' % version)
         key = version.get_export_key()
         url, status = None, 204
         if key:
@@ -242,6 +247,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
     def post(self, request, *args, **kwargs):
         version = self.get_object()
+        logger.debug('Source Export requested for version %s (post)' % version)
         if version.has_export():
             return HttpResponse(status=204)
         else:
