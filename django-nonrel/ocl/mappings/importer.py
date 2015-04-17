@@ -1,4 +1,5 @@
 import json
+import logging
 from django.core.management import CommandError
 from django.db.models import Q
 from mappings.models import Mapping
@@ -7,6 +8,7 @@ from oclapi.management.commands import MockRequest
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
+logger = logging.getLogger('oclapi')
 
 
 class IllegalInputException(BaseException):
@@ -27,6 +29,7 @@ class MappingsImporter(object):
         self.user = user
 
     def import_mappings(self, new_version=False, total=0, **kwargs):
+        logger.info('Import mappings to source...')
         self.source_version = SourceVersion.get_latest_version_of(self.source)
         if new_version:
             try:
@@ -58,6 +61,8 @@ class MappingsImporter(object):
                 self.stderr.write('\n%s\n' % e)
 
         self.stdout.write('\nDeactivating old mappings...\n')
+        logger.info('Deactivating old mappings...')
+
         deactivated = 0
         for mapping_id in self.mapping_ids:
             try:
@@ -69,6 +74,7 @@ class MappingsImporter(object):
         self.stdout.write('\nDeactivated %s old mappings\n' % deactivated)
 
         self.stdout.write('\nFinished importing mappings!\n')
+        logger.info('Finished importing mappings!')
 
     def handle_mapping(self, data):
         serializer = MappingCreateSerializer(data=data, context={'request': MockRequest(self.user)})
