@@ -1,4 +1,5 @@
 from optparse import make_option
+import logging
 import os
 from django.core.management import BaseCommand, CommandError
 import haystack
@@ -8,7 +9,7 @@ from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
 
 __author__ = 'misternando'
-
+logger = logging.getLogger('oclapi')
 
 class MockRequest(object):
     method = 'POST'
@@ -69,6 +70,7 @@ class ImportCommand(BaseCommand):
         if not permission.has_object_permission(MockRequest(user), None, source):
             raise CommandError('User does not have permission to edit source.')
 
+        logger.info('Import begins user %s source %s' % (user, source))
         try:
             input_file = open(input_file, 'rb')
             # get total record count
@@ -76,11 +78,14 @@ class ImportCommand(BaseCommand):
             options['total'] = total
             input_file.seek(0)
             self.stdout.write('Adding/updating %d new records...\n' % total)
+            logger.info('Adding/updating %d new records...' % total)
         except IOError:
             raise CommandError('Could not open input file %s' % input_file)
 
         haystack.signal_processor = BaseSignalProcessor(haystack.connections, haystack.connection_router)
+
         self.do_import(user, source, input_file, options)
+        logger.info('Import finished')
 
     def do_import(self, user, source, input_file, options):
         pass

@@ -1,4 +1,5 @@
 import json
+import logging
 from django.contrib.auth.models import User
 from django.core.management import CommandError
 from concepts.models import Concept, ConceptVersion
@@ -7,6 +8,7 @@ from oclapi.management.commands import MockRequest, ImportCommand
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
+logger = logging.getLogger('oclapi')
 
 
 class IllegalInputException(BaseException):
@@ -22,6 +24,7 @@ class Command(ImportCommand):
 
     def do_import(self, user, source, input_file, options):
 
+        logger.info('Import concepts to source...')
         self.source_version = SourceVersion.get_latest_version_of(source)
         if options['new_version']:
             try:
@@ -55,6 +58,8 @@ class Command(ImportCommand):
                 self.stderr.write('\n%s\n' % e.message)
 
         self.stdout.write('\nDeactivating old concepts...\n')
+        logger.info('Deactivating old concepts...')
+
         for version_id in self.concept_version_ids:
             try:
                 self.remove_concept_version(version_id)
@@ -62,6 +67,7 @@ class Command(ImportCommand):
                 self.stderr.write('Failed to inactivate concept! %s' % e.message)
 
         self.stdout.write('\nFinished importing concepts!\n')
+        logger.info('Finished importing concepts!')
 
     def handle_concept(self, source, data):
         mnemonic = data['id']
