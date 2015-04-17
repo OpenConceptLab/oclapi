@@ -5,7 +5,8 @@ path = '/opt/deploy/django/ocl'
 if path not in sys.path:
     sys.path.append(path)
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
 
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
+from configurations.wsgi import get_wsgi_application
+application = get_wsgi_application()
