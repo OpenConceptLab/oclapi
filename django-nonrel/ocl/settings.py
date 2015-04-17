@@ -286,6 +286,9 @@ class Production(Common):
 
     BROKER_URL = 'mongodb://localhost:27017/ocl'
 
+    # batch logger is for batch jobs like import and export
+    # we cannot have multiple processes mixing log output until
+    # we move to a centralized logger service
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -323,6 +326,13 @@ class Production(Common):
             'filename': '/var/log/ocl/ocl_api.log',
             'formatter': 'normal',
             },
+        'batch_log_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'filename': '/var/log/ocl/ocl_api_batch.log',
+            'formatter': 'normal',
+            },
         },
 
         'loggers': {
@@ -333,6 +343,10 @@ class Production(Common):
             },
             'oclapi': {
                 'handlers': ['logfile', ],
+                'level': 'DEBUG',
+            },
+            'batch': {
+                'handlers': ['batch_log_file', ],
                 'level': 'DEBUG',
             },
         }

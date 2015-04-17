@@ -8,7 +8,7 @@ from oclapi.management.commands import MockRequest
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
-logger = logging.getLogger('oclapi')
+logger = logging.getLogger('batch')
 
 
 class IllegalInputException(BaseException):

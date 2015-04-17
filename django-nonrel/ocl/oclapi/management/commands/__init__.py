@@ -9,7 +9,7 @@ from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
 
 __author__ = 'misternando'
-logger = logging.getLogger('oclapi')
+logger = logging.getLogger('batch')
 
 class MockRequest(object):
     method = 'POST'
