@@ -56,9 +56,11 @@ class MappingsImporter(object):
             except IllegalInputException as e:
                 self.stderr.write('\n%s' % e)
                 self.stderr.write('\nFailed to parse line %s.  Skipping it...\n' % data)
+                logger.warning('%s, failed to parse line %s.  Skipping it...' % (e, data))
             except InvalidStateException as e:
                 self.stderr.write('\nSource is in an invalid state!')
                 self.stderr.write('\n%s\n' % e)
+                logger.warning('%s, Source is in an invalid state!' % e)
 
         self.stdout.write('\nDeactivating old mappings...\n')
         logger.info('Deactivating old mappings...')
