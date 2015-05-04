@@ -53,7 +53,7 @@ class Command(ImportCommand):
             except IllegalInputException as e:
                 self.stderr.write('\n%s' % e.message)
                 self.stderr.write('\nFailed to parse line %s.  Skipping it...\n' % data)
-                logger.warning('%s, failed to parse line %s, skipping it...' % (e.msg, data))
+                logger.warning('%s, failed to parse line %s, skipping it...' % (e.message, data))
             except InvalidStateException as e:
                 self.stderr.write('\nSource is in an invalid state!')
                 self.stderr.write('\n%s\n' % e.message)

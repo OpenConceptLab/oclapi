@@ -27,6 +27,14 @@ class MappingsImporter(object):
         self.stdout = output_stream
         self.stderr = error_stream
         self.user = user
+        self.count = 0
+        self.add_count = 0
+        self.update_count = 0
+        self.remove_count = 0
+
+    def log_counters(self):
+        logger.info('progress %06d read, %06d added, %06d updated, %06d removed' %
+            self.count, self.add_count, self.update_count, self.remove_count)
 
     def import_mappings(self, new_version=False, total=0, **kwargs):
         logger.info('Import mappings to source...')
@@ -43,25 +51,28 @@ class MappingsImporter(object):
                 raise CommandError('Failed to create new source version due to %s' % e.message)
 
         self.mapping_ids = set(self.source_version.mappings)
-        cnt = 0
+        self.count = 0
         for line in self.mappings_file:
             data = json.loads(line)
-            cnt += 1
+            self.count += 1
             # simple progress bar
-            if (cnt % 10) == 0:
-                self.stdout.write('%d of %d' % (cnt, total), ending='\r')
+            if (self.count % 10) == 0:
+                self.stdout.write('%d of %d' % (self.count, total), ending='\r')
                 self.stdout.flush()
             try:
                 self.handle_mapping(data)
             except IllegalInputException as e:
                 self.stderr.write('\n%s' % e)
                 self.stderr.write('\nFailed to parse line %s.  Skipping it...\n' % data)
-                logger.warning('%s, failed to parse line %s.  Skipping it...' % (e, data))
+                logger.warning('%s, failed to parse line %s.  Skipping it...' % (e.message, data))
             except InvalidStateException as e:
                 self.stderr.write('\nSource is in an invalid state!')
                 self.stderr.write('\n%s\n' % e)
-                logger.warning('%s, Source is in an invalid state!' % e)
+                logger.warning('%s, Source is in an invalid state!' % e.message)
+            if (self.count % 1000) == 0:
+                self.log_counters()
 
+        self.log_counters()
         self.stdout.write('\nDeactivating old mappings...\n')
         logger.info('Deactivating old mappings...')
 
@@ -75,6 +86,7 @@ class MappingsImporter(object):
                 self.stderr.write('Failed to inactivate mapping! %s' % e)
         self.stdout.write('\nDeactivated %s old mappings\n' % deactivated)
 
+        self.log_counters()
         self.stdout.write('\nFinished importing mappings!\n')
         logger.info('Finished importing mappings!')
 
@@ -108,6 +120,7 @@ class MappingsImporter(object):
         serializer.save(force_insert=True, parent_resource=self.source)
         if not serializer.is_valid():
             raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
+        self.add_count += 1
 
     def update_mapping(self, mapping, data):
         diffs = {}
@@ -124,6 +137,7 @@ class MappingsImporter(object):
             diffs.update(Mapping.diff(original, mapping))
             if diffs:
                 serializer.save()
+                self.update_count += 1
                 if not serializer.is_valid():
                     raise IllegalInputException('Could not persist update to mapping %s due to %s' % (mapping.id, serializer.errors))
 
@@ -133,6 +147,7 @@ class MappingsImporter(object):
             if mapping.is_active:
                 mapping.is_active = False
                 mapping.save()
+                self.remove_count += 1
                 return True
             return False
         except:
