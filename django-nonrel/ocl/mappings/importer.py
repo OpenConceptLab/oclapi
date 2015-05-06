@@ -34,7 +34,7 @@ class MappingsImporter(object):
 
     def log_counters(self):
         logger.info('progress %06d read, %06d added, %06d updated, %06d removed' %
-            self.count, self.add_count, self.update_count, self.remove_count)
+            (self.count, self.add_count, self.update_count, self.remove_count))
 
     def import_mappings(self, new_version=False, total=0, **kwargs):
         logger.info('Import mappings to source...')
