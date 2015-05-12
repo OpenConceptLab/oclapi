@@ -1,5 +1,14 @@
+from __future__ import absolute_import
 import json
 import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
+
+from configurations import importer
+importer.install()
+
+
 import tarfile
 import tempfile
 from boto.s3.key import Key
@@ -15,7 +24,9 @@ from sources.models import SourceVersion
 from sources.serializers import SourceDetailSerializer
 
 celery = Celery('tasks', backend='mongodb', broker='django://')
-logger = get_task_logger(__name__)
+celery.config_from_object('django.conf:settings')
+
+logger = get_task_logger('celery')
 
 @celery.task
 def export_source(version_id):

@@ -333,6 +333,13 @@ class Production(Common):
             'filename': '/var/log/ocl/ocl_api_batch.log',
             'formatter': 'normal',
             },
+        'celery_log_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'filename': '/var/log/ocl/ocl_api_celery.log',
+            'formatter': 'normal',
+            },
         },
 
         'loggers': {
@@ -347,6 +354,10 @@ class Production(Common):
             },
             'batch': {
                 'handlers': ['batch_log_file', ],
+                'level': 'DEBUG',
+            },
+            'celery': {
+                'handlers': ['celery_log_file', ],
                 'level': 'DEBUG',
             },
         }
