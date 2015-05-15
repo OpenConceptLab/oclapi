@@ -230,7 +230,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
     model = SourceVersion
-    permission_classes = (HasAccessToVersionedObject,)
+    permission_classes = (CanViewConceptDictionaryVersion,)
 
     def get(self, request, *args, **kwargs):
         version = self.get_object()
