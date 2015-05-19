@@ -1,9 +1,12 @@
 from boto.s3.connection import S3Connection
 from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
+from haystack.utils import loading
 from rest_framework.reverse import reverse
 
 __author__ = 'misternando'
+
+haystack_connections = loading.ConnectionHandler(settings.HAYSTACK_CONNECTIONS)
 
 
 class S3ConnectionFactory:
@@ -79,3 +82,28 @@ def remove_user_from_org(userprofile, organization):
                 organization.members.add(userprofile.id)
                 userprofile.save()
                 organization.save()
+
+
+def get_class(kls):
+    parts = kls.split('.')
+    module = ".".join(parts[:-1])
+    m = __import__(module)
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
+
+
+def update_all_in_index(model, qs):
+    if not qs.exists():
+        return
+    default_connection = haystack_connections['default']
+    unified_index = default_connection.get_unified_index()
+    index = unified_index.get_index(model)
+    backend = default_connection.get_backend()
+    backend.update(index, qs)
+
+
+def update_concept_versions_in_index(version_ids):
+    klass = get_class('concepts.models.ConceptVersion')
+    versions = klass.objects.filter(id__in=version_ids)
+    update_all_in_index(klass, versions)
