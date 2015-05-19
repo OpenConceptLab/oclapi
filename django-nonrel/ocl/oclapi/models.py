@@ -398,7 +398,8 @@ class ConceptContainerVersionModel(ResourceVersionModel):
                 previous_release.save()
             obj.save(**kwargs)
             persisted = True
-            update_concept_versions_in_index(obj.concepts)
+            if seed_concepts:
+                update_concept_versions_in_index(obj.concepts)
         finally:
             if not persisted:
                 if previous_release:
