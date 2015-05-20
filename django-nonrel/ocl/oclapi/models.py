@@ -3,14 +3,13 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
-from oclapi.utils import reverse_resource, reverse_resource_version
+from oclapi.utils import reverse_resource, reverse_resource_version, update_concept_versions_in_index
 from settings import DEFAULT_LOCALE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
@@ -399,6 +398,8 @@ class ConceptContainerVersionModel(ResourceVersionModel):
                 previous_release.save()
             obj.save(**kwargs)
             persisted = True
+            if seed_concepts:
+                update_concept_versions_in_index(obj.concepts)
         finally:
             if not persisted:
                 if previous_release:
