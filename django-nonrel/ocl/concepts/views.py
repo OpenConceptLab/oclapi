@@ -1,4 +1,3 @@
-import dateutil.parser
 from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
 from django.http import Http404
@@ -15,22 +14,12 @@ from mappings.serializers import MappingListSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
-from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin
+from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin, parse_updated_since_param
 from sources.models import SourceVersion
 
-UPDATED_SINCE_PARAM = 'updatedSince'
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 INCLUDE_INVERSE_MAPPINGS_PARAM = 'includeInverseMappings'
-
-
-def parse_updated_since_param(request):
-    updated_since = request.QUERY_PARAMS.get(UPDATED_SINCE_PARAM)
-    if updated_since:
-        try:
-            return dateutil.parser.parse(updated_since)
-        except ValueError: pass
-    return None
 
 
 class ConceptBaseView(ChildResourceMixin):

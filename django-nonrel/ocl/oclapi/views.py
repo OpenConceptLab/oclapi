@@ -1,3 +1,4 @@
+import dateutil.parser
 from django.contrib.contenttypes.models import ContentType
 from django.db import DatabaseError
 from django.db.models import Q
@@ -12,12 +13,23 @@ from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VI
 from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary, HasOwnership
 from users.models import UserProfile
 
+UPDATED_SINCE_PARAM = 'updatedSince'
+
 
 def get_object_or_404(queryset, **filter_kwargs):
     try:
         return generics_get_object_or_404(queryset, **filter_kwargs)
     except DatabaseError:
         raise Http404
+
+
+def parse_updated_since_param(request):
+    updated_since = request.QUERY_PARAMS.get(UPDATED_SINCE_PARAM)
+    if updated_since:
+        try:
+            return dateutil.parser.parse(updated_since)
+        except ValueError: pass
+    return None
 
 
 class BaseAPIView(generics.GenericAPIView):

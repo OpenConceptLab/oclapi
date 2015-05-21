@@ -12,7 +12,7 @@ from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
@@ -54,16 +54,20 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         include_retired = False
         include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
         include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
+        updated_since = None
         if include_concepts or include_mappings:
             source_version = SourceVersion.get_latest_version_of(self.object)
             limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 0)
             include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
+            updated_since = parse_updated_since_param(request)
 
         if include_concepts:
             source_version_concepts = source_version.concepts
             queryset = ConceptVersion.objects.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
+            if updated_since:
+                queryset = queryset.filter(updated_at__gte=updated_since)
             queryset = queryset.filter(id__in=source_version_concepts)
             if limit:
                 queryset = queryset[0:limit]
@@ -76,6 +80,8 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
             queryset = queryset.filter(id__in=all_children)
+            if updated_since:
+                queryset = queryset.filter(updated_at__gte=updated_since)
             if limit:
                 queryset = queryset[0:limit]
             serializer = MappingDetailSerializer(queryset, many=True)
