@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import json
 import os
+from rest_framework.utils import encoders
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
@@ -58,7 +59,7 @@ def export_source(version_id):
     tmpdir = tempfile.mkdtemp()
     os.chdir(tmpdir)
     with open('export.json', 'wb') as out:
-        json.dump(data, out, default=json_util.default)
+        json.dump(data, out, cls=encoders.JSONEncoder, default=json_util.default)
     logger.info('Done writing export file.  Compressing...')
     with tarfile.open('export.tgz', 'w:gz') as tar:
         tar.add('export.json')
