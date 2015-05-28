@@ -1,6 +1,8 @@
 import logging
 
+from django.conf import settings
 from django.db.models import Q
+from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
@@ -50,14 +52,16 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         data = serializer.data
 
         source_version = None
-        limit = 0
+        limit = settings.REST_FRAMEWORK.get('MAX_PAGINATE_BY', self.paginate_by)
         include_retired = False
         include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
         include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
         updated_since = None
         if include_concepts or include_mappings:
             source_version = SourceVersion.get_latest_version_of(self.object)
-            limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 0)
+            paginate_by = self.get_paginate_by(EmptyQuerySet())
+            if paginate_by:
+                limit = min(limit, paginate_by)
             include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
             updated_since = parse_updated_since_param(request)
 
@@ -69,8 +73,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
             queryset = queryset.filter(id__in=source_version_concepts)
-            if limit:
-                queryset = queryset[0:limit]
+            queryset = queryset[0:limit]
             serializer = ConceptVersionDetailSerializer(queryset, many=True)
             data['concepts'] = serializer.data
 
@@ -82,8 +85,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             queryset = queryset.filter(id__in=all_children)
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
-            if limit:
-                queryset = queryset[0:limit]
+            queryset = queryset[0:limit]
             serializer = MappingDetailSerializer(queryset, many=True)
             data['mappings'] = serializer.data
 
