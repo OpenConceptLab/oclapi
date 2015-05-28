@@ -1,15 +1,14 @@
-from boto.s3.connection import S3Connection
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
-from oclapi.utils import S3ConnectionFactory
+from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
 
@@ -83,9 +82,39 @@ class SourceVersion(ConceptContainerVersionModel):
 
     @property
     def export_path(self):
-        last_update = self.updated_at.strftime('%Y%m%d%H%M%S')
+        last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
         source = self.versioned_object
         return "%s/%s_%s.%s.tgz" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
+
+    @property
+    def last_child_update(self):
+        last_concept_update = self.last_concept_update
+        last_mapping_update = self.last_mapping_update
+        if last_concept_update and last_mapping_update:
+            return max(last_concept_update, last_mapping_update)
+        return last_concept_update or last_mapping_update
+
+    @property
+    def last_concept_update(self):
+        if not self.concepts:
+            return None
+        klass = get_class('concepts.models.ConceptVersion')
+        versions = klass.objects.filter(id__in=self.concepts)
+        if not versions.exists():
+            return None
+        agg = versions.aggregate(Max('updated_at'))
+        return agg.get('updated_at__max')
+
+    @property
+    def last_mapping_update(self):
+        if not self.mappings:
+            return None
+        klass = get_class('mappings.models.Mapping')
+        mappings = klass.objects.filter(id__in=self.mappings)
+        if not mappings.exists():
+            return None
+        agg = mappings.aggregate(Max('updated_at'))
+        return agg.get('updated_at__max')
 
     @property
     def resource_type(self):
