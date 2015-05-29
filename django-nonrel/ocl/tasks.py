@@ -20,7 +20,7 @@ from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
-from oclapi.utils import S3ConnectionFactory
+from oclapi.utils import S3ConnectionFactory, update_all_in_index
 from sources.models import SourceVersion
 from sources.serializers import SourceDetailSerializer
 
@@ -71,4 +71,10 @@ def export_source(version_id):
     logger.info('Export complete!')
 
 
-
+@celery.task
+def update_concepts_for_source_version(version_id):
+    sv = SourceVersion.objects.get(id=version_id)
+    sv.update(_ocl_processing=True)
+    versions = ConceptVersion.objects.filter(id__in=sv.concepts)
+    update_all_in_index(ConceptVersion, versions)
+    sv.update(_ocl_processing=False)

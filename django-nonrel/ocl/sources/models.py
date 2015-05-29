@@ -48,6 +48,7 @@ class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
+    _ocl_processing = models.BooleanField(default=False)
 
     def update_concept_version(self, concept_version):
         previous_version = concept_version.previous_version

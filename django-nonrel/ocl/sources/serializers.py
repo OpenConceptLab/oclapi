@@ -7,6 +7,7 @@ from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
+from tasks import update_concepts_for_source_version
 
 
 class SourceListSerializer(serializers.Serializer):
@@ -155,6 +156,10 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
                 'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
             }
         )
+        if self.object._ocl_processing:
+            default_fields.update(
+                {'_ocl_processing': serializers.BooleanField(source='_ocl_processing')}
+            )
         return default_fields
 
 
@@ -208,4 +213,7 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
 
     def save_object(self, obj, **kwargs):
         errors = SourceVersion.persist_new(obj, **kwargs)
-        self._errors.update(errors)
+        if errors:
+            self._errors.update(errors)
+        else:
+            update_concepts_for_source_version.delay(obj.id)
