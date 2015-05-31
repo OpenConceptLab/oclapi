@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
@@ -9,7 +10,6 @@ from configurations import importer
 importer.install()
 
 import json
-import os
 import tarfile
 import tempfile
 from rest_framework.utils import encoders
