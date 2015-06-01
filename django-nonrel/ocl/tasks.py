@@ -77,7 +77,9 @@ def export_source(version_id):
 @celery.task
 def update_concepts_for_source_version(version_id):
     sv = SourceVersion.objects.get(id=version_id)
-    sv.update(_ocl_processing=True)
+    sv._ocl_processing = True
+    sv.save()
     versions = ConceptVersion.objects.filter(id__in=sv.concepts)
     update_all_in_index(ConceptVersion, versions)
-    sv.update(_ocl_processing=False)
+    sv._ocl_processing = False
+    sv.save()

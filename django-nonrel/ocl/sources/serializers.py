@@ -156,11 +156,13 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
                 'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
             }
         )
-        if self.object._ocl_processing:
-            default_fields.update(
-                {'_ocl_processing': serializers.BooleanField(source='_ocl_processing')}
-            )
         return default_fields
+
+    def to_native(self, obj):
+        ret = super(SourceVersionDetailSerializer, self).to_native(obj)
+        if obj._ocl_processing:
+            ret['_ocl_processing'] = True
+        return ret
 
 
 class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
