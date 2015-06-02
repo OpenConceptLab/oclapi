@@ -1,10 +1,14 @@
 import urlparse
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import get_script_prefix
+from django.core.urlresolvers import get_script_prefix, resolve
 from rest_framework.fields import WritableField
-from concepts.models import LocalizedText
+from concepts.models import LocalizedText, Concept
 from oclapi.fields import HyperlinkedRelatedField
 from oclapi.mixins import PathWalkerMixin
+from orgs.models import Organization
+from sources.models import Source
+from users.models import UserProfile
 
 __author__ = 'misternando'
 
@@ -89,7 +93,9 @@ class LocalizedTextListField(ListField):
         return '%s_type' % self.name_attr
 
 
-class SourceReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
+class SourceURLField(HyperlinkedRelatedField):
+    user = None
+    org = None
 
     def from_native(self, value):
         try:
@@ -104,19 +110,73 @@ class SourceReferenceField(HyperlinkedRelatedField, PathWalkerMixin):
             prefix = get_script_prefix()
             if value.startswith(prefix):
                 value = '/' + value[len(prefix):]
-
-        request = self.context['request']
         try:
-            path_obj = self.get_object_for_path(value, request)
-            if hasattr(path_obj, 'versioned_object_id'):
-                obj = path_obj.versioned_object
-                obj._source_version = path_obj
-            else:
-                obj = path_obj
-
-            return obj
+            return self.get_object_for_path(value)
         except Exception as e:
             raise ValidationError(e)
+
+    def get_object_for_path(self, path_info):
+        callback, args, kwargs = resolve(path_info)
+        user_id = kwargs.get('user')
+        try:
+            self.user = UserProfile.objects.get(mnemonic=user_id)
+        except UserProfile.DoesNotExist: pass
+        org_id = kwargs.get('org')
+        try:
+            self.org = Organization.objects.get(mnemonic=org_id)
+        except Organization.DoesNotExist: pass
+        if not (self.user or self.org):
+            raise ValidationError("Source owner does not exist")
+        source_id = kwargs.get('source')
+        if self.user:
+            return Source.objects.get(mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+        else:
+            return Source.objects.get(mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
+
+
+class ConceptURLField(HyperlinkedRelatedField):
+    user = None
+    org = None
+
+    def from_native(self, value):
+        try:
+            http_prefix = value.startswith(('http:', 'https:'))
+        except AttributeError:
+            msg = self.error_messages['incorrect_type']
+            raise ValidationError(msg % type(value).__name__)
+
+        if http_prefix:
+            # If needed convert absolute URLs to relative path
+            value = urlparse.urlparse(value).path
+            prefix = get_script_prefix()
+            if value == prefix:
+                raise ValidationError(self.error_messages['no_match'])
+            if value.startswith(prefix):
+                value = '/' + value[len(prefix):]
+        try:
+            return self.get_object_for_path(value)
+        except Exception as e:
+            raise ValidationError(e)
+
+    def get_object_for_path(self, path_info):
+        callback, args, kwargs = resolve(path_info)
+        user_id = kwargs.get('user')
+        try:
+            self.user = UserProfile.objects.get(mnemonic=user_id)
+        except UserProfile.DoesNotExist: pass
+        org_id = kwargs.get('org')
+        try:
+            self.org = Organization.objects.get(mnemonic=org_id)
+        except Organization.DoesNotExist: pass
+        if not (self.user or self.org):
+            raise ValidationError("Concept owner does not exist")
+        source_id = kwargs.get('source')
+        if self.user:
+            source = Source.objects.get(mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+        else:
+            source = Source.objects.get(mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
+        concept_id = kwargs.get('concept')
+        return Concept.objects.get(parent_id=source.id, mnemonic=concept_id)
 
 
 class ConceptReferenceField(HyperlinkedRelatedField, PathWalkerMixin):

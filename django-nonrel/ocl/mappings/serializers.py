@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from concepts.fields import ConceptReferenceField, SourceReferenceField
+from concepts.fields import ConceptURLField, SourceURLField
 from concepts.models import Concept
 from mappings.models import Mapping
 
@@ -82,9 +82,9 @@ class MappingListSerializer(MappingBaseSerializer):
 
 class MappingCreateSerializer(MappingBaseSerializer):
     map_type = serializers.CharField(required=True)
-    from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
-    to_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
-    to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
+    from_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
+    to_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
+    to_source_url = SourceURLField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
     to_concept_code = serializers.CharField(required=False)
     to_concept_name = serializers.CharField(required=False)
     external_id = serializers.CharField(required=False)
@@ -98,9 +98,9 @@ class MappingCreateSerializer(MappingBaseSerializer):
 class MappingUpdateSerializer(MappingBaseSerializer):
     map_type = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
-    from_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='from_concept')
-    to_concept_url = ConceptReferenceField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
-    to_source_url = SourceReferenceField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
+    from_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='from_concept')
+    to_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
+    to_source_url = SourceURLField(view_name='source-detail', queryset=Concept.objects.all(), lookup_kwarg='source', lookup_field='source', required=False, source='to_source')
     to_concept_code = serializers.CharField(required=False)
     to_concept_name = serializers.CharField(required=False)
     external_id = serializers.CharField(required=False)

@@ -12,7 +12,7 @@ from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion
+from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param
 from sources.models import Source, SourceVersion
@@ -44,6 +44,13 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
                                       RetrieveAPIView,
                                       DestroyAPIView):
     serializer_class = SourceDetailSerializer
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        if request.method in ['GET', 'HEAD']:
+            self.permission_classes = (CanViewConceptDictionary,)
+        else:
+            self.permission_classes = (CanEditConceptDictionary,)
+        super(SourceRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         super(SourceRetrieveUpdateDestroyView, self).retrieve(request, *args, **kwargs)
@@ -124,7 +131,13 @@ class SourceVersionBaseView(ResourceVersionMixin):
     pk_field = 'mnemonic'
     model = SourceVersion
     queryset = SourceVersion.objects.filter(is_active=True)
-    permission_classes = (HasAccessToVersionedObject,)
+
+    def initialize(self, request, path_info_segment, **kwargs):
+        if request.method in ['GET', 'HEAD']:
+            self.permission_classes = (CanViewConceptDictionaryVersion,)
+        else:
+            self.permission_classes = (CanEditConceptDictionaryVersion,)
+        super(SourceVersionBaseView, self).initialize(request, path_info_segment, **kwargs)
 
 
 class SourceVersionListView(SourceVersionBaseView,
@@ -132,13 +145,11 @@ class SourceVersionListView(SourceVersionBaseView,
                             ListWithHeadersMixin):
 
     def get(self, request, *args, **kwargs):
-        self.permission_classes = (CanViewConceptDictionaryVersion,)
         self.serializer_class = SourceVersionDetailSerializer if self.is_verbose(request) else SourceVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionCreateSerializer
-        self.permission_classes = (CanEditConceptDictionaryVersion,)
         return self.create(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -160,7 +171,6 @@ class SourceVersionListView(SourceVersionBaseView,
 
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
-    permission_classes = (CanViewConceptDictionaryVersion,)
     serializer_class = SourceVersionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
@@ -168,7 +178,6 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
         super(SourceVersionRetrieveUpdateView, self).initialize(request, path_info_segment, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        self.permission_classes = (CanEditConceptDictionaryVersion,)
         self.serializer_class = SourceVersionUpdateSerializer
         if not self.versioned_object:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -211,7 +220,6 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
 class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
-        self.permission_classes = (CanEditConceptDictionaryVersion,)
         version = self.get_object()
         if version.released:
             errors = {'non_field_errors' : ['Cannot deactivate a version that is currently released.  Please release another version before deactivating this one.']}
