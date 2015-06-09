@@ -62,7 +62,7 @@ def export_source(version_id):
     tmpdir = tempfile.mkdtemp()
     os.chdir(tmpdir)
     with open('export.json', 'wb') as out:
-        json.dump(data, out, cls=encoders.JSONEncoder, default=json_util.default)
+        json.dump(data, out, cls=encoders.JSONEncoder)
     logger.info('Done writing export file.  Compressing...')
     with tarfile.open('export.tgz', 'w:gz') as tar:
         tar.add('export.json')
