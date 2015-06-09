@@ -100,7 +100,22 @@ def update_all_in_index(model, qs):
     unified_index = default_connection.get_unified_index()
     index = unified_index.get_index(model)
     backend = default_connection.get_backend()
-    backend.update(index, qs)
+    do_update(default_connection, backend, index, qs)
+
+
+def do_update(connection, backend, index, qs, batch_size=1000):
+    total = qs.count()
+    for start in range(0, total, batch_size):
+        end = min(start + batch_size, total)
+
+        # Get a clone of the QuerySet so that the cache doesn't bloat up
+        # in memory. Useful when reindexing large amounts of data.
+        small_cache_qs = qs.all()
+        current_qs = small_cache_qs[start:end]
+        backend.update(index, current_qs)
+
+        # Clear out the DB connections queries because it bloats up RAM.
+        connection.queries = []
 
 
 def update_concept_versions_in_index(version_ids):
