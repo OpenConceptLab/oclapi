@@ -63,7 +63,7 @@ def export_source(version_id):
     os.chdir(tmpdir)
     with open('export.json', 'wb') as out:
         json.dump(data, out, cls=encoders.JSONEncoder)
-    logger.info('Done writing export file.  Compressing...')
+    logger.info('Done writing export file: %s.  Compressing...' & tmpdir)
     with tarfile.open('export.tgz', 'w:gz') as tar:
         tar.add('export.json')
     logger.info('Done compressing.  Uploading...')
