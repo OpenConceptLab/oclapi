@@ -7,7 +7,7 @@ from oclapi.serializers import ResourceVersionSerializer
 from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
-from tasks import update_concepts_for_source_version
+from tasks import update_children_for_source_version
 
 
 class SourceListSerializer(serializers.Serializer):
@@ -218,4 +218,4 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         if errors:
             self._errors.update(errors)
         else:
-            update_concepts_for_source_version.delay(obj.id)
+            update_children_for_source_version.delay(obj.id)

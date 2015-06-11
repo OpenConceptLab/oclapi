@@ -12,6 +12,7 @@ importer.install()
 from celery import Celery
 from celery.utils.log import get_task_logger
 from concepts.models import ConceptVersion
+from mappings.models import Mapping
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 
@@ -30,11 +31,13 @@ def export_source(version_id):
 
 
 @celery.task
-def update_concepts_for_source_version(version_id):
+def update_children_for_source_version(version_id):
     sv = SourceVersion.objects.get(id=version_id)
     sv._ocl_processing = True
     sv.save()
     versions = ConceptVersion.objects.filter(id__in=sv.concepts)
     update_all_in_index(ConceptVersion, versions)
+    mappings = Mapping.objects.filter(id__in=sv.mappings)
+    update_all_in_index(Mapping, mappings)
     sv._ocl_processing = False
     sv.save()
