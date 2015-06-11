@@ -1,8 +1,15 @@
+import json
+import os
+import tarfile
+import tempfile
+
+from boto.s3.key import Key
 from boto.s3.connection import S3Connection
-from django.conf import settings
-from django.core.urlresolvers import NoReverseMatch
 from haystack.utils import loading
 from rest_framework.reverse import reverse
+from rest_framework.utils import encoders
+from django.conf import settings
+from django.core.urlresolvers import NoReverseMatch
 
 __author__ = 'misternando'
 
@@ -93,6 +100,85 @@ def get_class(kls):
     return m
 
 
+def write_export_file(version, logger):
+    cwd = os.getcwd()
+    tmpdir = tempfile.mkdtemp()
+    os.chdir(tmpdir)
+    logger.info('Writing export file to tmp directory: %s' % tmpdir)
+
+    logger.info('Found source version %s.  Looking up source...' % version.mnemonic)
+    source = version.versioned_object
+    logger.info('Found source %s.  Serializing attributes...' % source.mnemonic)
+
+    source_serializer = get_class('sources.serializers.SourceDetailSerializer')(source)
+    source_data = source_serializer.data
+    source_string = json.dumps(source_data, cls=encoders.JSONEncoder)
+    logger.info('Done serializing attributes.')
+
+    with open('export.json', 'wb') as out:
+        out.write('%s, "concepts": [' % source_string[:-1])
+
+    batch_size = 1000
+
+    num_concepts = len(version.concepts)
+    if num_concepts:
+        logger.info('Source has %d concepts.  Getting them in batches of %d...' % (num_concepts, batch_size))
+        concept_version_class = get_class('concepts.models.ConceptVersion')
+        concept_serializer_class = get_class('concepts.serializers.ConceptVersionDetailSerializer')
+        for start in range(0, num_concepts, batch_size):
+            end = min(start + batch_size, num_concepts)
+            logger.info('Serializing concepts %d - %d...' % (start+1, end))
+            concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+            concept_serializer = concept_serializer_class(concept_versions, many=True)
+            concept_data = concept_serializer.data
+            concept_string = json.dumps(concept_data, cls=encoders.JSONEncoder)
+            concept_string = concept_string[1:-1]
+            with open('export.json', 'ab') as out:
+                out.write(concept_string)
+                if end != num_concepts:
+                    out.write(', ')
+        logger.info('Done serializing concepts.')
+    else:
+        logger.info('Source has no concepts to serialize.')
+
+    with open('export.json', 'ab') as out:
+        out.write('], "mappings": [')
+
+    num_mappings = len(version.mappings)
+    if num_mappings:
+        logger.info('Source has %d mappings.  Getting them in batches of %d...' % (num_mappings, batch_size))
+        mapping_class = get_class('mappings.models.Mapping')
+        mapping_serializer_class = get_class('mappings.serializers.MappingDetailSerializer')
+        for start in range(0, num_mappings, batch_size):
+            end = min(start + batch_size, num_mappings)
+            logger.info('Serializing mappings %d - %d...' % (start+1, end))
+            mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+            mapping_serializer = mapping_serializer_class(mappings, many=True)
+            mapping_data = mapping_serializer.data
+            mapping_string = json.dumps(mapping_data, cls=encoders.JSONEncoder)
+            mapping_string = mapping_string[1:-1]
+            with open('export.json', 'ab') as out:
+                out.write(mapping_string)
+                if end != num_mappings:
+                    out.write(', ')
+        logger.info('Done serializing mappings.')
+    else:
+        logger.info('Source has no mappings to serialize.')
+
+    with open('export.json', 'ab') as out:
+        out.write(']}')
+
+    with tarfile.open('export.tgz', 'w:gz') as tar:
+        tar.add('export.json')
+
+    logger.info('Done compressing.  Uploading...')
+    k = Key(S3ConnectionFactory.get_export_bucket())
+    k.key = version.export_path
+    k.set_contents_from_filename('export.tgz')
+    logger.info('Uploaded to %s.' % k.key)
+    os.chdir(cwd)
+
+
 def update_all_in_index(model, qs):
     if not qs.exists():
         return
@@ -116,9 +202,3 @@ def do_update(connection, backend, index, qs, batch_size=1000):
 
         # Clear out the DB connections queries because it bloats up RAM.
         connection.queries = []
-
-
-def update_concept_versions_in_index(version_ids):
-    klass = get_class('concepts.models.ConceptVersion')
-    versions = klass.objects.filter(id__in=version_ids)
-    update_all_in_index(klass, versions)

@@ -9,7 +9,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
-from oclapi.utils import reverse_resource, reverse_resource_version, update_concept_versions_in_index
+from oclapi.utils import reverse_resource, reverse_resource_version
 from settings import DEFAULT_LOCALE
 
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
