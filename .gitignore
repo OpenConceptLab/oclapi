@@ -20,4 +20,4 @@ logs
 # Ours
 *.sublime-*
 
-samples/.DS_Store
+.DS_Store

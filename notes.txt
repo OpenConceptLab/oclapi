@@ -1,0 +1,10 @@
+Tasks:
+1. Delete unused/old files -- see #Files to retire below
+
+---
+
+# Files to Retire in oclapi
+- /api and /api/* - These are old files from Judy that appear to be unused
+- /samples and /samples/* - These are old and outdated JSON sample files
+- /solr.bak - This is the old Solr index that is no longer in use
+
