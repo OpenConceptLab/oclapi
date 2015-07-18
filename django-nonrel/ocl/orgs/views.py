@@ -109,7 +109,9 @@ class OrganizationMemberView(generics.GenericAPIView):
         userprofile_id = kwargs.pop('user')
         try:
             self.userprofile = UserProfile.objects.get(mnemonic=userprofile_id)
-            self.user_in_org = request.user.is_authenticated and self.userprofile.id in self.organization.members
+        except UserProfile.DoesNotExist: pass
+        try:
+            self.user_in_org = request.user.is_authenticated and request.user.get_profile().id in self.organization.members
         except UserProfile.DoesNotExist: pass
         super(OrganizationMemberView, self).initial(request, *args, **kwargs)
 
