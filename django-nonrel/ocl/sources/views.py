@@ -13,8 +13,8 @@ from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionary
-from oclapi.filters import HaystackSearchFilter
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param
+from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
@@ -103,7 +103,7 @@ class SourceListView(SourceBaseView,
                      ConceptDictionaryCreateMixin,
                      ListWithHeadersMixin):
     serializer_class = SourceCreateSerializer
-    filter_backends = [HaystackSearchFilter]
+    filter_backends = [SourceSearchFilter]
     solr_fields = {
         'sourceType': {'sortable': False, 'filterable': True, 'facet': True},
         'name': {'sortable': True, 'filterable': False},

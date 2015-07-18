@@ -7,7 +7,7 @@ from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField
-from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
+from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
@@ -27,6 +27,10 @@ class Source(ConceptContainerModel):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
         return reverse('sourceversion-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+
+    @property
+    def public_can_view(self):
+        return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
 
     @classmethod
     def resource_type(cls):
