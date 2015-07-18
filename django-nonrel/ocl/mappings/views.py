@@ -1,7 +1,5 @@
-from itertools import chain
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
