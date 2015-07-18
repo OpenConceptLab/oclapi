@@ -127,11 +127,14 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     def retire(cls, concept, user):
         if concept.retired:
             return {'__all__': 'Concept is already retired'}
-        concept.retired = True
         latest_version = ConceptVersion.get_latest_version_of(concept)
         retired_version = latest_version.clone()
         retired_version.retired = True
+        retired_version.update_comment = 'Concept was retired'
         errors = ConceptVersion.persist_clone(retired_version, user)
+        if not errors:
+            concept.retired = True
+            concept.save()
         return errors
 
     @classmethod

@@ -100,27 +100,30 @@ class Command(ImportCommand):
             raise IllegalInputException('Could not persist new concept %s' % mnemonic)
 
     def update_concept_version(self, concept_version, data):
-        diffs = {}
         clone = concept_version.clone()
+
+        # Handle the special case of retiring a concept
         if 'retired' in data and clone.retired != data['retired']:
-            diffs['retired'] = {'was': clone.retired, 'is': data['retired']}
+            concept = concept_version.versioned_object
+            errors = Concept.retire(concept, self.user)
+            if errors:
+                raise IllegalInputException('Failed to retire concept due to %s' % errors)
+            return
+
         serializer = ConceptVersionUpdateSerializer(clone, data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse concept to update: %s.' % concept_version.mnemonic)
-        if serializer.is_valid():
-            new_version = serializer.object
-            if 'retired' in diffs:
-                new_version.retired = data['retired']
-            diffs.update(ConceptVersion.diff(concept_version, new_version))
-            if diffs:
-                if 'names' in diffs:
-                    diffs['names'] = {'is': data.get('names')}
-                if 'descriptions' in diffs:
-                    diffs['descriptions'] = {'is': data.get('descriptions')}
-                clone.update_comment = json.dumps(diffs)
-                serializer.save()
-                if not serializer.is_valid():
-                    raise IllegalInputException('Could not persist update to concept: %s' % concept_version.mnemonic)
+        new_version = serializer.object
+        diffs = ConceptVersion.diff(concept_version, new_version)
+        if diffs:
+            if 'names' in diffs:
+                diffs['names'] = {'is': data.get('names')}
+            if 'descriptions' in diffs:
+                diffs['descriptions'] = {'is': data.get('descriptions')}
+            clone.update_comment = json.dumps(diffs)
+            serializer.save()
+            if not serializer.is_valid():
+                raise IllegalInputException('Could not persist update to concept: %s' % concept_version.mnemonic)
 
     def remove_concept_version(self, version_id):
         try:

@@ -1,12 +1,13 @@
 from haystack import indexes
 from mappings.models import Mapping
 from oclapi.search_backends import SortOrFilterField, FilterField
+from oclapi.search_indexes import OCLSearchIndex
 from sources.models import SourceVersion
 
 __author__ = 'misternando'
 
 
-class MappingIndex(indexes.SearchIndex, indexes.Indexable):
+class MappingIndex(OCLSearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     external_id = SortOrFilterField(model_attr='external_id', indexed=True, stored=True, null=True)
     lastUpdate = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
@@ -60,4 +61,3 @@ class MappingIndex(indexes.SearchIndex, indexes.Indexable):
         self.prepared_data['source_version'] = source_version_ids
 
         return self.prepared_data
-

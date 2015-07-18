@@ -34,7 +34,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     display_locale = serializers.CharField(read_only=True)
     names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False, name_override='description')
-    retired = serializers.BooleanField(read_only=True)
+    retired = serializers.BooleanField(required=False)
     url = serializers.URLField(read_only=True)
     source = serializers.CharField(source='parent_resource', read_only=True)
     owner = serializers.CharField(source='owner_name', read_only=True)
@@ -55,6 +55,7 @@ class ConceptDetailSerializer(serializers.Serializer):
         concept.concept_class = attrs.get('concept_class', concept.concept_class)
         concept.datatype = attrs.get('datatype', concept.datatype)
         concept.extras = attrs.get('extras', concept.extras)
+        concept.retired = attrs.get('retired', concept.retired)
         concept.names = attrs.get('names', concept.names)  # Is this desired behavior??
         concept.descriptions = attrs.get('descriptions', concept.descriptions)  # Is this desired behavior??
         concept.extras = attrs.get('extras', concept.extras)

@@ -1,11 +1,12 @@
 from haystack import indexes
 from oclapi.search_backends import SortOrFilterField, FilterField
+from oclapi.search_indexes import OCLSearchIndex
 from sources.models import Source
 
 __author__ = 'misternando'
 
 
-class SourceIndex(indexes.SearchIndex, indexes.Indexable):
+class SourceIndex(OCLSearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     name = SortOrFilterField(model_attr='name', indexed=True, stored=True)
     full_name = indexes.CharField(model_attr='full_name', null=True, indexed=True, stored=True)
