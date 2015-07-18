@@ -90,6 +90,22 @@ class MappingListView(MappingBaseView,
     serializer_class = MappingCreateSerializer
     solr_fields = {}
     filter_backends = [SourceRestrictedMappingsFilter,]
+    solr_fields = {
+        'retired': {'sortable': False, 'filterable': True, 'facet': True},
+        'mapType': {'sortable': False, 'filterable': True, 'facet': True},
+        'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'owner': {'sortable': False, 'filterable': True, 'facet': True},
+        'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptSource': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptOwner': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'fromConceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'toConceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
+    }
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
