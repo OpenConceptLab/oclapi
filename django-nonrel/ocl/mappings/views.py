@@ -95,24 +95,8 @@ class MappingListView(MappingBaseView,
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        include_inverse_param = request.GET.get('include_inverse_mappings', 'false')
-        self.include_inverse_mappings = 'true' == include_inverse_param
         self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        self.object_list = self.filter_queryset(self.get_queryset())
-        if self.include_inverse_mappings:
-            self.object_list = list(chain(self.object_list, self.filter_queryset(self.get_inverse_queryset())))
-
-        # Switch between paginated or standard style responses
-        page = self.paginate_queryset(self.object_list)
-        if page is not None:
-            serializer = self.get_pagination_serializer(page)
-        else:
-            serializer = self.get_serializer(self.object_list, many=True)
-
-        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         self.permission_classes = (CanEditParentDictionary,)
@@ -130,18 +114,9 @@ class MappingListView(MappingBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
-        all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
         if not self.include_retired:
             queryset = queryset.filter(~Q(retired=True))
-        queryset = queryset.filter(id__in=all_children)
-        return queryset
-
-    def get_inverse_queryset(self):
-        if not self.parent_resource:
-            return EmptyQuerySet()
-        queryset = super(ConceptDictionaryMixin, self).get_queryset()
-        queryset = queryset.filter(to_concept=self.parent_resource)
         return queryset
 
 
