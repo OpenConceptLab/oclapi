@@ -13,7 +13,7 @@ from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionary
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
 from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
@@ -126,6 +126,10 @@ class SourceExtraRetrieveUpdateDestroyView(ConceptDictionaryExtraRetrieveUpdateD
     concept_dictionary_version_class = SourceVersion
 
 
+RELEASED_PARAM = 'released'
+PROCESSING_PARAM = 'processing'
+
+
 class SourceVersionBaseView(ResourceVersionMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
@@ -143,9 +147,13 @@ class SourceVersionBaseView(ResourceVersionMixin):
 class SourceVersionListView(SourceVersionBaseView,
                             mixins.CreateModelMixin,
                             ListWithHeadersMixin):
+    released_filter = None
+    processing_filter = None
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = SourceVersionDetailSerializer if self.is_verbose(request) else SourceVersionListSerializer
+        self.released_filter = parse_boolean_query_param(request, RELEASED_PARAM, self.released_filter)
+        self.processing_filter = parse_boolean_query_param(request, PROCESSING_PARAM, self.processing_filter)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -167,6 +175,14 @@ class SourceVersionListView(SourceVersionBaseView,
                                 headers=headers)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        queryset = super(SourceVersionListView, self).get_queryset()
+        if self.processing_filter is not None:
+            queryset = queryset.filter(_ocl_processing=self.processing_filter)
+        if self.released_filter is not None:
+            queryset = queryset.filter(released=self.released_filter)
+        return queryset.order_by('-created_at')
 
 
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):

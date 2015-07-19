@@ -121,6 +121,8 @@ class SourceVersionListSerializer(ResourceVersionSerializer):
     owner = serializers.CharField(source='parent_resource')
     owner_type = serializers.CharField(source='parent_resource_type')
     owner_url = serializers.CharField(source='parent_url')
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
 
     class Meta:
         model = SourceVersion

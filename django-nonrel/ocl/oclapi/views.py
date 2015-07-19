@@ -32,6 +32,16 @@ def parse_updated_since_param(request):
     return None
 
 
+def parse_boolean_query_param(request, param, default=None):
+    val = request.QUERY_PARAMS.get(param, default)
+    if val is None:
+        return None
+    for b in [True, False]:
+        if str(b).lower() == val.lower():
+            return b
+    return None
+
+
 class BaseAPIView(generics.GenericAPIView):
     """
     An extension of generics.GenericAPIView that:
