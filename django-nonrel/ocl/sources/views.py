@@ -24,6 +24,8 @@ INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 LIMIT_PARAM = 'limit'
 INCLUDE_RETIRED_PARAM = 'includeRetired'
+OFFSET_PARAM = 'offset'
+DEFAULT_OFFSET = 0
 
 logger = logging.getLogger('oclapi')
 
@@ -59,6 +61,11 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         data = serializer.data
 
         source_version = None
+        offset = request.QUERY_PARAMS.get(OFFSET_PARAM, DEFAULT_OFFSET)
+        try:
+            offset = int(offset)
+        except ValueError:
+            offset = DEFAULT_OFFSET
         limit = settings.REST_FRAMEWORK.get('MAX_PAGINATE_BY', self.paginate_by)
         include_retired = False
         include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
@@ -80,7 +87,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
             queryset = queryset.filter(id__in=source_version_concepts)
-            queryset = queryset[0:limit]
+            queryset = queryset[offset:offset+limit]
             serializer = ConceptVersionDetailSerializer(queryset, many=True)
             data['concepts'] = serializer.data
 
@@ -92,7 +99,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             queryset = queryset.filter(id__in=all_children)
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset[0:limit]
+            queryset = queryset[offset:offset+limit]
             serializer = MappingDetailSerializer(queryset, many=True)
             data['mappings'] = serializer.data
 
