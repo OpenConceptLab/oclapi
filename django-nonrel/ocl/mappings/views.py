@@ -91,6 +91,10 @@ class MappingListView(MappingBaseView,
     solr_fields = {}
     filter_backends = [SourceRestrictedMappingsFilter,]
     solr_fields = {
+        'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
+        'concept': {'sortable': False, 'filterable': True, 'facet': False},
+        'fromConcept': {'sortable': False, 'filterable': True, 'facet': False},
+        'toConcept': {'sortable': False, 'filterable': True, 'facet': False},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'mapType': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
@@ -139,6 +143,10 @@ class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
     filter_backends = [PublicMappingsSearchFilter,]
     queryset = Mapping.objects.filter(is_active=True)
     solr_fields = {
+        'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
+        'concept': {'sortable': False, 'filterable': True, 'facet': False},
+        'fromConcept': {'sortable': False, 'filterable': True, 'facet': False},
+        'toConcept': {'sortable': False, 'filterable': True, 'facet': False},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'mapType': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
