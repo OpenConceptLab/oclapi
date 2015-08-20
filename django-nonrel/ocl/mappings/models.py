@@ -30,7 +30,7 @@ class Mapping(BaseModel):
         if not (self.to_concept or (self.to_source and self.to_concept_code)):
             messages.append("Must specify either 'to_concept' or 'to_source' & 'to_concept_code")
         if self.to_concept and (self.to_source or self.to_concept_code):
-            messages.append("Must specify one of 'to_concept' or 'to_source' & 'to_concept_code'.  Cannot specify both.")
+            messages.append("Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both.")
         if messages:
             raise ValidationError(' '.join(messages))
 

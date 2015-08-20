@@ -273,15 +273,23 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
     def get(self, request, *args, **kwargs):
         version = self.get_object()
-        logger.debug('Source Export requested for version %s' % version)
+        logger.debug('Export requested for source version %s - Requesting AWS-S3 key' % version)
         key = version.get_export_key()
         url, status = None, 204
         if key:
+            logger.debug('   Key retreived for source version %s - Generating URL' % version)
             url, status = key.generate_url(60), 200
+            logger.debug('   URL retreived for source version %s - Responding to client' % version)
         else:
+            logger.debug('   Key does not exist for source version %s' % version)
             export_source.delay(version.id)
         response = HttpResponse(status=status)
         response['exportURL'] = url
+
+        # Set headers to ensure sure response is not cached by a client
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
         return response
 
     def post(self, request, *args, **kwargs):
