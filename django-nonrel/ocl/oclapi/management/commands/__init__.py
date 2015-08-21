@@ -31,12 +31,17 @@ class ImportCommand(BaseCommand):
                     action='store',
                     dest='source_id',
                     default=None,
-                    help='Import to this source.'),
+                    help='Mongo UUID of the source into which to import concepts.'),
         make_option('--create-source-version',
                     action='store',
                     dest='new_version',
                     default=None,
                     help='Import to new version of the specified source.'),
+        make_option('--retire-missing-records',
+                    action='store_true',
+                    dest='deactivate_old_records',
+                    default=None,
+                    help='Retires all concepts/mappings in the specified source that are not included in the import file.'),
     )
 
     def handle(self, *args, **options):
