@@ -138,6 +138,20 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         return errors
 
     @classmethod
+    def unretire(cls, concept, user):
+        if not concept.retired:
+            return {'__all__': 'Concept is already not retired'}
+        latest_version = ConceptVersion.get_latest_version_of(concept)
+        unretired_version = latest_version.clone()
+        unretired_version.retired = False
+        unretired_version.update_comment = 'Concept was un-retired'
+        errors = ConceptVersion.persist_clone(unretired_version, user)
+        if not errors:
+            concept.retired = False
+            concept.save()
+        return errors
+
+    @classmethod
     def count_for_source(cls, src, is_active=True, retired=False):
         return cls.objects.filter(parent_id=src.id, is_active=is_active, retired=retired)
 
