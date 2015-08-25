@@ -14,7 +14,7 @@ from mappings.serializers import MappingListSerializer
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
-from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin, parse_updated_since_param
+from oclapi.views import ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView, ChildResourceMixin, parse_updated_since_param, ResourceVersionMixin
 from sources.models import SourceVersion
 
 INCLUDE_RETIRED_PARAM = 'includeRetired'
@@ -185,7 +185,7 @@ class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
         return ConceptVersion.objects.filter(versioned_object_id=self.parent_resource.id, is_active=True)
 
 
-class ConceptVersionBaseView(VersionedResourceChildMixin):
+class ConceptVersionMixin():
     lookup_field = 'concept_version'
     pk_field = 'mnemonic'
     model = ConceptVersion
@@ -193,19 +193,8 @@ class ConceptVersionBaseView(VersionedResourceChildMixin):
     permission_classes = (CanViewParentDictionary,)
     child_list_attribute = 'concepts'
 
-    def get_serializer_context(self):
-        context = {'request': self.request}
-        if self.request.GET.get('verbose'):
-            context.update({'verbose': True})
-        if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
-            if self.request.GET.get('include_indirect_mappings'):
-                context.update({'include_indirect_mappings': True})
-            if self.request.GET.get('include_direct_mappings'):
-                context.update({'include_direct_mappings': True})
-        return context
 
-
-class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
+class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin, ListWithHeadersMixin):
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
     filter_backends = [LimitSourceVersionFilter,]
@@ -224,6 +213,17 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
     updated_since = None
     include_retired = False
 
+    def get_serializer_context(self):
+        context = {'request': self.request}
+        if self.request.GET.get('verbose'):
+            context.update({'verbose': True})
+        if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
+            if self.request.GET.get('include_indirect_mappings'):
+                context.update({'include_indirect_mappings': True})
+            if self.request.GET.get('include_direct_mappings'):
+                context.update({'include_direct_mappings': True})
+        return context
+
     def get(self, request, *args, **kwargs):
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
@@ -240,7 +240,8 @@ class ConceptVersionListView(ConceptVersionBaseView, ListWithHeadersMixin):
         return queryset
 
 
-class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
+class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, RetrieveAPIView):
+    lookup_field = 'concept_version'
     serializer_class = ConceptVersionDetailSerializer
     permission_classes = (CanViewParentDictionary,)
     versioned_object = None
@@ -262,7 +263,8 @@ class ConceptVersionRetrieveView(ConceptVersionBaseView, RetrieveAPIView):
     def get_object(self, queryset=None):
         if self.versioned_object:
             queryset = self.get_queryset()
-            filter_kwargs = {'versioned_object_id': self.versioned_object.id}
+            concept_version_identifier = self.kwargs.get(self.lookup_field)
+            filter_kwargs = {'versioned_object_id': self.versioned_object.id, self.pk_field: concept_version_identifier}
             return get_object_or_404(queryset, **filter_kwargs)
         return super(ConceptVersionRetrieveView, self).get_object()
 
