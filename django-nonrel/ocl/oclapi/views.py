@@ -318,8 +318,9 @@ class ResourceVersionMixin(BaseAPIView, PathWalkerMixin):
 
     def initialize(self, request, path_info_segment, **kwargs):
         super(ResourceVersionMixin, self).initialize(request, path_info_segment, **kwargs)
-        self.versioned_object_path_info = self.get_parent_in_path(path_info_segment)
-        self.versioned_object = self.get_object_for_path(self.versioned_object_path_info, request)
+        if not self.versioned_object:
+            self.versioned_object_path_info = self.get_parent_in_path(path_info_segment)
+            self.versioned_object = self.get_object_for_path(self.versioned_object_path_info, request)
 
     def get_queryset(self):
         queryset = super(ResourceVersionMixin, self).get_queryset()

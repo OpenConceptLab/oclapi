@@ -262,8 +262,10 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
 
     def get_object(self, queryset=None):
         if self.versioned_object:
-            queryset = self.get_queryset()
             concept_version_identifier = self.kwargs.get(self.lookup_field)
+            if not concept_version_identifier:
+                return ConceptVersion.get_latest_version_of(self.versioned_object)
+            queryset = self.get_queryset()
             filter_kwargs = {'versioned_object_id': self.versioned_object.id, self.pk_field: concept_version_identifier}
             return get_object_or_404(queryset, **filter_kwargs)
         return super(ConceptVersionRetrieveView, self).get_object()
