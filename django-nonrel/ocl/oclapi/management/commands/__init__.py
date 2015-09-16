@@ -31,12 +31,22 @@ class ImportCommand(BaseCommand):
                     action='store',
                     dest='source_id',
                     default=None,
-                    help='Import to this source.'),
+                    help='Mongo UUID of the source into which to import concepts.'),
         make_option('--create-source-version',
                     action='store',
                     dest='new_version',
                     default=None,
                     help='Import to new version of the specified source.'),
+        make_option('--retire-missing-records',
+                    action='store_true',
+                    dest='deactivate_old_records',
+                    default=None,
+                    help='Retires all concepts/mappings in the specified source that are not included in the import file.'),
+        make_option('--test-only',
+                    action='store_true',
+                    dest='test-only',
+                    default=False,
+                    help='If true, describes record diffs and actions that would be taken to reconcile differences without executing them.'),
     )
 
     def handle(self, *args, **options):
@@ -66,6 +76,11 @@ class ImportCommand(BaseCommand):
         except Token.DoesNotExist:
             raise CommandError('Invalid token.')
 
+        # Set test status -- if true, process import without changing the underlying database
+        self.test_mode = False
+        if options['test-only']:
+            self.test_mode = True
+
         permission = HasPrivateAccess()
         if not permission.has_object_permission(MockRequest(user), None, source):
             raise CommandError('User does not have permission to edit source.')
@@ -77,8 +92,8 @@ class ImportCommand(BaseCommand):
             total = sum(1 for line in input_file)
             options['total'] = total
             input_file.seek(0)
-            self.stdout.write('Adding/updating %d new records...\n' % total)
-            logger.info('Adding/updating %d new records...' % total)
+            self.stdout.write('Importing %d new record(s)...\n' % total)
+            logger.info('Importing %d new record(s)...' % total)
         except IOError:
             raise CommandError('Could not open input file %s' % input_file)
 
