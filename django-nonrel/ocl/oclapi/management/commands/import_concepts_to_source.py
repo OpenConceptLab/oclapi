@@ -12,12 +12,12 @@ __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
 
-class IllegalInputException(BaseException):
+class IllegalInputException(Exception):
     """ Exception for invalid JSON read from input file """
     pass
 
 
-class InvalidStateException(BaseException):
+class InvalidStateException(Exception):
     """ Exception for invalid state of concept version within source """
     pass
 
@@ -65,7 +65,7 @@ class Command(ImportCommand):
                 new_version.save()
                 self.source_version = new_version
             except Exception as exc:
-                raise CommandError('Failed to create new source version due to %s' % exc.message)
+                raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
         # Load the JSON file line by line and import each line as a concept
         total = options.get('total', '(Unknown)')
@@ -79,10 +79,13 @@ class Command(ImportCommand):
             data = None
             try:
                 data = json.loads(line)
+                if not data:
+                    self.stdout.write('\nEmpty JSON line, skipping it...\n%s\n' % line)
+                    logger.info('Empty JSON line, skipping it... %s' % line)
+                    self.count_action(self.IMPORT_ACTION_SKIP)
             except ValueError as exc:
-                self.stderr.write('\n%s' % exc.message)
-                self.stderr.write('\nInvalid JSON line: %s. Skipping it...\n' % line)
-                logger.warning('%s, invalid JSON line: %s. Skipping it...' % (exc.message, line))
+                self.stderr.write('\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
+                logger.warning('Skipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
                 self.count_action(self.IMPORT_ACTION_SKIP)
 
             # Process the import for the current JSON line
@@ -91,19 +94,15 @@ class Command(ImportCommand):
                     update_action = self.handle_concept(source, data)
                     self.count_action(update_action)
                 except IllegalInputException as exc:
-                    self.stderr.write('\n%s' % exc.message)
+                    self.stderr.write('\n%s' % exc.args[0])
                     self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
                     logger.warning(
-                        '%s, failed to parse line %s. Skipping it...' % (exc.message, data))
+                        '%s, failed to parse line %s. Skipping it...' % (exc.args[0], data))
                     self.count_action(self.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.message)
-                    logger.warning('Source is in an invalid state: %s' % exc.message)
+                    self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.args[0])
+                    logger.warning('Source is in an invalid state: %s' % exc.args[0])
                     self.count_action(self.IMPORT_ACTION_SKIP)
-            else:
-                self.stderr.write('\nEmpty JSON line, skipping it...\n%s\n' % line)
-                logger.info('Empty JSON line, skipping it... %s' % line)
-                self.count_action(self.IMPORT_ACTION_SKIP)
 
             # Simple progress bar
             if (cnt % 10) == 0:
@@ -120,7 +119,7 @@ class Command(ImportCommand):
                     self.remove_concept_version(version_id)
                     self.count_action(self.IMPORT_ACTION_DEACTIVATE)
                 except InvalidStateException as exc:
-                    self.stderr.write('Failed to inactivate concept! %s' % exc.message)
+                    self.stderr.write('Failed to inactivate concept! %s' % exc.args[0])
         else:
             self.stdout.write('\nSkipping deactivation loop...\n')
             logger.info('Skipping deactivation loop...')
