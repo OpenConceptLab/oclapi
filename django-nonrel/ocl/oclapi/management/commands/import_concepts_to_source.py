@@ -8,7 +8,7 @@ from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSe
 from oclapi.management.commands import MockRequest, ImportCommand
 from sources.models import SourceVersion
 
-__author__ = 'misternando'
+__author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
 
@@ -73,20 +73,36 @@ class Command(ImportCommand):
         self.concept_version_ids = set(self.source_version.concepts)
         cnt = 0
         for line in input_file:
-            # Process the import for the current JSON line
+
+            # Load the next JSON line
             cnt += 1
-            data = json.loads(line)
+            data = None
             try:
-                update_action = self.handle_concept(source, data)
-                self.count_action(update_action)
-            except IllegalInputException as exc:
+                data = json.loads(line)
+            except ValueError as exc:
                 self.stderr.write('\n%s' % exc.message)
-                self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
-                logger.warning('%s, failed to parse line %s. Skipping it...' % (exc.message, data))
+                self.stderr.write('\nInvalid JSON line: %s. Skipping it...\n' % line)
+                logger.warning('%s, invalid JSON line: %s. Skipping it...' % (exc.message, line))
                 self.count_action(self.IMPORT_ACTION_SKIP)
-            except InvalidStateException as exc:
-                self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.message)
-                logger.warning('Source is in an invalid state: %s' % exc.message)
+
+            # Process the import for the current JSON line
+            if data:
+                try:
+                    update_action = self.handle_concept(source, data)
+                    self.count_action(update_action)
+                except IllegalInputException as exc:
+                    self.stderr.write('\n%s' % exc.message)
+                    self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
+                    logger.warning(
+                        '%s, failed to parse line %s. Skipping it...' % (exc.message, data))
+                    self.count_action(self.IMPORT_ACTION_SKIP)
+                except InvalidStateException as exc:
+                    self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.message)
+                    logger.warning('Source is in an invalid state: %s' % exc.message)
+                    self.count_action(self.IMPORT_ACTION_SKIP)
+            else:
+                self.stderr.write('\nEmpty JSON line, skipping it...\n%s\n' % line)
+                logger.info('Empty JSON line, skipping it... %s' % line)
                 self.count_action(self.IMPORT_ACTION_SKIP)
 
             # Simple progress bar
@@ -221,7 +237,6 @@ class Command(ImportCommand):
 
     def remove_concept_version(self, version_id):
         """ Deactivates a concept """
-        # TODO: remove_concept_version retires AND inactivates. Should only retire.
         try:
             version = ConceptVersion.objects.get(id=version_id)
             if not self.test_mode:
@@ -244,7 +259,8 @@ class Command(ImportCommand):
         for individual_action_value in self.ORDERED_ACTION_LIST:
             if combined_action_value >= individual_action_value:
                 if combined_action_text:
-                    combined_action_text += ' + ' + self.IMPORT_ACTION_NAMES[individual_action_value]
+                    combined_action_text += (
+                        ' + ' + self.IMPORT_ACTION_NAMES[individual_action_value])
                 else:
                     combined_action_text = self.IMPORT_ACTION_NAMES[individual_action_value]
                 combined_action_value -= individual_action_value
