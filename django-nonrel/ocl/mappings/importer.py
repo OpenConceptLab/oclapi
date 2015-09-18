@@ -1,156 +1,234 @@
+""" Mappings importer module """
 import json
 import logging
 from django.core.management import CommandError
 from django.db.models import Q
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
-from oclapi.management.commands import MockRequest
+from oclapi.management.commands import MockRequest, ImportActionHelper
 from sources.models import SourceVersion
 
-__author__ = 'misternando'
+__author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
 
-class IllegalInputException(BaseException):
+class IllegalInputException(Exception):
+    """ Exception for invalid JSON read from input file """
     pass
 
 
-class InvalidStateException(BaseException):
+class InvalidStateException(Exception):
+    """ Exception for invalid state of mapping within source """
     pass
 
 
 class MappingsImporter(object):
+    """ Class to import mappings """
 
     def __init__(self, source, mappings_file, output_stream, error_stream, user):
+        """ Initialize mapping importer """
         self.source = source
         self.mappings_file = mappings_file
         self.stdout = output_stream
         self.stderr = error_stream
         self.user = user
         self.count = 0
-        self.add_count = 0
-        self.update_count = 0
-        self.remove_count = 0
+        self.test_mode = False
+        self.action_count = {}
 
-    def log_counters(self):
-        logger.info('progress %06d read, %06d added, %06d updated, %06d removed' %
-            (self.count, self.add_count, self.update_count, self.remove_count))
-
-    def import_mappings(self, new_version=False, total=0, **kwargs):
+    def import_mappings(self, new_version=False, total=0, test_mode=False, **kwargs):
+        """ Main mapping importer loop """
         logger.info('Import mappings to source...')
+        self.test_mode = test_mode
+
+        # Retrieve latest source version and, if specified, create a new one
         self.source_version = SourceVersion.get_latest_version_of(self.source)
         if new_version:
             try:
-                new_version = SourceVersion.for_base_object(self.source, new_version, previous_version=self.source_version)
+                new_version = SourceVersion.for_base_object(
+                    self.source, new_version, previous_version=self.source_version)
                 new_version.seed_concepts()
                 new_version.seed_mappings()
                 new_version.full_clean()
                 new_version.save()
                 self.source_version = new_version
-            except Exception as e:
-                raise CommandError('Failed to create new source version due to %s' % e.message)
+            except Exception as exc:
+                raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
+        # Load the JSON file line by line and import each line
         self.mapping_ids = set(self.source_version.mappings)
         self.count = 0
         for line in self.mappings_file:
-            data = json.loads(line)
+
+            # Load the next JSON line
             self.count += 1
-            # simple progress bar
+            data = None
+            try:
+                data = json.loads(line)
+            except ValueError as exc:
+                self.stderr.write(
+                    '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
+                logger.warning('Skipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
+                self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+
+            # Process the import for the current JSON line
+            if data:
+                try:
+                    update_action = self.handle_mapping(data)
+                    self.count_action(update_action)
+                except IllegalInputException as exc:
+                    self.stderr.write('\n%s' % exc.args[0])
+                    self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
+                    logger.warning(
+                        '%s, failed to parse line %s. Skipping it...' % (exc.args[0], data))
+                    self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+                except InvalidStateException as exc:
+                    self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.args[0])
+                    logger.warning('%s, Source is in an invalid state!' % exc.args[0])
+                    self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+
+            # Simple progress bars
             if (self.count % 10) == 0:
-                self.stdout.write('%d of %d' % (self.count, total), ending='\r')
+                str_log = ImportActionHelper.get_progress_descriptor(
+                    self.count, total, self.action_count)
+                self.stdout.write(str_log, ending='\r')
                 self.stdout.flush()
-            try:
-                self.handle_mapping(data)
-            except IllegalInputException as e:
-                self.stderr.write('\n%s' % e)
-                self.stderr.write('\nFailed to parse line %s.  Skipping it...\n' % data)
-                logger.warning('%s, failed to parse line %s.  Skipping it...' % (e.message, data))
-            except InvalidStateException as e:
-                self.stderr.write('\nSource is in an invalid state!')
-                self.stderr.write('\n%s\n' % e)
-                logger.warning('%s, Source is in an invalid state!' % e.message)
-            if (self.count % 1000) == 0:
-                self.log_counters()
+                if (self.count % 1000) == 0:
+                    logger.info(str_log)
 
-        self.log_counters()
-        self.stdout.write('\nDeactivating old mappings...\n')
-        logger.info('Deactivating old mappings...')
+        # Import complete - display final progress bar
+        str_log = ImportActionHelper.get_progress_descriptor(self.count, total, self.action_count)
+        self.stdout.write(str_log, ending='\r')
+        self.stdout.flush()
+        logger.info(str_log)
 
-        deactivated = 0
-        for mapping_id in self.mapping_ids:
-            try:
-                removed = self.remove_mapping(mapping_id)
-                if removed:
-                    deactivated += 1
-            except InvalidStateException as e:
-                self.stderr.write('Failed to inactivate mapping! %s' % e)
-        self.stdout.write('\nDeactivated %s old mappings\n' % deactivated)
+        # Deactivate old records
+        if kwargs['deactivate_old_records']:
+            self.stdout.write('\nDeactivating old mappings...\n')
+            logger.info('Deactivating old mappings...')
+            for mapping_id in self.mapping_ids:
+                try:
+                    if self.remove_mapping(mapping_id):
+                        self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+                except InvalidStateException as exc:
+                    self.stderr.write('Failed to inactivate mapping! %s' % exc.args[0])
+        else:
+            self.stdout.write('\nSkipping deactivation loop...\n')
+            logger.info('Skipping deactivation loop...')
 
-        self.log_counters()
+        # Display final summary
         self.stdout.write('\nFinished importing mappings!\n')
         logger.info('Finished importing mappings!')
+        str_log = ImportActionHelper.get_progress_descriptor(self.count, total, self.action_count)
+        self.stdout.write(str_log, ending='\r')
+        logger.info(str_log)
 
     def handle_mapping(self, data):
-        serializer = MappingCreateSerializer(data=data, context={'request': MockRequest(self.user)})
+        """ Handle importing of a single mapping """
+        update_action = ImportActionHelper.IMPORT_ACTION_NONE
+
+        # Parse the mapping JSON to ensure that it is a valid mapping (not just valid JSON)
+        serializer = MappingCreateSerializer(
+            data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException('Could not parse mapping %s due to %s' % (data,serializer.errors))
+            raise IllegalInputException(
+                'Could not parse mapping %s due to %s' % (data, serializer.errors))
+
+        # If mapping exists, update the mapping with the new data
         try:
             mapping = serializer.save(commit=False)
-            query = Q(parent_id=self.source.id, map_type=mapping.map_type, from_concept=mapping.from_concept)
-            if mapping.to_concept:
+            query = Q(parent_id=self.source.id, map_type=mapping.map_type,
+                      from_concept=mapping.from_concept)
+            if mapping.to_concept:  # Internal mapping
                 query = query & Q(to_concept=mapping.to_concept)
-            else:
-                query = query & Q(to_source_id=mapping.to_source.id, to_concept_code=mapping.to_concept_code, to_concept_name=mapping.to_concept_name)
+            else:   # External mapping
+                query = query & Q(to_source_id=mapping.to_source.id,
+                                  to_concept_code=mapping.to_concept_code,
+                                  to_concept_name=mapping.to_concept_name)
             mapping = Mapping.objects.get(query)
-        except Mapping.DoesNotExist:
-            self.add_mapping(data)
-            return
-        if mapping.id not in self.source_version.mappings:
-            raise InvalidStateException("Source %s has mapping %s, but source version %s does not." %
-                                        (self.source.mnemonic, mapping.id, self.source_version.mnemonic))
 
-        self.update_mapping(mapping, data)
-        self.mapping_ids.remove(mapping.id)
-        return
+            # Mapping exists, but not in this source version
+            if mapping.id not in self.source_version.mappings:
+                raise InvalidStateException(
+                    "Source %s has mapping %s, but source version %s does not." %
+                    (self.source.mnemonic, mapping.id, self.source_version.mnemonic))
+
+            # Finish updating the mapping
+            update_action = self.update_mapping(mapping, data)
+            self.mapping_ids.remove(mapping.id)
+
+        # Mapping does not exist, so create new one
+        except Mapping.DoesNotExist:
+            update_action = self.add_mapping(data)
+
+        # Return the action performed
+        return update_action
 
     def add_mapping(self, data):
-        serializer = MappingCreateSerializer(data=data, context={'request': MockRequest(self.user)})
+        """ Create a new mapping """
+        self.stdout.write('Adding new mapping: %s' % data)
+        serializer = MappingCreateSerializer(
+            data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
-        serializer.save(force_insert=True, parent_resource=self.source)
-        if not serializer.is_valid():
-            raise IllegalInputException('Could not persist new mapping due to %s' % serializer.errors)
-        self.add_count += 1
+            raise IllegalInputException(
+                'Could not persist new mapping due to %s' % serializer.errors)
+        if not self.test_mode:
+            serializer.save(force_insert=True, parent_resource=self.source)
+            if not serializer.is_valid():
+                raise IllegalInputException(
+                    'Could not persist new mapping due to %s' % serializer.errors)
+        return ImportActionHelper.IMPORT_ACTION_ADD
 
     def update_mapping(self, mapping, data):
+        """ Update an existing mapping """
+
+        # Generate the diff
         diffs = {}
         if 'retired' in data and mapping.retired != data['retired']:
             diffs['retired'] = {'was': mapping.retired, 'is': data['retired']}
         original = mapping.clone(self.user)
-        serializer = MappingUpdateSerializer(mapping, data=data, context={'request': MockRequest(self.user)})
+        serializer = MappingUpdateSerializer(
+            mapping, data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException('Could not parse mapping to update mapping %s due to %s.' % (mapping.id, serializer.errors))
-        if serializer.is_valid():
-            mapping = serializer.object
-            if 'retired' in diffs:
-                mapping.retired = data['retired']
-            diffs.update(Mapping.diff(original, mapping))
-            if diffs:
+            raise IllegalInputException(
+                'Could not parse mapping to update mapping %s due to %s.' %
+                (mapping.id, serializer.errors))
+        mapping = serializer.object
+        if 'retired' in diffs:
+            mapping.retired = data['retired']
+        diffs.update(Mapping.diff(original, mapping))
+
+        # Update concept if different
+        if diffs:
+            if not self.test_mode:
                 serializer.save()
-                self.update_count += 1
                 if not serializer.is_valid():
-                    raise IllegalInputException('Could not persist update to mapping %s due to %s' % (mapping.id, serializer.errors))
+                    raise IllegalInputException(
+                        'Could not persist update to mapping %s due to %s' %
+                        (mapping.id, serializer.errors))
+            return ImportActionHelper.IMPORT_ACTION_UPDATE
+
+        # No diff, so do nothing
+        return ImportActionHelper.IMPORT_ACTION_NONE
 
     def remove_mapping(self, mapping_id):
+        """ Deactivates a mapping """
         try:
             mapping = Mapping.objects.get(id=mapping_id)
             if mapping.is_active:
-                mapping.is_active = False
-                mapping.save()
-                self.remove_count += 1
-                return True
-            return False
+                if not self.test_mode:
+                    mapping.is_active = False
+                    mapping.save()
+                return ImportActionHelper.IMPORT_ACTION_DEACTIVATE
+            else:
+                return ImportActionHelper.IMPORT_ACTION_NONE
         except:
-            raise InvalidStateException("Cannot delete mapping %s because it doesn't exist!" % mapping_id)
+            raise InvalidStateException(
+                "Cannot deactivate mapping %s because it doesn't exist!" % mapping_id)
 
-
+    def count_action(self, update_action):
+        """ Increments the counter for the specified action """
+        if update_action in self.action_count:
+            self.action_count[update_action] += 1
+        else:
+            self.action_count[update_action] = 1

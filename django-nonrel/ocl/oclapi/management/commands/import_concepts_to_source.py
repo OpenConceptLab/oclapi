@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management import CommandError
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSerializer
-from oclapi.management.commands import MockRequest, ImportCommand
+from oclapi.management.commands import MockRequest, ImportCommand, ImportActionHelper
 from sources.models import SourceVersion
 
 __author__ = 'misternando,paynejd'
@@ -26,28 +26,6 @@ class Command(ImportCommand):
     """ Command to import JSON lines concept file into OCL """
     help = 'Import concepts from a JSON file into a source'
 
-    # Import Action Constants - can be combined if multiple actions performed on a concept
-    IMPORT_ACTION_NONE = 0
-    IMPORT_ACTION_ADD = 0b1  # 1
-    IMPORT_ACTION_UPDATE = 0b10  # 2
-    IMPORT_ACTION_RETIRE = 0b100  # 4
-    IMPORT_ACTION_UNRETIRE = 0b1000  # 8
-    IMPORT_ACTION_DEACTIVATE = 0b10000  # 16
-    IMPORT_ACTION_SKIP = 0b100000  # 32
-
-    IMPORT_ACTION_NAMES = {
-        IMPORT_ACTION_NONE: 'no action/no diff',
-        IMPORT_ACTION_ADD: 'added',
-        IMPORT_ACTION_UPDATE: 'updated',
-        IMPORT_ACTION_RETIRE: 'retired',
-        IMPORT_ACTION_UNRETIRE: 'unretired',
-        IMPORT_ACTION_DEACTIVATE: 'deactivated',
-        IMPORT_ACTION_SKIP: 'skipped due to error',
-    }
-
-    ORDERED_ACTION_LIST = [32, 16, 8, 4, 2, 1]
-
-
     def do_import(self, user, source, input_file, options):
         """ Performs the import of JSON lines concept file into OCL """
         self.action_count = {}
@@ -67,7 +45,7 @@ class Command(ImportCommand):
             except Exception as exc:
                 raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
-        # Load the JSON file line by line and import each line as a concept
+        # Load the JSON file line by line and import each line
         total = options.get('total', '(Unknown)')
         self.user = User.objects.filter(is_superuser=True)[0]
         self.concept_version_ids = set(self.source_version.concepts)
@@ -79,14 +57,11 @@ class Command(ImportCommand):
             data = None
             try:
                 data = json.loads(line)
-                if not data:
-                    self.stdout.write('\nEmpty JSON line, skipping it...\n%s\n' % line)
-                    logger.info('Empty JSON line, skipping it... %s' % line)
-                    self.count_action(self.IMPORT_ACTION_SKIP)
             except ValueError as exc:
-                self.stderr.write('\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
+                self.stderr.write(
+                    '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
                 logger.warning('Skipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
-                self.count_action(self.IMPORT_ACTION_SKIP)
+                self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
             # Process the import for the current JSON line
             if data:
@@ -98,17 +73,25 @@ class Command(ImportCommand):
                     self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
                     logger.warning(
                         '%s, failed to parse line %s. Skipping it...' % (exc.args[0], data))
-                    self.count_action(self.IMPORT_ACTION_SKIP)
+                    self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
                     self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.args[0])
                     logger.warning('Source is in an invalid state: %s' % exc.args[0])
-                    self.count_action(self.IMPORT_ACTION_SKIP)
+                    self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
             # Simple progress bar
             if (cnt % 10) == 0:
-                self.stdout.write(
-                    self.get_progress_descriptor(cnt, total, self.action_count), ending='\r')
+                str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+                self.stdout.write(str_log, ending='\r')
                 self.stdout.flush()
+                if (self.count % 1000) == 0:
+                    logger.info(str_log)
+
+        # Import complete - display final progress bar
+        str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+        self.stdout.write(str_log, ending='\r')
+        self.stdout.flush()
+        logger.info(str_log)
 
         # Deactivate old records
         if options['deactivate_old_records']:
@@ -117,37 +100,37 @@ class Command(ImportCommand):
             for version_id in self.concept_version_ids:
                 try:
                     self.remove_concept_version(version_id)
-                    self.count_action(self.IMPORT_ACTION_DEACTIVATE)
+                    self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
                 except InvalidStateException as exc:
                     self.stderr.write('Failed to inactivate concept! %s' % exc.args[0])
         else:
             self.stdout.write('\nSkipping deactivation loop...\n')
             logger.info('Skipping deactivation loop...')
 
+        # Display final summary
         self.stdout.write('\nFinished importing concepts!\n')
         logger.info('Finished importing concepts!')
-        self.stdout.write(self.get_progress_descriptor(cnt, total, self.action_count))
-        logger.info(self.get_progress_descriptor(cnt, total, self.action_count))
+        str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+        self.stdout.write(str_log, ending='\r')
+        logger.info(str_log)
 
     def handle_concept(self, source, data):
         """ Adds, updates, retires/unretires a single concept, or skips if no diff """
-        update_action = retire_action = self.IMPORT_ACTION_NONE
+        update_action = retire_action = ImportActionHelper.IMPORT_ACTION_NONE
 
         # Ensure mnemonic included in data
         mnemonic = data['id']
         if not mnemonic:
             raise IllegalInputException('Must specify concept id.')
 
-        # Update the concept with the new data, ignoring retired status until next step
-        # TODO: This does not ignore retired status -- instead it modifies the field without
-        # actually modifying the retired status
+        # If concept exists, update the concept with the new data (ignoring retired status for now)
         try:
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
             concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id,
                                                          id__in=self.source_version.concepts)
             update_action = self.update_concept_version(concept_version, data)
 
-            # Remove id from the concept version list so that we know concept has been handled
+            # Remove ID from the concept version list so that we know concept has been handled
             self.concept_version_ids.remove(concept_version.id)
 
         # Concept does not exist in OCL, so create new one
@@ -181,13 +164,12 @@ class Command(ImportCommand):
                 force_insert=True, parent_resource=source, child_list_attribute='concepts')
             if not serializer.is_valid():
                 raise IllegalInputException('Could not persist new concept %s' % mnemonic)
-        return self.IMPORT_ACTION_ADD
+        return ImportActionHelper.IMPORT_ACTION_ADD
 
     def update_concept_version(self, concept_version, data):
         """ Updates the concept, or skips if no diff. Ignores retired status. """
-        # TODO: update_concept_version must ignore retired status
 
-        # Generate the diff and update if different
+        # Generate the diff
         clone = concept_version.clone()
         serializer = ConceptVersionUpdateSerializer(
             clone, data=data, context={'request': MockRequest(self.user)})
@@ -196,6 +178,8 @@ class Command(ImportCommand):
                 'Could not parse concept to update: %s.' % concept_version.mnemonic)
         new_version = serializer.object
         diffs = ConceptVersion.diff(concept_version, new_version)
+
+        # Update concept if different
         if diffs:
             if 'names' in diffs:
                 diffs['names'] = {'is': data.get('names')}
@@ -207,10 +191,10 @@ class Command(ImportCommand):
                 if not serializer.is_valid():
                     raise IllegalInputException(
                         'Could not persist update to concept: %s' % concept_version.mnemonic)
-            return self.IMPORT_ACTION_UPDATE
+            return ImportActionHelper.IMPORT_ACTION_UPDATE
 
         # No diff, so do nothing
-        return self.IMPORT_ACTION_NONE
+        return ImportActionHelper.IMPORT_ACTION_NONE
 
     def update_concept_retired_status(self, concept, new_retired_state):
         """ Updates and persists a new retired status for a concept """
@@ -218,7 +202,7 @@ class Command(ImportCommand):
         # Do nothing if retired status is unchanged
         concept_version = ConceptVersion.get_latest_version_of(concept)
         if concept_version.retired == new_retired_state:
-            return self.IMPORT_ACTION_NONE
+            return ImportActionHelper.IMPORT_ACTION_NONE
 
         # Retire/un-retire the concept
         if new_retired_state:
@@ -226,52 +210,28 @@ class Command(ImportCommand):
                 errors = Concept.retire(concept, self.user)
                 if errors:
                     raise IllegalInputException('Failed to retire concept due to %s' % errors)
-            return self.IMPORT_ACTION_RETIRE
+            return ImportActionHelper.IMPORT_ACTION_RETIRE
         else:
             if not self.test_mode:
                 errors = Concept.unretire(concept, self.user)
                 if errors:
                     raise IllegalInputException('Failed to un-retire concept due to %s' % errors)
-            return self.IMPORT_ACTION_UNRETIRE
+            return ImportActionHelper.IMPORT_ACTION_UNRETIRE
 
     def remove_concept_version(self, version_id):
         """ Deactivates a concept """
         try:
             version = ConceptVersion.objects.get(id=version_id)
-            if not self.test_mode:
-                version.is_active = False
-                version.save()
+            if version.is_active:
+                if not self.test_mode:
+                    version.is_active = False
+                    version.save()
+                return ImportActionHelper.IMPORT_ACTION_DEACTIVATE
+            else:
+                return ImportActionHelper.IMPORT_ACTION_NONE
         except:
             raise InvalidStateException(
-                "Cannot delete concept version %s because it doesn't exist!" % version_id)
-        return self.IMPORT_ACTION_DEACTIVATE
-
-    def get_action_string(self, combined_action_value):
-        """
-        Returns text name of the action, where action is an integer of one or
-        more of the import actions added together.
-        E.g. if action = 8 + 2, returns "updated + unretired"
-        """
-        if combined_action_value in self.IMPORT_ACTION_NAMES:
-            return self.IMPORT_ACTION_NAMES[combined_action_value]
-        combined_action_text = ''
-        for individual_action_value in self.ORDERED_ACTION_LIST:
-            if combined_action_value >= individual_action_value:
-                if combined_action_text:
-                    combined_action_text += (
-                        ' + ' + self.IMPORT_ACTION_NAMES[individual_action_value])
-                else:
-                    combined_action_text = self.IMPORT_ACTION_NAMES[individual_action_value]
-                combined_action_value -= individual_action_value
-        return combined_action_text
-
-    def get_progress_descriptor(self, current_num, total_num, action_count):
-        """ Returns a string with the current counts of the import process """
-        str_descriptor = '%d of %d -' % (current_num, total_num)
-        for action_value, num in action_count.items():
-            str_descriptor += ' %d %s,' % (num, self.get_action_string(action_value))
-        str_descriptor += '\n'
-        return str_descriptor
+                "Cannot deactivate concept version %s because it doesn't exist!" % version_id)
 
     def count_action(self, update_action):
         """ Increments the counter for the specified action """

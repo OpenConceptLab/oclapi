@@ -8,10 +8,69 @@ from rest_framework.authtoken.models import Token
 from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
 
-__author__ = 'misternando'
+__author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
+
+class ImportActionHelper(object):
+    """ Import action constants """
+
+    # Import action constants can be combined if multiple actions performed on a concept
+    IMPORT_ACTION_NONE = 0
+    IMPORT_ACTION_ADD = 0b1  # 1
+    IMPORT_ACTION_UPDATE = 0b10  # 2
+    IMPORT_ACTION_RETIRE = 0b100  # 4
+    IMPORT_ACTION_UNRETIRE = 0b1000  # 8
+    IMPORT_ACTION_DEACTIVATE = 0b10000  # 16
+    IMPORT_ACTION_SKIP = 0b100000  # 32
+
+    # Names for each action
+    IMPORT_ACTION_NAMES = {
+        IMPORT_ACTION_NONE: 'no action/no diff',
+        IMPORT_ACTION_ADD: 'added',
+        IMPORT_ACTION_UPDATE: 'updated',
+        IMPORT_ACTION_RETIRE: 'retired',
+        IMPORT_ACTION_UNRETIRE: 'unretired',
+        IMPORT_ACTION_DEACTIVATE: 'deactivated',
+        IMPORT_ACTION_SKIP: 'skipped due to error',
+    }
+
+    # Ordered list of actions useful for iterating quickly
+    ORDERED_ACTION_LIST = [32, 16, 8, 4, 2, 1]
+
+    @classmethod
+    def get_action_string(cls, combined_action_value):
+        """
+        Returns text name of the action, where action is an integer of one or
+        more of the import actions added together.
+        E.g. if action = 8 + 2, returns "updated + unretired"
+        """
+        if combined_action_value in ImportActionHelper.IMPORT_ACTION_NAMES:
+            return ImportActionHelper.IMPORT_ACTION_NAMES[combined_action_value]
+        combined_action_text = ''
+        for individual_action_value in ImportActionHelper.ORDERED_ACTION_LIST:
+            if combined_action_value >= individual_action_value:
+                if combined_action_text:
+                    combined_action_text += (
+                        ' + ' + ImportActionHelper.IMPORT_ACTION_NAMES[individual_action_value])
+                else:
+                    combined_action_text = (
+                        ImportActionHelper.IMPORT_ACTION_NAMES[individual_action_value])
+                combined_action_value -= individual_action_value
+        return combined_action_text
+
+    @classmethod
+    def get_progress_descriptor(cls, current_num, total_num, action_count):
+        """ Returns a string with the current counts of the import process """
+        str_descriptor = '%d of %d -' % (current_num, total_num)
+        for action_value, num in action_count.items():
+            str_descriptor += ' %d %s,' % (num, ImportActionHelper.get_action_string(action_value))
+        str_descriptor += '\n'
+        return str_descriptor
+
+
 class MockRequest(object):
+    """ Mock request """
     method = 'POST'
     user = None
 
@@ -20,6 +79,7 @@ class MockRequest(object):
 
 
 class ImportCommand(BaseCommand):
+    """ Import Command """
     args = '--token=[token] --source=[source ID] [input file]'
     option_list = BaseCommand.option_list + (
         make_option('--token',
@@ -46,8 +106,9 @@ class ImportCommand(BaseCommand):
                     action='store_true',
                     dest='test-only',
                     default=False,
-                    help='If true, describes record diffs and actions that would be taken to reconcile differences without executing them.'),
+                    help='If true, describes diffs and actions that would be taken to reconcile differences without executing them.'),
     )
+
 
     def handle(self, *args, **options):
         if len(args) != 1:
