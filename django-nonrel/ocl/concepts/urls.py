@@ -4,7 +4,8 @@ from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, 
 
 __author__ = 'misternando'
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', ConceptCreateView.as_view(), name='concept-create'),
     url(r'^(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
     url(r'^(?P<concept>[a-zA-Z0-9\-\.]+)/atom/$', ConceptFeed()),
@@ -24,4 +25,3 @@ urlpatterns = patterns('',
     url(r'^(?P<concept>[a-zA-Z0-9\-\.]+)/(?P<concept_version>[a-zA-Z0-9\-\.]+)/names/$', ConceptNameListCreateView.as_view(), name='concept-names'),
     url(r'^(?P<concept>[a-zA-Z0-9\-\.]+)/(?P<concept_version>[a-zA-Z0-9\-\.]+)/names/(?P<uuid>[a-zA-Z0-9\-\.]+)/$', ConceptNameRetrieveUpdateDestroyView.as_view(), name='concept-name'),
 )
-

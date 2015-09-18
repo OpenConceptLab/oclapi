@@ -26,7 +26,8 @@ class ConceptListSerializer(serializers.Serializer):
 
 
 class ConceptDetailSerializer(serializers.Serializer):
-    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    id = serializers.CharField(
+        required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     external_id = serializers.CharField(required=False)
     concept_class = serializers.CharField(required=False)
     datatype = serializers.CharField(required=False)
@@ -56,8 +57,13 @@ class ConceptDetailSerializer(serializers.Serializer):
         concept.datatype = attrs.get('datatype', concept.datatype)
         concept.extras = attrs.get('extras', concept.extras)
         concept.retired = attrs.get('retired', concept.retired)
-        concept.names = attrs.get('names', concept.names)  # Is this desired behavior??
-        concept.descriptions = attrs.get('descriptions', concept.descriptions)  # Is this desired behavior??
+
+        # Is this desired behavior??
+        concept.names = attrs.get('names', concept.names)
+
+        # Is this desired behavior??
+        concept.descriptions = attrs.get('descriptions', concept.descriptions)
+
         concept.extras = attrs.get('extras', concept.extras)
         return concept
 
@@ -167,7 +173,8 @@ class ReferencesToVersionsSerializer(ConceptVersionListSerializer):
             if obj.is_current_version:
                 field = ConceptVersion.get_latest_version_of(concept)
             elif obj.source_version:
-                field = ConceptVersion.objects.get(versioned_object_id=concept.id, id__in=obj.source_version.concepts)
+                field = ConceptVersion.objects.get(
+                    versioned_object_id=concept.id, id__in=obj.source_version.concepts)
             else:
                 field = obj.concept_version
         return super(ReferencesToVersionsSerializer, self).to_native(field)
@@ -192,8 +199,13 @@ class ConceptVersionUpdateSerializer(serializers.Serializer):
         instance.extras = attrs.get('extras', instance.extras)
         instance.external_id = attrs.get('external_id', instance.external_id)
         instance.update_comment = attrs.get('update_comment')
-        instance.names = attrs.get('names', instance.names)  # Is this desired behavior??
-        instance.descriptions = attrs.get('descriptions', instance.descriptions)  # Is this desired behavior??
+
+        # Is this desired behavior??
+        instance.names = attrs.get('names', instance.names)
+
+        # Is this desired behavior??
+        instance.descriptions = attrs.get('descriptions', instance.descriptions)
+
         instance.retired = attrs.get('retired', instance.retired)
         return instance
 
@@ -243,14 +255,17 @@ class ConceptDescriptionSerializer(serializers.Serializer):
         concept_desc = instance if instance else LocalizedText()
         concept_desc.name = attrs.get('name', concept_desc.name)
         concept_desc.locale = attrs.get('locale', concept_desc.locale)
-        concept_desc.locale_preferred = attrs.get('locale_preferred', concept_desc.locale_preferred)
+        concept_desc.locale_preferred = attrs.get(
+            'locale_preferred', concept_desc.locale_preferred)
         concept_desc.type = attrs.get('type', concept_desc.type)
         concept_desc.external_id = attrs.get('external_id', concept_desc.external_id)
         return concept_desc
 
 
 class ConceptReferenceCreateSerializer(serializers.Serializer):
-    concept_reference_url = ConceptReferenceField(source='concept', required=True, view_name='conceptversion-detail', lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
+    concept_reference_url = ConceptReferenceField(
+        source='concept', required=True, view_name='conceptversion-detail',
+        lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
     id = serializers.CharField(source='mnemonic', required=False)
     extras = serializers.WritableField(required=False)
 
@@ -270,7 +285,8 @@ class ConceptReferenceCreateSerializer(serializers.Serializer):
                 concept_reference.source_version = concept._source_version
         concept_reference.mnemonic = attrs.get(self.Meta.lookup_field, concept_reference.mnemonic)
         if not concept_reference.mnemonic:
-            concept_reference.mnemonic = "%s..%s" % (concept_reference.concept.parent, concept_reference.concept)
+            concept_reference.mnemonic = "%s..%s" % (concept_reference.concept.parent,
+                                                     concept_reference.concept)
         return concept_reference
 
     def save_object(self, obj, **kwargs):

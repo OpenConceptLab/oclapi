@@ -507,8 +507,10 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(1, len(source_version.concepts))
         self.assertEquals(concept_version.id, source_version.concepts[0])
 
-        self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
-        self.assertEquals(1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=False).count())
+        self.assertEquals(
+            1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
+        self.assertEquals(
+            1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=False).count())
 
         errors = Concept.retire(concept, self.user1)
         self.assertEquals(1, len(errors))
@@ -638,7 +640,7 @@ class ConceptVersionTest(ConceptBaseTest):
         version2.mnemonic = 'version2'
         version2.created_by = self.user1.username
         version2.updated_by = self.user1.username
-        version2.version_created_by=self.user1.username
+        version2.version_created_by = self.user1.username
         version2.full_clean()
         version2.save()
 
@@ -683,7 +685,8 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def setUp(self):
         super(ConceptVersionStaticMethodsTest, self).setUp()
-        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
+        self.concept1 = Concept(
+            mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
         display_name = LocalizedText(name='concept1', locale='en')
         self.concept1.names.append(display_name)
         kwargs = {
@@ -731,7 +734,8 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def test_persist_clone_positive(self):
         self.assertEquals(2, self.concept1.num_versions)
-        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(
+            self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
@@ -757,7 +761,8 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def test_persist_clone_negative__no_user(self):
         self.assertEquals(2, self.concept1.num_versions)
-        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(
+            self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
@@ -771,7 +776,8 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertTrue('version_created_by' in errors)
 
         self.assertEquals(2, self.concept1.num_versions)
-        self.assertEquals(self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+        self.assertEquals(
+            self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
 
 
 class ConceptReferenceBaseTest(ConceptBaseTest):
@@ -837,7 +843,8 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         self.assertEquals(self.concept1.owner_type, concept_reference.owner_type)
         self.assertEquals(self.concept1.display_name, concept_reference.display_name)
         self.assertEquals(self.concept1.display_locale, concept_reference.display_locale)
-        self.assertEquals('/users/user1/sources/source1/concepts/concept1/', concept_reference.concept_reference_url)
+        self.assertEquals('/users/user1/sources/source1/concepts/concept1/',
+                          concept_reference.concept_reference_url)
         self.assertTrue(concept_reference.is_current_version)
 
     def test_create_concept_reference_concept_version__positive(self):
@@ -860,7 +867,8 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         self.assertEquals(self.concept1.owner_type, concept_reference.owner_type)
         self.assertEquals(self.concept1.display_name, concept_reference.display_name)
         self.assertEquals(self.concept1.display_locale, concept_reference.display_locale)
-        self.assertEquals('/users/user1/sources/source1/concepts/concept1/version1/', concept_reference.concept_reference_url)
+        self.assertEquals('/users/user1/sources/source1/concepts/concept1/version1/',
+                          concept_reference.concept_reference_url)
         self.assertFalse(concept_reference.is_current_version)
 
     def test_create_concept_reference_source_version__positive(self):
@@ -884,7 +892,9 @@ class ConceptReferenceTest(ConceptReferenceBaseTest):
         self.assertEquals(self.concept1.owner_type, concept_reference.owner_type)
         self.assertEquals(self.concept1.display_name, concept_reference.display_name)
         self.assertEquals(self.concept1.display_locale, concept_reference.display_locale)
-        self.assertEquals('/users/user1/sources/source1/%s/concepts/concept1/' % source_version.mnemonic, concept_reference.concept_reference_url)
+        self.assertEquals(
+            '/users/user1/sources/source1/%s/concepts/concept1/' % source_version.mnemonic,
+            concept_reference.concept_reference_url)
         self.assertFalse(concept_reference.is_current_version)
 
     def test_create_concept_reference_concept_and_source_versions__negative(self):

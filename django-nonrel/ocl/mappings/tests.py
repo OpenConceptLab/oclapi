@@ -26,7 +26,7 @@ from users.models import UserProfile
 class OCLClient(Client):
 
     def put(self, path, data={}, content_type=MULTIPART_CONTENT,
-             follow=False, **extra):
+            follow=False, **extra):
         """
         Requests a response from the server using POST.
         """
@@ -1347,7 +1347,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'map_type': 'Something Else'
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(mapping.external_id, content['external_id'])
@@ -1369,7 +1370,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'map_type': 'Something Else'
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(mapping.external_id, content['external_id'])
@@ -1391,7 +1393,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'map_type': 'Something Else'
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(mapping.external_id, content['external_id'])
@@ -1413,7 +1416,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'from_concept_url': 'http://does.not.exist/'
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 400)
         content = json.loads(response.content)
         self.assertTrue('from_concept_url' in content)
@@ -1432,7 +1436,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'to_concept_url': mapping.from_concept_url
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 400)
         mapping = Mapping.objects.get(id=mapping.id)
         self.assertEquals(to_concept, mapping.to_concept)
@@ -1448,7 +1453,8 @@ class MappingViewsTest(MappingBaseTest):
         data = {
             'to_concept_code': '10101'
         }
-        response = self.client.put(reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
+        response = self.client.put(
+            reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
         self.assertEquals(response.status_code, 400)
         mapping = Mapping.objects.get(id=mapping.id)
         self.assertEquals(to_concept, mapping.to_concept)
@@ -1470,13 +1476,14 @@ class MappingViewsTest(MappingBaseTest):
         mapping = Mapping.objects.get(id=self.mapping1.id)
         self.assertTrue(mapping.retired)
 
-        del(kwargs['mapping'])
+        del kwargs['mapping']
         response = self.client.get(reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
 
-        response = self.client.get("%s?includeRetired=true" % reverse('mapping-list', kwargs=kwargs))
+        response = self.client.get(
+            "%s?includeRetired=true" % reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
@@ -1559,7 +1566,8 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(0, len(content))
 
-        response = self.client.get("%s?includeInverseMappings=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        response = self.client.get(
+            "%s?includeInverseMappings=true" % reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
@@ -1576,7 +1584,8 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
 
-        response = self.client.get("%s?includeRetired=true" % reverse('concept-mapping-list', kwargs=kwargs))
+        response = self.client.get(
+            "%s?includeRetired=true" % reverse('concept-mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))

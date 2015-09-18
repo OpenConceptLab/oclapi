@@ -27,4 +27,3 @@ class LimitSourceVersionFilter(ConceptSearchFilter):
         filters = super(LimitSourceVersionFilter, self).get_filters(request, view)
         filters.update({'source_version': view.parent_resource_version.id})
         return filters
-

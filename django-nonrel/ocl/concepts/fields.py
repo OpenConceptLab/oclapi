@@ -43,7 +43,8 @@ class MappingListField(ListField):
     def element_to_native(self, element):
         module = __import__('mappings.serializers', fromlist=['models'])
         verbose = self.context.get('verbose', False)
-        serializer_class = getattr(module, 'MappingDetailSerializer' if verbose else 'MappingListSerializer')
+        serializer_class = getattr(
+            module, 'MappingDetailSerializer' if verbose else 'MappingListSerializer')
         serializer = serializer_class(element)
         return serializer.data
 
@@ -129,9 +130,13 @@ class SourceURLField(HyperlinkedRelatedField):
             raise ValidationError("Source owner does not exist")
         source_id = kwargs.get('source')
         if self.user:
-            return Source.objects.get(mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+            return Source.objects.get(
+                mnemonic=source_id, parent_id=self.user.id,
+                parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
-            return Source.objects.get(mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
+            return Source.objects.get(
+                mnemonic=source_id, parent_id=self.org.id,
+                parent_type=ContentType.objects.get_for_model(Organization))
 
 
 class ConceptURLField(HyperlinkedRelatedField):
@@ -172,9 +177,13 @@ class ConceptURLField(HyperlinkedRelatedField):
             raise ValidationError("Concept owner does not exist")
         source_id = kwargs.get('source')
         if self.user:
-            source = Source.objects.get(mnemonic=source_id, parent_id=self.user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+            source = Source.objects.get(
+                mnemonic=source_id, parent_id=self.user.id,
+                parent_type=ContentType.objects.get_for_model(UserProfile))
         else:
-            source = Source.objects.get(mnemonic=source_id, parent_id=self.org.id, parent_type=ContentType.objects.get_for_model(Organization))
+            source = Source.objects.get(
+                mnemonic=source_id, parent_id=self.org.id,
+                parent_type=ContentType.objects.get_for_model(Organization))
         concept_id = kwargs.get('concept')
         return Concept.objects.get(parent_id=source.id, mnemonic=concept_id)
 

@@ -12,7 +12,8 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin
-from oclapi.models import SubResourceBaseModel, ResourceVersionModel, VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
+                           VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from oclapi.utils import reverse_resource, reverse_resource_version
 from sources.models import SourceVersion, Source
 
@@ -252,7 +253,11 @@ class ConceptVersion(ResourceVersionModel):
         source = concept.parent
         owner = source.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-mapping-list', kwargs={'concept': concept.mnemonic, 'source': source.mnemonic, owner_kwarg: owner.mnemonic})
+        return reverse(
+            'concept-mapping-list',
+            kwargs={'concept': concept.mnemonic,
+                    'source': source.mnemonic,
+                    owner_kwarg: owner.mnemonic})
 
     @property
     def names_for_default_locale(self):
@@ -289,7 +294,8 @@ class ConceptVersion(ResourceVersionModel):
 
     @classmethod
     def get_latest_version_of(cls, concept):
-        versions = ConceptVersion.objects.filter(versioned_object_id=concept.id, is_latest_version=True).order_by('-created_at')
+        versions = ConceptVersion.objects.filter(
+            versioned_object_id=concept.id, is_latest_version=True).order_by('-created_at')
         return versions[0] if versions else None
 
     @classmethod
@@ -460,7 +466,8 @@ class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
     @property
     def concept_reference_url(self):
         if self.source_version:
-            source_version_url = reverse_resource_version(self.source_version, 'sourceversion-detail')
+            source_version_url = reverse_resource_version(self.source_version,
+                                                          'sourceversion-detail')
             return urljoin(source_version_url, 'concepts/%s/' % self.concept.mnemonic)
         if self.concept_version:
             return reverse_resource_version(self.concept_version, 'conceptversion-detail')
@@ -546,7 +553,8 @@ def update_references(sender, instance=None, created=False, **kwargs):
     for source_version in source_versions:
         if instance.id in source_version.concepts:
             source_versions_with_concept.append(source_version.id)
-    or_clauses.append(Q(concept_id=concept.id, source_version_id__in=source_versions_with_concept))
+    or_clauses.append(
+        Q(concept_id=concept.id, source_version_id__in=source_versions_with_concept))
 
     # Do the update
     for ref in ConceptReference.objects.filter(reduce(lambda x, y: x | y, or_clauses[1:], or_clauses[0])):
