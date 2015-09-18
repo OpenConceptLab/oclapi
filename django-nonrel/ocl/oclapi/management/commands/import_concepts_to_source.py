@@ -93,14 +93,26 @@ class Command(ImportCommand):
         self.stdout.flush()
         logger.info(str_log)
 
+        # Log remaining unhandled IDs
+        self.stdout.write('\nRemaining unhandled concept versions:\n', ending='\r')
+        self.stdout.write(self.concept_version_ids, ending='\r')
+        self.stdout.flush()
+        logger.info('Remaining unhandled concept versions:')
+        logger.info(self.concept_version_ids)
+
         # Deactivate old records
         if options['deactivate_old_records']:
             self.stdout.write('\nDeactivating old concepts...\n')
             logger.info('Deactivating old concepts...')
             for version_id in self.concept_version_ids:
                 try:
-                    self.remove_concept_version(version_id)
-                    self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+                    if self.remove_concept_version(version_id):
+                        self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+
+                        # Log the mapping deactivation
+                        self.stdout.write('\nDeactivated concept version: %s\n' % version_id)
+                        logger.info('Deactivated concept version: %s' % version_id)
+
                 except InvalidStateException as exc:
                     self.stderr.write('Failed to inactivate concept! %s' % exc.args[0])
         else:
@@ -133,10 +145,21 @@ class Command(ImportCommand):
             # Remove ID from the concept version list so that we know concept has been handled
             self.concept_version_ids.remove(concept_version.id)
 
+            # Log the update
+            if update_action:
+                self.stdout.write('\nUpdated concept: %s\n' % data)
+                logger.info('Updated concept: %s' % data)
+
         # Concept does not exist in OCL, so create new one
         except Concept.DoesNotExist:
             update_action = self.add_concept(source, data)
-            # Load the concept so that the retire/unretire step will work
+
+            # Log the insert
+            if update_action:
+                self.stdout.write('\nCreated new concept: %s\n' % data)
+                logger.info('Created new concept: %s' % data)
+
+            # Reload the concept so that the retire/unretire step will work
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
 
         # Concept exists, but not in this source version
@@ -148,6 +171,12 @@ class Command(ImportCommand):
         # Handle retired status - if different, will create an additional concept version
         if 'retired' in data:
             retire_action = self.update_concept_retired_status(concept, data['retired'])
+            if retire_action == ImportActionHelper.IMPORT_ACTION_RETIRE:
+                self.stdout.write('\nRetired concept: %s\n' % data)
+                logger.info('Retired concept: %s' % data)
+            elif retire_action == ImportActionHelper.IMPORT_ACTION_UNRETIRE:
+                self.stdout.write('\nUn-retired concept: %s\n' % data)
+                logger.info('Un-retired concept: %s' % data)
 
         # Return the list of actions performed
         return update_action + retire_action

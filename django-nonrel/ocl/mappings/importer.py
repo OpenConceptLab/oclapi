@@ -102,6 +102,13 @@ class MappingsImporter(object):
         self.stdout.flush()
         logger.info(str_log)
 
+        # Log remaining unhandled IDs
+        self.stdout.write('\nRemaining unhandled mapping IDs:\n', ending='\r')
+        self.stdout.write(self.mapping_ids, ending='\r')
+        self.stdout.flush()
+        logger.info('Remaining unhandled mapping IDs:')
+        logger.info(self.mapping_ids)
+
         # Deactivate old records
         if kwargs['deactivate_old_records']:
             self.stdout.write('\nDeactivating old mappings...\n')
@@ -110,6 +117,11 @@ class MappingsImporter(object):
                 try:
                     if self.remove_mapping(mapping_id):
                         self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+
+                        # Log the mapping deactivation
+                        self.stdout.write('\nDeactivated mapping: %s\n' % mapping_id)
+                        logger.info('Deactivated mapping: %s' % mapping_id)
+
                 except InvalidStateException as exc:
                     self.stderr.write('Failed to inactivate mapping! %s' % exc.args[0])
         else:
@@ -155,17 +167,31 @@ class MappingsImporter(object):
 
             # Finish updating the mapping
             update_action = self.update_mapping(mapping, data)
+
+            # Remove ID from the mapping list so that we know that mapping has been handled
             self.mapping_ids.remove(mapping.id)
+
+            # Log the update
+            if update_action:
+                self.stdout.write('\nUpdated mapping: %s\n' % data)
+                logger.info('Updated mapping: %s' % data)
 
         # Mapping does not exist, so create new one
         except Mapping.DoesNotExist:
             update_action = self.add_mapping(data)
+
+            # Log the insert
+            if update_action:
+                self.stdout.write('\nCreated new mapping: %s\n' % data)
+                logger.info('Created new mapping: %s' % data)
 
         # Return the action performed
         return update_action
 
     def add_mapping(self, data):
         """ Create a new mapping """
+
+        # Create the new mapping
         self.stdout.write('Adding new mapping: %s' % data)
         serializer = MappingCreateSerializer(
             data=data, context={'request': MockRequest(self.user)})
@@ -177,6 +203,7 @@ class MappingsImporter(object):
             if not serializer.is_valid():
                 raise IllegalInputException(
                     'Could not persist new mapping due to %s' % serializer.errors)
+
         return ImportActionHelper.IMPORT_ACTION_ADD
 
     def update_mapping(self, mapping, data):
@@ -206,6 +233,7 @@ class MappingsImporter(object):
                     raise IllegalInputException(
                         'Could not persist update to mapping %s due to %s' %
                         (mapping.id, serializer.errors))
+
             return ImportActionHelper.IMPORT_ACTION_UPDATE
 
         # No diff, so do nothing
