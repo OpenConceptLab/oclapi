@@ -95,10 +95,10 @@ class Command(ImportCommand):
 
         # Log remaining unhandled IDs
         self.stdout.write('\nRemaining unhandled concept versions:\n', ending='\r')
-        self.stdout.write(self.concept_version_ids, ending='\r')
+        self.stdout.write(','.join(str(el) for el in self.concept_version_ids), ending='\r')
         self.stdout.flush()
         logger.info('Remaining unhandled concept versions:')
-        logger.info(self.concept_version_ids)
+        logger.info(','.join(str(el) for el in self.concept_version_ids))
 
         # Deactivate old records
         if options['deactivate_old_records']:

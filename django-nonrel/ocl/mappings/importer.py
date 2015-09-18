@@ -104,10 +104,10 @@ class MappingsImporter(object):
 
         # Log remaining unhandled IDs
         self.stdout.write('\nRemaining unhandled mapping IDs:\n', ending='\r')
-        self.stdout.write(self.mapping_ids, ending='\r')
+        self.stdout.write(','.join(str(el) for el in self.mapping_ids), ending='\r')
         self.stdout.flush()
         logger.info('Remaining unhandled mapping IDs:')
-        logger.info(self.mapping_ids)
+        logger.info(','.join(str(el) for el in self.mapping_ids))
 
         # Deactivate old records
         if kwargs['deactivate_old_records']:
