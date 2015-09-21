@@ -84,7 +84,7 @@ class Command(ImportCommand):
                 str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
                 self.stdout.write(str_log, ending='\r')
                 self.stdout.flush()
-                if (self.count % 1000) == 0:
+                if (cnt % 1000) == 0:
                     logger.info(str_log)
 
         # Import complete - display final progress bar
