@@ -184,7 +184,6 @@ class Command(ImportCommand):
     def add_concept(self, source, data):
         """ Adds a new concept """
         mnemonic = data['id']
-        self.stdout.write('Adding new concept: %s' % data)
         serializer = ConceptDetailSerializer(data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse new concept %s' % mnemonic)
