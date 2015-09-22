@@ -385,8 +385,8 @@ class ConceptVersion(ResourceVersionModel):
             diffs['descriptions'] = True
 
         # Diff extras
-        extras1 = v1.extras
-        extras2 = v2.extras
+        extras1 = v1.extras if v1.extras else {}
+        extras2 = v2.extras if v2.extras else {}
         diff = len(extras1) != len(extras2)
         if not diff:
             for key in extras1:
