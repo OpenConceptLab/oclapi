@@ -7,6 +7,7 @@ from haystack.signals import BaseSignalProcessor
 from rest_framework.authtoken.models import Token
 from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
+from cProfile import Profile
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
@@ -107,10 +108,26 @@ class ImportCommand(BaseCommand):
                     dest='test-only',
                     default=False,
                     help='If true, describes diffs and actions that would be taken to reconcile differences without executing them.'),
+        make_option('--profile',
+                    action='store_true',
+                    dest='profile',
+                    default=False,
+                    help='Compute and dislpay cProfile statistics'),
     )
 
 
     def handle(self, *args, **options):
+        """ Handles the command line arguments - initiates profiling if set to true """
+        if options.get('profile', False):
+            profiler = Profile()
+            profiler.runcall(self._handle, *args, **options)
+            profiler.print_stats()
+        else:
+            self._handle(*args, **options)
+
+
+    def _handle(self, *args, **options):
+        """ Performs the actual operations """
         if len(args) != 1:
             raise CommandError('Wrong number of arguments.  (Got %s; expected 1)' % len(args))
 
@@ -164,4 +181,5 @@ class ImportCommand(BaseCommand):
         logger.info('Import finished')
 
     def do_import(self, user, source, input_file, options):
+        """ Should be overwritten to actually perform the import """
         pass

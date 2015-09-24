@@ -148,6 +148,7 @@ class MappingsImporter(object):
 
         # If mapping exists, update the mapping with the new data
         try:
+            # Build the query
             mapping = serializer.save(commit=False)
             query = Q(parent_id=self.source.id, map_type=mapping.map_type,
                       from_concept=mapping.from_concept)
@@ -157,6 +158,8 @@ class MappingsImporter(object):
                 query = query & Q(to_source_id=mapping.to_source.id,
                                   to_concept_code=mapping.to_concept_code,
                                   to_concept_name=mapping.to_concept_name)
+
+            # Perform the query - throws exception if does not exist
             mapping = Mapping.objects.get(query)
 
             # Mapping exists, but not in this source version
