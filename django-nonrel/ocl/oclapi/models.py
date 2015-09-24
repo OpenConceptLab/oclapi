@@ -290,7 +290,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
 
     @property
     def owner_name(self):
-        return self.versioned_object.ower_name
+        return self.versioned_object.owner_name
 
     @property
     def owner_type(self):
