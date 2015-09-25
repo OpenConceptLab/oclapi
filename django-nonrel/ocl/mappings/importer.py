@@ -96,6 +96,9 @@ class MappingsImporter(object):
                 if (self.count % 1000) == 0:
                     logger.info(str_log)
 
+        # Done with the input file, so close it
+        self.mappings_file.close()
+
         # Import complete - display final progress bar
         str_log = ImportActionHelper.get_progress_descriptor(self.count, total, self.action_count)
         self.stdout.write(str_log, ending='\r')

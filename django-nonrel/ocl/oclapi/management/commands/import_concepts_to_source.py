@@ -87,6 +87,9 @@ class Command(ImportCommand):
                 if (cnt % 1000) == 0:
                     logger.info(str_log)
 
+        # Done with the input file, so close it
+        input_file.close()
+
         # Import complete - display final progress bar
         str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
         self.stdout.write(str_log, ending='\r')

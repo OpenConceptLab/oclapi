@@ -131,9 +131,9 @@ class ImportCommand(BaseCommand):
         if len(args) != 1:
             raise CommandError('Wrong number of arguments.  (Got %s; expected 1)' % len(args))
 
-        input_file = args[0]
-        if not os.path.exists(input_file):
-            raise CommandError('Could not find input file %s' % input_file)
+        input_filename = args[0]
+        if not os.path.exists(input_filename):
+            raise CommandError('Could not find input file %s' % input_filename)
 
         source_id = options['source_id']
         if not source_id:
@@ -163,20 +163,26 @@ class ImportCommand(BaseCommand):
         if not permission.has_object_permission(MockRequest(user), None, source):
             raise CommandError('User does not have permission to edit source.')
 
+        # Get total record count
         logger.info('Import begins user %s source %s' % (user, source))
         try:
-            input_file = open(input_file, 'rb')
-            # get total record count
-            total = sum(1 for line in input_file)
-            options['total'] = total
-            input_file.seek(0)
-            self.stdout.write('Importing %d new record(s)...\n' % total)
-            logger.info('Importing %d new record(s)...' % total)
+            with open(input_filename, 'rb') as input_file:
+                total = sum(1 for line in input_file)
+                options['total'] = total
+                self.stdout.write('Importing %d record(s)...\n' % total)
+                logger.info('Importing %d record(s)...' % total)
         except IOError:
-            raise CommandError('Could not open input file %s' % input_file)
+            raise CommandError('Could not open input file %s' % input_filename)
+
+        # Open the file a second time to pass to the import function
+        try:
+            input_file = open(input_filename, 'rb')
+        except IOError:
+            raise CommandError('Could not open input file %s' % input_filename)
 
         haystack.signal_processor = BaseSignalProcessor(haystack.connections, haystack.connection_router)
 
+        # Perform the import
         self.do_import(user, source, input_file, options)
         logger.info('Import finished')
 
