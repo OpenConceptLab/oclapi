@@ -58,9 +58,9 @@ class Command(ImportCommand):
             try:
                 data = json.loads(line)
             except ValueError as exc:
-                self.stderr.write(
-                    '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
-                logger.warning('Skipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line))
+                str_log = '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line)
+                self.stderr.write(str_log)
+                logger.warning(str_log)
                 self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
             # Process the import for the current JSON line
@@ -69,14 +69,14 @@ class Command(ImportCommand):
                     update_action = self.handle_concept(source, data)
                     self.count_action(update_action)
                 except IllegalInputException as exc:
-                    self.stderr.write('\n%s' % exc.args[0])
-                    self.stderr.write('\nFailed to parse line %s. Skipping it...\n' % data)
-                    logger.warning(
-                        '%s, failed to parse line %s. Skipping it...' % (exc.args[0], data))
+                    str_log = '\n%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
+                    self.stderr.write(str_log)
+                    logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    self.stderr.write('\nSource is in an invalid state!\n%s\n' % exc.args[0])
-                    logger.warning('Source is in an invalid state: %s' % exc.args[0])
+                    str_log = '\nSource is in an invalid state!\n%s\n' % exc.args[0]
+                    self.stderr.write(str_log)
+                    logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
             # Simple progress bar
@@ -113,14 +113,16 @@ class Command(ImportCommand):
                         self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
 
                         # Log the mapping deactivation
-                        self.stdout.write('\nDeactivated concept version: %s\n' % version_id)
-                        logger.info('Deactivated concept version: %s' % version_id)
+                        str_log = '\nDeactivated concept version: %s\n' % version_id
+                        self.stdout.write(str_log)
+                        logger.info(str_log)
 
                 except InvalidStateException as exc:
                     self.stderr.write('Failed to inactivate concept! %s' % exc.args[0])
         else:
-            self.stdout.write('\nSkipping deactivation loop...\n')
-            logger.info('Skipping deactivation loop...')
+            str_log = '\nSkipping deactivation loop...\n'
+            self.stdout.write(str_log)
+            logger.info(str_log)
 
         # Display final summary
         self.stdout.write('\nFinished importing concepts!\n')
@@ -150,8 +152,9 @@ class Command(ImportCommand):
 
             # Log the update
             if update_action:
-                self.stdout.write('\nUpdated concept: %s\n' % data)
-                logger.info('Updated concept: %s' % data)
+                str_log = '\nUpdated concept: %s\n' % data
+                self.stdout.write(str_log)
+                logger.info(str_log)
 
         # Concept does not exist in OCL, so create new one
         except Concept.DoesNotExist:
@@ -159,8 +162,9 @@ class Command(ImportCommand):
 
             # Log the insert
             if update_action:
-                self.stdout.write('\nCreated new concept: %s\n' % data)
-                logger.info('Created new concept: %s' % data)
+                str_log = '\nCreated new concept: %s\n' % data
+                self.stdout.write(str_log)
+                logger.info(str_log)
 
             # Reload the concept so that the retire/unretire step will work
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
@@ -175,11 +179,13 @@ class Command(ImportCommand):
         if 'retired' in data:
             retire_action = self.update_concept_retired_status(concept, data['retired'])
             if retire_action == ImportActionHelper.IMPORT_ACTION_RETIRE:
-                self.stdout.write('\nRetired concept: %s\n' % data)
-                logger.info('Retired concept: %s' % data)
+                str_log = '\nRetired concept: %s\n' % data
+                self.stdout.write(str_log)
+                logger.info(str_log)
             elif retire_action == ImportActionHelper.IMPORT_ACTION_UNRETIRE:
-                self.stdout.write('\nUn-retired concept: %s\n' % data)
-                logger.info('Un-retired concept: %s' % data)
+                str_log = '\nUn-retired concept: %s\n' % data
+                self.stdout.write(str_log)
+                logger.info(str_log)
 
         # Return the list of actions performed
         return update_action + retire_action
