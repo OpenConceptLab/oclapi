@@ -61,9 +61,9 @@ class ImportActionHelper(object):
         return combined_action_text
 
     @classmethod
-    def get_progress_descriptor(cls, current_num, total_num, action_count):
+    def get_progress_descriptor(cls, str_import_type, current_num, total_num, action_count):
         """ Returns a string with the current counts of the import process """
-        str_descriptor = '%d of %d -' % (current_num, total_num)
+        str_descriptor = '%d of %d %s -' % (str_import_type, current_num, total_num)
         for action_value, num in action_count.items():
             str_descriptor += ' %d %s,' % (num, ImportActionHelper.get_action_string(action_value))
         str_descriptor += '\n'

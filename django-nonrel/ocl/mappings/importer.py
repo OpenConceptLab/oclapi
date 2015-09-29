@@ -90,7 +90,7 @@ class MappingsImporter(object):
             # Simple progress bars
             if (self.count % 10) == 0:
                 str_log = ImportActionHelper.get_progress_descriptor(
-                    self.count, total, self.action_count)
+                    'mappings', self.count, total, self.action_count)
                 self.stdout.write(str_log, ending='\r')
                 self.stdout.flush()
                 if (self.count % 1000) == 0:
@@ -100,7 +100,8 @@ class MappingsImporter(object):
         self.mappings_file.close()
 
         # Import complete - display final progress bar
-        str_log = ImportActionHelper.get_progress_descriptor(self.count, total, self.action_count)
+        str_log = ImportActionHelper.get_progress_descriptor(
+            'mappings', self.count, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         self.stdout.flush()
         logger.info(str_log)
@@ -142,7 +143,8 @@ class MappingsImporter(object):
         str_log = '\nFinished importing mappings!\n'
         self.stdout.write(str_log)
         logger.info(str_log)
-        str_log = ImportActionHelper.get_progress_descriptor(self.count, total, self.action_count)
+        str_log = ImportActionHelper.get_progress_descriptor(
+            'mappings', self.count, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         logger.info(str_log)
 

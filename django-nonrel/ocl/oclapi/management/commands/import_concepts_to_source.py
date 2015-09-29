@@ -81,7 +81,8 @@ class Command(ImportCommand):
 
             # Simple progress bar
             if (cnt % 10) == 0:
-                str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+                str_log = ImportActionHelper.get_progress_descriptor(
+                    'concepts', cnt, total, self.action_count)
                 self.stdout.write(str_log, ending='\r')
                 self.stdout.flush()
                 if (cnt % 1000) == 0:
@@ -91,7 +92,8 @@ class Command(ImportCommand):
         input_file.close()
 
         # Import complete - display final progress bar
-        str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+        str_log = ImportActionHelper.get_progress_descriptor(
+            'concepts', cnt, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         self.stdout.flush()
         logger.info(str_log)
@@ -130,7 +132,8 @@ class Command(ImportCommand):
         str_log = '\nFinished importing concepts!\n'
         self.stdout.write(str_log)
         logger.info(str_log)
-        str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
+        str_log = ImportActionHelper.get_progress_descriptor(
+            'concepts', cnt, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         logger.info(str_log)
 
