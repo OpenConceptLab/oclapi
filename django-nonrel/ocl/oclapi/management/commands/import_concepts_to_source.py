@@ -148,7 +148,12 @@ class Command(ImportCommand):
             update_action = self.update_concept_version(concept_version, data)
 
             # Remove ID from the concept version list so that we know concept has been handled
-            self.concept_version_ids.remove(concept_version.id)
+            try:
+                self.concept_version_ids.remove(concept_version.id)
+            except KeyError:
+                str_log = '\nKey not found. Could not remove key from list of concept version IDs: %s' % concept_version.id
+                self.stderr.write(str_log)
+                logger.warning(str_log)
 
             # Log the update
             if update_action:
