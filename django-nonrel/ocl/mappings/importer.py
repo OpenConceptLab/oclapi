@@ -82,7 +82,7 @@ class MappingsImporter(object):
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    str_log = '\nSource is in an invalid state!\n%s\n' % exc.args[0]
+                    str_log = '\nSource is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -130,7 +130,7 @@ class MappingsImporter(object):
                         logger.info(str_log)
 
                 except InvalidStateException as exc:
-                    str_log = 'Failed to inactivate mapping! %s' % exc.args[0]
+                    str_log = 'Failed to inactivate mapping on ID %s! %s' % (mapping_id, exc.args[0])
                     self.stderr.write(str_log)
                     logger.warning(str_log)
         else:
@@ -176,7 +176,7 @@ class MappingsImporter(object):
             # Mapping exists, but not in this source version
             if mapping.id not in self.source_version.mappings:
                 raise InvalidStateException(
-                    "Source %s has mapping %s, but source version %s does not." %
+                    "Source %s has mapping %s, but source version %s does not. Mapping not updated." %
                     (self.source.mnemonic, mapping.id, self.source_version.mnemonic))
 
             # Finish updating the mapping
@@ -186,13 +186,13 @@ class MappingsImporter(object):
             try:
                 self.mapping_ids.remove(mapping.id)
             except KeyError:
-                str_log = '\nKey not found. Could not remove key from list of mapping IDs: %s' % mapping.id
+                str_log = '\nKey not found. Could not remove key %s from list of mapping IDs: %s\n' % (mapping.id, data)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
 
             # Log the update
             if update_action:
-                str_log = '\nUpdated mapping: %s\n' % data
+                str_log = '\nUpdated mapping with ID %s: %s\n' % (mapping.id, data)
                 self.stdout.write(str_log)
                 logger.info(str_log)
 

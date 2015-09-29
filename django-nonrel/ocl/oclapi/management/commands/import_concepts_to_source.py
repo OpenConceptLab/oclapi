@@ -74,7 +74,7 @@ class Command(ImportCommand):
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    str_log = '\nSource is in an invalid state!\n%s\n' % exc.args[0]
+                    str_log = '\nSource is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -118,15 +118,18 @@ class Command(ImportCommand):
                         logger.info(str_log)
 
                 except InvalidStateException as exc:
-                    self.stderr.write('Failed to inactivate concept! %s' % exc.args[0])
+                    str_log = 'Failed to inactivate concept version on ID %s! %s' % (version_id, exc.args[0])
+                    self.stderr.write(str_log)
+                    logger.warning(str_log)
         else:
             str_log = '\nSkipping deactivation loop...\n'
             self.stdout.write(str_log)
             logger.info(str_log)
 
         # Display final summary
-        self.stdout.write('\nFinished importing concepts!\n')
-        logger.info('Finished importing concepts!')
+        str_log = '\nFinished importing concepts!\n'
+        self.stdout.write(str_log)
+        logger.info(str_log)
         str_log = ImportActionHelper.get_progress_descriptor(cnt, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         logger.info(str_log)
@@ -151,13 +154,13 @@ class Command(ImportCommand):
             try:
                 self.concept_version_ids.remove(concept_version.id)
             except KeyError:
-                str_log = '\nKey not found. Could not remove key from list of concept version IDs: %s' % concept_version.id
+                str_log = '\nKey not found. Could not remove key %s from list of concept version IDs: %s' % (concept_version.id, data)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
 
             # Log the update
             if update_action:
-                str_log = '\nUpdated concept: %s\n' % data
+                str_log = '\nUpdated concept with version ID %s: %s\n' % (concept_version.id, data)
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
