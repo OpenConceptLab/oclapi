@@ -191,16 +191,14 @@ class Command(ImportCommand):
         return update_action + retire_action
 
     def add_concept(self, source, data):
-        """ Adds a new concept """
-        mnemonic = data['id']
+        """ Adds a new concept -- NOTE: data['id'] is the concept mnemonic """
         serializer = ConceptDetailSerializer(data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException('Could not parse new concept %s' % mnemonic)
+            raise IllegalInputException('Could not parse new concept %s' % data['id'])
         if not self.test_mode:
-            serializer.save(
-                force_insert=True, parent_resource=source, child_list_attribute='concepts')
+            serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
             if not serializer.is_valid():
-                raise IllegalInputException('Could not persist new concept %s' % mnemonic)
+                raise IllegalInputException('Could not persist new concept %s' % data['id'])
         return ImportActionHelper.IMPORT_ACTION_ADD
 
     def update_concept_version(self, concept_version, data):
