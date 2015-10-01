@@ -66,7 +66,7 @@ class MappingsImporter(object):
             try:
                 data = json.loads(line)
             except ValueError as exc:
-                str_log = '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line)
+                str_log = 'Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
                 self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -77,12 +77,12 @@ class MappingsImporter(object):
                     update_action = self.handle_mapping(data)
                     self.count_action(update_action)
                 except IllegalInputException as exc:
-                    str_log = '\n%s, failed to parse line %s. Skipping it...\n' % (exc.args[0], data)
+                    str_log = '%s, failed to parse line %s. Skipping it...\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    str_log = '\nSource is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+                    str_log = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -107,7 +107,7 @@ class MappingsImporter(object):
         logger.info(str_log)
 
         # Log remaining unhandled IDs
-        str_log = '\nRemaining unhandled mapping IDs:\n'
+        str_log = 'Remaining unhandled mapping IDs:\n'
         self.stdout.write(str_log, ending='\r')
         logger.info(str_log)
         str_log = ','.join(str(el) for el in self.mapping_ids)
@@ -117,7 +117,7 @@ class MappingsImporter(object):
 
         # Deactivate old records
         if kwargs['deactivate_old_records']:
-            str_log = '\nDeactivating old mappings...\n'
+            str_log = 'Deactivating old mappings...\n'
             self.stdout.write(str_log)
             logger.info(str_log)
             for mapping_id in self.mapping_ids:
@@ -126,21 +126,21 @@ class MappingsImporter(object):
                         self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
 
                         # Log the mapping deactivation
-                        str_log = '\nDeactivated mapping: %s\n' % mapping_id
+                        str_log = 'Deactivated mapping: %s\n' % mapping_id
                         self.stdout.write(str_log)
                         logger.info(str_log)
 
                 except InvalidStateException as exc:
-                    str_log = 'Failed to inactivate mapping on ID %s! %s' % (mapping_id, exc.args[0])
+                    str_log = 'Failed to inactivate mapping on ID %s! %s\n' % (mapping_id, exc.args[0])
                     self.stderr.write(str_log)
                     logger.warning(str_log)
         else:
-            str_log = '\nSkipping deactivation loop...\n'
+            str_log = 'Skipping deactivation loop...\n'
             self.stdout.write(str_log)
             logger.info(str_log)
 
         # Display final summary
-        str_log = '\nFinished importing mappings!\n'
+        str_log = 'Finished importing mappings!\n'
         self.stdout.write(str_log)
         logger.info(str_log)
         str_log = ImportActionHelper.get_progress_descriptor(
@@ -188,13 +188,13 @@ class MappingsImporter(object):
             try:
                 self.mapping_ids.remove(mapping.id)
             except KeyError:
-                str_log = '\nKey not found. Could not remove key %s from list of mapping IDs: %s\n' % (mapping.id, data)
+                str_log = 'Key not found. Could not remove key %s from list of mapping IDs: %s\n' % (mapping.id, data)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
 
             # Log the update
             if update_action:
-                str_log = '\nUpdated mapping with ID %s: %s\n' % (mapping.id, data)
+                str_log = 'Updated mapping with ID %s: %s\n' % (mapping.id, data)
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
@@ -204,7 +204,7 @@ class MappingsImporter(object):
 
             # Log the insert
             if update_action:
-                str_log = '\nCreated new mapping: %s\n' % data
+                str_log = 'Created new mapping: %s\n' % data
                 self.stdout.write(str_log)
                 logger.info(str_log)
 

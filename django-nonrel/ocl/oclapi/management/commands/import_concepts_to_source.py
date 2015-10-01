@@ -58,7 +58,7 @@ class Command(ImportCommand):
             try:
                 data = json.loads(line)
             except ValueError as exc:
-                str_log = '\nSkipping invalid JSON line: %s. JSON: %s' % (exc.args[0], line)
+                str_log = 'Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
                 self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -69,12 +69,12 @@ class Command(ImportCommand):
                     update_action = self.handle_concept(source, data)
                     self.count_action(update_action)
                 except IllegalInputException as exc:
-                    str_log = '\n%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
+                    str_log = '%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
                 except InvalidStateException as exc:
-                    str_log = '\nSource is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+                    str_log = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -99,37 +99,40 @@ class Command(ImportCommand):
         logger.info(str_log)
 
         # Log remaining unhandled IDs
-        self.stdout.write('\nRemaining unhandled concept versions:\n', ending='\r')
-        self.stdout.write(','.join(str(el) for el in self.concept_version_ids), ending='\r')
+        str_log = 'Remaining unhandled concept versions:\n'
+        self.stdout.write(str_log, ending='\r')
+        logger.info(str_log)
+        str_log = ','.join(str(el) for el in self.concept_version_ids)
+        self.stdout.write(str_log, ending='\r')
         self.stdout.flush()
-        logger.info('Remaining unhandled concept versions:')
-        logger.info(','.join(str(el) for el in self.concept_version_ids))
+        logger.info(str_log)
 
         # Deactivate old records
         if options['deactivate_old_records']:
-            self.stdout.write('\nDeactivating old concepts...\n')
-            logger.info('Deactivating old concepts...')
+            str_log = 'Deactivating old concepts...\n'
+            self.stdout.write(str_log)
+            logger.info(str_log)
             for version_id in self.concept_version_ids:
                 try:
                     if self.remove_concept_version(version_id):
                         self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
 
                         # Log the mapping deactivation
-                        str_log = '\nDeactivated concept version: %s\n' % version_id
+                        str_log = 'Deactivated concept version: %s\n' % version_id
                         self.stdout.write(str_log)
                         logger.info(str_log)
 
                 except InvalidStateException as exc:
-                    str_log = 'Failed to inactivate concept version on ID %s! %s' % (version_id, exc.args[0])
+                    str_log = 'Failed to inactivate concept version on ID %s! %s\n' % (version_id, exc.args[0])
                     self.stderr.write(str_log)
                     logger.warning(str_log)
         else:
-            str_log = '\nSkipping deactivation loop...\n'
+            str_log = 'Skipping deactivation loop...\n'
             self.stdout.write(str_log)
             logger.info(str_log)
 
         # Display final summary
-        str_log = '\nFinished importing concepts!\n'
+        str_log = 'Finished importing concepts!\n'
         self.stdout.write(str_log)
         logger.info(str_log)
         str_log = ImportActionHelper.get_progress_descriptor(
@@ -157,13 +160,13 @@ class Command(ImportCommand):
             try:
                 self.concept_version_ids.remove(concept_version.id)
             except KeyError:
-                str_log = '\nKey not found. Could not remove key %s from list of concept version IDs: %s' % (concept_version.id, data)
+                str_log = 'Key not found. Could not remove key %s from list of concept version IDs: %s\n' % (concept_version.id, data)
                 self.stderr.write(str_log)
                 logger.warning(str_log)
 
             # Log the update
             if update_action:
-                str_log = '\nUpdated concept with version ID %s: %s\n' % (concept_version.id, data)
+                str_log = 'Updated concept, replacing version ID %s: %s\n' % (concept_version.id, data)
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
@@ -173,7 +176,7 @@ class Command(ImportCommand):
 
             # Log the insert
             if update_action:
-                str_log = '\nCreated new concept: %s\n' % data
+                str_log = 'Created new concept: %s\n' % data
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
@@ -190,11 +193,11 @@ class Command(ImportCommand):
         if 'retired' in data:
             retire_action = self.update_concept_retired_status(concept, data['retired'])
             if retire_action == ImportActionHelper.IMPORT_ACTION_RETIRE:
-                str_log = '\nRetired concept: %s\n' % data
+                str_log = 'Retired concept: %s\n' % data
                 self.stdout.write(str_log)
                 logger.info(str_log)
             elif retire_action == ImportActionHelper.IMPORT_ACTION_UNRETIRE:
-                str_log = '\nUn-retired concept: %s\n' % data
+                str_log = 'Un-retired concept: %s\n' % data
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
