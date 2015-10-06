@@ -182,6 +182,10 @@ class Common(Configuration):
         },
     }
 
+    # Haystack processor determines when/how updates to mongo are indexed by Solr
+    # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
+    # the cost of performance. BaseSignalProcessor does not update the index at all, which
+    # means the index must be updated manually (e.g. using the haystack update_index command).
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
     # Celery settings
