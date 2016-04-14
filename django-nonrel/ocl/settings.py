@@ -234,7 +234,7 @@ class Common(Configuration):
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'when': 'midnight',
-            'filename': os.path.join(BASE_DIR, '../logs/ocl_api.log'),
+            'filename': os.path.join(BASE_DIR, 'ocl_api.log'),
             'formatter': 'normal',
             },
         },

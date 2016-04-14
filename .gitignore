@@ -9,6 +9,7 @@ __pycache__
 
 # Pycharm
 .idea
+*.iml
 
 # Vim
 *~
