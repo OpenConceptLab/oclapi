@@ -26,8 +26,13 @@ Fire up containers:
 docker-compose up
 ````
 
-Open up http://0.0.0.0:8000/admin/authtoken/token/ in a browser and login using username 'root' and password 'Root123'. Note down
+Open up [http://0.0.0.0:8000/admin/authtoken/token/](http://0.0.0.0:8000/admin/authtoken/token/) in a browser and login with username 'root' and password 'Root123'. Note down
 the key, which you will need later to access REST resources.
+
+Note that when using the docker quickstart on Windows, you need to check docker machine IP and replace 0.0.0.0 with the actual IP address. Run:
+````sh
+docker-machine ip
+````
 
 ## Manual Environment Setup (on a Mac)
 
