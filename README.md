@@ -3,11 +3,22 @@ oclapi
 
 Source for the Open Concept Lab APIs
 
-## Docker Environment Setup
+## Docker Environment Setup (preferred)
+
+Fork the repo on github and clone your fork:
+````sh
+git clone https://github.com/{youruser}/oclapi
+````
+
+Add a remote repo to upstream in order to be able to fetch updates:
+````sh
+git remote add upstream https://github.com/OpenConceptLab/oclapi
+````
+
 
 Go to:
 ````sh
-cd django-nonrel/ocl
+cd oclapi/django-nonrel/ocl
 ````
 
 Fire up containers:
@@ -15,10 +26,10 @@ Fire up containers:
 docker-compose up
 ````
 
-Open up http://0.0.0.0:8000/admin/authtoken/token/ in a browser and login using username 'root' and password 'Root123' and note down
-the key you will need to access REST resources.
+Open up http://0.0.0.0:8000/admin/authtoken/token/ in a browser and login using username 'root' and password 'Root123'. Note down
+the key, which you will need later to access REST resources.
 
-## Local Environment Setup (on a Mac)
+## Manual Environment Setup (on a Mac)
 
 Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
 and set up a virtual environment.  You may wish to name your virtual environment something more descriptive,
