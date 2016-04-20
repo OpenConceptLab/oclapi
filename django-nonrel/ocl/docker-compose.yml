@@ -9,9 +9,7 @@ services:
     ports:
       - "8983:8983"
   ocl:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: tmarzeion/oclapi:1.0
     command: bash startup.sh
     depends_on:
       - mongo
