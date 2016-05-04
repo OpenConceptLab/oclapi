@@ -8,6 +8,8 @@ services:
     image: solr
     ports:
       - "8983:8983"
+    volumes:
+      - ../../solr/:/opt/solr/server/solr/
   ocl:
     build:
       context: .
@@ -18,7 +20,9 @@ services:
       - solr
     links:
       - "mongo:api.dev.openconceptlab.org"
+      - "solr:solr.dev.openconceptlab.org"
     ports:
       - "8000:8000"
     volumes:
       - .:/code
+
