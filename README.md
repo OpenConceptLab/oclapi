@@ -34,6 +34,19 @@ Note that when using the docker quickstart on Windows, you need to check docker 
 docker-machine ip
 ````
 
+### Running commands in a container
+
+You can run any command in a container. Open up a new terminal and run for example:
+````sh
+docker-compose run ocl python manage.py syncdb
+````
+, where OCL is the service name.
+On Windows run this instead:
+````sh
+docker exec -it ocl_ocl_1 python manage.py syncdb
+````
+, where ocl_ocl_1 is a container ID, which is printed out when starting docker-compose up.
+
 ## Manual Environment Setup (on a Mac)
 
 Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
