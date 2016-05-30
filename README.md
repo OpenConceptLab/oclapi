@@ -47,6 +47,18 @@ docker exec -it ocl_ocl_1 python manage.py syncdb
 ````
 , where ocl_ocl_1 is a container ID, which is printed out when starting docker-compose up.
 
+### Running tests in a container
+You can run tests in a container as any other command (see above for explanation).
+
+On Linux:
+````sh
+docker-compose run ocl python manage.py test
+````
+On Windows:
+````sh
+docker exec -it ocl_ocl_1 python manage.py test
+````
+
 ## Manual Environment Setup (on a Mac)
 
 Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
