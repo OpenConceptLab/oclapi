@@ -191,5 +191,7 @@ Before you can run the server, you will need to execute the following steps:
 
 ---------------------------------------------------------------------
 Copyright (C) 2016 Open Concept Lab. Use of this software is subject
-to the terms of the Mozille Public License v2.0.
+to the terms of the Mozille Public License v2.0. Open Concept Lab is
+also distributed under the terms the Healthcare Disclaimer
+described at http://www.openconceptlab.com/license/.
 ---------------------------------------------------------------------
