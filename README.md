@@ -59,6 +59,43 @@ On Windows:
 docker exec -it ocl_ocl_1 python manage.py test
 ````
 
+### Debugging in container
+
+To setup debugging PyCharm Professional Edition is required.
+
+Go to:
+````sh
+cd oclapi/django-nonrel/ocl
+````
+
+create `ocl_ocl` image (you have to do this only first time, or in case of any changes in Dockerfile)
+````sh
+docker build --tag ocl_ocl .
+````
+fire up dev compose configuration
+````sh
+docker-compose -f docker-compose.dev.yml up
+````
+(You can add `--build` flag to ensure that dev image is created)
+
+In Pycharm IDE open oclapi project and go to `settings-> project: oclapi -> Project Interpreter`
+
+click on gear icon and choose `Add Remote` option
+
+Configure interpreter with SSH credentials as in the image (password is `Root123`):
+
+![alt](remote_interpreter_config.png)
+
+there will be warnings about unknown host etc. but don't don't worry, just confirm.
+
+Setup django debug configuration as in the image (Path mapping should be `absolute path to project directory=/code`):
+
+![alt](docker_debug_config.png)
+
+Run your configuration! Debugging server will run on [http://0.0.0.0:8001/](http://0.0.0.0:8001/)
+
+In case of any problems with `.pycharm_helpers` just delete remote interpreter and create new with same configuration, it will write pycharm helpers in Your ocl container again.
+
 ## Manual Environment Setup (on a Mac)
 
 Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
