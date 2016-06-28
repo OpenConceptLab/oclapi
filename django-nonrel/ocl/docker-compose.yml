@@ -11,9 +11,7 @@ services:
     volumes:
       - ../../solr/:/opt/solr/server/solr/
   ocl:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: tmarzeion/oclapi:1.0
     command: bash startup.sh
     depends_on:
       - mongo
