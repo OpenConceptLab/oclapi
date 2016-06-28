@@ -1,0 +1,28 @@
+version: '2'
+services:
+  mongo:
+    extends:
+      file: docker-compose.yml
+      service: mongo
+  solr:
+    extends:
+      file: docker-compose.yml
+      service: solr
+  #service with 'links' can't be extended like mongo or solr
+  ocl_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bash startup.dev.sh
+    depends_on:
+      - mongo
+      - solr
+    links:
+      - "mongo:api.dev.openconceptlab.org"
+      - "solr:solr.dev.openconceptlab.org"
+    ports:
+      #ports for debugging
+      - "8001:8001"
+      - "2000:22"
+    volumes:
+      - .:/code
