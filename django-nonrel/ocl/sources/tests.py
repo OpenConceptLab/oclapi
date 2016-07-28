@@ -17,6 +17,12 @@ from users.models import UserProfile
 
 class SourceBaseTest(TestCase):
     def setUp(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -36,6 +42,13 @@ class SourceBaseTest(TestCase):
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
 
+
+    def tearDown(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
 
 class SourceTest(SourceBaseTest):
 
@@ -170,6 +183,9 @@ class SourceClassMethodTest(SourceBaseTest):
             website='www.source1.com',
             description='This is the first test source'
         )
+
+    def tearDown(self):
+        super(SourceClassMethodTest, self).tearDown()
 
     def test_persist_new_positive(self):
         kwargs = {

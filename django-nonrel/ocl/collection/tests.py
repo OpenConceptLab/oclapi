@@ -16,6 +16,12 @@ from users.models import UserProfile
 
 class CollectionBaseTest(TestCase):
     def setUp(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Collection.objects.filter().delete()
+        CollectionVersion.objects.filter().delete()
+
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -34,6 +40,14 @@ class CollectionBaseTest(TestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
+
+
+    def tearDown(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Collection.objects.filter().delete()
+        CollectionVersion.objects.filter().delete()
 
 
 class CollectionTest(CollectionBaseTest):

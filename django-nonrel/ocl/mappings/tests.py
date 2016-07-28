@@ -16,12 +16,12 @@ from django.utils.encoding import force_str
 from django.utils.unittest.case import skip
 from concepts.models import Concept, LocalizedText
 from mappings.models import Mapping
+from collection.models import Collection
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
-
 
 class OCLClient(Client):
 
@@ -56,6 +56,15 @@ class OCLClient(Client):
 class MappingBaseTest(TestCase):
 
     def setUp(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+        LocalizedText.objects.filter().delete()
+        Collection.objects.filter().delete()
+        Mapping.objects.filter().delete()
+
         self.user1 = User.objects.create_user(
             username='user1',
             email='user1@test.com',
@@ -162,6 +171,15 @@ class MappingBaseTest(TestCase):
         }
         Concept.persist_new(self.concept4, self.user1, **kwargs)
 
+    def tearDown(self):
+        LocalizedText.objects.filter().delete()
+        Mapping.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+        Collection.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        User.objects.filter().delete()
+        Organization.objects.filter().delete()
 
 class MappingTest(MappingBaseTest):
 
@@ -1059,6 +1077,9 @@ class MappingViewsTest(MappingBaseTest):
         self.mapping5 = Mapping.objects.get(external_id='mapping5')
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
+
+    def tearDown(self):
+        super(MappingBaseTest, self).tearDown()
 
     def test_mappings_list_positive(self):
         self.client.login(username='user1', password='user1')

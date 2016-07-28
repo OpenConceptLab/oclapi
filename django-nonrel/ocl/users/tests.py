@@ -17,12 +17,16 @@ from users.models import UserProfile, USER_OBJECT_TYPE
 class UserProfileTest(TestCase):
 
     def setUp(self):
+        User.objects.filter().delete()
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
             last_name='One',
             first_name='User'
         )
+
+    def tearDown(self):
+        User.objects.filter().delete()
 
     def test_create_userprofile_positive(self):
         self.assertFalse(UserProfile.objects.filter(mnemonic='user1').exists())

@@ -15,6 +15,17 @@ from users.models import UserProfile
 
 
 class OrganizationTestCase(TestCase):
+    def setUp(self):
+        Organization.objects.filter().delete()
+        User.objects.filter().delete()
+        Source.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+
+    def tearDown(self):
+        Organization.objects.filter().delete()
+        User.objects.filter().delete()
+        Source.objects.filter().delete()
+        UserProfile.objects.filter().delete()
 
     def test_create_organization_positive(self):
         self.assertFalse(Organization.objects.filter(mnemonic='org1').exists())

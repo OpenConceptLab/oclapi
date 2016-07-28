@@ -20,6 +20,15 @@ from users.models import UserProfile
 class ConceptBaseTest(TestCase):
 
     def setUp(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Source.objects.filter().delete()
+        LocalizedText.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
+        Collection.objects.filter().delete()
+
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -50,6 +59,7 @@ class ConceptBaseTest(TestCase):
             website='www.source1.com',
             description='This is the first test source'
         )
+
         kwargs = {
             'parent_resource': self.userprofile1
         }
@@ -76,6 +86,15 @@ class ConceptBaseTest(TestCase):
         self.name = LocalizedText.objects.create(name='Fred', locale='en')
         self.description = LocalizedText.objects.create(name='guapo', locale='es')
 
+    def tearDown(self):
+        User.objects.filter().delete()
+        UserProfile.objects.filter().delete()
+        Organization.objects.filter().delete()
+        Source.objects.filter().delete()
+        LocalizedText.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
+        Collection.objects.filter().delete()
 
 class ConceptTest(ConceptBaseTest):
 
@@ -821,6 +840,8 @@ class ConceptReferenceBaseTest(ConceptBaseTest):
         self.version2 = ConceptVersion.for_concept(self.concept2, 'version2')
         self.version2.save()
 
+    def tearDown(self):
+        super(ConceptReferenceClassMethodsTest, self).tearDown()
 
 class ConceptReferenceTest(ConceptReferenceBaseTest):
 
@@ -979,6 +1000,9 @@ class ConceptReferenceClassMethodsTest(ConceptReferenceBaseTest):
         }
         Collection.persist_new(self.collection2, self.user1, **kwargs)
         self.collection2 = Collection.objects.get(id=self.collection2.id)
+
+    def tearDown(self):
+        super(ConceptReferenceClassMethodsTest, self).tearDown()
 
     def test_persist_new_positive(self):
         concept_reference = ConceptReference(
