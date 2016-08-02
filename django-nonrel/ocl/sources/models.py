@@ -11,7 +11,7 @@ from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, A
 from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
-
+HEAD = 'HEAD'
 
 class Source(ConceptContainerModel):
     source_type = models.TextField(blank=True)
@@ -131,8 +131,13 @@ class SourceVersion(ConceptContainerVersionModel):
             raise ValidationError("source must be of type 'Source'")
         if not source.id:
             raise ValidationError("source must have an Object ID.")
+
+        mnemonic = label
+        if label == 'INITIAL':
+            mnemonic = HEAD
+
         return SourceVersion(
-            mnemonic=label,
+            mnemonic=mnemonic,
             name=source.name,
             full_name=source.full_name,
             source_type=source.source_type,

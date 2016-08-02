@@ -704,6 +704,26 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertIsNone(version1.previous_version)
         self.assertEquals(1, self.source1.num_versions)
 
+    def test_for_base_object_initial_positive(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
+        version1.full_clean()
+        version1.save()
+        self.assertEquals(version1.mnemonic, 'HEAD')
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(self.source1.name, version1.name)
+        self.assertEquals(self.source1.full_name, version1.full_name)
+        self.assertEquals(self.source1.source_type, version1.source_type)
+        self.assertEquals(self.source1.public_access, version1.public_access)
+        self.assertEquals(self.source1.default_locale, version1.default_locale)
+        self.assertEquals(self.source1.supported_locales, version1.supported_locales)
+        self.assertEquals(self.source1.website, version1.website)
+        self.assertEquals(self.source1.description, version1.description)
+        self.assertEquals(self.source1.external_id, version1.external_id)
+        self.assertFalse(version1.released)
+        self.assertIsNone(version1.parent_version)
+        self.assertIsNone(version1.previous_version)
+        self.assertEquals(1, self.source1.num_versions)
+
     def test_for_base_object_negative__no_source(self):
         with self.assertRaises(ValidationError):
             version1 = SourceVersion.for_base_object(None, 'version1')
