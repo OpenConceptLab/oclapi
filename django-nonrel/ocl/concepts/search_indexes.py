@@ -48,6 +48,13 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
                 locales.add(name.locale)
         return list(locales)
 
+    def prepare_name(self, obj):
+        names = set()
+        for name in obj.names:
+            if name.locale is not None:
+                names.add(name.name)
+        return list(names)
+
     def prepare_source_version(self, obj):
         source_version_ids = []
         source = obj.source
