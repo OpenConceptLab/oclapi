@@ -268,6 +268,13 @@ class ConceptVersion(ResourceVersionModel):
         return names
 
     @property
+    def all_names(self):
+        names = []
+        for name in self.names:
+            names.append(name.name)
+        return names
+
+    @property
     def descriptions_for_default_locale(self):
         descriptions = []
         for desc in self.descriptions:
