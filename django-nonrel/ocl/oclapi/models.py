@@ -12,6 +12,8 @@ from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource, reverse_resource_version
 from settings import DEFAULT_LOCALE
 
+HEAD = 'HEAD'
+
 NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
 
 ACCESS_TYPE_VIEW = 'View'
@@ -175,6 +177,14 @@ class ResourceVersionModel(BaseModel):
     def get_latest_version_of(cls, versioned_object):
         versions = versioned_object.get_version_model().objects.filter(versioned_object_id=versioned_object.id, is_active=True).order_by('-created_at')
         return versions[0] if versions else None
+
+    @classmethod
+    def get_head_of(cls, versioned_object):
+        try:
+            version = versioned_object.get_version_model().objects.get(versioned_object_id=versioned_object.id, is_active=True, mnemonic=HEAD)
+            return version
+        except:
+            return None
 
 
 class ConceptContainerModel(SubResourceBaseModel):
