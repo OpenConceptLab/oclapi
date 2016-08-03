@@ -277,6 +277,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.concepts))
         self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(concept_version.mnemonic, concept_version.id)
 
     def test_persist_new_negative__no_owner(self):
         concept = Concept(

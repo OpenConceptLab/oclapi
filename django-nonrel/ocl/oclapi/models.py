@@ -241,11 +241,16 @@ class ConceptContainerModel(SubResourceBaseModel):
         try:
             obj.save(**kwargs)
             version_model = cls.get_version_model()
-            version = version_model.for_base_object(obj, 'INITIAL')
+            label = 'INITIAL'
+            version = version_model.for_base_object(obj, label)
             version.released = True
-            version.save()
-            version.mnemonic = version.id
-            version.save()
+
+            if version.mnemonic == label:
+                version.save()
+                version.mnemonic = version.id
+            else:
+                version.save()
+
             persisted = True
         finally:
             if not persisted:
