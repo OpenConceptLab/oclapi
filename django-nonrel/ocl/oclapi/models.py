@@ -253,7 +253,6 @@ class ConceptContainerModel(SubResourceBaseModel):
             version_model = cls.get_version_model()
             label = 'INITIAL'
             version = version_model.for_base_object(obj, label)
-            version.released = True
 
             if version.mnemonic == label:
                 version.save()

@@ -199,6 +199,8 @@ class SourceClassMethodTest(SourceBaseTest):
         source_version = SourceVersion.objects.get(versioned_object_id=source.id)
         self.assertEquals(1, source.num_versions)
         self.assertEquals(source_version, SourceVersion.get_latest_version_of(source))
+        self.assertEquals(source_version.mnemonic, 'HEAD')
+        self.assertFalse(source_version.released)
 
     def test_persist_new_negative__no_parent(self):
         errors = Source.persist_new(self.new_source, self.user1)
