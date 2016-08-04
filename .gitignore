@@ -20,5 +20,5 @@ __pycache__
 logs
 # Ours
 *.sublime-*
-
+testdata
 .DS_Store
