@@ -11,7 +11,7 @@ from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, A
 from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
-
+HEAD = 'HEAD'
 
 class Source(ConceptContainerModel):
     source_type = models.TextField(blank=True)
@@ -68,10 +68,14 @@ class SourceVersion(ConceptContainerVersionModel):
         if save_previous_version:
             previous_version.save()
 
+
     def seed_concepts(self):
-        seed_concepts_from = self.previous_version or self.parent_version
+        seed_concepts_from = self.head_sibling()
         if seed_concepts_from:
             self.concepts = list(seed_concepts_from.concepts)
+
+    def head_sibling(self):
+        return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version
@@ -131,8 +135,13 @@ class SourceVersion(ConceptContainerVersionModel):
             raise ValidationError("source must be of type 'Source'")
         if not source.id:
             raise ValidationError("source must have an Object ID.")
+
+        mnemonic = label
+        if label == 'INITIAL':
+            mnemonic = HEAD
+
         return SourceVersion(
-            mnemonic=label,
+            mnemonic=mnemonic,
             name=source.name,
             full_name=source.full_name,
             source_type=source.source_type,

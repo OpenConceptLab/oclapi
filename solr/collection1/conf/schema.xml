@@ -168,7 +168,7 @@
 
     <field name="lastUpdate" type="date" indexed="true" stored="true" multiValued="false" />
 
-    <field name="name" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="name" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="sourceType" type="lowercase" indexed="true" stored="true" multiValued="false" />
 

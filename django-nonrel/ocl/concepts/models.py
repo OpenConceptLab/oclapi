@@ -268,6 +268,13 @@ class ConceptVersion(ResourceVersionModel):
         return names
 
     @property
+    def all_names(self):
+        names = []
+        for name in self.names:
+            names.append(name.name)
+        return names
+
+    @property
     def descriptions_for_default_locale(self):
         descriptions = []
         for desc in self.descriptions:
@@ -410,7 +417,7 @@ class ConceptVersion(ResourceVersionModel):
         obj.version_created_by = user.username
         previous_version = obj.previous_version
         previous_was_latest = previous_version.is_latest_version and obj.is_latest_version
-        source_version = SourceVersion.get_latest_version_of(obj.versioned_object.parent)
+        source_version = SourceVersion.get_head_of(obj.versioned_object.parent)
         persisted = False
         errored_action = 'saving new concept version'
         try:

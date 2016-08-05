@@ -83,7 +83,7 @@ class ConceptBaseTest(TestCase):
         Source.persist_new(self.source2, self.user2, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
 
-        self.name = LocalizedText.objects.create(name='Fred', locale='en')
+        self.name = LocalizedText.objects.create(name='Fred', locale='es')
         self.description = LocalizedText.objects.create(name='guapo', locale='es')
 
     def tearDown(self):
@@ -277,6 +277,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.concepts))
         self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(concept_version.mnemonic, concept_version.id)
 
     def test_persist_new_negative__no_owner(self):
         concept = Concept(
@@ -699,6 +700,10 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion.objects.get(id=concept_version.id)
         self.assertEquals(self.source1.public_access, concept_version.public_access)
 
+    def test_concept_version_all_names(self):
+        concept_version = ConceptVersion.objects.get(versioned_object_id=self.concept1.id)
+        expected_names_list = ['concept1', 'Fred']
+        self.assertItemsEqual(concept_version.all_names, expected_names_list)
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 

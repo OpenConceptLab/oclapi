@@ -67,6 +67,7 @@ class ImportActionHelper(object):
         for action_value, num in action_count.items():
             str_descriptor += ' %s %s,' % (num, ImportActionHelper.get_action_string(action_value))
         str_descriptor += '\n'
+        return str_descriptor
 
 
 class MockRequest(object):

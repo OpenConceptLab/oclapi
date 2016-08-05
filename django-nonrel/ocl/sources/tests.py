@@ -12,6 +12,7 @@ from django.test import TestCase
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
+from concepts.models import Concept, LocalizedText, ConceptVersion
 from users.models import UserProfile
 
 
@@ -22,6 +23,8 @@ class SourceBaseTest(TestCase):
         Organization.objects.filter().delete()
         Source.objects.filter().delete()
         SourceVersion.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
 
         self.user1 = User.objects.create(
             username='user1',
@@ -41,13 +44,15 @@ class SourceBaseTest(TestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
-
+        self.name = LocalizedText.objects.create(name='Fred', locale='es')
 
     def tearDown(self):
         User.objects.filter().delete()
         UserProfile.objects.filter().delete()
         Organization.objects.filter().delete()
         Source.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
         SourceVersion.objects.filter().delete()
 
 class SourceTest(SourceBaseTest):
@@ -199,6 +204,8 @@ class SourceClassMethodTest(SourceBaseTest):
         source_version = SourceVersion.objects.get(versioned_object_id=source.id)
         self.assertEquals(1, source.num_versions)
         self.assertEquals(source_version, SourceVersion.get_latest_version_of(source))
+        self.assertEquals(source_version.mnemonic, 'HEAD')
+        self.assertFalse(source_version.released)
 
     def test_persist_new_negative__no_parent(self):
         errors = Source.persist_new(self.new_source, self.user1)
@@ -648,6 +655,60 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version3.parent_version_mnemonic)
         self.assertEquals(3, self.source1.num_versions)
 
+    def test_seed_concepts(self):
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=self.source1, concept_class='First', names=[self.name])
+        concept2 = Concept(mnemonic='concept2', created_by=self.user1, parent=self.source1, concept_class='Second', names=[self.name])
+
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
+        head.full_clean()
+        head.save()
+
+
+        kwargs = {'parent_resource': self.source1}
+
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        version1 = SourceVersion(name='version1', mnemonic='v1', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
+        SourceVersion.persist_new(version1)
+
+        Concept.persist_new(concept2, self.user1, **kwargs)
+
+        self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
+        self.assertTrue(Concept.objects.filter(mnemonic='concept2').exists())
+        self.assertEquals(len(SourceVersion.objects.get(id=head.id).concepts), 2)
+        self.assertEquals(len(SourceVersion.objects.get(mnemonic=version1.mnemonic).concepts), 1)
+
+        source_version2 = SourceVersion(name='version2', mnemonic='version2', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
+
+        source_version2.seed_concepts
+
+        self.assertEquals(source_version2.concepts, head.concepts)
+
+    def test_head_sibling(self):
+        source_version1 = SourceVersion(
+            name='head',
+            mnemonic='HEAD',
+            versioned_object=self.source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+
+        source_version2 = SourceVersion(
+            name='version2',
+            mnemonic='version2',
+            versioned_object=self.source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+
+        source_version1.full_clean()
+        source_version1.save()
+        source_version2.full_clean()
+        source_version2.save()
+
+        self.assertEquals(source_version1.head_sibling(), source_version1)
+        self.assertEquals(source_version2.head_sibling(), source_version1)
 
 class SourceVersionClassMethodTest(SourceBaseTest):
 
@@ -689,6 +750,26 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         version1.full_clean()
         version1.save()
         self.assertEquals(version1.mnemonic, 'version1')
+        self.assertEquals(self.source1, version1.versioned_object)
+        self.assertEquals(self.source1.name, version1.name)
+        self.assertEquals(self.source1.full_name, version1.full_name)
+        self.assertEquals(self.source1.source_type, version1.source_type)
+        self.assertEquals(self.source1.public_access, version1.public_access)
+        self.assertEquals(self.source1.default_locale, version1.default_locale)
+        self.assertEquals(self.source1.supported_locales, version1.supported_locales)
+        self.assertEquals(self.source1.website, version1.website)
+        self.assertEquals(self.source1.description, version1.description)
+        self.assertEquals(self.source1.external_id, version1.external_id)
+        self.assertFalse(version1.released)
+        self.assertIsNone(version1.parent_version)
+        self.assertIsNone(version1.previous_version)
+        self.assertEquals(1, self.source1.num_versions)
+
+    def test_for_base_object_initial_positive(self):
+        version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
+        version1.full_clean()
+        version1.save()
+        self.assertEquals(version1.mnemonic, 'HEAD')
         self.assertEquals(self.source1, version1.versioned_object)
         self.assertEquals(self.source1.name, version1.name)
         self.assertEquals(self.source1.full_name, version1.full_name)
@@ -953,7 +1034,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertNotEquals(external_id, version2.external_id)
 
     def test_persist_changes_positive__seed_from_previous(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
         version1.concepts = [1]
         version1.full_clean()
         version1.save()
@@ -969,7 +1050,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         external_id = version2.external_id
 
         id = version2.id
-        version2._previous_version_mnemonic = 'version1'
+        version2._previous_version_mnemonic = version1.mnemonic
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
@@ -1000,12 +1081,12 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals([1], version2.concepts)
 
     def test_persist_changes_positive__seed_from_parent(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
         version1.concepts = [2]
         version1.full_clean()
         version1.save()
 
-        version2 = SourceVersion.for_base_object(self.source1, 'version2')
+        version2 = SourceVersion.for_base_object(self.source1, 'version1')
         version2.full_clean()
         version2.save()
         self.assertIsNone(version2.parent_version)
@@ -1016,7 +1097,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         external_id = version2.external_id
 
         id = version2.id
-        version2._parent_version_mnemonic = 'version1'
+        version2._parent_version_mnemonic = version1.mnemonic
         version2.mnemonic = "%s-prime" % mnemonic
         version2.released = not released
         version2.description = "%s-prime" % description
@@ -1047,7 +1128,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals([2], version2.concepts)
 
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
-        version1 = SourceVersion.for_base_object(self.source1, 'version1')
+        version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
         version1.concepts = [1]
         version1.full_clean()
         version1.save()
@@ -1069,7 +1150,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
 
         id = version3.id
         version3._parent_version_mnemonic = 'version2'
-        version3._previous_version_mnemonic = 'version1'
+        version3._previous_version_mnemonic = version1.mnemonic
         version3.mnemonic = "%s-prime" % mnemonic
         version3.released = not released
         version3.description = "%s-prime" % description

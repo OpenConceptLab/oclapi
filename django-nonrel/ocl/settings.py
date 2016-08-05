@@ -176,7 +176,7 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://solr.dev.openconceptlab.org:8983/solr/collection1'
+            'URL': 'http://localhost:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
@@ -261,16 +261,18 @@ class Local(Common):
     EMAIL_PORT = 1025
     EMAIL_BACKEND = values.Value('django.core.mail.backends.console.EmailBackend')
 
+    INSTALLED_APPS = Common.INSTALLED_APPS
+
     DATABASES = {
         'default': {
             'ENGINE': 'django_mongodb_engine',
-            'HOST': 'api.dev.openconceptlab.org',
+            'HOST': 'localhost',
             'NAME': 'ocl',
         }
     }
 
-    BROKER_URL = 'mongodb://api.dev.openconceptlab.org:27017/ocl'
-    INTERNAL_IPS = ('127.0.0.1',)
+    BROKER_URL = 'mongodb://localhost:27017/ocl'
+    INTERNAL_IPS = ('localhost',)
 
 
 class Production(Common):
