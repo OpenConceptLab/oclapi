@@ -10,7 +10,9 @@ from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 
 
 class CollectionListSerializer(serializers.Serializer):
+    # TODO id and short code are same .. remove one of them
     id = serializers.CharField(required=True, source='mnemonic')
+    short_code = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
     url = serializers.CharField()
     owner = serializers.CharField(source='parent_resource')
