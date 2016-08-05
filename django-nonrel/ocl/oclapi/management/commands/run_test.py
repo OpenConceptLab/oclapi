@@ -6,8 +6,14 @@ __author__ = 'Sny'
 
 
 class Command(BaseCommand):
-    """ Command to import JSON lines mapping file into OCL """
     help = 'run tests for oclapi'
 
     def handle(self, *args, **options):
-        execute_from_command_line(['manage.py', 'test', 'users', 'concepts', 'orgs', 'oclapi', 'sources', 'collection', 'mappings'])
+        if len(args) == 0:
+            _args = ['manage.py', 'test', 'users', 'concepts', 'orgs', 'oclapi', 'sources', 'collection', 'mappings']
+        else:
+            _args = ['manage.py', 'test']
+            for item in args:
+                _args.append(item)
+        execute_from_command_line(_args)
+
