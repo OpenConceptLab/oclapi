@@ -68,10 +68,14 @@ class SourceVersion(ConceptContainerVersionModel):
         if save_previous_version:
             previous_version.save()
 
+
     def seed_concepts(self):
-        seed_concepts_from = self.previous_version or self.parent_version
+        seed_concepts_from = self.head_sibling()
         if seed_concepts_from:
             self.concepts = list(seed_concepts_from.concepts)
+
+    def head_sibling(self):
+        return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version

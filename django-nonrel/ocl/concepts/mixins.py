@@ -33,7 +33,13 @@ class DictionaryItemMixin(object):
 
         parent_resource_version = kwargs.pop('parent_resource_version', None)
         if parent_resource_version is None:
-            parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
+            version_model = parent_resource.get_version_model()
+
+            if version_model.__name__ in ['SourceVersion', 'CollectionVersion']:
+                parent_resource_version = version_model.get_head_of(parent_resource)
+            else:
+                parent_resource_version = version_model.get_latest_version_of(parent_resource)
+
         child_list_attribute = kwargs.pop('child_list_attribute', 'concepts')
 
         initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
