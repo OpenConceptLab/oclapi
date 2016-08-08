@@ -52,6 +52,9 @@ class ConceptsImporter(object):
     self.user = User.objects.filter(is_superuser=True)[0]
     self.concept_version_ids = set(self.source_version.concepts)
     cnt = 0
+
+    self.create_concept_versions_map()
+
     for line in self.concepts_file:
 
         # Load the next JSON line
@@ -154,8 +157,7 @@ class ConceptsImporter(object):
       # If concept exists, update the concept with the new data (ignoring retired status for now)
       try:
           concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
-          concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id,
-                                                       id__in=self.concept_version_ids)
+          concept_version = ConceptVersion.objects.get(id=self.concepts_versions_map[concept.id])
           
           update_action = self.update_concept_version(concept_version, data)
 
@@ -187,7 +189,7 @@ class ConceptsImporter(object):
           concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
 
       # Concept exists, but not in this source version
-      except ConceptVersion.DoesNotExist:
+      except (ConceptVersion.DoesNotExist, KeyError):
           raise InvalidStateException(
               "Source %s has concept %s, but source version %s does not." %
               (source.mnemonic, concept.mnemonic, self.source_version.mnemonic))
@@ -291,3 +293,13 @@ class ConceptsImporter(object):
           self.action_count[update_action] += 1
       else:
           self.action_count[update_action] = 1
+
+  def create_concept_versions_map(self):
+    #Create map for all concept ids to concept versions
+    try:
+      versions_list = ConceptVersion.objects.values('id','versioned_object_id').filter(id__in=self.concept_version_ids)
+      self.concepts_versions_map = dict((x['versioned_object_id'], x['id']) for x in versions_list)
+    except KeyError:
+      str_log = "Map couldn't be created, possible corruption of data"
+      raise InvalidStateException(str_log)
+      
