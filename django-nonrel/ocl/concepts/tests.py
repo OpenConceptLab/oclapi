@@ -18,8 +18,6 @@ from users.models import UserProfile
 import json
 from django.core.urlresolvers import reverse
 
-
-
 class ConceptBaseTest(TestCase):
 
     def setUp(self):

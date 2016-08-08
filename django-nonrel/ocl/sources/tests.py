@@ -14,7 +14,8 @@ from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from users.models import UserProfile
-
+from django.core.urlresolvers import reverse
+import json
 
 class SourceBaseTest(TestCase):
     def setUp(self):
@@ -171,7 +172,6 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(self.userprofile1.mnemonic, source.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
         self.assertEquals(0, source.num_versions)
-
 
 class SourceClassMethodTest(SourceBaseTest):
 
@@ -1181,4 +1181,68 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
         self.assertEquals([1], version3.concepts)
+
+class SourceVersionListViewTest(SourceBaseTest):
+
+    def test_get(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+        source = Source.objects.get(id=source.id)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            public_access='Edit'
+        )
+        source_version.full_clean()
+        source_version.save()
+
+        concept = Concept(
+            mnemonic='concept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='not First',
+            external_id='EXTID',
+            names=[self.name],
+        )
+        display_name = LocalizedText(
+            name='concept',
+            locale='en'
+        )
+        concept.names.append(display_name)
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+
+
+        kwargs = {'org': self.org1.mnemonic, 'source': source.mnemonic}
+
+        response = self.client.get(reverse('sourceversion-list', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+
+        content = json.loads(response.content)
+        self.assertEquals(2,len(content))
+        self.assertEquals(content[0]['id'], 'HEAD')
+
+
 
