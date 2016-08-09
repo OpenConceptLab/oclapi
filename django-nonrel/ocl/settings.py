@@ -135,6 +135,7 @@ class Common(Configuration):
         'concepts',
         'collection',
         'mappings',
+        'integration_tests',
     )
 
     # Django Rest Framework configuration
