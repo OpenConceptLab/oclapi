@@ -156,13 +156,13 @@ class MappingsImporter(object):
         serializer = MappingCreateSerializer(
             data=data, context={'request': MockRequest(self.user)})
         if not serializer.is_valid():
-            raise IllegalInputException(
-                'Could not parse mapping %s due to %s' % (data, serializer.errors))
+            raise IllegalInputException(serializer.errors)
 
         # If mapping exists, update the mapping with the new data
         try:
             # Build the query
             mapping = serializer.save(commit=False)
+
             query = Q(parent_id=self.source.id, map_type=mapping.map_type,
                       from_concept=mapping.from_concept)
             if mapping.to_concept:  # Internal mapping
@@ -204,7 +204,7 @@ class MappingsImporter(object):
 
             # Log the insert
             if update_action:
-                str_log = 'Created new mapping: %s\n' % data
+                str_log = 'Created new mapping: to - %s\n' % (data.get('to_concept_url') or (data.get('to_source_url') + ':' + data.get('to_concept_code')))
                 self.stdout.write(str_log)
                 logger.info(str_log)
 
