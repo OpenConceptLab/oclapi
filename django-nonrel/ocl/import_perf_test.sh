@@ -10,5 +10,5 @@ python manage.py import_concepts_to_source --source $SOURCE --token PERF_TEST_TO
 yes | python manage.py rebuild_index
 end=`date +%s`
 runtime=$((end-start))
-echo "Took $(runtime) sec to complete concepts"
+echo "Took ${runtime} sec to complete concepts"
 # python manage.py import_mappings_to_source --source 572343325162890014a3424b --token PERF_TEST_TOKEN perf_data/ciel_20160711_mappings_2k.json
