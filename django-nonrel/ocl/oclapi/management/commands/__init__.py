@@ -113,6 +113,11 @@ class ImportCommand(BaseCommand):
                     dest='profile',
                     default=False,
                     help='Compute and dislpay cProfile statistics'),
+        make_option('--inline-indexing',
+                    action='store',
+                    dest='keep_haystack',
+                    default=False,
+                    help='Keep the inline indexing logic, so that we dont run reindex at the end.'),
     )
 
 
@@ -179,8 +184,8 @@ class ImportCommand(BaseCommand):
             input_file = open(input_filename, 'rb')
         except IOError:
             raise CommandError('Could not open input file %s' % input_filename)
-
-        haystack.signal_processor = BaseSignalProcessor(haystack.connections, haystack.connection_router)
+        if not options['keep_haystack']:
+            haystack.signal_processor = BaseSignalProcessor(haystack.connections, haystack.connection_router)
 
         # Perform the import
         self.do_import(user, source, input_file, options)
