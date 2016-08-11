@@ -4,4 +4,4 @@ echo "from django.contrib.auth.models import User; user = User.objects.create_su
 
 python manage.py syncdb --noinput --configuration='Showcase'
 
-python manage.py runserver 0.0.0.0:8000 --configuration='Showcase'
+python manage.py runserver 0.0.0.0:8000 --configuration='Showcase' --settings='settings_showcase'

@@ -177,7 +177,7 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://localhost:8983/solr/collection1'
+            'URL': 'http://192.241.144.33:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
@@ -253,129 +253,16 @@ class Common(Configuration):
         }
     }
 
-class Local(Common):
-    """
-    Settings for local/Mac development
-    """
-    EMAIL_HOST = "localhost"
-    EMAIL_PORT = 1025
-    EMAIL_BACKEND = values.Value('django.core.mail.backends.console.EmailBackend')
-
+class Showcase(Common):
     INSTALLED_APPS = Common.INSTALLED_APPS
 
     DATABASES = {
         'default': {
             'ENGINE': 'django_mongodb_engine',
-            'HOST': 'localhost',
+            'HOST': '192.241.144.33',
             'NAME': 'ocl',
         }
     }
 
-    BROKER_URL = 'mongodb://localhost:27017/ocl'
-    INTERNAL_IPS = ('localhost',)
-
-class Test(Local):
-    """
-    Settings for unit testing
-    """
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_mongodb_engine',
-            'HOST': 'localhost',
-            'NAME': 'test',
-        }
-    }
-    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
-
-
-class Production(Common):
-    INSTALLED_APPS = Common.INSTALLED_APPS
-
-    SECRET_KEY = values.SecretValue()
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_mongodb_engine',
-            'HOST': 'localhost',
-            'NAME': 'ocl',
-        }
-    }
-
-    BROKER_URL = 'mongodb://localhost:27017/ocl'
-
-    # batch logger is for batch jobs like import and export
-    # we cannot have multiple processes mixing log output until
-    # we move to a centralized logger service
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'filters': {
-            'require_debug_false': {
-                '()': 'django.utils.log.RequireDebugFalse'
-            }
-        },
-
-
-        'formatters': {
-            'normal': {
-                'format': "[%(asctime)s] %(levelname)-8s: %(message)s",
-                'datefmt': "%Y/%m/%d %H:%M:%S"
-            },
-        },
-
-        'handlers': {
-            'mail_admins': {
-                'level': 'ERROR',
-                'filters': ['require_debug_false'],
-                'class': 'django.utils.log.AdminEmailHandler'
-            },
-        'null': {
-            'class': 'django.utils.log.NullHandler',
-            },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'normal',
-            },
-        'logfile': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'when': 'midnight',
-            'filename': '/var/log/ocl/ocl_api.log',
-            'formatter': 'normal',
-            },
-        'batch_log_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'when': 'midnight',
-            'filename': '/var/log/ocl/ocl_api_batch.log',
-            'formatter': 'normal',
-            },
-        'celery_log_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'when': 'midnight',
-            'filename': '/var/log/ocl/ocl_api_celery.log',
-            'formatter': 'normal',
-            },
-        },
-
-        'loggers': {
-            'django.request': {
-                'handlers': ['mail_admins'],
-                'level': 'ERROR',
-                'propagate': True,
-            },
-            'oclapi': {
-                'handlers': ['logfile', ],
-                'level': 'DEBUG',
-            },
-            'batch': {
-                'handlers': ['batch_log_file', ],
-                'level': 'DEBUG',
-            },
-            'celery': {
-                'handlers': ['celery_log_file', ],
-                'level': 'DEBUG',
-            },
-        }
-    }
+    BROKER_URL = 'mongodb://192.241.144.33:27017/ocl'
+    INTERNAL_IPS = ('192.241.144.33',)
