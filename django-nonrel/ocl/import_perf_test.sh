@@ -11,6 +11,11 @@ yes | python manage.py rebuild_index
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import concepts"
+if [ $runtime -ge 110 ];
+then
+	echo >&2 "It has taken longer to import concepts"
+	exit 1;
+fi
 
 start=`date +%s`
 python manage.py import_mappings_to_source --source $SOURCE --token PERF_TEST_TOKEN perf_data/ciel_20160711_mappings_2k.json
@@ -18,6 +23,11 @@ yes | python manage.py rebuild_index
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import mappings"
+if [ $runtime -ge 410 ];
+then
+	echo >&2 "It has taken longer to import mappings"
+	exit 1;
+fi
 
 #diff import
 start=`date +%s`
@@ -25,9 +35,19 @@ python manage.py import_concepts_to_source --source $SOURCE --token PERF_TEST_TO
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to diff import concepts"
+if [ $runtime -ge 30 ];
+then
+	echo >&2 "It has taken longer to re-import concepts"
+	exit 1;
+fi
 
 start=`date +%s`
 python manage.py import_mappings_to_source --source $SOURCE --token PERF_TEST_TOKEN --inline-indexing true perf_data/ciel_20160711_mappings_2k.json
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to diff import mappings"
+if [ $runtime -ge 120 ];
+then
+	echo >&2 "It has taken longer to re-import mappings"
+	exit 1;
+fi
