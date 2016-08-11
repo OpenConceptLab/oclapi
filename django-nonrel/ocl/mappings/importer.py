@@ -36,7 +36,7 @@ class MappingsImporter(object):
         self.test_mode = False
         self.action_count = {}
 
-    def import_mappings(self, new_version=False, total=0, test_mode=False, **kwargs):
+    def import_mappings(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
         """ Main mapping importer loop """
         logger.info('Import mappings to source...')
         self.test_mode = test_mode
@@ -116,7 +116,7 @@ class MappingsImporter(object):
         logger.info(str_log)
 
         # Deactivate old records
-        if kwargs['deactivate_old_records']:
+        if deactivate_old_records:
             str_log = 'Deactivating old mappings...\n'
             self.stdout.write(str_log)
             logger.info(str_log)
