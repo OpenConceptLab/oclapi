@@ -1,0 +1,28 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+  solr:
+    image: solr:5.5
+    ports:
+      - "8983:8983"
+    volumes:
+      - ../../solr/:/opt/solr/server/solr/
+  ocl:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash startup_showcase.sh
+    depends_on:
+      - mongo
+      - solr
+    links:
+      - "mongo:api.dev.openconceptlab.org"
+      - "solr:solr.dev.openconceptlab.org"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+
