@@ -4,9 +4,10 @@ import logging
 from django.core.management import CommandError
 from django.db.models import Q
 from mappings.models import Mapping
+from concepts.models import Concept
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
 from oclapi.management.commands import MockRequest, ImportActionHelper
-from sources.models import SourceVersion
+from sources.models import Source, SourceVersion
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
@@ -28,6 +29,7 @@ class MappingsImporter(object):
     def __init__(self, source, mappings_file, output_stream, error_stream, user):
         """ Initialize mapping importer """
         self.source = source
+        self.sources_cache = {}
         self.mappings_file = mappings_file
         self.stdout = output_stream
         self.stderr = error_stream
@@ -153,24 +155,24 @@ class MappingsImporter(object):
         update_action = ImportActionHelper.IMPORT_ACTION_NONE
 
         # Parse the mapping JSON to ensure that it is a valid mapping (not just valid JSON)
-        serializer = MappingCreateSerializer(
-            data=data, context={'request': MockRequest(self.user)})
-        if not serializer.is_valid():
-            raise IllegalInputException(serializer.errors)
+        # serializer = MappingCreateSerializer(
+        #     data=data, context={'request': MockRequest(self.user)})
+        # if not serializer.is_valid():
+        #     raise IllegalInputException(serializer.errors)
 
         # If mapping exists, update the mapping with the new data
         try:
             # Build the query
-            mapping = serializer.save(commit=False)
+            # mapping = serializer.save(commit=False)
 
-            query = Q(parent_id=self.source.id, map_type=mapping.map_type,
-                      from_concept=mapping.from_concept)
-            if mapping.to_concept:  # Internal mapping
-                query = query & Q(to_concept=mapping.to_concept)
+            query = Q(parent_id=self.source.id, map_type=data['map_type'],
+                      from_concept_id=self.get_concept_id(data['from_concept_url']))
+            if data.get('to_concept_url'):  # Internal mapping
+                query = query & Q(to_concept_id=self.get_concept_id(data['to_concept_url']))
             else:   # External mapping
-                query = query & Q(to_source_id=mapping.to_source.id,
-                                  to_concept_code=mapping.to_concept_code,
-                                  to_concept_name=mapping.to_concept_name)
+                query = query & Q(to_source_id=self.get_source_id(data['to_source_url']),
+                                  to_concept_code=data['to_concept_code'],
+                                  to_concept_name=data.get('to_concept_name'))
 
             # Perform the query - throws exception if does not exist
             mapping = Mapping.objects.get(query)
@@ -282,3 +284,11 @@ class MappingsImporter(object):
             self.action_count[update_action] += 1
         else:
             self.action_count[update_action] = 1
+    def get_concept_id(self, concept_url):
+        return Concept.objects.get(uri=concept_url).id
+    def get_source_id(self, source_url):
+        result = self.sources_cache.get('source_url')
+        if not result:
+            result = Source.objects.get(uri=source_url).id
+            self.sources_cache[source_url] = result
+        return result
