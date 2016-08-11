@@ -275,6 +275,30 @@ class Local(Common):
     BROKER_URL = 'mongodb://localhost:27017/ocl'
     INTERNAL_IPS = ('localhost',)
 
+class Showcase(Common):
+    """
+    Settings for local/Mac development
+    """
+    INSTALLED_APPS = Common.INSTALLED_APPS
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
+            'URL': 'http://192.241.144.33:8983/solr/collection1'
+        },
+    }
+
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_mongodb_engine',
+            'HOST': '192.241.144.33',
+            'NAME': 'ocl',
+        }
+    }
+
+    BROKER_URL = 'mongodb://192.241.144.33:27017/ocl'
+    INTERNAL_IPS = ('192.241.144.33',)
+
 class Test(Local):
     """
     Settings for unit testing
