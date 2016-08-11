@@ -11,7 +11,7 @@ yes | python manage.py rebuild_index
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import concepts"
-if [ $runtime -ge 110 ];
+if [ $runtime -ge 120 ];
 then
 	echo >&2 "It has taken longer to import concepts"
 	exit 1;
