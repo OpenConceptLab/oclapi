@@ -10,7 +10,7 @@ from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource, reverse_resource_version
-from settings import DEFAULT_LOCALE
+from oclapi.settings.common import Common
 
 HEAD = 'HEAD'
 
@@ -190,7 +190,7 @@ class ResourceVersionModel(BaseModel):
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
-    default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
+    default_locale = models.TextField(default=Common.DEFAULT_LOCALE, blank=True)
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -289,7 +289,7 @@ class ConceptContainerModel(SubResourceBaseModel):
 class ConceptContainerVersionModel(ResourceVersionModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
-    default_locale = models.TextField(default=DEFAULT_LOCALE, blank=True)
+    default_locale = models.TextField(default=Common.DEFAULT_LOCALE, blank=True)
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)

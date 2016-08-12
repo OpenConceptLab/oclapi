@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
+os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
 
 # order of imports seems to matter. Do the django-configuration
 # import first

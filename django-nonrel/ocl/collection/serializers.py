@@ -4,9 +4,9 @@ from concepts.models import ConceptReference
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
-from settings import DEFAULT_LOCALE
 from collection.models import Collection, CollectionVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
+from oclapi.settings.common import Common
 
 
 class CollectionListSerializer(serializers.Serializer):
@@ -40,7 +40,7 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.description = attrs.get('description', collection.description)
         collection.collection_type = attrs.get('collection_type', collection.collection_type)
         collection.public_access = attrs.get('public_access', collection.public_access or DEFAULT_ACCESS_TYPE)
-        collection.default_locale=attrs.get('default_locale', collection.default_locale or DEFAULT_LOCALE)
+        collection.default_locale=attrs.get('default_locale', collection.default_locale or Common.DEFAULT_LOCALE)
         collection.website = attrs.get('website', collection.website)
         collection.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else collection.supported_locales
         collection.extras = attrs.get('extras', collection.extras)

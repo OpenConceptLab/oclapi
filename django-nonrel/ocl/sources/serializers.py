@@ -4,10 +4,10 @@ from concepts.models import Concept
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
-from settings import DEFAULT_LOCALE
 from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from tasks import update_children_for_source_version
+from oclapi.settings.common import Common
 
 
 class SourceListSerializer(serializers.Serializer):
@@ -39,7 +39,7 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.description = attrs.get('description', source.description)
         source.source_type = attrs.get('source_type', source.source_type)
         source.public_access = attrs.get('public_access', source.public_access or DEFAULT_ACCESS_TYPE)
-        source.default_locale=attrs.get('default_locale', source.default_locale or DEFAULT_LOCALE)
+        source.default_locale=attrs.get('default_locale', source.default_locale or Common.DEFAULT_LOCALE)
         source.website = attrs.get('website', source.website)
         source.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else source.supported_locales
         source.extras = attrs.get('extras', source.extras)

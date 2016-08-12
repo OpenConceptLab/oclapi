@@ -1,4 +1,3 @@
-# Django settings for the ocl project.
 import os
 from configurations import Configuration, values
 
@@ -6,7 +5,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 class Common(Configuration):
-
     DEBUG = True
     TEMPLATE_DEBUG = DEBUG
 
@@ -177,7 +175,7 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://192.241.144.33:8983/solr/collection1'
+            'URL': 'http://10.133.22.210:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
@@ -252,17 +250,3 @@ class Common(Configuration):
             },
         }
     }
-
-class Showcase(Common):
-    INSTALLED_APPS = Common.INSTALLED_APPS
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_mongodb_engine',
-            'HOST': '192.241.144.33',
-            'NAME': 'ocl',
-        }
-    }
-
-    BROKER_URL = 'mongodb://192.241.144.33:27017/ocl'
-    INTERNAL_IPS = ('192.241.144.33',)

@@ -93,7 +93,7 @@ def provision():
         run("cp -r oclapi/solr/collection1/conf %s/solr/collection1" % DEPLOY_DIR)
 
     with cd("%s/ocl_api/ocl" % DEPLOY_DIR):
-        run("cp settings.py.deploy settings.py")
+        run("cp common.py.deploy common.py")
         with prefix("source /opt/virtualenvs/ocl_api/bin/activate"):
             run("pip install -r requirements.txt")
             # commenting these out now, takes too long
