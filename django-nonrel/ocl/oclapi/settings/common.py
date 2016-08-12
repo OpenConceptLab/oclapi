@@ -175,7 +175,7 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://localhost/solr/collection1'
+            'URL': 'http://localhost:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
