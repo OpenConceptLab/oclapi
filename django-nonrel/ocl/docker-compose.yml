@@ -5,7 +5,7 @@ services:
     ports:
       - "27017:27017"
   solr:
-    image: solr:5.5
+    image: solr
     ports:
       - "8983:8983"
     volumes:
