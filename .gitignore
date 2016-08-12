@@ -22,3 +22,4 @@ logs
 *.sublime-*
 testdata
 .DS_Store
+env/

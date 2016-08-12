@@ -90,6 +90,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     name = serializers.CharField(required=False)
     full_name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
+    external_id = serializers.CharField(required=False)
     collection_type = serializers.CharField(required=False)
     public_access = serializers.ChoiceField(required=False, choices=ACCESS_TYPE_CHOICES)
     default_locale = serializers.CharField(required=False)
