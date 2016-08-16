@@ -1,16 +1,19 @@
 version: '2'
 services:
   mongo:
+    container_name: ocl_mongo
     image: mongo
     ports:
       - "27017:27017"
   solr:
+    container_name: ocl_solr
     image: solr:5.5
     ports:
       - "8983:8983"
     volumes:
       - ../../solr/:/opt/solr/server/solr/
   ocl:
+    container_name: ocl_api
     build:
       context: .
       dockerfile: Dockerfile
