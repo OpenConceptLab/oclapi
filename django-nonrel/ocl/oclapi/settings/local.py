@@ -23,3 +23,26 @@ class Test(Local):
     }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
 
+
+class IntegrationTest(Common):
+    """
+    Settings for unit testing
+    """
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_mongodb_engine',
+            'HOST': 'localhost',
+            'NAME': 'test',
+        }
+    }
+
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
+            'URL': 'http://localhost:8983/solr/collection1'
+            # ...or for multicore...
+            # 'URL': 'http://127.0.0.1:8983/solr/mysite',
+        },
+    }
+
+    BROKER_URL = 'mongodb://localhost:27017/ocl'
