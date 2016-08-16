@@ -6,12 +6,12 @@ services:
     ports:
       - "27017:27017"
   solr:
+    build:
+      context: ../../
+      dockerfile: ./django-nonrel/ocl/Dockerfile.solr
     container_name: ocl_solr
-    image: solr:5.5
     ports:
       - "8983:8983"
-    volumes:
-      - ../../solr/:/opt/solr/server/solr/
   ocl:
     container_name: ocl_api
     build:
