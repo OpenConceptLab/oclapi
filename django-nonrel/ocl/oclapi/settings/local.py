@@ -8,16 +8,6 @@ class Local(Common):
     EMAIL_BACKEND = values.Value('django.core.mail.backends.console.EmailBackend')
 
     INSTALLED_APPS = Common.INSTALLED_APPS
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_mongodb_engine',
-            'HOST': 'localhost',
-            'NAME': 'ocl',
-        }
-    }
-
-    BROKER_URL = 'mongodb://localhost:27017/ocl'
     INTERNAL_IPS = ('localhost',)
 
 class Test(Local):

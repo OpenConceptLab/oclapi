@@ -175,11 +175,21 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://localhost:8983/solr/collection1'
+            'URL': 'http://solr.openconceptlab.org:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
     }
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_mongodb_engine',
+            'HOST': 'mongo.openconceptlab.org',
+            'NAME': 'ocl',
+        }
+    }
+
+    BROKER_URL = 'mongodb://mongo.openconceptlab.org:27017/ocl'
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
