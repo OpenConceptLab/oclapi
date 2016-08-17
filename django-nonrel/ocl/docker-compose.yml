@@ -28,4 +28,20 @@ services:
       - "8000:8000"
     volumes:
       - .:/code
+  ocl_worker:
+    container_name: ocl_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash run_celery.sh
+    depends_on:
+      - mongo
+      - solr
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+    volumes:
+      - .:/code
+    environment:
+      - C_FORCE_ROOT=1
 
