@@ -189,7 +189,7 @@ class Common(Configuration):
         }
     }
 
-    BROKER_URL = 'mongodb://mongo.openconceptlab.org:27017/ocl'
+    BROKER_URL = 'mongodb://mongo.openconceptlab.org:27017/ocl_celery'
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at

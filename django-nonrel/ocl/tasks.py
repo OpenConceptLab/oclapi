@@ -19,7 +19,7 @@ from sources.models import SourceVersion
 celery = Celery('tasks', backend='mongodb', broker='django://')
 celery.config_from_object('django.conf:settings')
 
-logger = get_task_logger('celery')
+logger = get_task_logger('celery.worker')
 
 @celery.task
 def export_source(version_id):
