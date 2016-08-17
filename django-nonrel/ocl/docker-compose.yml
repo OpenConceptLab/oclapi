@@ -24,6 +24,8 @@ services:
     links:
       - "mongo:mongo.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
+    extra_hosts:
+      - "postgres.openconceptlab.org:172.18.0.1"
     ports:
       - "8000:8000"
     volumes:
