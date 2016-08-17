@@ -198,7 +198,7 @@ class Common(Configuration):
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
     # Celery settings
-    CELERY_RESULT_BACKEND = "mongodb"
+    CELERY_RESULT_BACKEND = "mongodb://mongo.openconceptlab.org:27017/ocl_celery"
     # Set these in your postactivate hook if you use virtualenvwrapper
     AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')

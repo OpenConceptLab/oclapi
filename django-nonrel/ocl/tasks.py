@@ -16,7 +16,7 @@ from mappings.models import Mapping
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 
-celery = Celery('tasks', backend='mongodb', broker='django://')
+celery = Celery('tasks', backend='mongodb://mongo.openconceptlab.org:27017/ocl_celery', broker='django://')
 celery.config_from_object('django.conf:settings')
 
 logger = get_task_logger('celery.worker')
