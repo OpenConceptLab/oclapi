@@ -402,7 +402,11 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         previous_release = None
         if hasattr(obj, '_was_released'):
             if obj.released and not obj._was_released:
-                previous_release = cls.objects.get(versioned_object_id=obj.versioned_object.id, released=True)
+                try:
+                    previous_release = cls.objects.get(versioned_object_id=obj.versioned_object.id, released=True)
+                except cls.DoesNotExist:
+                    previous_release = None
+
             del obj._was_released
 
         persisted = False
