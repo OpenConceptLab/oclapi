@@ -189,7 +189,7 @@ class Common(Configuration):
         }
     }
 
-    BROKER_URL = 'postgres://postgres.openconceptlab.org/ocl_celery'
+    BROKER_URL = 'redis://redis.openconceptlab.org:6379/0'
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
@@ -198,7 +198,7 @@ class Common(Configuration):
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
     # Celery settings
-    CELERY_RESULT_BACKEND = "postgres"
+    CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'
     # Set these in your postactivate hook if you use virtualenvwrapper
     AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
