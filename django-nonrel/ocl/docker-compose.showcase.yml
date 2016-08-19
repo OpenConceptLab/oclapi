@@ -3,6 +3,8 @@ services:
   mongo:
     container_name: ocl_mongo
     image: mongo
+    ports:
+      - "27017:27017"
   redis:
     container_name: ocl_redis
     image: redis
