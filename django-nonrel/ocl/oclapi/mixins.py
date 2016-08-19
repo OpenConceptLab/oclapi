@@ -81,9 +81,9 @@ class ListWithHeadersMixin(ListModelMixin):
         if len(results) > 0 and 'id' in results[0]:
             head_el = [el for el in results if el['id'] == HEAD]
             if head_el:
-                return head_el + [el for el in results if el['id'] != HEAD]
-        else:
-            return results
+                results = head_el + [el for el in results if el['id'] != HEAD]
+
+        return results
 
 
 
