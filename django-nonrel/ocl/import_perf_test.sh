@@ -1,4 +1,5 @@
 #!/bin/bash
+export DJANGO_CONFIGURATION=IntegrationTest
 python manage.py syncdb --noinput
 #create org and source
 OBJECT_ID=`mongo ocl perf_data/prepare_db.js | grep ObjectId`

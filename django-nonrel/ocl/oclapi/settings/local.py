@@ -32,7 +32,7 @@ class IntegrationTest(Common):
         'default': {
             'ENGINE': 'django_mongodb_engine',
             'HOST': 'localhost',
-            'NAME': 'test',
+            'NAME': 'ocl',
         }
     }
 
@@ -45,4 +45,5 @@ class IntegrationTest(Common):
         },
     }
 
-    BROKER_URL = 'mongodb://localhost:27017/ocl'
+    BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
