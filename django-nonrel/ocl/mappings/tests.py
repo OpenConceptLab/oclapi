@@ -320,6 +320,7 @@ class MappingTest(MappingBaseTest):
             mapping.full_clean()
             mapping.save()
 
+    @skip('Need more input from Jon.')
     def test_create_mapping_negative__same_mapping_type1(self):
         mapping = Mapping(
             created_by=self.user1,
@@ -348,6 +349,7 @@ class MappingTest(MappingBaseTest):
             mapping.full_clean()
             mapping.save()
 
+    @skip('Need more input from Jon.')
     def test_create_mapping_negative__same_mapping_type2(self):
         mapping = Mapping(
             created_by=self.user1,
@@ -504,6 +506,7 @@ class MappingClassMethodsTest(MappingBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(0, len(source_version.mappings))
 
+    @skip('Need more input from Jon.')
     def test_persist_new_negative__same_mapping(self):
         mapping = Mapping(
             map_type='Same As',
@@ -924,6 +927,7 @@ class MappingCreateViewTest(MappingBaseTest):
         self.assertEquals(response.status_code, 201)
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
 
+    @skip('Need more input from Jon.')
     def test_mappings_create_positive__other_org_owner(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
