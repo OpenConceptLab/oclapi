@@ -2,7 +2,8 @@ from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
-from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
+from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
+    CollectionCreateOrUpdateSerializer
 from collection.models import Collection, CollectionVersion
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
@@ -34,6 +35,24 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
             self.permission_classes = (CanEditConceptDictionary,)
         super(CollectionRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
+
+class CollectionReferencesView(CollectionBaseView,
+                               RetrieveAPIView,
+                               DestroyAPIView,
+                               ConceptDictionaryUpdateMixin):
+    serializer_class = CollectionCreateOrUpdateSerializer
+    def initialize(self, request, path_info_segment, **kwargs):
+        if request.method in ['GET', 'HEAD']:
+
+            self.permission_classes = (CanViewConceptDictionary,)
+        else:
+            self.permission_classes = (CanEditConceptDictionary,)
+
+        super(CollectionReferencesView, self).initialize(request, path_info_segment, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        # self.object = self.get_object()
+        CollectionVersion.objects.filter(mnemonic='HEAD',versioned_object_id=self.collection_id)
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,

@@ -4,12 +4,12 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField
+from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
 from oclapi.utils import reverse_resource
 
 COLLECTION_TYPE = 'Collection'
-
+HEAD = 'HEAD'
 
 class Collection(ConceptContainerModel):
     collection_type = models.TextField(blank=True)
@@ -37,14 +37,27 @@ class Collection(ConceptContainerModel):
 COLLECTION_VERSION_TYPE = "Collection Version"
 
 
+class CollectionReference(models.Model):
+    expression = models.TextField()
+    concepts = ListField()
+    mappings = ListField()
+
+class CollectionReferencesModel(ConceptContainerVersionModel):
+    references = ListField(EmbeddedModelField("CollectionReference"))
+
+
 class CollectionVersion(ConceptContainerVersionModel):
     collection_type = models.TextField(blank=True)
     concept_references = ListField()
+    references = ListField(EmbeddedModelField("CollectionReference"))
 
     def seed_concepts(self):
         seed_concepts_from = self.previous_version or self.parent_version
         if seed_concepts_from:
             self.concept_references = list(seed_concepts_from.concept_references)
+
+    def head_sibling(self):
+        return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     @property
     def resource_type(self):
@@ -56,6 +69,8 @@ class CollectionVersion(ConceptContainerVersionModel):
             raise ValidationError("source must be of type 'Source'")
         if not collection.id:
             raise ValidationError("source must have an Object ID.")
+        if label == 'INITIAL':
+            label = HEAD
         return CollectionVersion(
             mnemonic=label,
             name=collection.name,

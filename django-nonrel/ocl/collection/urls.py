@@ -1,12 +1,13 @@
 from django.conf.urls import patterns, url
 from collection.feeds import CollectionFeed
-from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionListView, CollectionVersionRetrieveUpdateView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionExtrasView, CollectionExtraRetrieveUpdateDestroyView
+from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionListView, CollectionVersionRetrieveUpdateView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionExtrasView, CollectionExtraRetrieveUpdateDestroyView, \
+    CollectionReferencesView
 from concepts.views import ConceptReferenceListCreateView, ConceptReferenceRetrieveUpdateDestroyView
 
 __author__ = 'misternando'
-
 urlpatterns = patterns('',
     url(r'^$', CollectionListView.as_view(), name='collection-list'),
+    url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/references/$', CollectionReferencesView.as_view(), name='collection-references'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/$', CollectionRetrieveUpdateDestroyView.as_view(), name='collection-detail'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/versions/$', CollectionVersionListView.as_view(), name='collectionversion-list'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/latest/$', CollectionVersionRetrieveUpdateView.as_view(), {'is_latest': True}, name='collectionversion-latest-detail'),
@@ -22,4 +23,5 @@ urlpatterns = patterns('',
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptReferenceListCreateView.as_view(), name='collection-concept-list'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptReferenceRetrieveUpdateDestroyView.as_view(), name='collection-concept-list'),
 )
+
 
