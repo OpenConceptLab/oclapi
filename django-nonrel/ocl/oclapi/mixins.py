@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 __author__ = 'misternando'
 
+HEAD = 'HEAD'
 
 class PathWalkerMixin():
     """
@@ -61,6 +62,7 @@ class ListWithHeadersMixin(ListModelMixin):
             if page is not None:
                 serializer = self.get_pagination_serializer(page)
                 results = serializer.data
+                results = self.prepend_head(results)
                 if facets:
                     return Response({'results': results, 'facets': facets}, headers=serializer.headers)
                 else:
@@ -68,10 +70,18 @@ class ListWithHeadersMixin(ListModelMixin):
 
         serializer = self.get_serializer(self.object_list, many=True)
         results = serializer.data
+        results = self.prepend_head(results)
         if facets:
             return Response({'results': results, 'facets': facets})
         else:
             return Response(results)
+
+    @staticmethod
+    def prepend_head(results):
+        head_el = [el for el in results if el['id'] == HEAD]
+        if head_el:
+            results = head_el + [el for el in results if el['id'] != HEAD]
+        return results
 
 
 

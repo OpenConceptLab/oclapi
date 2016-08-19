@@ -190,7 +190,7 @@ class SourceVersionListView(SourceVersionBaseView,
             queryset = queryset.filter(_ocl_processing=self.processing_filter)
         if self.released_filter is not None:
             queryset = queryset.filter(released=self.released_filter)
-        return queryset.order_by('-updated_at')
+        return queryset.order_by('-created_at')
 
 
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
