@@ -5,6 +5,11 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+  redis:
+    container_name: ocl_redis
+    image: redis
+    ports:
+      - "6379:6379"
   solr:
     build:
       context: ../../
@@ -23,9 +28,8 @@ services:
       - solr
     links:
       - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
-    extra_hosts:
-      - "postgres.openconceptlab.org:172.18.0.1"
     ports:
       - "8000:8000"
     volumes:
@@ -41,6 +45,7 @@ services:
       - solr
     links:
       - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
     volumes:
       - .:/code
