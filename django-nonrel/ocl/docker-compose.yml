@@ -23,9 +23,6 @@ services:
       context: .
       dockerfile: Dockerfile
     command: bash startup.sh
-    depends_on:
-      - mongo
-      - solr
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -40,9 +37,6 @@ services:
       context: .
       dockerfile: Dockerfile
     command: bash run_celery.sh
-    depends_on:
-      - mongo
-      - solr
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
