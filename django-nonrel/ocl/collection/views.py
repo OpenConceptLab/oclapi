@@ -25,6 +25,7 @@ class CollectionBaseView():
     def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionVersionDetailSerializer(obj, data, files, partial)
 
+
 class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
                                           RetrieveAPIView,
                                           DestroyAPIView,
@@ -82,6 +83,15 @@ class CollectionReferencesView(CollectionBaseView,
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+    def retrieve(self, request, *args, **kwargs):
+        # super(CollectionReferencesView, self).retrieve(request, *args, **kwargs)
+        self.object = self.get_object(self.queryset)
+        objectversion = CollectionVersion.get_head(self.object.id)
+        serializer = self.get_version_detail_serializer(objectversion)
+        data = serializer.data
+        success_status_code = status.HTTP_200_OK
+        return Response(serializer.data, status=success_status_code)
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,

@@ -22,6 +22,10 @@ class CollectionListSerializer(serializers.Serializer):
     class Meta:
         model = Collection
 
+class CollectionReferenceModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('expression', 'concepts', 'mappings',)
+        model = CollectionReference
 
 class CollectionCreateOrUpdateSerializer(serializers.Serializer):
     class ActiveConceptsField(serializers.IntegerField):
@@ -141,6 +145,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     updated_on = serializers.DateTimeField(source='updated_at')
     extras = serializers.WritableField()
     external_id = serializers.CharField(required=False)
+    references = CollectionReferenceModelSerializer(many=True)
 
     class Meta:
         model = CollectionVersion
@@ -193,10 +198,7 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
 
-class CollectionReferenceModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('expression', 'concepts', 'mappings',)
-        model = CollectionReference
+
 
 
 class CollectionReferenceSerializer(CollectionVersionUpdateSerializer):
