@@ -9,5 +9,5 @@ CONFIG=$2
 
 if [ -z $1 ]; then export SETTINGS=local; export CONFIG=Local; fi;
 
-python manage.py syncdb --noinput --settings="oclapi.settings.$CONFIG" --configuration="$CONFIG"
-python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$CONFIG" --configuration="$CONFIG"
+python manage.py syncdb --noinput --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
+python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
