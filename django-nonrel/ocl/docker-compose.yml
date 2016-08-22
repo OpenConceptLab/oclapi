@@ -8,8 +8,6 @@ services:
   redis:
     container_name: ocl_redis
     image: redis
-    ports:
-      - "6379:6379"
   solr:
     build:
       context: ../../
@@ -22,7 +20,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bash startup.sh
+    command: bash startup.sh ${SETTINGS} ${CONFIG}
+    depends_on:
+      - mongo
+      - solr
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -37,6 +38,9 @@ services:
       context: .
       dockerfile: Dockerfile
     command: bash run_celery.sh
+    depends_on:
+      - mongo
+      - solr
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -45,4 +49,3 @@ services:
       - .:/code
     environment:
       - C_FORCE_ROOT=1
-
