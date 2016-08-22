@@ -4,5 +4,10 @@ echo "from django.contrib.auth.models import User; user = User.objects.create_su
 echo "Settings for: $1"
 echo "Configurations for: $2"
 
-python manage.py syncdb --noinput --settings="oclapi.settings.$1" --configuration="$2"
-python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$1" --configuration="$2"
+SETTINGS=$1
+CONFIG=$2
+
+if [ -z $1 ]; then export SETTINGS=local; export CONFIG=Local; fi;
+
+python manage.py syncdb --noinput --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
+python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
