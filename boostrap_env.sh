@@ -1,3 +1,5 @@
+#!/bin/bash
+
 apt-get update
 apt-get install python2.7
 apt-get install apt-transport-https ca-certificates
