@@ -51,6 +51,12 @@ class CollectionVersion(ConceptContainerVersionModel):
     concept_references = ListField()
     references = ListField(EmbeddedModelField("CollectionReference"))
 
+    def add_expression(self, expression):
+        a_reference = CollectionReference();
+        a_reference.expression = expression
+        self.references.append(a_reference)
+
+
     def seed_concepts(self):
         seed_concepts_from = self.previous_version or self.parent_version
         if seed_concepts_from:
@@ -58,6 +64,10 @@ class CollectionVersion(ConceptContainerVersionModel):
 
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
+
+    @classmethod
+    def get_head(self, id):
+        return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=id)
 
     @property
     def resource_type(self):

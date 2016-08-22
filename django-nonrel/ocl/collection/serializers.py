@@ -4,7 +4,7 @@ from concepts.models import ConceptReference
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
-from collection.models import Collection, CollectionVersion
+from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
 
@@ -192,6 +192,23 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
+
+class CollectionReferenceModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('expression', 'concepts', 'mappings',)
+        model = CollectionReference
+
+
+class CollectionReferenceSerializer(CollectionVersionUpdateSerializer):
+    references = CollectionReferenceModelSerializer(many=True)
+
+    def save_object(self, obj, **kwargs):
+        request_user = self.context['request'].user
+        # errors = CollectionVersion.persist_changes(obj, request_user, **kwargs)
+        errors = CollectionVersion.persist_changes(obj, **kwargs)
+        self._errors.update(errors)
+
+
 
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):

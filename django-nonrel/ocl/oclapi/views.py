@@ -107,11 +107,15 @@ class SubResourceMixin(BaseAPIView, PathWalkerMixin):
                     return
             except UserProfile.DoesNotExist: pass
         else:
-            levels = 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else 2
+            levels = self.get_level()
             self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=levels)
             self.parent_resource = None
             if self.parent_path_info and '/' != self.parent_path_info:
                 self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
+
+    def get_level(self):
+        levels = 1 if isinstance(self, ListModelMixin) or isinstance(self, CreateModelMixin) else 2
+        return levels
 
 
 class ConceptDictionaryMixin(SubResourceMixin):

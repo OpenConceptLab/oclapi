@@ -398,6 +398,11 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         if seed_mappings:
             obj.seed_mappings()
 
+        # Seed mappings from another version, if requested
+        col_expression  = kwargs.pop('expression', False)
+        if col_expression:
+            obj.add_expression(col_expression)
+
         # See if we need to toggle the released flag
         previous_release = None
         if hasattr(obj, '_was_released'):

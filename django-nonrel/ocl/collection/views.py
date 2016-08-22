@@ -3,9 +3,10 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
-    CollectionCreateOrUpdateSerializer
+    CollectionCreateOrUpdateSerializer, CollectionReferenceSerializer
 from collection.models import Collection, CollectionVersion
 from oclapi.mixins import ListWithHeadersMixin
+from oclapi.models import ResourceVersionModel
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
@@ -21,6 +22,8 @@ class CollectionBaseView():
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionDetailSerializer(obj, data, files, partial)
 
+    def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
+        return CollectionVersionDetailSerializer(obj, data, files, partial)
 
 class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
                                           RetrieveAPIView,
@@ -39,20 +42,46 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
 class CollectionReferencesView(CollectionBaseView,
                                RetrieveAPIView,
                                DestroyAPIView,
-                               ConceptDictionaryUpdateMixin):
-    serializer_class = CollectionCreateOrUpdateSerializer
+                               ConceptDictionaryUpdateMixin
+                               ):
+    # serializer_class = CollectionReferenceSerializer
+    serializer_class = CollectionReferenceSerializer
     def initialize(self, request, path_info_segment, **kwargs):
         if request.method in ['GET', 'HEAD']:
-
             self.permission_classes = (CanViewConceptDictionary,)
         else:
             self.permission_classes = (CanEditConceptDictionary,)
-
         super(CollectionReferencesView, self).initialize(request, path_info_segment, **kwargs)
 
-    def put(self, request, *args, **kwargs):
-        # self.object = self.get_object()
-        CollectionVersion.objects.filter(mnemonic='HEAD',versioned_object_id=self.collection_id)
+    def get_level(self):
+        return 1
+
+    def update(self, request, *args, **kwargs):
+        if not self.parent_resource:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        self.object = self.get_object(self.queryset)
+
+        objectversion = CollectionVersion.get_head(self.object.id)
+
+        created = False
+        save_kwargs = {'force_update': True, 'expression': request.DATA.get("expression")}
+
+        success_status_code = status.HTTP_200_OK
+
+        serializer = self.get_serializer(objectversion, data=request.DATA,
+                                         files=request.FILES, partial=True)
+
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            self.object = serializer.save(**save_kwargs)
+            if serializer.is_valid():
+                self.post_save(self.object, created=created)
+                serializer = self.get_version_detail_serializer(self.object)
+                return Response(serializer.data, status=success_status_code)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,
