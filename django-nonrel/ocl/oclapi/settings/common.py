@@ -1,6 +1,6 @@
 import os
 from configurations import Configuration, values
-
+from boto.s3.connection import NoHostProvided
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -204,7 +204,9 @@ class Common(Configuration):
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 
-
+    AWS_HOST = NoHostProvided
+    AWS_PORT = None
+    AWS_MOCK_PORT = 10001
     # Model that stores auxiliary user profile attributes.
     # A user must have a profile in order to access the system.
     # (A profile is created automatically for any user created using the 'POST /users' endpoint.)

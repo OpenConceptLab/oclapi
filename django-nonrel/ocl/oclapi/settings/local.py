@@ -9,6 +9,8 @@ class Local(Common):
 
     INSTALLED_APPS = Common.INSTALLED_APPS
     INTERNAL_IPS = ('localhost',)
+    AWS_HOST = 'localhost'
+    AWS_PORT = 10001
 
 class Test(Local):
     """

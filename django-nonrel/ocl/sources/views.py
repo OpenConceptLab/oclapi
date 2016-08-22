@@ -18,7 +18,7 @@ from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
-
+from celery_once import AlreadyQueued
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -283,7 +283,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
             logger.debug('   URL retreived for source version %s - Responding to client' % version)
         else:
             logger.debug('   Key does not exist for source version %s' % version)
-            export_source.delay(version.id)
+            status = self.handle_export_source_version()
         response = HttpResponse(status=status)
         response['exportURL'] = url
 
@@ -296,11 +296,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
     def post(self, request, *args, **kwargs):
         version = self.get_object()
         logger.debug('Source Export requested for version %s (post)' % version)
-        if version.has_export():
-            return HttpResponse(status=204)
-        else:
-            export_source.delay(version.id)
-            return HttpResponse(status=200)
+        status = 204
+        if not version.has_export():
+            status = self.handle_export_source_version()
+        return HttpResponse(status=status)
 
     def delete(self, request, *args, **kwargs):
         if not request.user.is_staff:
@@ -310,4 +309,12 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
             key = version.get_export_key()
             key.delete()
         return HttpResponse(status=204)
+
+    def handle_export_source_version(self):
+        version = self.get_object()
+        try:
+            export_source.delay(version.id)
+            return 200
+        except AlreadyQueued:
+            return 204
 

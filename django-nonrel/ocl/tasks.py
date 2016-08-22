@@ -11,6 +11,7 @@ importer.install()
 
 from celery import Celery
 from celery.utils.log import get_task_logger
+from celery_once import QueueOnce
 from concepts.models import ConceptVersion
 from mappings.models import Mapping
 from oclapi.utils import update_all_in_index, write_export_file
@@ -21,7 +22,7 @@ celery.config_from_object('django.conf:settings')
 
 logger = get_task_logger('celery.worker')
 
-@celery.task
+@celery.task(base=QueueOnce)
 def export_source(version_id):
     logger.info('Finding source version...')
     version = SourceVersion.objects.get(id=version_id)
