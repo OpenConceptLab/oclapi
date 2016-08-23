@@ -436,9 +436,8 @@ class MappingCreateViewTest(MappingBaseTest):
         self.assertEquals(response.status_code, 201)
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
 
-    @skip('Need more input from Jon.')
     def test_mappings_create_positive__other_org_owner(self):
-        self.client.login(username='user1', password='user1')
+        self.client.login(username='user2', password='user2')
         kwargs = {
             'org': self.org2.mnemonic,
             'source': self.source2.mnemonic
