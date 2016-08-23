@@ -22,10 +22,6 @@ class CollectionListSerializer(serializers.Serializer):
     class Meta:
         model = Collection
 
-class CollectionReferenceModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('expression', 'concepts', 'mappings',)
-        model = CollectionReference
 
 class CollectionCreateOrUpdateSerializer(serializers.Serializer):
     class ActiveConceptsField(serializers.IntegerField):
@@ -133,38 +129,6 @@ class CollectionVersionListSerializer(ResourceVersionSerializer):
         versioned_object_field_name = 'url'
 
 
-class CollectionVersionDetailSerializer(ResourceVersionSerializer):
-    type = serializers.CharField(required=True, source='resource_type')
-    id = serializers.CharField(required=True, source='mnemonic')
-    description = serializers.CharField()
-    released = serializers.BooleanField()
-    owner = serializers.CharField(source='parent_resource')
-    owner_type = serializers.CharField(source='parent_resource_type')
-    owner_url = serializers.CharField(source='parent_url')
-    created_on = serializers.DateTimeField(source='created_at')
-    updated_on = serializers.DateTimeField(source='updated_at')
-    extras = serializers.WritableField()
-    external_id = serializers.CharField(required=False)
-    references = CollectionReferenceModelSerializer(many=True)
-
-    class Meta:
-        model = CollectionVersion
-        versioned_object_view_name = 'collection-detail'
-        versioned_object_field_name = 'collectionUrl'
-
-    def get_default_fields(self):
-        default_fields = super(CollectionVersionDetailSerializer, self).get_default_fields()
-        if self.opts.view_name is None:
-            self.opts.view_name = self._get_default_view_name(self.opts.model)
-        default_fields.update(
-            {
-                'parentVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='parent_version', view_name=self.opts.view_name),
-                'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
-            }
-        )
-        return default_fields
-
-
 class CollectionVersionCreateOrUpdateSerializer(serializers.Serializer):
     class Meta:
         model = CollectionVersion
@@ -199,18 +163,47 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     external_id = serializers.CharField(required=False)
 
 
-
-
-class CollectionReferenceSerializer(CollectionVersionUpdateSerializer):
-    references = CollectionReferenceModelSerializer(many=True)
+class CollectionReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('expression', 'concepts', 'mappings',)
+        model = CollectionReference
 
     def save_object(self, obj, **kwargs):
-        request_user = self.context['request'].user
-        # errors = CollectionVersion.persist_changes(obj, request_user, **kwargs)
+        # request_user = self.context['request'].user
         errors = CollectionVersion.persist_changes(obj, **kwargs)
         self._errors.update(errors)
 
 
+class CollectionVersionDetailSerializer(ResourceVersionSerializer):
+    type = serializers.CharField(required=True, source='resource_type')
+    id = serializers.CharField(required=True, source='mnemonic')
+    description = serializers.CharField()
+    released = serializers.BooleanField()
+    owner = serializers.CharField(source='parent_resource')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
+    extras = serializers.WritableField()
+    external_id = serializers.CharField(required=False)
+    references = CollectionReferenceSerializer(many=True)
+
+    class Meta:
+        model = CollectionVersion
+        versioned_object_view_name = 'collection-detail'
+        versioned_object_field_name = 'collectionUrl'
+
+    def get_default_fields(self):
+        default_fields = super(CollectionVersionDetailSerializer, self).get_default_fields()
+        if self.opts.view_name is None:
+            self.opts.view_name = self._get_default_view_name(self.opts.model)
+        default_fields.update(
+            {
+                'parentVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='parent_version', view_name=self.opts.view_name),
+                'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
+            }
+        )
+        return default_fields
 
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):

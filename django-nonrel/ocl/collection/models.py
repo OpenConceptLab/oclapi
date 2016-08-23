@@ -7,6 +7,9 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
 from oclapi.utils import reverse_resource
+from concepts.models import Concept
+from mappings.models import Mapping
+
 
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
@@ -42,8 +45,10 @@ class CollectionReference(models.Model):
     concepts = ListField()
     mappings = ListField()
 
-class CollectionReferencesModel(ConceptContainerVersionModel):
-    references = ListField(EmbeddedModelField("CollectionReference"))
+    def clean(self):
+        if not Concept.objects.filter(uri=self.expression):
+            if not Mapping.objects.filter(uri=self.expression):
+                raise ValidationError('Expression specified is not valid.')
 
 
 class CollectionVersion(ConceptContainerVersionModel):
@@ -52,10 +57,9 @@ class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField("CollectionReference"))
 
     def add_expression(self, expression):
-        a_reference = CollectionReference();
-        a_reference.expression = expression
+        a_reference = CollectionReference(expression=expression)
+        a_reference.full_clean()
         self.references.append(a_reference)
-
 
     def seed_concepts(self):
         seed_concepts_from = self.previous_version or self.parent_version
@@ -64,6 +68,18 @@ class CollectionVersion(ConceptContainerVersionModel):
 
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
+
+    @classmethod
+    def persist_changes(cls, obj, **kwargs):
+        errors = dict()
+        col_expression = kwargs.pop('expression', False)
+        if col_expression:
+            try:
+                obj.add_expression(col_expression)
+            except ValidationError as err:
+                errors['detail'] = ', '.join(err.messages)
+                return errors
+        return super(CollectionVersion, cls).persist_changes(obj, **kwargs)
 
     @classmethod
     def get_head(self, id):

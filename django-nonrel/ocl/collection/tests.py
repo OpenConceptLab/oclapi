@@ -9,10 +9,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from django.test import TestCase
-from collection.models import Collection, CollectionVersion
+from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from users.models import UserProfile
+from concepts.models import Concept, ConceptVersion, LocalizedText
+from sources.models import Source, SourceVersion
+from mappings.models import Mapping
 
 class CollectionBaseTest(TestCase):
     def setUp(self):
@@ -1140,3 +1143,138 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version1, version3.previous_version)
         self.assertEquals([1], version3.concept_references)
 
+
+class CollectionReferenceTest(CollectionBaseTest):
+    def setUp(self):
+        super(CollectionReferenceTest, self).setUp()
+        self.collection1 = Collection.objects.create(
+            name='collection1',
+            mnemonic='collection1',
+            parent=self.org1,
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection',
+            created_by=self.user1,
+            updated_by=self.user1,
+            external_id='EXTID1',
+        )
+
+    def tearDown(self):
+        Concept.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
+        super(CollectionReferenceTest, self).tearDown()
+
+    def test_add_invalid_expression_to_collection_negative(self):
+        reference = CollectionReference(expression='')
+        try:
+            reference.full_clean()
+            self.assertTrue(False)
+        except ValidationError as e:
+            self.assertEquals(len(e.messages), 2)
+            self.assertEquals(e.messages, ['This field cannot be blank.', 'Expression specified is not valid.'])
+
+
+class CollectionVersionReferenceTest(CollectionReferenceTest):
+
+    def test_add_invalid_expression_to_collection_negative(self):
+        version = CollectionVersion.for_base_object(self.collection1, 'version1')
+        errors = CollectionVersion.persist_changes(version, expression='/foobar')
+        self.assertEquals(errors.get('detail'), 'Expression specified is not valid.')
+
+    def test_add_valid_concept_expression_to_collection_positive(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept = Concept(
+            mnemonic='concept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+
+        version = CollectionVersion.for_base_object(self.collection1, 'version1')
+        errors = CollectionVersion.persist_changes(version, expression='/orgs/org1/sources/source/concepts/concept/')
+        self.assertTrue(len(errors) == 0)
+
+    def test_add_valid_mapping_expression_to_collection_positive(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        fromConcept = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept,
+            to_concept=toConcept,
+            external_id='mapping',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        version = CollectionVersion.for_base_object(self.collection1, 'version1')
+        errors = CollectionVersion.persist_changes(version, expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+        self.assertTrue(len(errors) == 0)
