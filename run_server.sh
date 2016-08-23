@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export RELEASE_VERSION=`date +"%Y%m%d%H%M%S"`
-tar -czf oclapi$RELEASE_VERSION.tgz /var/snap-ci/repo
+tar -czf oclapi$RELEASE_VERSION.tgz repo
 scp oclapi$RELEASE_VERSION.tgz root@$IP:/root/releases/
 if ssh root@$IP "~/oclapi/django-nonrel/ocl/deploy/kill_docker.sh"; then echo "killed docker processes"; fi;
 ssh root@$IP "rm -rf oclapi"
