@@ -20,3 +20,10 @@ apt-get install python-setuptools
 easy_install virtualenv
 apt-get install nodejs
 apt-get install npm
+apt-get install libpq-dev
+apt-get install libffi-dev
+apt-get install htop
+npm install -g grunt
+
+mkdir /var/log/ocl
+mkdir releases
