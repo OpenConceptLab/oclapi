@@ -8,6 +8,8 @@ services:
   redis:
     container_name: ocl_redis
     image: redis
+    ports:
+      - "6379:6379"
   solr:
     build:
       context: ../../
@@ -37,7 +39,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bash run_celery.sh
+    command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
     depends_on:
       - mongo
       - solr
