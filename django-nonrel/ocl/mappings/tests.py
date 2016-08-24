@@ -10,10 +10,10 @@ from collection.models import Collection
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.test import TestCase, Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
-from django.utils.unittest.case import skip
 from mappings.models import Mapping
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import add_user_to_org
@@ -321,7 +321,6 @@ class MappingTest(MappingBaseTest):
             mapping.full_clean()
             mapping.save()
 
-    @skip('Need more input from Jon.')
     def test_create_mapping_negative__same_mapping_type1(self):
         mapping = Mapping(
             created_by=self.user1,
@@ -350,7 +349,6 @@ class MappingTest(MappingBaseTest):
             mapping.full_clean()
             mapping.save()
 
-    @skip('Need more input from Jon.')
     def test_create_mapping_negative__same_mapping_type2(self):
         mapping = Mapping(
             created_by=self.user1,
@@ -385,7 +383,7 @@ class MappingTest(MappingBaseTest):
 
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(IntegrityError):
             mapping = Mapping(
                 created_by=self.user1,
                 updated_by=self.user1,
@@ -507,7 +505,6 @@ class MappingClassMethodsTest(MappingBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(0, len(source_version.mappings))
 
-    @skip('Need more input from Jon.')
     def test_persist_new_negative__same_mapping(self):
         mapping = Mapping(
             map_type='Same As',

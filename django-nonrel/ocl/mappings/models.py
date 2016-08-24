@@ -20,6 +20,11 @@ class Mapping(BaseModel):
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
 
+    class Meta:
+        unique_together = (
+            ("parent", "map_type", "from_concept", "to_concept"),
+        )
+
     def clean(self, exclude=None):
         messages = []
         try:
