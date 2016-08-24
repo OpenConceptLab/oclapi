@@ -204,7 +204,6 @@ class Common(Configuration):
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 
-    AWS_HOST = NoHostProvided
     AWS_PORT = None
     AWS_MOCK_PORT = 10001
     # Model that stores auxiliary user profile attributes.
