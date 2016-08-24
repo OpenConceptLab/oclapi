@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 export DJANGO_CONFIGURATION=Staging
 #create org and source
