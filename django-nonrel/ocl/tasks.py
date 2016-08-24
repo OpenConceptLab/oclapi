@@ -21,6 +21,7 @@ celery = Celery('tasks', backend='redis://redis.openconceptlab.org:6379/0', brok
 celery.config_from_object('django.conf:settings')
 
 logger = get_task_logger('celery.worker')
+celery.conf.ONCE_REDIS_URL = 'redis://redis.openconceptlab.org:6379/0'
 
 @celery.task(base=QueueOnce)
 def export_source(version_id):
