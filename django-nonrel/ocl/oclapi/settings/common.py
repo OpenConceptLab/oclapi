@@ -1,6 +1,6 @@
 import os
-from configurations import Configuration, values
-from boto.s3.connection import NoHostProvided
+from configurations import Configuration
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
