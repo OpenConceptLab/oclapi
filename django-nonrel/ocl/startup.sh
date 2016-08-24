@@ -6,7 +6,9 @@ echo "Configurations for: $2"
 
 SETTINGS=$1
 CONFIG=$2
-
+export AWS_ACCESS_KEY_ID=$3
+export AWS_SECRET_ACCESS_KEY=$4
+export AWS_STORAGE_BUCKET_NAME=$5
 if [ -z $1 ]; then export SETTINGS=local; export CONFIG=Local; fi;
 
 python manage.py syncdb --noinput --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
