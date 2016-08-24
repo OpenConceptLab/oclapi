@@ -21,10 +21,9 @@ class S3ConnectionFactory:
 
     @classmethod
     def get_s3_connection(cls):
-        secure_connection = settings.AWS_PORT != settings.AWS_MOCK_PORT
         if not cls.s3_connection:
-            if os.environ.get('DJANGO_CONFIGURATION') == 'Test':
-                cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY, secure_connection, host=settings.AWS_HOST, port=settings.AWS_PORT)
+            if settings.AWS_MOCK:
+                cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY, False, host='localhost', port=10001)
             else:
                 cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
         return cls.s3_connection

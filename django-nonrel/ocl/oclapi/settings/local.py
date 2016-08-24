@@ -10,8 +10,7 @@ class Local(Common):
 
     INSTALLED_APPS = Common.INSTALLED_APPS
     INTERNAL_IPS = ('localhost',)
-    AWS_HOST = 'localhost'
-    AWS_PORT = 10001
+    AWS_MOCK = True
 
 class Test(Local):
     """
@@ -25,7 +24,7 @@ class Test(Local):
         }
     }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
-
+    AWS_MOCK = True
 
 class IntegrationTest(Common):
     """
@@ -50,3 +49,4 @@ class IntegrationTest(Common):
 
     BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    AWS_MOCK = True
