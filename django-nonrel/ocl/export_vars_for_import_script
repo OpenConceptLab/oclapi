@@ -1,3 +1,0 @@
-export BULK_IMPORT_SCRIPT="`cat perf_data/prepare_bulk_import_db_with_root_user.js`"
-export OBJECT_ID=`docker exec -it ocl_mongo mongo ocl --eval "$BULK_IMPORT_SCRIPT" | grep ObjectId`
-export SOURCE=`expr substr $OBJECT_ID 11 24`
