@@ -1,13 +1,11 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from concepts.models import ConceptReference
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
-
 
 class CollectionListSerializer(serializers.Serializer):
     # TODO id and short code are same .. remove one of them
@@ -24,9 +22,9 @@ class CollectionListSerializer(serializers.Serializer):
 
 
 class CollectionCreateOrUpdateSerializer(serializers.Serializer):
-    class ActiveConceptsField(serializers.IntegerField):
-        def field_to_native(self, obj, field_name):
-            return ConceptReference.objects.filter(is_active=True, parent_id=obj.id).count()
+    # class ActiveConceptsField(serializers.IntegerField):
+    #     def field_to_native(self, obj, field_name):
+    #         return ConceptReference.objects.filter(is_active=True, parent_id=obj.id).count()
 
     class Meta:
         model = Collection
@@ -64,7 +62,7 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     url = serializers.CharField(read_only=True)
     versions_url = serializers.CharField(read_only=True)
     concepts_url = serializers.CharField(read_only=True)
-    active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
+    # active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -80,6 +78,12 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
         request_user = self.context['request'].user
         errors = Collection.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
+
+
+class CollectionReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('expression',)
+        model = CollectionReference
 
 
 class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
@@ -99,7 +103,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     url = serializers.CharField(read_only=True)
     versions_url = serializers.CharField(read_only=True)
     concepts_url = serializers.CharField(read_only=True)
-    active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
+    # active_concepts = CollectionCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -109,6 +113,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
+    references = CollectionReferenceSerializer(many=True)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -161,17 +166,6 @@ class CollectionVersionUpdateSerializer(CollectionVersionCreateOrUpdateSerialize
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
-
-
-class CollectionReferenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('expression', 'concepts', 'mappings',)
-        model = CollectionReference
-
-    def save_object(self, obj, **kwargs):
-        # request_user = self.context['request'].user
-        errors = CollectionVersion.persist_changes(obj, **kwargs)
-        self._errors.update(errors)
 
 
 class CollectionVersionDetailSerializer(ResourceVersionSerializer):

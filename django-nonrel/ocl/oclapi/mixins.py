@@ -38,12 +38,13 @@ class ListWithHeadersMixin(ListModelMixin):
     verbose_param = 'verbose'
     facets = None
     default_filters = {'is_active': True}
+    object_list = None
 
     def is_verbose(self, request):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
 
     def list(self, request, *args, **kwargs):
-        self.object_list = self.filter_queryset(self.get_queryset())
+        self.object_list = self.object_list or self.filter_queryset(self.get_queryset())
 
         # Skip pagination if compressed results are requested
         meta = request._request.META

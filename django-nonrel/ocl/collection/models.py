@@ -14,7 +14,9 @@ from mappings.models import Mapping
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
 
+
 class Collection(ConceptContainerModel):
+    references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
 
     @property
@@ -33,6 +35,25 @@ class Collection(ConceptContainerModel):
     def get_version_model(cls):
         return CollectionVersion
 
+    @classmethod
+    def persist_changes(cls, obj, updated_by, **kwargs):
+        errors = dict()
+        col_expression = kwargs.pop('expression', False)
+        if col_expression:
+            ref = CollectionReference(expression=col_expression)
+            try:
+                ref.full_clean()
+                obj.references.append(ref)
+                object_version = CollectionVersion.get_head(obj.id)
+                ref_hash = {'col_reference': ref}
+                errors = CollectionVersion.persist_changes(object_version, **ref_hash)
+                if errors:
+                    return errors
+            except ValidationError as e:
+                errors['detail'] = ', '.join(e.messages)
+                return errors
+        return super(Collection, cls).persist_changes(obj, updated_by, **kwargs)
+
     @staticmethod
     def get_url_kwarg():
         return 'collection'
@@ -42,43 +63,48 @@ COLLECTION_VERSION_TYPE = "Collection Version"
 
 class CollectionReference(models.Model):
     expression = models.TextField()
-    concepts = ListField()
-    mappings = ListField()
+    concepts = None
+    mappings = None
 
     def clean(self):
-        if not Concept.objects.filter(uri=self.expression):
-            if not Mapping.objects.filter(uri=self.expression):
+        self.concepts = Concept.objects.filter(uri=self.expression)
+        if not self.concepts:
+            self.mappings = Mapping.objects.filter(uri=self.expression)
+            if not self.mappings:
                 raise ValidationError('Expression specified is not valid.')
 
 
 class CollectionVersion(ConceptContainerVersionModel):
+    references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-    concept_references = ListField()
-    references = ListField(EmbeddedModelField("CollectionReference"))
+    concepts = ListField()
+    mappings = ListField()
 
-    def add_expression(self, expression):
-        a_reference = CollectionReference(expression=expression)
-        a_reference.full_clean()
+    def fill_data_for_reference(self, a_reference):
+        if a_reference.concepts:
+            self.concepts = self.concepts + list([concept.id for concept in a_reference.concepts])
+        if a_reference.mappings:
+            self.mappings = self.mappings + list([mapping.id for mapping in a_reference.mappings])
         self.references.append(a_reference)
 
     def seed_concepts(self):
-        seed_concepts_from = self.previous_version or self.parent_version
+        seed_concepts_from = self.previous_version
         if seed_concepts_from:
-            self.concept_references = list(seed_concepts_from.concept_references)
+            self.concepts = list(seed_concepts_from.concepts)
+
+    def seed_mappings(self):
+        seed_mappings_from = self.previous_version
+        if seed_mappings_from:
+            self.mappings = list(seed_mappings_from.mappings)
 
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     @classmethod
     def persist_changes(cls, obj, **kwargs):
-        errors = dict()
-        col_expression = kwargs.pop('expression', False)
-        if col_expression:
-            try:
-                obj.add_expression(col_expression)
-            except ValidationError as err:
-                errors['detail'] = ', '.join(err.messages)
-                return errors
+        col_reference = kwargs.pop('col_reference', False)
+        if col_reference:
+            obj.fill_data_for_reference(col_reference)
         return super(CollectionVersion, cls).persist_changes(obj, **kwargs)
 
     @classmethod

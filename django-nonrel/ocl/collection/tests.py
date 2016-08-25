@@ -379,6 +379,10 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.assertEquals(website, self.new_collection.website)
         self.assertEquals(description, self.new_collection.description)
 
+    def test_add_invalid_expression_to_collection_negative(self):
+        errors = Collection.persist_changes(self.new_collection, 'foobar', expression='/foobar')
+        self.assertEquals(errors.get('detail'), 'Expression specified is not valid.')
+
 
 class CollectionVersionTest(CollectionBaseTest):
 
@@ -1025,7 +1029,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.previous_version)
-        self.assertEquals([], version2.concept_references)
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -1039,7 +1042,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.previous_version)
-        self.assertEquals([1], version2.concept_references)
 
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
@@ -1072,7 +1074,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.parent_version)
-        self.assertEquals([], version2.concept_references)
         self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -1086,16 +1087,13 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(2, self.collection1.num_versions)
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.parent_version)
-        self.assertEquals([2], version2.concept_references)
 
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
-        version1.concept_references = [1]
         version1.full_clean()
         version1.save()
 
         version2 = CollectionVersion.for_base_object(self.collection1, 'version2')
-        version2.concept_references = [2]
         version2.full_clean()
         version2.save()
         self.assertIsNone(version2.previous_version)
@@ -1126,7 +1124,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version3, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version3.previous_version)
         self.assertEquals(version2, version3.parent_version)
-        self.assertEquals([], version3.concept_references)
         self.assertNotEquals(mnemonic, version3.mnemonic)
         self.assertNotEquals(released, version3.released)
         self.assertNotEquals(description, version3.description)
@@ -1141,7 +1138,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version3, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
-        self.assertEquals([1], version3.concept_references)
 
 
 class CollectionReferenceTest(CollectionBaseTest):
@@ -1182,11 +1178,6 @@ class CollectionReferenceTest(CollectionBaseTest):
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
 
-    def test_add_invalid_expression_to_collection_negative(self):
-        version = CollectionVersion.for_base_object(self.collection1, 'version1')
-        errors = CollectionVersion.persist_changes(version, expression='/foobar')
-        self.assertEquals(errors.get('detail'), 'Expression specified is not valid.')
-
     def test_add_valid_concept_expression_to_collection_positive(self):
         source = Source(
             name='source',
@@ -1218,8 +1209,10 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         Concept.persist_new(concept, self.user1, **kwargs)
 
         version = CollectionVersion.for_base_object(self.collection1, 'version1')
-        errors = CollectionVersion.persist_changes(version, expression='/orgs/org1/sources/source/concepts/concept/')
-        self.assertTrue(len(errors) == 0)
+        reference = CollectionReference(expression='/orgs/org1/sources/source/concepts/concept/')
+        reference.full_clean()
+        CollectionVersion.persist_changes(version, col_reference=reference)
+        self.assertEquals(len(version.concepts), 1)
 
     def test_add_valid_mapping_expression_to_collection_positive(self):
         source = Source(
@@ -1276,5 +1269,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         version = CollectionVersion.for_base_object(self.collection1, 'version1')
-        errors = CollectionVersion.persist_changes(version, expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
-        self.assertTrue(len(errors) == 0)
+        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+        reference.full_clean()
+        CollectionVersion.persist_changes(version, col_reference=reference)
+        self.assertEquals(len(version.mappings), 1)

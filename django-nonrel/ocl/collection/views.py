@@ -10,8 +10,9 @@ from oclapi.models import ResourceVersionModel
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
 from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
-
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, BaseAPIView
+from concepts.serializers import ConceptListSerializer
+from concepts.models import Concept
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -45,8 +46,9 @@ class CollectionReferencesView(CollectionBaseView,
                                DestroyAPIView,
                                ConceptDictionaryUpdateMixin
                                ):
-    # serializer_class = CollectionReferenceSerializer
-    serializer_class = CollectionReferenceSerializer
+
+    serializer_class = CollectionDetailSerializer
+
     def initialize(self, request, path_info_segment, **kwargs):
         if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionary,)
@@ -62,15 +64,12 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         self.object = self.get_object(self.queryset)
-
-        objectversion = CollectionVersion.get_head(self.object.id)
-
         created = False
         save_kwargs = {'force_update': True, 'expression': request.DATA.get("expression")}
 
         success_status_code = status.HTTP_200_OK
 
-        serializer = self.get_serializer(objectversion, data=request.DATA,
+        serializer = self.get_serializer(self.object, data=request.DATA,
                                          files=request.FILES, partial=True)
 
         if serializer.is_valid():
@@ -78,18 +77,13 @@ class CollectionReferencesView(CollectionBaseView,
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=created)
-                serializer = self.get_version_detail_serializer(self.object)
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     def retrieve(self, request, *args, **kwargs):
-        # super(CollectionReferencesView, self).retrieve(request, *args, **kwargs)
         self.object = self.get_object(self.queryset)
-        objectversion = CollectionVersion.get_head(self.object.id)
-        serializer = self.get_version_detail_serializer(objectversion)
-        data = serializer.data
+        serializer = self.get_serializer(self.object)
         success_status_code = status.HTTP_200_OK
         return Response(serializer.data, status=success_status_code)
 
@@ -232,3 +226,25 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeader
     def get_queryset(self):
         queryset = super(CollectionVersionChildListView, self).get_queryset()
         return queryset.filter(parent_version=self.resource_version, is_active=True)
+
+
+class CollectionConceptListView(CollectionBaseView,
+                                BaseAPIView,
+                                ListWithHeadersMixin):
+    serializer_class = ConceptListSerializer
+
+    def get(self, request, *args, **kwargs):
+        collection = self.get_object()
+        object_version = CollectionVersion.get_head(collection.id)
+        self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        return self.list(request, *args, **kwargs)
+
+
+class CollectionVersionConceptListView(CollectionVersionBaseView,
+                                       ListWithHeadersMixin):
+    serializer_class = ConceptListSerializer
+
+    def get(self, request, *args, **kwargs):
+        object_version = self.versioned_object
+        self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        return self.list(request, *args, **kwargs)
