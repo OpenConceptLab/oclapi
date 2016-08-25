@@ -43,10 +43,28 @@ services:
     depends_on:
       - mongo
       - solr
+      - redis
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
       - "solr:solr.openconceptlab.org"
+    volumes:
+      - .:/code
+    environment:
+      - C_FORCE_ROOT=1
+  ocl_flower:
+    container_name: ocl_flower
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash run_flower.sh
+    depends_on:
+      - redis
+      - ocl_worker
+    links:
+      - "redis:redis.openconceptlab.org"
+    ports:
+      - "5555:5555"
     volumes:
       - .:/code
     environment:
