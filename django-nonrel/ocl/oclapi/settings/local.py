@@ -10,7 +10,6 @@ class Local(Common):
 
     INSTALLED_APPS = Common.INSTALLED_APPS
     INTERNAL_IPS = ('localhost',)
-    AWS_MOCK = True
 
 class Test(Local):
     """
