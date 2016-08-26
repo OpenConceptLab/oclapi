@@ -18,7 +18,7 @@ HEAD = 'HEAD'
 class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-
+    expression =  None
     @property
     def concepts_url(self):
         return reverse_resource(self, 'collection-concept-list')
@@ -39,23 +39,24 @@ class Collection(ConceptContainerModel):
     def get_version_model(cls):
         return CollectionVersion
 
+    def clean(self):
+        if self.expression:
+            ref = CollectionReference(expression=self.expression)
+            ref.full_clean()
+            if self.expression in [reference.expression for reference in self.references]:
+                raise ValidationError({'detail': ['Reference Already Exists!']})
+
+            self.references.append(ref)
+            object_version = CollectionVersion.get_head(self.id)
+            ref_hash = {'col_reference': ref}
+            errors = CollectionVersion.persist_changes(object_version, **ref_hash)
+            if errors:
+                raise ValidationError(errors)
+
+
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
-        errors = dict()
-        col_expression = kwargs.pop('expression', False)
-        if col_expression:
-            ref = CollectionReference(expression=col_expression)
-            try:
-                ref.full_clean()
-                obj.references.append(ref)
-                object_version = CollectionVersion.get_head(obj.id)
-                ref_hash = {'col_reference': ref}
-                errors = CollectionVersion.persist_changes(object_version, **ref_hash)
-                if errors:
-                    return errors
-            except ValidationError as e:
-                errors['detail'] = ', '.join(e.messages)
-                return errors
+        obj.expression = kwargs.pop('expression', False)
         return super(Collection, cls).persist_changes(obj, updated_by, **kwargs)
 
     @staticmethod
@@ -75,7 +76,7 @@ class CollectionReference(models.Model):
         if not self.concepts:
             self.mappings = Mapping.objects.filter(uri=self.expression)
             if not self.mappings:
-                raise ValidationError('Expression specified is not valid.')
+                raise ValidationError({'detail': ['Expression specified is not valid.']})
 
 
 class CollectionVersion(ConceptContainerVersionModel):

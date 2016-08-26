@@ -381,7 +381,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
     def test_add_invalid_expression_to_collection_negative(self):
         errors = Collection.persist_changes(self.new_collection, 'foobar', expression='/foobar')
-        self.assertEquals(errors.get('detail'), 'Expression specified is not valid.')
+        self.assertEquals(errors.get('detail'), ['Expression specified is not valid.'])
 
 
 class CollectionVersionTest(CollectionBaseTest):
