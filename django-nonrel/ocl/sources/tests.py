@@ -31,7 +31,8 @@ class SourceBaseTest(TestCase):
             username='user1',
             email='user1@test.com',
             last_name='One',
-            first_name='User'
+            first_name='User',
+            password='user1'
         )
         self.user2 = User.objects.create(
             username='user2',
@@ -46,15 +47,6 @@ class SourceBaseTest(TestCase):
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
         self.name = LocalizedText.objects.create(name='Fred', locale='es')
-
-    def tearDown(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
 
 class SourceTest(SourceBaseTest):
 

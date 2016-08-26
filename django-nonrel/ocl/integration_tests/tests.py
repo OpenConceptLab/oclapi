@@ -1,4 +1,5 @@
 import json
+from moto import mock_s3
 from urlparse import urlparse
 
 from concepts.importer import ConceptsImporter
@@ -15,6 +16,7 @@ from mappings.models import Mapping
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
 from sources.models import Source, SourceVersion
+from sources.tests import SourceBaseTest
 from django.utils.encoding import force_str
 
 # @override_settings(HAYSTACK_SIGNAL_PROCESSOR='haystack.signals.BaseSignalProcessor') #see if this can also be done at some point later
@@ -1146,3 +1148,82 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(5, len(content))
+
+class SourceVersionExportViewTest(SourceBaseTest):
+    @mock_s3
+    def test_post(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+
+    @mock_s3
+    def test_post_with_same_version_name_in_more_than_one_source(self):
+        source1 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        source2 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source1, self.user1, **kwargs)
+        Source.persist_new(source2, self.user1, **kwargs)
+        kwargs = {'parent_resource': source1}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source1.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+

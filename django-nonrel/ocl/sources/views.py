@@ -293,7 +293,14 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         response['Expires'] = '0'
         return response
 
+    def get_queryset(self):
+        queryset = super(SourceVersionExportView, self).get_queryset()
+        return queryset.filter(versioned_object_id=Source.objects.get(mnemonic=self.kwargs['source']).id,
+                                            mnemonic=self.kwargs['version'])
+
     def post(self, request, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
         version = self.get_object()
         logger.debug('Source Export requested for version %s (post)' % version)
         status = 204
