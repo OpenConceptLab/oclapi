@@ -22,10 +22,7 @@ class S3ConnectionFactory:
     @classmethod
     def get_s3_connection(cls):
         if not cls.s3_connection:
-            if settings.AWS_MOCK:
-                cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY, False, host='localhost', port=10001)
-            else:
-                cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+            cls.s3_connection = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
         return cls.s3_connection
 
     @classmethod
