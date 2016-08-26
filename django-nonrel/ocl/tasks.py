@@ -17,16 +17,11 @@ from mappings.models import Mapping
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 
-celery = Celery('tasks', backend='redis://redis.openconceptlab.org:6379/0', broker='django://')
+celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
 
 logger = get_task_logger('celery.worker')
-os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
-if os.environ.get('DJANGO_CONFIGURATION') == 'IntegrationTest':
-    celery.conf.ONCE_REDIS_URL = 'redis://localhost:6379/0'
-else:
-    celery.conf.ONCE_REDIS_URL = 'redis://redis.openconceptlab.org:6379/0'
-
+celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 
 @celery.task(base=QueueOnce)
 def export_source(version_id):
