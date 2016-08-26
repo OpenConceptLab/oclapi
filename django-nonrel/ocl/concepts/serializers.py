@@ -1,7 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-from concepts.fields import LocalizedTextListField, ConceptReferenceField, MappingListField
-from concepts.models import Concept, ConceptVersion, ConceptReference, LocalizedText
+from concepts.fields import LocalizedTextListField, MappingListField
+from concepts.models import Concept, ConceptVersion, LocalizedText
 from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -26,8 +26,7 @@ class ConceptListSerializer(serializers.Serializer):
 
 
 class ConceptDetailSerializer(serializers.Serializer):
-    id = serializers.CharField(
-        required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     external_id = serializers.CharField(required=False)
     concept_class = serializers.CharField(required=False)
     datatype = serializers.CharField(required=False)
@@ -164,20 +163,20 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
             mappings_field.source = 'get_empty_mappings'
 
 
-class ReferencesToVersionsSerializer(ConceptVersionListSerializer):
-
-    def to_native(self, obj):
-        field = obj
-        if isinstance(obj, ConceptReference):
-            concept = obj.concept
-            if obj.is_current_version:
-                field = ConceptVersion.get_latest_version_of(concept)
-            elif obj.source_version:
-                field = ConceptVersion.objects.get(
-                    versioned_object_id=concept.id, id__in=obj.source_version.concepts)
-            else:
-                field = obj.concept_version
-        return super(ReferencesToVersionsSerializer, self).to_native(field)
+# class ReferencesToVersionsSerializer(ConceptVersionListSerializer):
+#
+#     def to_native(self, obj):
+#         field = obj
+#         if isinstance(obj, ConceptReference):
+#             concept = obj.concept
+#             if obj.is_current_version:
+#                 field = ConceptVersion.get_latest_version_of(concept)
+#             elif obj.source_version:
+#                 field = ConceptVersion.objects.get(
+#                     versioned_object_id=concept.id, id__in=obj.source_version.concepts)
+#             else:
+#                 field = obj.concept_version
+#         return super(ReferencesToVersionsSerializer, self).to_native(field)
 
 
 class ConceptVersionUpdateSerializer(serializers.Serializer):
@@ -262,48 +261,48 @@ class ConceptDescriptionSerializer(serializers.Serializer):
         return concept_desc
 
 
-class ConceptReferenceCreateSerializer(serializers.Serializer):
-    concept_reference_url = ConceptReferenceField(
-        source='concept', required=True, view_name='conceptversion-detail',
-        lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
-    id = serializers.CharField(source='mnemonic', required=False)
-    extras = serializers.WritableField(required=False)
-
-    class Meta:
-        model = ConceptReference
-        lookup_field = 'mnemonic'
-
-    def restore_object(self, attrs, instance=None):
-        concept_reference = instance if instance else ConceptReference()
-        concept_reference.extras = attrs.get('extras', concept_reference.extras)
-        concept = attrs.get('concept', None)
-        if concept:
-            concept_reference.concept = concept
-            if hasattr(concept, '_concept_version'):
-                concept_reference.concept_version = concept._concept_version
-            elif hasattr(concept, '_source_version'):
-                concept_reference.source_version = concept._source_version
-        concept_reference.mnemonic = attrs.get(self.Meta.lookup_field, concept_reference.mnemonic)
-        if not concept_reference.mnemonic:
-            concept_reference.mnemonic = "%s..%s" % (concept_reference.concept.parent,
-                                                     concept_reference.concept)
-        return concept_reference
-
-    def save_object(self, obj, **kwargs):
-        errors = ConceptReference.persist_new(obj, **kwargs)
-        self._errors.update(errors)
-
-
-class ConceptReferenceDetailSerializer(serializers.Serializer):
-    concept_reference_id = serializers.CharField(source='mnemonic')
-    concept_reference_url = serializers.URLField(read_only=True)
-    url = HyperlinkedResourceIdentityField(view_name='collection-concept-detail')
-    collection = serializers.CharField(source='collection')
-    collection_owner = serializers.CharField(read_only=True, source='owner_name')
-    collection_owner_type = serializers.CharField(read_only=True, source='owner_type')
-    created_on = serializers.DateTimeField(source='created_at', read_only=True)
-    updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
-
-    class Meta:
-        model = ConceptReference
-        lookup_field = 'mnemonic'
+# class ConceptReferenceCreateSerializer(serializers.Serializer):
+#     concept_reference_url = ConceptReferenceField(
+#         source='concept', required=True, view_name='conceptversion-detail',
+#         lookup_kwarg='concept_version', queryset=ConceptVersion.objects.all())
+#     id = serializers.CharField(source='mnemonic', required=False)
+#     extras = serializers.WritableField(required=False)
+#
+#     class Meta:
+#         model = ConceptReference
+#         lookup_field = 'mnemonic'
+#
+#     def restore_object(self, attrs, instance=None):
+#         concept_reference = instance if instance else ConceptReference()
+#         concept_reference.extras = attrs.get('extras', concept_reference.extras)
+#         concept = attrs.get('concept', None)
+#         if concept:
+#             concept_reference.concept = concept
+#             if hasattr(concept, '_concept_version'):
+#                 concept_reference.concept_version = concept._concept_version
+#             elif hasattr(concept, '_source_version'):
+#                 concept_reference.source_version = concept._source_version
+#         concept_reference.mnemonic = attrs.get(self.Meta.lookup_field, concept_reference.mnemonic)
+#         if not concept_reference.mnemonic:
+#             concept_reference.mnemonic = "%s..%s" % (concept_reference.concept.parent,
+#                                                      concept_reference.concept)
+#         return concept_reference
+#
+#     def save_object(self, obj, **kwargs):
+#         errors = ConceptReference.persist_new(obj, **kwargs)
+#         self._errors.update(errors)
+#
+#
+# class ConceptReferenceDetailSerializer(serializers.Serializer):
+#     concept_reference_id = serializers.CharField(source='mnemonic')
+#     concept_reference_url = serializers.URLField(read_only=True)
+#     url = HyperlinkedResourceIdentityField(view_name='collection-concept-detail')
+#     collection = serializers.CharField(source='collection')
+#     collection_owner = serializers.CharField(read_only=True, source='owner_name')
+#     collection_owner_type = serializers.CharField(read_only=True, source='owner_type')
+#     created_on = serializers.DateTimeField(source='created_at', read_only=True)
+#     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+#
+#     class Meta:
+#         model = ConceptReference
+#         lookup_field = 'mnemonic'

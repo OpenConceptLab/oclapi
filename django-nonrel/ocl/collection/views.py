@@ -12,7 +12,9 @@ from oclapi.filters import HaystackSearchFilter
 from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, BaseAPIView
 from concepts.serializers import ConceptListSerializer
+from mappings.serializers import MappingDetailSerializer
 from concepts.models import Concept
+from mappings.models import Mapping
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -247,4 +249,26 @@ class CollectionVersionConceptListView(CollectionVersionBaseView,
     def get(self, request, *args, **kwargs):
         object_version = self.versioned_object
         self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        return self.list(request, *args, **kwargs)
+
+
+class CollectionMappingListView(CollectionBaseView,
+                                BaseAPIView,
+                                ListWithHeadersMixin):
+    serializer_class = MappingDetailSerializer
+    def get(self, request, *args, **kwargs):
+        collection = self.get_object()
+        object_version = CollectionVersion.get_head(collection.id)
+
+        self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
+        return self.list(request, *args, **kwargs)
+
+
+class CollectionVersionMappingListView(CollectionVersionBaseView,
+                                       ListWithHeadersMixin):
+    serializer_class = MappingDetailSerializer
+
+    def get(self, request, *args, **kwargs):
+        object_version = self.versioned_object
+        self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
         return self.list(request, *args, **kwargs)

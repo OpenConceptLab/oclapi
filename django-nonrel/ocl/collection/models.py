@@ -24,6 +24,10 @@ class Collection(ConceptContainerModel):
         return reverse_resource(self, 'collection-concept-list')
 
     @property
+    def mappings_url(self):
+        return reverse_resource(self, 'collection-mapping-list')
+
+    @property
     def versions_url(self):
         return reverse_resource(self, 'collectionversion-list')
 

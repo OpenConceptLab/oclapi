@@ -44,7 +44,8 @@ class ListWithHeadersMixin(ListModelMixin):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
 
     def list(self, request, *args, **kwargs):
-        self.object_list = self.object_list or self.filter_queryset(self.get_queryset())
+        if self.object_list is None:
+            self.object_list = self.filter_queryset(self.get_queryset())
 
         # Skip pagination if compressed results are requested
         meta = request._request.META
@@ -70,6 +71,7 @@ class ListWithHeadersMixin(ListModelMixin):
                     return Response(results, headers=serializer.headers)
 
         serializer = self.get_serializer(self.object_list, many=True)
+
         results = serializer.data
         results = self.prepend_head(results)
         if facets:

@@ -1000,7 +1000,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
 
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
-        version1.concept_references = [1]
         version1.full_clean()
         version1.save()
 
@@ -1045,7 +1044,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
 
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
-        version1.concept_references = [2]
         version1.full_clean()
         version1.save()
 

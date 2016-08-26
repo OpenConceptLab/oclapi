@@ -461,68 +461,68 @@ class ConceptVersion(ResourceVersionModel):
         return 'concept_version'
 
 
-class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
-    concept = models.ForeignKey(Concept)
-    concept_version = models.ForeignKey(ConceptVersion, null=True, blank=True)
-    source_version = models.ForeignKey(SourceVersion, null=True, blank=True)
+# class ConceptReference(SubResourceBaseModel, DictionaryItemMixin):
+#     concept = models.ForeignKey(Concept)
+#     concept_version = models.ForeignKey(ConceptVersion, null=True, blank=True)
+#     source_version = models.ForeignKey(SourceVersion, null=True, blank=True)
+#
+#     def clean(self):
+#         if self.concept_version and self.source_version:
+#             raise ValidationError('Cannot specify both source_version and concept_version.')
 
-    def clean(self):
-        if self.concept_version and self.source_version:
-            raise ValidationError('Cannot specify both source_version and concept_version.')
+    # @property
+    # def concept_reference_url(self):
+    #     if self.source_version:
+    #         source_version_url = reverse_resource_version(self.source_version,
+    #                                                       'sourceversion-detail')
+    #         return urljoin(source_version_url, 'concepts/%s/' % self.concept.mnemonic)
+    #     if self.concept_version:
+    #         return reverse_resource_version(self.concept_version, 'conceptversion-detail')
+    #     return reverse_resource(self.concept, 'concept-detail')
 
-    @property
-    def concept_reference_url(self):
-        if self.source_version:
-            source_version_url = reverse_resource_version(self.source_version,
-                                                          'sourceversion-detail')
-            return urljoin(source_version_url, 'concepts/%s/' % self.concept.mnemonic)
-        if self.concept_version:
-            return reverse_resource_version(self.concept_version, 'conceptversion-detail')
-        return reverse_resource(self.concept, 'concept-detail')
-
-    @property
-    def concept_class(self):
-        return self.concept.concept_class if self.concept else None
-
-    @property
-    def data_type(self):
-        return self.concept.datatype if self.concept else None
-
-    @property
-    def source(self):
-        return self.concept.parent if self.concept else None
-
-    @property
-    def collection(self):
-        return self.parent.mnemonic if self.parent else None
-
-    @property
-    def owner_name(self):
-        return self.parent.owner_name if self.parent else None
-
-    @property
-    def owner_type(self):
-        return self.parent.owner_type if self.parent else None
-
-    @property
-    def owner_url(self):
-        return self.parent.owner_url if self.parent else None
-
-    @property
-    def display_name(self):
-        return self.concept.display_name if self.concept else None
-
-    @property
-    def display_locale(self):
-        return self.concept.display_locale if self.concept else None
-
-    @property
-    def is_current_version(self):
-        return not(self.concept_version or self.source_version)
-
-    @staticmethod
-    def get_url_kwarg():
-        return 'concept'
+    # @property
+    # def concept_class(self):
+    #     return self.concept.concept_class if self.concept else None
+    #
+    # @property
+    # def data_type(self):
+    #     return self.concept.datatype if self.concept else None
+    #
+    # @property
+    # def source(self):
+    #     return self.concept.parent if self.concept else None
+    #
+    # @property
+    # def collection(self):
+    #     return self.parent.mnemonic if self.parent else None
+    #
+    # @property
+    # def owner_name(self):
+    #     return self.parent.owner_name if self.parent else None
+    #
+    # @property
+    # def owner_type(self):
+    #     return self.parent.owner_type if self.parent else None
+    #
+    # @property
+    # def owner_url(self):
+    #     return self.parent.owner_url if self.parent else None
+    #
+    # @property
+    # def display_name(self):
+    #     return self.concept.display_name if self.concept else None
+    #
+    # @property
+    # def display_locale(self):
+    #     return self.concept.display_locale if self.concept else None
+    #
+    # @property
+    # def is_current_version(self):
+    #     return not(self.concept_version or self.source_version)
+    #
+    # @staticmethod
+    # def get_url_kwarg():
+    #     return 'concept'
 
 
 @receiver(post_save, sender=Source)
@@ -545,31 +545,31 @@ def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
             concept.save()
 
 
-@receiver(post_save, sender=ConceptVersion)
-def update_references(sender, instance=None, created=False, **kwargs):
-    #Update all references...
-
-    # WHERE concept_version_id = this ConceptVersion ID
-    or_clauses = [Q(concept_version_id=instance.id)]
-
-    # OR concept_id = this ConceptVersion's Concept ID,
-    #    AND source_version_id refers to one of the source versions containing this ConceptVersion
-    concept = instance.versioned_object
-    source_versions = SourceVersion.objects.filter(versioned_object_id=concept.parent_id)
-    source_versions_with_concept = []
-    for source_version in source_versions:
-        if instance.id in source_version.concepts:
-            source_versions_with_concept.append(source_version.id)
-    or_clauses.append(
-        Q(concept_id=concept.id, source_version_id__in=source_versions_with_concept))
-
-    # Do the update
-    for ref in ConceptReference.objects.filter(reduce(lambda x, y: x | y, or_clauses[1:], or_clauses[0])):
-        ref.save()
-
-    # OR if ConceptVersion is the latest version
-    if instance.is_latest_version:
-        # Updated all references that don't specify a concept version
-        for ref in ConceptReference.objects.filter(concept_id=instance.versioned_object_id):
-            if ref.is_current_version:
-                ref.save()
+# @receiver(post_save, sender=ConceptVersion)
+# def update_references(sender, instance=None, created=False, **kwargs):
+#     #Update all references...
+#
+#     # WHERE concept_version_id = this ConceptVersion ID
+#     or_clauses = [Q(concept_version_id=instance.id)]
+#
+#     # OR concept_id = this ConceptVersion's Concept ID,
+#     #    AND source_version_id refers to one of the source versions containing this ConceptVersion
+#     concept = instance.versioned_object
+#     source_versions = SourceVersion.objects.filter(versioned_object_id=concept.parent_id)
+#     source_versions_with_concept = []
+#     for source_version in source_versions:
+#         if instance.id in source_version.concepts:
+#             source_versions_with_concept.append(source_version.id)
+#     or_clauses.append(
+#         Q(concept_id=concept.id, source_version_id__in=source_versions_with_concept))
+#
+#     # Do the update
+#     for ref in ConceptReference.objects.filter(reduce(lambda x, y: x | y, or_clauses[1:], or_clauses[0])):
+#         ref.save()
+#
+#     # OR if ConceptVersion is the latest version
+#     if instance.is_latest_version:
+#         # Updated all references that don't specify a concept version
+#         for ref in ConceptReference.objects.filter(concept_id=instance.versioned_object_id):
+#             if ref.is_current_version:
+#                 ref.save()

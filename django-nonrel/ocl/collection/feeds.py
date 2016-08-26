@@ -4,7 +4,6 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from collection.models import Collection
-from concepts.models import ConceptReference
 from oclapi.feeds import FeedFilterMixin
 from oclapi.utils import reverse_resource
 from orgs.models import Organization
@@ -48,8 +47,8 @@ class CollectionFeed(Feed, FeedFilterMixin):
     def description(self, obj):
         return "Updates to concepts within collection %s" % obj.mnemonic
 
-    def items(self, obj):
-        return self.filter_queryset(ConceptReference.objects.filter(parent_id=obj.id))
+    # def items(self, obj):
+    #     return self.filter_queryset(ConceptReference.objects.filter(parent_id=obj.id))
 
     def item_title(self, item):
         return item.mnemonic
