@@ -16,4 +16,4 @@ pysolr==3.2.0
 wsgiref==0.1.2
 python-dateutil==2.2
 gunicorn==18.0
-moto
+moto==0.4.25
