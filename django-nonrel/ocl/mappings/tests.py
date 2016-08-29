@@ -336,7 +336,7 @@ class MappingTest(MappingBaseTest):
 
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(IntegrityError):
             mapping = Mapping(
                 created_by=self.user1,
                 updated_by=self.user1,

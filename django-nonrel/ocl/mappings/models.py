@@ -22,7 +22,7 @@ class Mapping(BaseModel):
 
     class Meta:
         unique_together = (
-            ("parent", "map_type", "from_concept", "to_concept"),
+            ("parent", "map_type", "from_concept", "to_concept", "to_source"),
         )
 
     def clean(self, exclude=None):
@@ -183,7 +183,11 @@ class Mapping(BaseModel):
         errors = dict()
         obj.updated_by = updated_by
         try:
-            obj.full_clean()
+            if obj.to_source == None:
+                excluded_field = 'to_source'
+            else:
+                excluded_field = 'to_concept'
+            obj.full_clean(exclude=[excluded_field])
         except ValidationError as e:
             errors.update(e.message_dict)
             return errors
@@ -218,7 +222,11 @@ class Mapping(BaseModel):
         obj.parent = parent_resource
         obj.public_access = parent_resource.public_access
         try:
-            obj.full_clean()
+            if obj.to_source == None:
+                excluded_field = 'to_source'
+            else:
+                excluded_field = 'to_concept'
+            obj.full_clean(exclude=[excluded_field])
         except ValidationError as e:
             errors.update(e.message_dict)
             return errors
