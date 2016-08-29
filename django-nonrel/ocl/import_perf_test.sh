@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 export DJANGO_CONFIGURATION=IntegrationTest
 python manage.py syncdb --noinput
 #create org and source
