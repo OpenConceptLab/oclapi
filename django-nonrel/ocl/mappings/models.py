@@ -184,10 +184,14 @@ class Mapping(BaseModel):
         obj.updated_by = updated_by
         try:
             if obj.to_source == None:
-                excluded_field = 'to_source'
+                obj._meta.unique_together = (
+                    ("parent", "map_type", "from_concept", "to_concept"),
+                )
             else:
-                excluded_field = 'to_concept'
-            obj.full_clean(exclude=[excluded_field])
+                obj._meta.unique_together = (
+                    ("parent", "map_type", "from_concept", "to_source"),
+                )
+            obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
             return errors
@@ -223,10 +227,14 @@ class Mapping(BaseModel):
         obj.public_access = parent_resource.public_access
         try:
             if obj.to_source == None:
-                excluded_field = 'to_source'
+                obj._meta.unique_together = (
+                    ("parent", "map_type", "from_concept", "to_concept"),
+                )
             else:
-                excluded_field = 'to_concept'
-            obj.full_clean(exclude=[excluded_field])
+                obj._meta.unique_together = (
+                    ("parent", "map_type", "from_concept", "to_source"),
+                )
+            obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
             return errors
