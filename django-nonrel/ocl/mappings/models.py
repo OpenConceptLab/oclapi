@@ -22,7 +22,7 @@ class Mapping(BaseModel):
 
     class Meta:
         unique_together = (
-            ("parent", "map_type", "from_concept", "to_concept", "to_source"),
+            ("parent", "map_type", "from_concept", "to_concept", "to_source", "to_concept_code"),
         )
 
     def clean(self, exclude=None):
@@ -189,7 +189,7 @@ class Mapping(BaseModel):
                 )
             else:
                 obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_source"),
+                    ("parent", "map_type", "from_concept", "to_source", "to_concept_code"),
                 )
             obj.full_clean()
         except ValidationError as e:
@@ -232,7 +232,7 @@ class Mapping(BaseModel):
                 )
             else:
                 obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_source"),
+                    ("parent", "map_type", "from_concept", "to_source", "to_concept_code"),
                 )
             obj.full_clean()
         except ValidationError as e:
