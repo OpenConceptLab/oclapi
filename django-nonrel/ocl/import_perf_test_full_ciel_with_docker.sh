@@ -11,5 +11,4 @@ echo "*****************" >> concepts_import.out
 echo "*****************" >> mappings_import.out
 date >> concepts_import.out
 date >> mappings_import.out
-time docker-compose run ocl python manage.py import_concepts_to_source --source $SOURCE --token $1 --inline-indexing true ciel_20160711/ciel_20160711_concepts.json >> concepts_import.out 2>&1
-time docker-compose run ocl python manage.py import_mappings_to_source --source $SOURCE --token $1 --inline-indexing true ciel_20160711/ciel_20160711_mappings.json >> mappings_import.out 2>&1
+time docker-compose run ocl python manage.py import_concepts_to_source --source $SOURCE --token $1 --inline-indexing true ciel_20160711/ciel_20160711_concepts.json >> concepts_import.out 2>&1 && time docker-compose run ocl python manage.py import_mappings_to_source --source $SOURCE --token $1 --inline-indexing true ciel_20160711/ciel_20160711_mappings.json >> mappings_import.out 2>&1
