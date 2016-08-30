@@ -126,6 +126,8 @@ class CollectionVersionBaseView(ResourceVersionMixin):
 class CollectionVersionListView(CollectionVersionBaseView,
                                 mixins.CreateModelMixin,
                                 ListWithHeadersMixin):
+    processing_filter = None
+    released_filter = None
 
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewConceptDictionary,)
@@ -151,6 +153,11 @@ class CollectionVersionListView(CollectionVersionBaseView,
                                 headers=headers)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def get_queryset(self):
+        queryset = super(CollectionVersionListView, self).get_queryset()
+        return queryset.order_by('-created_at')
 
 
 class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPIView, UpdateAPIView):
