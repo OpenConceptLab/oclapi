@@ -1296,9 +1296,11 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
 
         c = Client()
-        path = reverse('collection-references', kwargs=kwargs) + '?references=' + ','.join([reference])
-        response = c.delete(path)
-        self.assertEquals(response.status_code, 204)
+        path = reverse('collection-references', kwargs=kwargs)
+        data = json.dumps({'references': [reference]})
+        response = c.delete(path, data, 'application/json')
+        self.assertEquals(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'references': []})
         collection = Collection.objects.get(id=collection.id)
         head = CollectionVersion.get_head(collection.id)
         self.assertEquals(len(collection.references), 0)
