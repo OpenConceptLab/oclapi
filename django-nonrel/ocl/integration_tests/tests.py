@@ -15,7 +15,9 @@ from mappings.models import Mapping
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
 from sources.models import Source, SourceVersion
+from collection.models import Collection, CollectionVersion
 from sources.tests import SourceBaseTest
+from collection.tests import CollectionBaseTest
 from django.utils.encoding import force_str
 
 # @override_settings(HAYSTACK_SIGNAL_PROCESSOR='haystack.signals.BaseSignalProcessor') #see if this can also be done at some point later
@@ -1228,3 +1230,77 @@ class SourceVersionExportViewTest(SourceBaseTest):
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
 
+class CollectionReferenceViewTest(CollectionBaseTest):
+    def test_destroy_reference(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+
+        reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
+        collection.expression = reference
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(collection.references), 1)
+        self.assertEquals(len(head.references), 1)
+        self.assertEquals(len(head.concepts), 1)
+
+        kwargs = {
+            'user': 'user1',
+            'collection': collection.mnemonic
+        }
+
+        c = Client()
+        path = reverse('collection-references', kwargs=kwargs) + '?references=' + ','.join([reference])
+        response = c.delete(path)
+        self.assertEquals(response.status_code, 204)
+        collection = Collection.objects.get(id=collection.id)
+        head = CollectionVersion.get_head(collection.id)
+        self.assertEquals(len(collection.references), 0)
+        self.assertEquals(len(head.references), 0)
+        self.assertEquals(len(head.concepts), 0)

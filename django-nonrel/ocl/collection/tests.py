@@ -24,12 +24,18 @@ class CollectionBaseTest(TestCase):
         Organization.objects.filter().delete()
         Collection.objects.filter().delete()
         CollectionVersion.objects.filter().delete()
+        Mapping.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
 
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
             last_name='One',
-            first_name='User'
+            first_name='User',
+            password='password'
         )
         self.user2 = User.objects.create(
             username='user2',
@@ -51,7 +57,12 @@ class CollectionBaseTest(TestCase):
         Organization.objects.filter().delete()
         Collection.objects.filter().delete()
         CollectionVersion.objects.filter().delete()
-
+        Mapping.objects.filter().delete()
+        Source.objects.filter().delete()
+        SourceVersion.objects.filter().delete()
+        Concept.objects.filter().delete()
+        ConceptVersion.objects.filter().delete()
+        return None
 
 class CollectionTest(CollectionBaseTest):
 
@@ -169,6 +180,299 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(self.userprofile1.mnemonic, collection.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, collection.parent_resource_type)
         self.assertEquals(0, collection.num_versions)
+
+    def test_delete_mapping_reference(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        fromConcept = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept,
+            to_concept=toConcept,
+            external_id='mapping',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+        collection.expression = reference
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(len(head.references), 1)
+
+        collection.delete_references([reference])
+
+        head = CollectionVersion.get_head(collection.id)
+        collection = Collection.objects.get(id=collection.id)
+
+        self.assertEquals(len(collection.references), 0)
+        self.assertEquals(len(head.references), 0)
+        self.assertEquals(len(head.mappings), 0)
+
+    def test_delete_concept_reference(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+
+        reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
+        collection.expression = reference
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.references), 1)
+
+        collection.delete_references([reference])
+
+        head = CollectionVersion.get_head(collection.id)
+        collection = Collection.objects.get(id=collection.id)
+
+        self.assertEquals(len(collection.references), 0)
+        self.assertEquals(len(head.references), 0)
+        self.assertEquals(len(head.concepts), 0)
+
+    def test_delete_multiple_reference(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        fromConcept = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept,
+            to_concept=toConcept,
+            external_id='mapping',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
+        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+
+        references = [concept1_reference, from_concept_reference, mapping_reference]
+
+        for reference in references:
+            collection.expression = reference
+            collection.full_clean()
+            collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.concepts), 2)
+        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(len(head.references), 3)
+
+        resulted_references = collection.delete_references([references[0], references[2]])
+
+        head = CollectionVersion.get_head(collection.id)
+        collection = Collection.objects.get(id=collection.id)
+
+        self.assertEquals(len(resulted_references), 1)
+        self.assertEquals(resulted_references[0], from_concept_reference)
+        self.assertEquals(len(collection.references), 1)
+        self.assertEquals(len(head.references), 1)
+        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.mappings), 0)
+        self.assertEquals(head.references[0].expression, from_concept_reference)
+        self.assertEquals(head.concepts[0], fromConcept.id)
+
+    def test_delete_reference_when_no_reference_given(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        collection.delete_references([])
 
 
 class CollectionClassMethodTest(CollectionBaseTest):

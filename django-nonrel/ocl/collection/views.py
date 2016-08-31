@@ -1,20 +1,21 @@
+from collection.models import Collection, CollectionVersion
+from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
+from concepts.models import Concept
+from concepts.serializers import ConceptListSerializer
 from django.http import HttpResponse
+from mappings.models import Mapping
+from mappings.serializers import MappingDetailSerializer
+from oclapi.filters import HaystackSearchFilter
+from oclapi.mixins import ListWithHeadersMixin
+from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
+from oclapi.permissions import HasAccessToVersionedObject
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, BaseAPIView
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
-from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
-    CollectionCreateOrUpdateSerializer, CollectionReferenceSerializer
-from collection.models import Collection, CollectionVersion
-from oclapi.mixins import ListWithHeadersMixin
-from oclapi.models import ResourceVersionModel
-from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
-from oclapi.filters import HaystackSearchFilter
-from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, BaseAPIView
-from concepts.serializers import ConceptListSerializer
-from mappings.serializers import MappingDetailSerializer
-from concepts.models import Concept
-from mappings.models import Mapping
+from users.models import UserProfile
+from orgs.models import Organization
+from django.db import IntegrityError
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -52,6 +53,7 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
 class CollectionReferencesView(CollectionBaseView,
                                RetrieveAPIView,
                                DestroyAPIView,
+                               UpdateAPIView,
                                ConceptDictionaryUpdateMixin
                                ):
 
@@ -95,6 +97,30 @@ class CollectionReferencesView(CollectionBaseView,
         success_status_code = status.HTTP_200_OK
         return Response(serializer.data, status=success_status_code)
 
+    def destroy(self,request, *args, **kwargs):
+        if not self.parent_resource:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        owner = self.get_owner(kwargs)
+        references = request.QUERY_PARAMS.getlist("references")
+
+        if not owner or not references:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        collection = Collection.objects.get(mnemonic=self.parent_resource, parent_id=owner.id)
+        collection.delete_references(references)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_owner(self, kwargs):
+        owner = None
+        if 'user' in kwargs:
+            owner_id = kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in kwargs:
+            owner_id = kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,

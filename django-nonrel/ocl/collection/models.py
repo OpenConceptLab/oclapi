@@ -18,7 +18,7 @@ HEAD = 'HEAD'
 class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-    expression =  None
+    expression = None
     @property
     def concepts_url(self):
         return reverse_resource(self, 'collection-concept-list')
@@ -63,6 +63,38 @@ class Collection(ConceptContainerModel):
     def get_url_kwarg():
         return 'collection'
 
+    def _get_concept_and_mapping_ids(self, reference):
+        collection_reference = CollectionReference(expression=reference)
+        collection_reference.clean()
+        concept_ids = map(lambda c: c.id, collection_reference.concepts)
+        mapping_ids = map(lambda c: c.id, collection_reference.mappings or [])
+        return {'concept_ids': concept_ids, 'mapping_ids': mapping_ids}
+
+    def _reduce_func(self, start, current):
+        new_current = self._get_concept_and_mapping_ids(current)
+        start['concept_ids'] += new_current['concept_ids']
+        start['mapping_ids'] += new_current['mapping_ids']
+        return start
+
+    def delete_references(self, references):
+        if len(references) > 0:
+            self.expression = None
+            head = CollectionVersion.get_head_of(self)
+            children_to_reduce = reduce(self._reduce_func, references, {'concept_ids': [], 'mapping_ids': []})
+            head.concepts = list(set(head.concepts) - set(children_to_reduce['concept_ids']))
+            head.mappings = list(set(head.mappings) - set(children_to_reduce['mapping_ids']))
+            head.references = filter(lambda ref: ref.expression not in references, head.references)
+            self.references = head.references
+            head.full_clean()
+            head.save()
+            self.full_clean()
+            self.save()
+        return self.current_references()
+
+    def current_references(self):
+        return map(lambda ref: ref.expression, self.references)
+
+
 COLLECTION_VERSION_TYPE = "Collection Version"
 
 
@@ -77,7 +109,6 @@ class CollectionReference(models.Model):
             self.mappings = Mapping.objects.filter(uri=self.expression)
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
-
 
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
