@@ -1230,6 +1230,56 @@ class SourceVersionExportViewTest(SourceBaseTest):
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
 
+    @mock_s3
+    def test_post_with_same_source_name_in_more_than_one_org(self):
+        source1 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        source2 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs1 = {
+            'parent_resource': self.org1
+        }
+
+        kwargs2 = {
+            'parent_resource': self.org2
+        }
+
+        Source.persist_new(source1, self.user1, **kwargs1)
+        Source.persist_new(source2, self.user1, **kwargs2)
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
+        Concept.persist_new(concept1, self.user1, **{'parent_resource': source1})
+        Concept.persist_new(concept1, self.user1, **{'parent_resource': source2})
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source1.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
+
 class CollectionReferenceViewTest(CollectionBaseTest):
     def test_destroy_reference(self):
         kwargs = {
