@@ -1,5 +1,6 @@
 from collection.models import Collection, CollectionVersion
-from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer
+from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
+    CollectionReferenceSerializer
 from concepts.models import Concept
 from concepts.serializers import ConceptListSerializer
 from django.http import HttpResponse
