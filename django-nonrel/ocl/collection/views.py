@@ -28,6 +28,12 @@ class CollectionBaseView():
     def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionVersionDetailSerializer(obj, data, files, partial)
 
+class CollectionVersionBaseView(ResourceVersionMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = CollectionVersion
+    queryset = CollectionVersion.objects.filter(is_active=True)
+    permission_classes = (HasAccessToVersionedObject,)
 
 class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
                                           RetrieveAPIView,
@@ -89,6 +95,7 @@ class CollectionReferencesView(CollectionBaseView,
         success_status_code = status.HTTP_200_OK
         return Response(serializer.data, status=success_status_code)
 
+
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,
                          ListWithHeadersMixin):
@@ -114,13 +121,6 @@ class CollectionExtrasView(ConceptDictionaryExtrasView):
 class CollectionExtraRetrieveUpdateDestroyView(ConceptDictionaryExtraRetrieveUpdateDestroyView):
     concept_dictionary_version_class = CollectionVersion
 
-
-class CollectionVersionBaseView(ResourceVersionMixin):
-    lookup_field = 'version'
-    pk_field = 'mnemonic'
-    model = CollectionVersion
-    queryset = CollectionVersion.objects.filter(is_active=True)
-    permission_classes = (HasAccessToVersionedObject,)
 
 
 class CollectionVersionListView(CollectionVersionBaseView,
@@ -279,3 +279,5 @@ class CollectionVersionMappingListView(CollectionVersionBaseView,
         object_version = self.versioned_object
         self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
         return self.list(request, *args, **kwargs)
+
+
