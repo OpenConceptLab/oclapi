@@ -1,7 +1,7 @@
 from collection.models import Collection, CollectionVersion
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
-from concepts.models import Concept
+from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptListSerializer
 from django.http import HttpResponse
 from mappings.models import Mapping
@@ -266,7 +266,10 @@ class CollectionVersionConceptListView(CollectionVersionBaseView,
 
     def get(self, request, *args, **kwargs):
         object_version = self.versioned_object
-        self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        if object_version.mnemonic == 'HEAD':
+            self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        else:
+            self.object_list = ConceptVersion.objects.filter(id__in=object_version.concepts)
         return self.list(request, *args, **kwargs)
 
 

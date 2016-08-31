@@ -306,6 +306,12 @@ class ConceptVersion(ResourceVersionModel):
         return versions[0] if versions else None
 
     @classmethod
+    def get_latest_version_by_id(cls, id):
+        versions = ConceptVersion.objects.filter(
+            versioned_object_id=id, is_latest_version=True).order_by('-created_at')
+        return versions[0] if versions else None
+
+    @classmethod
     def for_concept(cls, concept, label, previous_version=None, parent_version=None):
         return ConceptVersion(
             mnemonic=label,
