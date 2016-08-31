@@ -109,6 +109,11 @@ class CollectionReference(models.Model):
             self.mappings = Mapping.objects.filter(uri=self.expression)
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
+            elif self.mappings[0].retired:
+                raise ValidationError({'detail': ['This mapping is retired.']})
+        elif self.concepts[0].retired:
+            raise ValidationError({'detail': ['This concept is retired.']})
+
 
     @property
     def reference_type(self):
