@@ -102,15 +102,13 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         owner = self.get_owner(kwargs)
-        references = request.QUERY_PARAMS.getlist("references")
+        references = request.DATA.get("references")
 
         if not owner or not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         collection = Collection.objects.get(mnemonic=self.parent_resource, parent_id=owner.id)
-        collection.delete_references(references)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'references': (collection.delete_references(references))}, status=status.HTTP_200_OK)
 
     def get_owner(self, kwargs):
         owner = None
