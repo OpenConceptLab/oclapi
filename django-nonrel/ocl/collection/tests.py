@@ -1488,6 +1488,111 @@ class CollectionReferenceTest(CollectionBaseTest):
         )
         self.assertEquals(reference.reference_type, 'concepts')
 
+    def test_adding_retired_concept_negative(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept = Concept(
+            mnemonic='concept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+            retired=True,
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+
+        expression = '/orgs/' + self.org1.mnemonic + '/sources/' +\
+            source.mnemonic + '/concepts/' + concept.mnemonic + '/'
+
+        reference = CollectionReference(expression=expression)
+        try:
+            reference.full_clean()
+            self.assertTrue(False)
+        except ValidationError as e:
+            self.assertEquals(len(e.messages), 1)
+            self.assertEquals(e.messages, ['This concept is retired.'])
+
+    def test_adding_retired_mapping_negative(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        fromConcept = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept,
+            to_concept=toConcept,
+            external_id='mapping',
+            retired=True,
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+        try:
+            reference.full_clean()
+            self.assertTrue(False)
+        except ValidationError as e:
+            self.assertEquals(len(e.messages), 1)
+            self.assertEquals(e.messages, ['This mapping is retired.'])
+
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
 
