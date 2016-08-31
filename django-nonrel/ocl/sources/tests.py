@@ -702,6 +702,42 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(source_version1.head_sibling(), source_version1)
         self.assertEquals(source_version2.head_sibling(), source_version1)
 
+    def test_last_child_update(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        Source.persist_new(source, self.user1, parent_resource=self.org1)
+
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
+        Concept.persist_new(concept1, self.user1, parent_resource = source)
+
+        source_version = SourceVersion.get_latest_version_of(source)
+        self.assertEquals(source_version.last_child_update, source_version.last_concept_update)
+
+    def test_last_child_update_without_child(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        Source.persist_new(source, self.user1, parent_resource=self.org1)
+        source_version = SourceVersion.get_latest_version_of(source)
+        self.assertEquals(source_version.last_child_update, source_version.updated_at)
+
 class SourceVersionClassMethodTest(SourceBaseTest):
 
     def setUp(self):
