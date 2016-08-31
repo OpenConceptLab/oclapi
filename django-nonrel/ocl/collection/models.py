@@ -124,17 +124,30 @@ class CollectionVersion(ConceptContainerVersionModel):
         self.references.append(a_reference)
 
     def seed_concepts(self):
-        seed_concepts_from = self.previous_version
+        seed_concepts_from = self.head_sibling()
         if seed_concepts_from:
             self.concepts = list(seed_concepts_from.concepts)
 
     def seed_mappings(self):
-        seed_mappings_from = self.previous_version
+        seed_mappings_from = self.head_sibling()
         if seed_mappings_from:
             self.mappings = list(seed_mappings_from.mappings)
 
+    def seed_references(self):
+        seed_references_from = self.head_sibling()
+        if seed_references_from:
+            self.references = list(seed_references_from.references)
+
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
+
+    @classmethod
+    def persist_new(cls, obj, **kwargs):
+        obj.is_active = True
+        kwargs['seed_concepts'] = True
+        kwargs['seed_mappings'] = True
+        kwargs['seed_references'] = True
+        return cls.persist_changes(obj, **kwargs)
 
     @classmethod
     def persist_changes(cls, obj, **kwargs):
@@ -154,9 +167,9 @@ class CollectionVersion(ConceptContainerVersionModel):
     @classmethod
     def for_base_object(cls, collection, label, previous_version=None, parent_version=None, released=False):
         if not Collection == type(collection):
-            raise ValidationError("source must be of type 'Source'")
+            raise ValidationError("collection must be of type 'Collection'")
         if not collection.id:
-            raise ValidationError("source must have an Object ID.")
+            raise ValidationError("collection must have an Object ID.")
         if label == 'INITIAL':
             label = HEAD
         return CollectionVersion(
