@@ -101,7 +101,7 @@ class SourceVersion(ConceptContainerVersionModel):
         last_mapping_update = self.last_mapping_update
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
-        return last_concept_update or last_mapping_update
+        return last_concept_update or last_mapping_update or self.updated_at
 
     @property
     def last_concept_update(self):
