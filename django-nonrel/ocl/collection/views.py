@@ -95,7 +95,7 @@ class CollectionReferencesView(CollectionBaseView,
         self.object = self.get_object(self.queryset)
         serializer = self.get_serializer(self.object)
         success_status_code = status.HTTP_200_OK
-        return Response(serializer.data, status=success_status_code)
+        return Response(serializer.data.get('references'), status=success_status_code)
 
     def destroy(self,request, *args, **kwargs):
         if not self.parent_resource:
@@ -280,6 +280,16 @@ class CollectionVersionConceptListView(CollectionVersionBaseView,
     def get(self, request, *args, **kwargs):
         object_version = self.versioned_object
         self.object_list = Concept.objects.filter(id__in=object_version.concepts)
+        return self.list(request, *args, **kwargs)
+
+
+class CollectionVersionReferenceListView(CollectionVersionBaseView,
+                                       ListWithHeadersMixin):
+    serializer_class = CollectionReferenceSerializer
+
+    def get(self, request, *args, **kwargs):
+        object_version = self.versioned_object
+        self.object_list = object_version.references
         return self.list(request, *args, **kwargs)
 
 
