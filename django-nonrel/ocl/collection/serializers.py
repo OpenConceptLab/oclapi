@@ -82,8 +82,10 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
 
 
 class CollectionReferenceSerializer(serializers.ModelSerializer):
+    reference_type = serializers.CharField(read_only=True)
+
     class Meta:
-        fields = ('expression',)
+        fields = ('expression', 'reference_type',)
         model = CollectionReference
 
 

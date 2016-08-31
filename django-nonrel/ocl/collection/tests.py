@@ -1482,6 +1482,12 @@ class CollectionReferenceTest(CollectionBaseTest):
             self.assertEquals(len(e.messages), 2)
             self.assertEquals(e.messages, ['This field cannot be blank.', 'Expression specified is not valid.'])
 
+    def test_reference_type_of_expression(self):
+        reference = CollectionReference(
+            expression='/users/gaurav/sources/ABC-10/concepts/a15/'
+        )
+        self.assertEquals(reference.reference_type, 'concepts')
+
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
 
