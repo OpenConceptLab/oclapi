@@ -30,6 +30,7 @@ class MappingsImporter(object):
         """ Initialize mapping importer """
         self.source = source
         self.sources_cache = {}
+        self.concepts_cache = {}
         self.mappings_file = mappings_file
         self.stdout = output_stream
         self.stderr = error_stream
@@ -60,6 +61,8 @@ class MappingsImporter(object):
         # Load the JSON file line by line and import each line
         self.mapping_ids = set(self.source_version.mappings)
         self.count = 0
+        concept_ids_for_uris = Concept.objects.values('id','uri').filter(parent_id=self.source.id)
+        self.concepts_cache = dict((x['uri'], x['id']) for x in concept_ids_for_uris)
         for line in self.mappings_file:
 
             # Load the next JSON line
@@ -285,9 +288,13 @@ class MappingsImporter(object):
         else:
             self.action_count[update_action] = 1
     def get_concept_id(self, concept_url):
-        return Concept.objects.get(uri=concept_url).id
+        result = self.concepts_cache.get(concept_url)
+        if not result:
+            result = Concept.objects.get(uri=concept_url).id
+            self.concepts_cache[concept_url] = result
+        return result
     def get_source_id(self, source_url):
-        result = self.sources_cache.get('source_url')
+        result = self.sources_cache.get(source_url)
         if not result:
             result = Source.objects.get(uri=source_url).id
             self.sources_cache[source_url] = result
