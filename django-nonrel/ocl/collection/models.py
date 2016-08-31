@@ -110,6 +110,10 @@ class CollectionReference(models.Model):
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
 
+    @property
+    def reference_type(self):
+        return self.expression.split('/')[5]
+
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
