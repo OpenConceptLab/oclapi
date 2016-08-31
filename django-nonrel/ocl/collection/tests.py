@@ -16,6 +16,7 @@ from users.models import UserProfile
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from sources.models import Source, SourceVersion
 from mappings.models import Mapping
+from unittest import skip
 
 class CollectionBaseTest(TestCase):
     def setUp(self):
@@ -1114,6 +1115,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(description, version1.description)
         self.assertNotEquals(external_id, version1.external_id)
 
+    # @skip('Tests dont exist anymore: New version will seed data from HEAD always, and never from previous version')
     def test_persist_changes_negative__bad_previous_version(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1', released=True)
         version1.full_clean()
@@ -1302,6 +1304,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertNotEquals(description, version2.description)
         self.assertNotEquals(external_id, version2.external_id)
 
+    @skip('Tests dont exist anymore: New version will seed data from HEAD always, and never from previous version')
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
         version1.full_clean()
@@ -1346,6 +1349,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.previous_version)
 
+    @skip('Tests dont exist anymore: New version will seed data from HEAD always, and never from previous version')
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
         version1.full_clean()
@@ -1390,6 +1394,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version2, CollectionVersion.get_latest_version_of(self.collection1))
         self.assertEquals(version1, version2.parent_version)
 
+    @skip('Tests dont exist anymore: New version will seed data from HEAD always, and never from previous version')
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
         version1 = CollectionVersion.for_base_object(self.collection1, 'version1')
         version1.full_clean()
@@ -1515,6 +1520,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         reference.full_clean()
         CollectionVersion.persist_changes(version, col_reference=reference)
         self.assertEquals(len(version.concepts), 1)
+        self.assertEquals(len(version.references), 1)
 
     def test_add_valid_mapping_expression_to_collection_positive(self):
         source = Source(
