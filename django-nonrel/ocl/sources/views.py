@@ -19,6 +19,8 @@ from sources.models import Source, SourceVersion
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
 from celery_once import AlreadyQueued
+from users.models import UserProfile
+from orgs.models import Organization
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -296,9 +298,19 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         return response
 
     def get_queryset(self):
+        owner = self.get_owner(self.kwargs)
         queryset = super(SourceVersionExportView, self).get_queryset()
-        return queryset.filter(versioned_object_id=Source.objects.get(mnemonic=self.kwargs['source']).id,
+        return queryset.filter(versioned_object_id=Source.objects.get(parent_id=owner.id, mnemonic=self.kwargs['source']).id,
                                             mnemonic=self.kwargs['version'])
+    def get_owner(self, kwargs):
+        owner = None
+        if 'user' in kwargs:
+            owner_id = kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in kwargs:
+            owner_id = kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
 
     def post(self, request, *args, **kwargs):
         self.args = args
