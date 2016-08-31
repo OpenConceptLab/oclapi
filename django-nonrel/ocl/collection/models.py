@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
 from oclapi.utils import reverse_resource
-from concepts.models import Concept
+from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping
 
 
@@ -135,7 +135,13 @@ class CollectionVersion(ConceptContainerVersionModel):
     def seed_concepts(self):
         seed_concepts_from = self.head_sibling()
         if seed_concepts_from:
-            self.concepts = list(seed_concepts_from.concepts)
+            concepts = list(seed_concepts_from.concepts)
+            latest_concept_versions = list()
+            for concept in concepts:
+                latestConceptVersion = ConceptVersion.get_latest_version_by_id(concept)
+                latest_concept_versions.append(latestConceptVersion.id)
+
+            self.concepts = latest_concept_versions
 
     def seed_mappings(self):
         seed_mappings_from = self.head_sibling()
