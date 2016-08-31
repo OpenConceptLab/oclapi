@@ -74,27 +74,25 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        self.object = self.get_object(self.queryset)
         created = False
         save_kwargs = {'force_update': True, 'expression': request.DATA.get("expression")}
 
         success_status_code = status.HTTP_200_OK
 
-        serializer = self.get_serializer(self.object, data=request.DATA,
+        serializer = self.get_serializer(self.parent_resource, data=request.DATA,
                                          files=request.FILES, partial=True)
 
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(**save_kwargs)
+            self.parent_resource = serializer.save(**save_kwargs)
             if serializer.is_valid():
-                self.post_save(self.object, created=created)
+                self.post_save(self.parent_resource, created=created)
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
-        self.object = self.get_object(self.queryset)
-        serializer = self.get_serializer(self.object)
+        serializer = self.get_serializer(self.parent_resource)
         success_status_code = status.HTTP_200_OK
         return Response(serializer.data.get('references'), status=success_status_code)
 
@@ -102,24 +100,12 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        owner = self.get_owner(kwargs)
         references = request.DATA.get("references")
 
-        if not owner or not references:
+        if not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        collection = Collection.objects.get(mnemonic=self.parent_resource, parent_id=owner.id)
-        return Response({'references': (collection.delete_references(references))}, status=status.HTTP_200_OK)
-
-    def get_owner(self, kwargs):
-        owner = None
-        if 'user' in kwargs:
-            owner_id = kwargs['user']
-            owner = UserProfile.objects.get(mnemonic=owner_id)
-        elif 'org' in kwargs:
-            owner_id = kwargs['org']
-            owner = Organization.objects.get(mnemonic=owner_id)
-        return owner
+        return Response({'references': (self.parent_resource.delete_references(references))}, status=status.HTTP_200_OK)
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,
