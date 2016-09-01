@@ -175,11 +175,7 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         instance.mnemonic = attrs.get(self.Meta.lookup_field, instance.mnemonic)
         instance.description = attrs.get('description', instance.description)
-        was_released = instance.released
         instance.released = attrs.get('released', instance.released)
-        if was_released and not instance.released:
-            self._errors['released'] = ['Cannot set this field to "false".  (Releasing another version will cause this field to become false.)']
-        instance._was_released = was_released
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
         instance.extras = attrs.get('extras', instance.extras)
