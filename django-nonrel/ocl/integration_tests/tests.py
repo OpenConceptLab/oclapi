@@ -592,9 +592,6 @@ class MappingViewsTest(MappingBaseTest):
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
 
-    def tearDown(self):
-        super(MappingBaseTest, self).tearDown()
-
     def test_mappings_list_positive(self):
         self.client.login(username='user1', password='user1')
         kwargs = {

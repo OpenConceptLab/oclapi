@@ -6,12 +6,11 @@ Replace this with more appropriate tests for your application.
 """
 from urlparse import urlparse
 
-from collection.models import Collection
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from django.test import TestCase, Client
+from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 from mappings.models import Mapping
@@ -20,7 +19,7 @@ from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
-
+from test_helper.base import OclApiBaseTestCase
 
 class OCLClient(Client):
 
@@ -52,20 +51,9 @@ class OCLClient(Client):
         return self.request(**r)
 
 
-class MappingBaseTest(TestCase):
+class MappingBaseTest(OclApiBaseTestCase):
 
     def setUp(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        LocalizedText.objects.filter().delete()
-        Collection.objects.filter().delete()
-        Mapping.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-
         self.user1 = User.objects.create_user(
             username='user1',
             email='user1@test.com',
@@ -171,16 +159,6 @@ class MappingBaseTest(TestCase):
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept4, self.user1, **kwargs)
-
-    def tearDown(self):
-        LocalizedText.objects.filter().delete()
-        Mapping.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        Collection.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        User.objects.filter().delete()
-        Organization.objects.filter().delete()
 
 class MappingTest(MappingBaseTest):
 

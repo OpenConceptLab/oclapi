@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from django.test import TestCase
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
@@ -16,17 +15,11 @@ from concepts.models import Concept, LocalizedText, ConceptVersion
 from users.models import UserProfile
 from django.core.urlresolvers import reverse
 import json
+from test_helper.base import OclApiBaseTestCase
 
-class SourceBaseTest(TestCase):
+
+class SourceBaseTest(OclApiBaseTestCase):
     def setUp(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -47,6 +40,7 @@ class SourceBaseTest(TestCase):
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
         self.name = LocalizedText.objects.create(name='Fred', locale='es')
+
 
 class SourceTest(SourceBaseTest):
 
@@ -180,9 +174,6 @@ class SourceClassMethodTest(SourceBaseTest):
             website='www.source1.com',
             description='This is the first test source'
         )
-
-    def tearDown(self):
-        super(SourceClassMethodTest, self).tearDown()
 
     def test_persist_new_positive(self):
         kwargs = {
