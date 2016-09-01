@@ -8,28 +8,16 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from django.test import TestCase
-from collection.models import CollectionVersion, Collection
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from orgs.models import Organization
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
-import json
-from django.core.urlresolvers import reverse
+from test_helper.base import OclApiBaseTestCase
 
-class ConceptBaseTest(TestCase):
+class ConceptBaseTest(OclApiBaseTestCase):
 
     def setUp(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        LocalizedText.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-        Collection.objects.filter().delete()
-
         self.user1 = User.objects.create(
             username='user1',
             password='user1',
@@ -87,16 +75,6 @@ class ConceptBaseTest(TestCase):
 
         self.name = LocalizedText.objects.create(name='Fred', locale='es')
         self.description = LocalizedText.objects.create(name='guapo', locale='es')
-
-    def tearDown(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        LocalizedText.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-        Collection.objects.filter().delete()
 
 class ConceptTest(ConceptBaseTest):
 

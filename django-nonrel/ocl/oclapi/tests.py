@@ -1,20 +1,13 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
 from oclapi.models import ACCESS_TYPE_EDIT
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
+from test_helper.base import OclApiBaseTestCase
 
-
-class ResourceVersionModelBaseTest(TestCase):
+class ResourceVersionModelBaseTest(OclApiBaseTestCase):
 
     def setUp(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-
         self.user = User.objects.create(username='user', email='user@test.com', last_name='One', first_name='User')
         self.profile = UserProfile.objects.create(user=self.user, mnemonic='user')
         self.org = Organization.objects.create(name='org', mnemonic='org')
@@ -36,12 +29,6 @@ class ResourceVersionModelBaseTest(TestCase):
         Source.persist_new(self.source, self.user, **kwargs)
         self.source = Source.objects.get(id=self.source.id)
 
-    def tearDown(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
 
 class ResourceVersionTest(ResourceVersionModelBaseTest):
 

@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from django.test import TestCase
 from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
@@ -17,20 +16,10 @@ from concepts.models import Concept, ConceptVersion, LocalizedText
 from sources.models import Source, SourceVersion
 from mappings.models import Mapping
 from unittest import skip
+from test_helper.base import OclApiBaseTestCase
 
-class CollectionBaseTest(TestCase):
+class CollectionBaseTest(OclApiBaseTestCase):
     def setUp(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Collection.objects.filter().delete()
-        CollectionVersion.objects.filter().delete()
-        Mapping.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -51,19 +40,6 @@ class CollectionBaseTest(TestCase):
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
 
-
-    def tearDown(self):
-        User.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-        Organization.objects.filter().delete()
-        Collection.objects.filter().delete()
-        CollectionVersion.objects.filter().delete()
-        Mapping.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        Concept.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-        return None
 
 class CollectionTest(CollectionBaseTest):
 
@@ -1465,13 +1441,6 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             external_id='EXTID1',
         )
-
-    def tearDown(self):
-        Concept.objects.filter().delete()
-        Source.objects.filter().delete()
-        SourceVersion.objects.filter().delete()
-        ConceptVersion.objects.filter().delete()
-        super(CollectionReferenceTest, self).tearDown()
 
     def test_add_invalid_expression_to_collection_negative(self):
         reference = CollectionReference(expression='')

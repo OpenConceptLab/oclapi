@@ -4,29 +4,22 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-from datetime import datetime
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
-from django.test import TestCase
 from sources.models import Source
+from test_helper.base import OclApiBaseTestCase
 from users.models import UserProfile, USER_OBJECT_TYPE
 
 
-class UserProfileTest(TestCase):
+class UserProfileTest(OclApiBaseTestCase):
 
     def setUp(self):
-        User.objects.filter().delete()
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
             last_name='One',
             first_name='User'
         )
-
-    def tearDown(self):
-        User.objects.filter().delete()
 
     def test_create_userprofile_positive(self):
         self.assertFalse(UserProfile.objects.filter(mnemonic='user1').exists())

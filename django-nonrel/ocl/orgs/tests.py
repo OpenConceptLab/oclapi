@@ -7,26 +7,14 @@ Replace this with more appropriate tests for your application.
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-from django.test import TestCase
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from orgs.models import Organization, ORG_OBJECT_TYPE
 from sources.models import Source
 from users.models import UserProfile
+from test_helper.base import OclApiBaseTestCase
 
 
-class OrganizationTestCase(TestCase):
-    def setUp(self):
-        Organization.objects.filter().delete()
-        User.objects.filter().delete()
-        Source.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-
-    def tearDown(self):
-        Organization.objects.filter().delete()
-        User.objects.filter().delete()
-        Source.objects.filter().delete()
-        UserProfile.objects.filter().delete()
-
+class OrganizationTestCase(OclApiBaseTestCase):
     def test_create_organization_positive(self):
         self.assertFalse(Organization.objects.filter(mnemonic='org1').exists())
         org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
