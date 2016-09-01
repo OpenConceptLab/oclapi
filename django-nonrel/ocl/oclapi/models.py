@@ -403,29 +403,11 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         if seed_references:
             obj.seed_references()
 
-        # See if we need to toggle the released flag
-        previous_release = None
-        if hasattr(obj, '_was_released'):
-            if obj.released and not obj._was_released:
-                try:
-                    previous_release = cls.objects.get(versioned_object_id=obj.versioned_object.id, released=True)
-                except cls.DoesNotExist:
-                    previous_release = None
-
-            del obj._was_released
-
-        persisted = False
         try:
-            if previous_release:
-                previous_release.released = False
-                previous_release.save()
             obj.save(**kwargs)
             persisted = True
         finally:
             if not persisted:
-                if previous_release:
-                    previous_release.released = True
-                    previous_release.save()
                 errors['non_field_errors'] = ["Encountered an error while updating version."]
         return errors
 
