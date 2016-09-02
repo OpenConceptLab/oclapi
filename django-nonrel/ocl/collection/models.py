@@ -44,7 +44,7 @@ class Collection(ConceptContainerModel):
             ref = CollectionReference(expression=self.expression)
             ref.full_clean()
             if self.expression in [reference.expression for reference in self.references]:
-                raise ValidationError({'detail': ['Reference Already Exists!']})
+                raise ValidationError({'detail': 'Reference already exists'})
 
             self.references.append(ref)
             object_version = CollectionVersion.get_head(self.id)
@@ -108,7 +108,7 @@ class CollectionReference(models.Model):
         if not self.concepts:
             self.mappings = Mapping.objects.filter(uri=self.expression)
             if not self.mappings:
-                raise ValidationError({'detail': ['Expression specified is not valid.']})
+                raise ValidationError({'detail': 'Expression specified is not valid.'})
             elif self.mappings[0].retired:
                 raise ValidationError({'detail': ['This mapping is retired.']})
         elif self.concepts[0].retired:
