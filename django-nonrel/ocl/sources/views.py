@@ -244,6 +244,7 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
 
 
 class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, DestroyAPIView):
+    permission_classes = (HasAccessToVersionedObject,)
 
     def destroy(self, request, *args, **kwargs):
         version = self.get_object()
