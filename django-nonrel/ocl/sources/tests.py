@@ -1222,17 +1222,18 @@ class SourceVersionListViewTest(SourceBaseTest):
         Source.persist_new(source, self.user1, **kwargs)
         source = Source.objects.get(id=source.id)
 
-        source_version = SourceVersion(
-            name='version1',
-            mnemonic='version1',
-            versioned_object=source,
-            released=True,
-            created_by=self.user1,
-            updated_by=self.user1,
-            public_access='Edit'
-        )
-        source_version.full_clean()
-        source_version.save()
+        for i in range(10):
+            source_version = SourceVersion(
+                name='version'+str(i),
+                mnemonic='version'+str(i),
+                versioned_object=source,
+                released=True,
+                created_by=self.user1,
+                updated_by=self.user1,
+                public_access='Edit'
+            )
+            source_version.full_clean()
+            source_version.save()
 
         concept = Concept(
             mnemonic='concept',
@@ -1260,7 +1261,7 @@ class SourceVersionListViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 200)
 
         content = json.loads(response.content)
-        self.assertEquals(2,len(content))
+        self.assertEquals(10,len(content))
         self.assertEquals(content[0]['id'], 'HEAD')
 
 
