@@ -481,6 +481,19 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.assertEquals(1, collection.num_versions)
         self.assertEquals(collection_version, CollectionVersion.get_latest_version_of(collection))
 
+    def test_delete_collection_allversion_also_deleted(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
+        self.assertEquals(0, len(errors))
+        self.assertTrue(Collection.objects.filter(name='collection1').exists())
+        id = Collection.objects.get(name='collection1').id
+        self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
+        Collection.objects.get(name='collection1').delete()
+        self.assertFalse(Collection.objects.filter(name='collection1').exists())
+        self.assertFalse(CollectionVersion.objects.filter(versioned_object_id=id))
+
     def test_persist_new_negative__no_parent(self):
         errors = Collection.persist_new(self.new_collection, self.user1)
         self.assertTrue(errors.has_key('parent'))
