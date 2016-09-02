@@ -26,6 +26,7 @@ services:
     depends_on:
       - mongo
       - solr
+      - redis
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
