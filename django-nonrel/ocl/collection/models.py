@@ -76,6 +76,10 @@ class Collection(ConceptContainerModel):
         start['mapping_ids'] += new_current['mapping_ids']
         return start
 
+    def delete(self):
+        CollectionVersion.objects.filter(versioned_object_id=self.id).delete()
+        super(Collection, self).delete()
+
     def delete_references(self, references):
         if len(references) > 0:
             self.expression = None
