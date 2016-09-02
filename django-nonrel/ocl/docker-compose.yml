@@ -17,11 +17,11 @@ services:
     container_name: ocl_solr
     ports:
       - "8983:8983"
-  ocl:
+  ocl_api:
     container_name: ocl_api
-    build:
-      context: .
-      dockerfile: Dockerfile
+    extends:
+      file: docker-common.yml
+      service: ocl
     command: bash startup.sh ${SETTINGS} ${CONFIG} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
     depends_on:
       - mongo
@@ -37,9 +37,9 @@ services:
       - .:/code
   ocl_worker:
     container_name: ocl_worker
-    build:
-      context: .
-      dockerfile: Dockerfile
+    extends:
+      file: docker-common.yml
+      service: ocl
     command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
     depends_on:
       - mongo
@@ -55,9 +55,9 @@ services:
       - C_FORCE_ROOT=1
   ocl_flower:
     container_name: ocl_flower
-    build:
-      context: .
-      dockerfile: Dockerfile
+    extends:
+      file: docker-common.yml
+      service: ocl
     command: bash run_flower.sh
     depends_on:
       - redis
