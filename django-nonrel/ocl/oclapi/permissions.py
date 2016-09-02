@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from users.models import UserProfile
+from django.contrib.auth.models import User
 
 
 class HasOwnership(BasePermission):
@@ -48,7 +49,8 @@ class HasAccessToVersionedObject(BasePermission):
         if request.user.is_staff:
             return True
         versioned_object = obj.versioned_object
-        if request.user == versioned_object.owner:
+
+        if type(versioned_object.owner) == User and request.user.id == versioned_object.owner.user_id:
             return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
