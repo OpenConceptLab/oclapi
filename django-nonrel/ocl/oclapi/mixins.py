@@ -60,11 +60,10 @@ class ListWithHeadersMixin(ListModelMixin):
 
         # Switch between paginated or standard style responses
         if not skip_pagination:
-            page = self.paginate_queryset(self.object_list)
+            page = self.paginate_queryset(self.prepend_head(self.object_list))
             if page is not None:
                 serializer = self.get_pagination_serializer(page)
                 results = serializer.data
-                results = self.prepend_head(results)
                 if facets:
                     return Response({'results': results, 'facets': facets}, headers=serializer.headers)
                 else:
@@ -73,20 +72,16 @@ class ListWithHeadersMixin(ListModelMixin):
         serializer = self.get_serializer(self.object_list, many=True)
 
         results = serializer.data
-        results = self.prepend_head(results)
         if facets:
             return Response({'results': results, 'facets': facets})
         else:
             return Response(results)
 
     @staticmethod
-    def prepend_head(results):
-        if len(results) > 0 and 'id' in results[0]:
-            head_el = [el for el in results if el['id'] == HEAD]
+    def prepend_head(objects):
+        if len(objects) > 0 and hasattr(objects[0], 'id'):
+            head_el = [el for el in objects if el.mnemonic == HEAD]
             if head_el:
-                results = head_el + [el for el in results if el['id'] != HEAD]
+                objects = head_el + [el for el in objects if el.mnemonic != HEAD]
 
-        return results
-
-
-
+        return objects
