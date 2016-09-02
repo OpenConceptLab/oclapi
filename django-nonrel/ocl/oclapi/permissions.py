@@ -50,7 +50,7 @@ class HasAccessToVersionedObject(BasePermission):
             return True
         versioned_object = obj.versioned_object
 
-        if type(versioned_object.owner) == User and request.user.id == versioned_object.owner.user_id:
+        if type(versioned_object.owner) == UserProfile and request.user.id == versioned_object.owner.user_id:
             return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
