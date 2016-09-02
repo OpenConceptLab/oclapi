@@ -79,7 +79,7 @@ class ListWithHeadersMixin(ListModelMixin):
 
     @staticmethod
     def prepend_head(objects):
-        if len(objects) > 0 and hasattr(objects[0], 'id'):
+        if len(objects) > 0 and hasattr(objects[0], 'mnemonic'):
             head_el = [el for el in objects if el.mnemonic == HEAD]
             if head_el:
                 objects = head_el + [el for el in objects if el.mnemonic != HEAD]

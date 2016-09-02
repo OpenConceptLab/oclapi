@@ -14,9 +14,7 @@ from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, Conc
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
-from users.models import UserProfile
-from orgs.models import Organization
-from django.db import IntegrityError
+
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -55,7 +53,8 @@ class CollectionReferencesView(CollectionBaseView,
                                RetrieveAPIView,
                                DestroyAPIView,
                                UpdateAPIView,
-                               ConceptDictionaryUpdateMixin
+                               ConceptDictionaryUpdateMixin,
+                               ListWithHeadersMixin
                                ):
 
     serializer_class = CollectionDetailSerializer
@@ -92,9 +91,11 @@ class CollectionReferencesView(CollectionBaseView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.parent_resource)
-        success_status_code = status.HTTP_200_OK
-        return Response(serializer.data.get('references'), status=success_status_code)
+        self.serializer_class = CollectionReferenceSerializer
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Collection.objects.get(id=self.parent_resource.id).references
 
     def destroy(self,request, *args, **kwargs):
         if not self.parent_resource:

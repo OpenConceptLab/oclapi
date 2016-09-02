@@ -1353,3 +1353,78 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
         self.assertEquals(len(head.concepts), 0)
+
+    def test_retrieve(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        expected_references = []
+        for i in range(11):
+            mnemonic = 'concept1' + str(i)
+            concept1 = Concept(
+                mnemonic=mnemonic,
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=source,
+                concept_class='First',
+                names=[LocalizedText.objects.create(name='User', locale='es')],
+            )
+            kwargs = {
+                'parent_resource': source,
+            }
+            Concept.persist_new(concept1, self.user1, **kwargs)
+            reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
+            expected_references += [{'reference_type': 'concepts', 'expression': reference}]
+            collection.expression = reference
+            collection.full_clean()
+            collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(collection.references), 11)
+        self.assertEquals(len(head.references), 11)
+        self.assertEquals(len(head.concepts), 11)
+
+        c = Client()
+        path = reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic})
+        response = c.get(path)
+        self.assertEquals(response.status_code, 200)
+        self.assertJSONEqual(response.content, expected_references[:10])
+
+        response = c.get(path + '?page=1')
+        self.assertEquals(response.status_code, 200)
+        self.assertJSONEqual(response.content, expected_references[:10])
+
+        response = c.get(path + '?page=2')
+        self.assertEquals(response.status_code, 200)
+        self.assertJSONEqual(response.content, [expected_references[10]])
