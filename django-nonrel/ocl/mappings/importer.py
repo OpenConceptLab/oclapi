@@ -61,8 +61,8 @@ class MappingsImporter(object):
         # Load the JSON file line by line and import each line
         self.mapping_ids = set(self.source_version.mappings)
         self.count = 0
-        concept_ids_for_uris = Concept.objects.values('id','uri').filter(parent_id=self.source.id)
-        self.concepts_cache = dict((x['uri'], x['id']) for x in concept_ids_for_uris)
+        concepts_for_uris = Concept.objects.filter(parent_id=self.source.id)
+        self.concepts_cache = dict((x.uri, x) for x in concepts_for_uris)
         for line in self.mappings_file:
 
             # Load the next JSON line
@@ -157,23 +157,20 @@ class MappingsImporter(object):
         """ Handle importing of a single mapping """
         update_action = ImportActionHelper.IMPORT_ACTION_NONE
 
-        # Parse the mapping JSON to ensure that it is a valid mapping (not just valid JSON)
-        # serializer = MappingCreateSerializer(
-        #     data=data, context={'request': MockRequest(self.user)})
-        # if not serializer.is_valid():
-        #     raise IllegalInputException(serializer.errors)
-
         # If mapping exists, update the mapping with the new data
         try:
-            # Build the query
-            # mapping = serializer.save(commit=False)
-
+            from_concept = self.get_concept(data['from_concept_url'])
+            data['from_concept'] = from_concept
             query = Q(parent_id=self.source.id, map_type=data['map_type'],
-                      from_concept_id=self.get_concept_id(data['from_concept_url']))
+                      from_concept_id=from_concept.id)
             if data.get('to_concept_url'):  # Internal mapping
-                query = query & Q(to_concept_id=self.get_concept_id(data['to_concept_url']))
+                to_concept = self.get_concept(data['to_concept_url'])
+                data['to_concept'] = to_concept
+                query = query & Q(to_concept_id=to_concept.id)
             else:   # External mapping
-                query = query & Q(to_source_id=self.get_source_id(data['to_source_url']),
+                to_source = self.get_source(data['to_source_url'])
+                data['to_source'] = to_source
+                query = query & Q(to_source_id=to_source.id,
                                   to_concept_code=data['to_concept_code'],
                                   to_concept_name=data.get('to_concept_name'))
 
@@ -220,16 +217,15 @@ class MappingsImporter(object):
         """ Create a new mapping """
 
         # Create the new mapping
-        serializer = MappingCreateSerializer(
-            data=data, context={'request': MockRequest(self.user)})
-        if not serializer.is_valid():
+        mapping = Mapping(**data)
+        kwargs = {'parent_resource': self.source}
+        if self.test_mode:
+            mapping.save=lambda x: None
+        
+        errors = Mapping.persist_new(mapping, self.user, **kwargs)
+        if errors:
             raise IllegalInputException(
-                'Could not persist new mapping due to %s' % serializer.errors)
-        if not self.test_mode:
-            serializer.save(force_insert=True, parent_resource=self.source)
-            if not serializer.is_valid():
-                raise IllegalInputException(
-                    'Could not persist new mapping due to %s' % serializer.errors)
+                'Could not persist new mapping due to %s' % errors)
 
         return ImportActionHelper.IMPORT_ACTION_ADD
 
@@ -287,15 +283,15 @@ class MappingsImporter(object):
             self.action_count[update_action] += 1
         else:
             self.action_count[update_action] = 1
-    def get_concept_id(self, concept_url):
+    def get_concept(self, concept_url):
         result = self.concepts_cache.get(concept_url)
         if not result:
-            result = Concept.objects.get(uri=concept_url).id
+            result = Concept.objects.get(uri=concept_url)
             self.concepts_cache[concept_url] = result
         return result
-    def get_source_id(self, source_url):
+    def get_source(self, source_url):
         result = self.sources_cache.get(source_url)
         if not result:
-            result = Source.objects.get(uri=source_url).id
+            result = Source.objects.get(uri=source_url)
             self.sources_cache[source_url] = result
         return result
