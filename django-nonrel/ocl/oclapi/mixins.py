@@ -69,7 +69,7 @@ class ListWithHeadersMixin(ListModelMixin):
                 else:
                     return Response(results, headers=serializer.headers)
 
-        serializer = self.get_serializer(self.object_list, many=True)
+        serializer = self.get_serializer(self.prepend_head(self.object_list), many=True)
 
         results = serializer.data
         if facets:
