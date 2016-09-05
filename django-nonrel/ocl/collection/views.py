@@ -31,10 +31,11 @@ class CollectionBaseView():
         return CollectionVersionDetailSerializer(obj, data, files, partial)
 
     def get_queryset(self):
+        owner = self.get_owner()
         if 'collection' in self.kwargs:
-            return Collection.objects.filter(parent_id=self.get_owner().id, mnemonic=self.kwargs['collection'])
+            return Collection.objects.filter(parent_id=owner.id, mnemonic=self.kwargs['collection'])
         else:
-            return self.queryset
+            return self.queryset.filter(parent_id=owner.id)
 
     def get_owner(self):
         owner = None
@@ -143,7 +144,6 @@ class CollectionListView(CollectionBaseView,
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         return self.list(request, *args, **kwargs)
-
 
 class CollectionExtrasView(ConceptDictionaryExtrasView):
     pass
