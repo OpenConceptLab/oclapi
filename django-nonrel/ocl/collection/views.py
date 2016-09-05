@@ -14,6 +14,8 @@ from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, Conc
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
+from users.models import UserProfile
+from orgs.models import Organization
 
 
 class CollectionBaseView():
@@ -27,6 +29,23 @@ class CollectionBaseView():
 
     def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionVersionDetailSerializer(obj, data, files, partial)
+
+    def get_queryset(self):
+        if 'collection' in self.kwargs:
+            return Collection.objects.filter(parent_id=self.get_owner().id, mnemonic=self.kwargs['collection'])
+        else:
+            return self.queryset
+
+    def get_owner(self):
+        owner = None
+        if 'user' in self.kwargs:
+            owner_id = self.kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in self.kwargs:
+            owner_id = self.kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
+
 
 class CollectionVersionBaseView(ResourceVersionMixin):
     lookup_field = 'version'
@@ -290,6 +309,7 @@ class CollectionMappingListView(CollectionBaseView,
                                 ListWithHeadersMixin):
     serializer_class = MappingDetailSerializer
     def get(self, request, *args, **kwargs):
+        self.kwargs = kwargs
         collection = self.get_object()
         object_version = CollectionVersion.get_head(collection.id)
 
