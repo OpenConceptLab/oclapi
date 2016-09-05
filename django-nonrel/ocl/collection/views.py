@@ -32,7 +32,9 @@ class CollectionBaseView():
 
     def get_queryset(self):
         owner = self.get_owner()
-        if 'collection' in self.kwargs:
+        if not self.kwargs:
+            return self.queryset
+        elif 'collection' in self.kwargs:
             return Collection.objects.filter(parent_id=owner.id, mnemonic=self.kwargs['collection'])
         else:
             return self.queryset.filter(parent_id=owner.id)
