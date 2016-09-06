@@ -288,7 +288,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
             logger.debug('   Key does not exist for source version %s' % version)
             status = self.handle_export_source_version()
         response = HttpResponse(status=status)
-        response['exportURL'] = url
+        response['Location'] = url
 
         # Set headers to ensure sure response is not cached by a client
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'

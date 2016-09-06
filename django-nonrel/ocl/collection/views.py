@@ -354,7 +354,7 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             logger.debug('   Key does not exist for collection version %s' % version)
             status = self.handle_export_collection_version()
         response = HttpResponse(status=status)
-        response['exportURL'] = url
+        response['Location'] = url
 
         # Set headers to ensure sure response is not cached by a client
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
