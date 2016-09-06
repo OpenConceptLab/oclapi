@@ -100,29 +100,29 @@ def get_class(kls):
     return m
 
 
-def write_export_file(version, logger):
+def write_export_file(version, resource_type, resource_serializer_type, logger):
     cwd = os.getcwd()
     tmpdir = tempfile.mkdtemp()
     os.chdir(tmpdir)
     logger.info('Writing export file to tmp directory: %s' % tmpdir)
 
-    logger.info('Found source version %s.  Looking up source...' % version.mnemonic)
-    source = version.versioned_object
-    logger.info('Found source %s.  Serializing attributes...' % source.mnemonic)
+    logger.info('Found %s version %s.  Looking up resource...' % (resource_type, version.mnemonic))
+    resource = version.versioned_object
+    logger.info('Found %s %s.  Serializing attributes...' % (resource_type, resource.mnemonic))
 
-    source_serializer = get_class('sources.serializers.SourceDetailSerializer')(source)
-    source_data = source_serializer.data
-    source_string = json.dumps(source_data, cls=encoders.JSONEncoder)
+    resource_serializer = get_class(resource_serializer_type)(resource)
+    data = resource_serializer.data
+    resource_string = json.dumps(data, cls=encoders.JSONEncoder)
     logger.info('Done serializing attributes.')
 
     with open('export.json', 'wb') as out:
-        out.write('%s, "concepts": [' % source_string[:-1])
+        out.write('%s, "concepts": [' % resource_string[:-1])
 
     batch_size = 1000
 
     num_concepts = len(version.concepts)
     if num_concepts:
-        logger.info('Source has %d concepts.  Getting them in batches of %d...' % (num_concepts, batch_size))
+        logger.info('%s has %d concepts.  Getting them in batches of %d...' % (resource_type.title(), num_concepts, batch_size))
         concept_version_class = get_class('concepts.models.ConceptVersion')
         concept_serializer_class = get_class('concepts.serializers.ConceptVersionDetailSerializer')
         for start in range(0, num_concepts, batch_size):
@@ -139,14 +139,14 @@ def write_export_file(version, logger):
                     out.write(', ')
         logger.info('Done serializing concepts.')
     else:
-        logger.info('Source has no concepts to serialize.')
+        logger.info('%s has no concepts to serialize.' % (resource_type.title()))
 
     with open('export.json', 'ab') as out:
         out.write('], "mappings": [')
 
     num_mappings = len(version.mappings)
     if num_mappings:
-        logger.info('Source has %d mappings.  Getting them in batches of %d...' % (num_mappings, batch_size))
+        logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), num_mappings, batch_size))
         mapping_class = get_class('mappings.models.Mapping')
         mapping_serializer_class = get_class('mappings.serializers.MappingDetailSerializer')
         for start in range(0, num_mappings, batch_size):
@@ -163,7 +163,7 @@ def write_export_file(version, logger):
                     out.write(', ')
         logger.info('Done serializing mappings.')
     else:
-        logger.info('Source has no mappings to serialize.')
+        logger.info('%s has no mappings to serialize.' % (resource_type.title()))
 
     with open('export.json', 'ab') as out:
         out.write(']}')
@@ -177,7 +177,6 @@ def write_export_file(version, logger):
     k.set_contents_from_filename('export.tgz')
     logger.info('Uploaded to %s.' % k.key)
     os.chdir(cwd)
-
 
 def update_all_in_index(model, qs):
     if not qs.exists():

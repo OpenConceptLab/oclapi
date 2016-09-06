@@ -1,9 +1,11 @@
+import logging
+from django.conf import settings
 from collection.models import Collection, CollectionVersion
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptListSerializer
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.filters import HaystackSearchFilter
@@ -16,7 +18,11 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from users.models import UserProfile
 from orgs.models import Organization
+from tasks import export_collection
+from celery_once import AlreadyQueued
 
+
+logger = logging.getLogger('oclapi')
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -328,4 +334,75 @@ class CollectionVersionMappingListView(CollectionVersionBaseView,
         self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
         return self.list(request, *args, **kwargs)
 
+
+class CollectionVersionExportView(ResourceAttributeChildMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = CollectionVersion
+    permission_classes = (CanViewConceptDictionaryVersion,)
+
+    def get(self, request, *args, **kwargs):
+        version = self.get_object()
+        logger.debug('Export requested for collection version %s - Requesting AWS-S3 key' % version)
+        key = version.get_export_key()
+        url, status = None, 204
+        if key:
+            logger.debug('   Key retreived for collection version %s - Generating URL' % version)
+            url, status = key.generate_url(60), 200
+            logger.debug('   URL retreived for collection version %s - Responding to client' % version)
+        else:
+            logger.debug('   Key does not exist for collection version %s' % version)
+            status = self.handle_export_collection_version()
+        response = HttpResponse(status=status)
+        response['exportURL'] = url
+
+        # Set headers to ensure sure response is not cached by a client
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        response['lastUpdated'] = version.last_child_update.isoformat()
+        response['lastUpdatedTimezone'] = settings.TIME_ZONE
+        return response
+
+    def get_queryset(self):
+        owner = self.get_owner(self.kwargs)
+        queryset = super(CollectionVersionExportView, self).get_queryset()
+        return queryset.filter(versioned_object_id=Collection.objects.get(parent_id=owner.id, mnemonic=self.kwargs['collection']).id,
+                                            mnemonic=self.kwargs['version'])
+    def get_owner(self, kwargs):
+        owner = None
+        if 'user' in kwargs:
+            owner_id = kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in kwargs:
+            owner_id = kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
+
+    def post(self, request, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        version = self.get_object()
+        logger.debug('Collection Export requested for version %s (post)' % version)
+        status = 204
+        if not version.has_export():
+            status = self.handle_export_collection_version()
+        return HttpResponse(status=status)
+
+    def delete(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return HttpResponseForbidden()
+        version = self.get_object()
+        if version.has_export():
+            key = version.get_export_key()
+            key.delete()
+        return HttpResponse(status=204)
+
+    def handle_export_collection_version(self):
+        version = self.get_object()
+        try:
+            export_collection.delay(version.id)
+            return 200
+        except AlreadyQueued:
+            return 204
 

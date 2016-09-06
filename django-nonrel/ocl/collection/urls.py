@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url, include
 from collection.feeds import CollectionFeed
 from collection.views import CollectionListView, CollectionRetrieveUpdateDestroyView, CollectionVersionListView, CollectionVersionRetrieveUpdateView, CollectionVersionRetrieveUpdateDestroyView, CollectionVersionChildListView, CollectionExtrasView, CollectionExtraRetrieveUpdateDestroyView, \
     CollectionReferencesView, CollectionConceptListView, CollectionVersionConceptListView, CollectionMappingListView, CollectionVersionMappingListView, \
-    CollectionVersionReferenceListView
+    CollectionVersionReferenceListView, CollectionVersionExportView
 
 __author__ = 'misternando'
 urlpatterns = patterns('',
@@ -19,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/$', CollectionVersionRetrieveUpdateDestroyView.as_view(), name='collectionversion-detail'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/children/$', CollectionVersionChildListView.as_view(), {'list_children': True}, name='collectionversion-child-list'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/concepts/$', CollectionVersionConceptListView.as_view()),
+    url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/export/$', CollectionVersionExportView.as_view(), name='collectionversion-export'),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/mappings/$', CollectionVersionMappingListView.as_view()),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/references/$', CollectionVersionReferenceListView.as_view()),
     url(r'^(?P<collection>[a-zA-Z0-9\-\.]+)/(?P<version>[a-zA-Z0-9\-\.]+)/extras/$', CollectionExtrasView.as_view(), name='collectionversion-extras'),

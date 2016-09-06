@@ -39,6 +39,7 @@ class CollectionBaseTest(OclApiBaseTestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
+        self.name = LocalizedText.objects.create(name='Fred', locale='es')
 
 
 class CollectionTest(CollectionBaseTest):
@@ -987,6 +988,115 @@ class CollectionVersionTest(CollectionBaseTest):
         self.assertIsNone(version3.parent_version)
         self.assertIsNone(version3.parent_version_mnemonic)
         self.assertEquals(3, self.collection1.num_versions)
+
+    def test_export_path(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection not Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection.com',
+            description='This is the not second test collection'
+        )
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        Collection.persist_new(collection, self.user1, **kwargs)
+        collection = Collection.objects.get(mnemonic=collection.mnemonic)
+        Source.persist_new(source, self.user1, parent_resource=self.org1)
+
+        concept = Concept(mnemonic='concept', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept, self.user1, parent_resource=source)
+
+        collection.expression = '/orgs/org1/sources/source/concepts/concept/'
+        collection.full_clean()
+        collection.save()
+
+        version = CollectionVersion.for_base_object(collection, 'version1')
+        kwargs = {}
+        CollectionVersion.persist_new(version, **kwargs)
+
+        collection_version = CollectionVersion.get_latest_version_of(collection)
+        self.assertEquals(collection_version.export_path, "user1/collection_version1." + collection_version.last_child_update.strftime('%Y%m%d%H%M%S') + ".tgz")
+
+
+    def test_last_child_update(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection not Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection.com',
+            description='This is the not second test collection'
+        )
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        Collection.persist_new(collection, self.user1, **kwargs)
+        collection = Collection.objects.get(mnemonic=collection.mnemonic)
+        Source.persist_new(source, self.user1, parent_resource=self.org1)
+
+        concept = Concept(mnemonic='concept', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept, self.user1, parent_resource=source)
+
+        collection.expression = '/orgs/org1/sources/source/concepts/concept/'
+        collection.full_clean()
+        collection.save()
+
+        version = CollectionVersion.for_base_object(collection, 'version1')
+        kwargs = {}
+        CollectionVersion.persist_new(version, **kwargs)
+
+        collection_version = CollectionVersion.get_latest_version_of(collection)
+        concept = Concept.objects.get(mnemonic=concept.mnemonic)
+        concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
+        self.assertEquals(collection_version.last_child_update, concept_version.updated_at)
+
+    def test_last_child_update_without_child(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion.get_latest_version_of(collection)
+        self.assertEquals(collection_version.last_child_update, collection_version.updated_at)
 
 
 class CollectionVersionClassMethodTest(CollectionBaseTest):

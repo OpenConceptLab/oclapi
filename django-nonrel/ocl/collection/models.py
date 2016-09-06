@@ -6,10 +6,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
-from oclapi.utils import reverse_resource
+from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping
-
+from django.db.models import Max
 
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
@@ -156,6 +156,49 @@ class CollectionVersion(ConceptContainerVersionModel):
         seed_references_from = self.head_sibling()
         if seed_references_from:
             self.references = list(seed_references_from.references)
+
+    def get_export_key(self):
+        bucket = S3ConnectionFactory.get_export_bucket()
+        return bucket.get_key(self.export_path)
+
+    def has_export(self):
+        return bool(self.get_export_key())
+
+    @property
+    def export_path(self):
+        last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
+        collection = self.versioned_object
+        return "%s/%s_%s.%s.tgz" % (collection.owner_name, collection.mnemonic, self.mnemonic, last_update)
+
+    @property
+    def last_child_update(self):
+        last_concept_update = self.last_concept_update
+        last_mapping_update = self.last_mapping_update
+        if last_concept_update and last_mapping_update:
+            return max(last_concept_update, last_mapping_update)
+        return last_concept_update or last_mapping_update or self.updated_at
+
+    @property
+    def last_concept_update(self):
+        if not self.concepts:
+            return None
+        klass = get_class('concepts.models.ConceptVersion')
+        versions = klass.objects.filter(id__in=self.concepts)
+        if not versions.exists():
+            return None
+        agg = versions.aggregate(Max('updated_at'))
+        return agg.get('updated_at__max')
+
+    @property
+    def last_mapping_update(self):
+        if not self.mappings:
+            return None
+        klass = get_class('mappings.models.Mapping')
+        mappings = klass.objects.filter(id__in=self.mappings)
+        if not mappings.exists():
+            return None
+        agg = mappings.aggregate(Max('updated_at'))
+        return agg.get('updated_at__max')
 
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
