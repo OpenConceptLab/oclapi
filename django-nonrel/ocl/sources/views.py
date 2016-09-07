@@ -279,6 +279,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         version = self.get_object()
         logger.debug('Export requested for source version %s - Requesting AWS-S3 key' % version)
         key = version.get_export_key()
+
+        if version.mnemonic == 'HEAD':
+            return HttpResponse(status=405)  # export of head version is not allowed
+
         url, status = None, 204
         if key:
             logger.debug('   Key retreived for source version %s - Generating URL' % version)
@@ -303,6 +307,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         queryset = super(SourceVersionExportView, self).get_queryset()
         return queryset.filter(versioned_object_id=Source.objects.get(parent_id=owner.id, mnemonic=self.kwargs['source']).id,
                                             mnemonic=self.kwargs['version'])
+
     def get_owner(self, kwargs):
         owner = None
         if 'user' in kwargs:
@@ -317,6 +322,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         self.args = args
         self.kwargs = kwargs
         version = self.get_object()
+
+        if version.mnemonic =='HEAD':
+            return HttpResponse(status=405)  # export of head version is not allowed
+
         logger.debug('Source Export requested for version %s (post)' % version)
         status = 204
         if not version.has_export():
