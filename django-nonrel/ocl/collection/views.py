@@ -345,13 +345,16 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         version = self.get_object()
         logger.debug('Export requested for collection version %s - Requesting AWS-S3 key' % version)
         key = version.get_export_key()
-
         url, status = None, 204
+
+        if version.mnemonic == 'HEAD':
+            return HttpResponse(status=405)
+
         if key:
             logger.debug('   Key retreived for collection version %s - Generating URL' % version)
             url, status = key.generate_url(60), 200
             logger.debug('   URL retreived for collection version %s - Responding to client' % version)
-        elif version.mnemonic != 'HEAD':
+        else:
             logger.debug('   Key does not exist for collection version %s' % version)
             status = self.handle_export_collection_version()
 

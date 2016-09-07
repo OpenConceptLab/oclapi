@@ -280,11 +280,14 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         logger.debug('Export requested for source version %s - Requesting AWS-S3 key' % version)
         key = version.get_export_key()
         url, status = None, 204
+
+        if version.mnemonic == 'HEAD':
+            return HttpResponse(status=405)
         if key:
             logger.debug('   Key retreived for source version %s - Generating URL' % version)
             url, status = key.generate_url(60), 200
             logger.debug('   URL retreived for source version %s - Responding to client' % version)
-        elif version.mnemonic != 'HEAD':
+        else:
             logger.debug('   Key does not exist for source version %s' % version)
             status = self.handle_export_source_version()
 
