@@ -1166,6 +1166,17 @@ class SourceVersionExportViewTest(SourceBaseTest):
             'parent_resource': self.org1
         }
         Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version.full_clean()
+        source_version.save()
         kwargs = {'parent_resource': source}
         concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
         Concept.persist_new(concept1, self.user1, **kwargs)
@@ -1175,7 +1186,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
@@ -1213,6 +1224,17 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         Source.persist_new(source1, self.user1, **kwargs)
         Source.persist_new(source2, self.user1, **kwargs)
+
+        source_version1 = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version1.full_clean()
+        source_version1.save()
         kwargs = {'parent_resource': source1}
         concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
         Concept.persist_new(concept1, self.user1, **kwargs)
@@ -1222,7 +1244,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source1.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
@@ -1263,6 +1285,17 @@ class SourceVersionExportViewTest(SourceBaseTest):
 
         Source.persist_new(source1, self.user1, **kwargs1)
         Source.persist_new(source2, self.user1, **kwargs2)
+
+        source_version1 = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version1.full_clean()
+        source_version1.save()
         concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
         Concept.persist_new(concept1, self.user1, **{'parent_resource': source1})
         Concept.persist_new(concept1, self.user1, **{'parent_resource': source2})
@@ -1272,7 +1305,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source1.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
@@ -1292,13 +1325,24 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             description='This is the first test collection'
         )
         Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
@@ -1333,13 +1377,24 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
 
         Collection.persist_new(collection2, self.user1, parent_resource=self.org1)
 
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection1.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
@@ -1372,13 +1427,24 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
 
         Collection.persist_new(collection2, self.user1, parent_resource=self.org2)
 
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection1.mnemonic,
-            'version': 'HEAD'
+            'version': 'version1'
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)

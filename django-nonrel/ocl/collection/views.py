@@ -351,9 +351,11 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             logger.debug('   Key retreived for collection version %s - Generating URL' % version)
             url, status = key.generate_url(60), 200
             logger.debug('   URL retreived for collection version %s - Responding to client' % version)
-        else:
+        elif version.mnemonic != 'HEAD':
             logger.debug('   Key does not exist for collection version %s' % version)
             status = self.handle_export_collection_version()
+
+
         response = HttpResponse(status=status)
         response['Location'] = url
 

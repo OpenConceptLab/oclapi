@@ -279,18 +279,15 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         version = self.get_object()
         logger.debug('Export requested for source version %s - Requesting AWS-S3 key' % version)
         key = version.get_export_key()
-
-        if version.mnemonic == 'HEAD':
-            return HttpResponse(status=405)  # export of head version is not allowed
-
         url, status = None, 204
         if key:
             logger.debug('   Key retreived for source version %s - Generating URL' % version)
             url, status = key.generate_url(60), 200
             logger.debug('   URL retreived for source version %s - Responding to client' % version)
-        else:
+        elif version.mnemonic != 'HEAD':
             logger.debug('   Key does not exist for source version %s' % version)
             status = self.handle_export_source_version()
+
         response = HttpResponse(status=status)
         response['Location'] = url
 
@@ -307,7 +304,6 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         queryset = super(SourceVersionExportView, self).get_queryset()
         return queryset.filter(versioned_object_id=Source.objects.get(parent_id=owner.id, mnemonic=self.kwargs['source']).id,
                                             mnemonic=self.kwargs['version'])
-
     def get_owner(self, kwargs):
         owner = None
         if 'user' in kwargs:
