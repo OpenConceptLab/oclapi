@@ -1148,6 +1148,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(5, len(content))
 
 class SourceVersionExportViewTest(SourceBaseTest):
+
     @mock_s3
     def test_post(self):
         source = Source(
@@ -1310,6 +1311,75 @@ class SourceVersionExportViewTest(SourceBaseTest):
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
 
+
+    @mock_s3
+    def test_post_with_head(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.post(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 405)
+
+    @mock_s3
+    def test_get_with_head(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 405)
+
 class CollectionVersionExportViewTest(CollectionBaseTest):
     @mock_s3
     def test_post(self):
@@ -1448,6 +1518,61 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
+
+
+    @mock_s3
+    def test_post_head(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.post(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 405)
+
+
+    @mock_s3
+    def test_get_head(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'HEAD'
+        }
+        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 405)
+
 
 class CollectionReferenceViewTest(CollectionBaseTest):
     def test_destroy_reference(self):
