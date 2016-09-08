@@ -82,6 +82,13 @@ class SourceVersion(ConceptContainerVersionModel):
         if seed_mappings_from:
             self.mappings = list(seed_mappings_from.mappings)
 
+
+    def update_metadata(self):
+        metadata_from = self.previous_version or self.parent_version
+        if metadata_from:
+            self.name = metadata_from.name
+            self.full_name = metadata_from.full_name
+
     def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()
         return bucket.get_key(self.export_path)
@@ -128,6 +135,7 @@ class SourceVersion(ConceptContainerVersionModel):
     @property
     def resource_type(self):
         return SOURCE_VERSION_TYPE
+
 
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None, released=False):

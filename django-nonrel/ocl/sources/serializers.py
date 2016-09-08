@@ -212,7 +212,8 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         return super(SourceVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
     def save_object(self, obj, **kwargs):
-        errors = SourceVersion.persist_new(obj, **kwargs)
+        request_user = self.context['request'].user
+        errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)
         else:

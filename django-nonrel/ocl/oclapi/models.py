@@ -336,11 +336,17 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         return versions[0] if versions else None
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
+    def persist_new(cls, obj, user=None, **kwargs):
         obj.is_active = True
+        if user:
+            obj.created_by = user
+            obj.updated_by = user
         kwargs['seed_concepts'] = True
         kwargs['seed_mappings'] = True
         return cls.persist_changes(obj, **kwargs)
+
+    def update_metadata(self):
+        pass
 
     @classmethod
     def persist_changes(cls, obj, **kwargs):
@@ -402,6 +408,8 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         seed_references = kwargs.pop('seed_references', False)
         if seed_references:
             obj.seed_references()
+
+        obj.update_metadata()
 
         try:
             obj.save(**kwargs)
