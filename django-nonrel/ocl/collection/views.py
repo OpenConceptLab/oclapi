@@ -102,7 +102,7 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         created = False
-        save_kwargs = {'force_update': True, 'expression': request.DATA.get("expression")}
+        save_kwargs = {'force_update': True, 'expressions': request.DATA.get("expressions")}
 
         success_status_code = status.HTTP_200_OK
 

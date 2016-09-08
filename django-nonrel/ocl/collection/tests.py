@@ -159,7 +159,7 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(self.userprofile1.resource_type, collection.parent_resource_type)
         self.assertEquals(0, collection.num_versions)
 
-    def test_delete_mapping_reference(self):
+    def test_delete_single_mapping_reference(self):
         kwargs = {
             'parent_resource': self.userprofile1
         }
@@ -231,7 +231,7 @@ class CollectionTest(CollectionBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
-        collection.expression = reference
+        collection.expressions = [reference]
         collection.full_clean()
         collection.save()
 
@@ -296,9 +296,8 @@ class CollectionTest(CollectionBaseTest):
         }
         Concept.persist_new(concept1, self.user1, **kwargs)
 
-
-        reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
-        collection.expression = reference
+        expression = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
+        collection.expressions = [expression]
         collection.full_clean()
         collection.save()
 
@@ -307,7 +306,7 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.references), 1)
 
-        collection.delete_references([reference])
+        collection.delete_references([expression])
 
         head = CollectionVersion.get_head(collection.id)
         collection = Collection.objects.get(id=collection.id)
@@ -407,10 +406,11 @@ class CollectionTest(CollectionBaseTest):
 
         references = [concept1_reference, from_concept_reference, mapping_reference]
 
-        for reference in references:
-            collection.expression = reference
-            collection.full_clean()
-            collection.save()
+        collection.expressions = references
+        collection.full_clean()
+        collection.save()
+
+
 
         head = CollectionVersion.get_head(collection.id)
 
@@ -675,8 +675,9 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.assertEquals(description, self.new_collection.description)
 
     def test_add_invalid_expression_to_collection_negative(self):
-        errors = Collection.persist_changes(self.new_collection, 'foobar', expression='/foobar')
-        self.assertEquals(errors.get('detail'), ['Expression specified is not valid.'])
+        expression = '/foobar'
+        errors = Collection.persist_changes(self.new_collection, 'foobar', expressions=[expression])
+        self.assertEquals(errors.get(expression)[0], 'Expression specified is not valid.')
 
 
 class CollectionVersionTest(CollectionBaseTest):
@@ -1069,7 +1070,7 @@ class CollectionVersionTest(CollectionBaseTest):
                            names=[self.name])
         Concept.persist_new(concept, self.user1, parent_resource=source)
 
-        collection.expression = '/orgs/org1/sources/source/concepts/concept/'
+        collection.expressions = ['/orgs/org1/sources/source/concepts/concept/']
         collection.full_clean()
         collection.save()
 

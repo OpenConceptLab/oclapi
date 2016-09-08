@@ -18,7 +18,7 @@ HEAD = 'HEAD'
 class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-    expression = None
+    expressions = []
     @property
     def concepts_url(self):
         return reverse_resource(self, 'collection-concept-list')
@@ -40,23 +40,30 @@ class Collection(ConceptContainerModel):
         return CollectionVersion
 
     def clean(self):
-        if self.expression:
-            ref = CollectionReference(expression=self.expression)
-            ref.full_clean()
-            if self.expression in [reference.expression for reference in self.references]:
-                raise ValidationError({'detail': ['Reference Already Exists!']})
+        errors = {}
+        for expression in self.expressions:
+            ref = CollectionReference(expression=expression)
+            try:
+                ref.full_clean()
+            except Exception as e:
+                errors[expression] = e.messages
+                continue
+            if expression in [reference.expression for reference in self.references]:
+                errors[expression] = ['Reference Already Exists!']
+                continue
 
             self.references.append(ref)
             object_version = CollectionVersion.get_head(self.id)
             ref_hash = {'col_reference': ref}
-            errors = CollectionVersion.persist_changes(object_version, **ref_hash)
-            if errors:
-                raise ValidationError(errors)
-
+            error = CollectionVersion.persist_changes(object_version, **ref_hash)
+            if error:
+                errors[expression] = error
+        if errors:
+            raise ValidationError(errors)
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
-        obj.expression = kwargs.pop('expression', False)
+        obj.expressions = kwargs.pop('expressions', [])
         return super(Collection, cls).persist_changes(obj, updated_by, **kwargs)
 
     @staticmethod
@@ -81,8 +88,8 @@ class Collection(ConceptContainerModel):
         super(Collection, self).delete()
 
     def delete_references(self, references):
+        self.expressions = []
         if len(references) > 0:
-            self.expression = None
             head = CollectionVersion.get_head_of(self)
             children_to_reduce = reduce(self._reduce_func, references, {'concept_ids': [], 'mapping_ids': []})
             head.concepts = list(set(head.concepts) - set(children_to_reduce['concept_ids']))
@@ -101,7 +108,6 @@ class Collection(ConceptContainerModel):
 
 COLLECTION_VERSION_TYPE = "Collection Version"
 
-
 class CollectionReference(models.Model):
     expression = models.TextField()
     concepts = None
@@ -117,7 +123,6 @@ class CollectionReference(models.Model):
                 raise ValidationError({'detail': ['This mapping is retired.']})
         elif self.concepts[0].retired:
             raise ValidationError({'detail': ['This concept is retired.']})
-
 
     @property
     def reference_type(self):
