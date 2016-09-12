@@ -1147,8 +1147,47 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(5, len(content))
 
-class SourceVersionExportViewTest(SourceBaseTest):
+class SourceViewTest(SourceBaseTest):
+    def test_update_source_head(self):
+        source = Source(
+            name='source',
+            mnemonic='source11',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
 
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        data = {
+            'full_name': "s11"
+        }
+
+        kwargs = {
+            'source': source.mnemonic,
+            'user': self.user1.username
+
+        }
+
+        # c = Client()
+        # self.client.post('/login/', {'username': 'user1', 'password': 'user1'})
+        self.client.login(username='user1', password='user1')
+        # response = self.client.put('/users/user1/sources/source11/', data=data)
+        response = self.client.put(reverse('source-detail', kwargs=kwargs), data=data)
+        print 'res===', response.status_code
+        head=source.get_head()
+        self.assertEquals(head.mnemonic,'HEAD')
+        self.assertEquals(head.full_name,'Source One')
+
+
+class SourceVersionExportViewTest(SourceBaseTest):
     @mock_s3
     def test_post(self):
         source = Source(

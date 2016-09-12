@@ -28,6 +28,9 @@ class Source(ConceptContainerModel):
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
         return reverse('sourceversion-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
 
+    def get_head(self):
+        return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.id)
+
     @property
     def public_can_view(self):
         return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
@@ -83,11 +86,23 @@ class SourceVersion(ConceptContainerVersionModel):
             self.mappings = list(seed_mappings_from.mappings)
 
 
-    def update_metadata(self):
-        metadata_from = self.previous_version or self.parent_version
-        if metadata_from:
-            self.name = metadata_from.name
-            self.full_name = metadata_from.full_name
+    def update_metadata(self, obj = None):
+        if obj:
+            self.name = obj.name
+            self.full_name = obj.full_name
+            self.website = obj.website
+            self.public_access = obj.public_access
+            self.source_type = obj.source_type
+            self.supported_locales = obj.supported_locales
+            self.default_locale = obj.default_locale
+            self.description = obj.description
+            self.external_id = obj.external_id
+
+        else :
+            metadata_from = self.previous_version or self.parent_version
+            if metadata_from:
+                self.name = metadata_from.name
+                self.full_name = metadata_from.full_name
 
     def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()
