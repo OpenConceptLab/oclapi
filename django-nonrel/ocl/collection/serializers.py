@@ -122,7 +122,12 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
         errors = Collection.persist_changes(obj, request_user, **kwargs)
-        self._errors.update(errors)
+        if errors:
+            self._errors.update(errors)
+        else:
+            head_obj = obj.get_head();
+            head_obj.update_metadata(obj)
+            head_obj.save();
 
 
 class CollectionVersionListSerializer(ResourceVersionSerializer):

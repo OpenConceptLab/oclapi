@@ -31,6 +31,8 @@ class Collection(ConceptContainerModel):
     def versions_url(self):
         return reverse_resource(self, 'collectionversion-list')
 
+    def get_head(self):
+        return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.id)
     @property
     def resource_type(self):
         return COLLECTION_TYPE
@@ -222,6 +224,24 @@ class CollectionVersion(ConceptContainerVersionModel):
         if col_reference:
             obj.fill_data_for_reference(col_reference)
         return super(CollectionVersion, cls).persist_changes(obj, **kwargs)
+
+    def update_metadata(self, obj = None):
+        if obj:
+            self.name = obj.name
+            self.full_name = obj.full_name
+            self.website = obj.website
+            self.public_access = obj.public_access
+            self.collection_type = obj.collection_type
+            self.supported_locales = obj.supported_locales
+            self.default_locale = obj.default_locale
+            self.description = obj.description
+            self.external_id = obj.external_id
+
+        else :
+            metadata_from = self.previous_version or self.parent_version
+            if metadata_from:
+                self.name = metadata_from.name
+                self.full_name = metadata_from.full_name
 
     @classmethod
     def get_head(self, id):
