@@ -159,6 +159,65 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(self.userprofile1.resource_type, collection.parent_resource_type)
         self.assertEquals(0, collection.num_versions)
 
+    def test_add_concept_reference(self):
+        
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+        
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
+        collection.expressions = [reference]
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.mappings), 0)
+        self.assertEquals(len(head.concepts),1)
+        self.assertEquals(len(head.references), 1)
+
     def test_delete_single_mapping_reference(self):
         kwargs = {
             'parent_resource': self.userprofile1
