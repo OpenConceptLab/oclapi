@@ -53,14 +53,11 @@ class SourceTest(SourceBaseTest):
             parent_type=ContentType.objects.get_for_model(Organization),
             parent_id=self.org1.id)
         .exists())
-        head=source.get_head()
 
         self.assertEquals(source.mnemonic, source.__unicode__())
         self.assertEquals(self.org1.mnemonic, source.parent_resource)
         self.assertEquals(self.org1.resource_type, source.parent_resource_type)
         self.assertEquals(0, source.num_versions)
-        self.assertEquals(head.mnemonic,'HEAD')
-        self.assertEquals(head.full_name,'Source One')
 
     def test_create_source_positive__valid_attributes(self):
         source = Source(name='source1', mnemonic='source1', parent=self.userprofile1,
