@@ -1189,6 +1189,48 @@ class SourceViewTest(SourceBaseTest):
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
         self.assertEquals(head.full_name,'test_updated_name')
 
+class CollectionViewTest(CollectionBaseTest):
+    def test_update_source_head(self):
+
+        collection = Collection(
+            name='col1',
+            mnemonic='col1',
+            full_name='collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.col1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        c = Client()
+        c.login(username='user1', password='user1')
+        response = c.put('/orgs/org1/collections/col1/', json.dumps({"website": "https://www.uno.com/",
+                                                                     "description": "test desc",
+                                                                     "default_locale": "ar",
+                                                                     "collection_type": "Indicator Registry",
+                                                                     "full_name": "test_updated_name",
+                                                                     "public_access": "View",
+                                                                     "external_id": "57ac81eab29215063d7b1624",
+                                                                     "supported_locales": "ar, en"}),
+                         content_type="application/json")
+        self.assertEquals(response.status_code, 200)
+
+        head=collection.get_head()
+        self.assertEquals(head.mnemonic,'HEAD')
+        self.assertEquals(head.website, 'https://www.uno.com/')
+        self.assertEquals(head.description, 'test desc')
+        self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
+        self.assertEquals(head.full_name,'test_updated_name')
+
 
 class SourceVersionViewTest(SourceBaseTest):
     def test_latest_version(self):
