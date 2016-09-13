@@ -1703,7 +1703,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
 
         reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
-        collection.expression = reference
+        collection.expressions = [reference]
         collection.full_clean()
         collection.save()
 
@@ -1781,7 +1781,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             Concept.persist_new(concept1, self.user1, **kwargs)
             reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
             expected_references += [{'reference_type': 'concepts', 'expression': reference}]
-            collection.expression = reference
+            collection.expressions = [reference]
             collection.full_clean()
             collection.save()
 
