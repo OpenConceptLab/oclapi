@@ -211,8 +211,11 @@ class CollectionVersion(ConceptContainerVersionModel):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     @classmethod
-    def persist_new(cls, obj, **kwargs):
+    def persist_new(cls, obj,user=None, **kwargs):
         obj.is_active = True
+        if user:
+            obj.created_by = user
+            obj.updated_by = user
         kwargs['seed_concepts'] = True
         kwargs['seed_mappings'] = True
         kwargs['seed_references'] = True

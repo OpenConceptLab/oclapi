@@ -220,5 +220,6 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
         return super(CollectionVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
     def save_object(self, obj, **kwargs):
-        errors = CollectionVersion.persist_new(obj, **kwargs)
+        request_user = self.context['request'].user
+        errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         self._errors.update(errors)
