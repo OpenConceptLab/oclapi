@@ -198,15 +198,21 @@
 
     <field name="public_can_view" type="boolean" indexed="true" stored="true" multiValued="false" />
 
-    <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
-
     <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="retired_exact" type="boolean" indexed="true" stored="true" multiValued="false" />
 
+    <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
     <field name="source_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
     <field name="source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="collection_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="collection_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="collection" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
 
