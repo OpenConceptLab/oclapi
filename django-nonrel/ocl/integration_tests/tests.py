@@ -1186,6 +1186,45 @@ class SourceViewTest(SourceBaseTest):
         self.assertEquals(head.mnemonic,'HEAD')
         self.assertEquals(head.full_name,'Source One')
 
+class SourceVersionViewTest(SourceBaseTest):
+    def test_latest_version(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        for version in ['version1', 'version2']:
+            source_version = SourceVersion(
+                name=version,
+                mnemonic=version,
+                versioned_object=source,
+                released=True,
+                created_by=self.user1,
+                updated_by=self.user1,
+            )
+            source_version.full_clean()
+            source_version.save()
+
+        self.client.login(username='user1', password='user1')
+
+        response = self.client.get(reverse('sourceversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}))
+        self.assertEquals(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEquals(result['id'], 'version2')
+        self.assertEquals(result['released'], True)
+
 
 class SourceVersionExportViewTest(SourceBaseTest):
     @mock_s3
@@ -1418,6 +1457,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 405)
+
 
 class CollectionVersionExportViewTest(CollectionBaseTest):
     @mock_s3
@@ -1764,3 +1804,40 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         response = c.get(path + '?page=2')
         self.assertEquals(response.status_code, 200)
         self.assertJSONEqual(response.content, [expected_references[10]])
+
+
+class CollectionVersionViewTest(SourceBaseTest):
+    def test_latest_version(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        for version in ['version1', 'version2']:
+            collection_version = CollectionVersion(
+                name=version,
+                mnemonic=version,
+                versioned_object=collection,
+                released=True,
+                created_by=self.user1,
+                updated_by=self.user1,
+            )
+            collection_version.full_clean()
+            collection_version.save()
+
+        self.client.login(username='user1', password='user1')
+
+        response = self.client.get(reverse('collectionversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}))
+        self.assertEquals(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEquals(result['id'], 'version2')
+        self.assertEquals(result['released'], True)
+

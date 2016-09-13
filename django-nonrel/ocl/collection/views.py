@@ -20,6 +20,7 @@ from users.models import UserProfile
 from orgs.models import Organization
 from tasks import export_collection
 from celery_once import AlreadyQueued
+from django.shortcuts import get_list_or_404
 
 
 logger = logging.getLogger('oclapi')
@@ -237,12 +238,12 @@ class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPI
         if self.is_latest:
             # Determine the base queryset to use.
             if queryset is None:
-                queryset = self.filter_queryset(self.get_queryset())
+                queryset = self.filter_queryset(self.get_queryset().order_by('-created_at'))
             else:
                 pass  # Deprecation warning
 
             filter_kwargs = {'released': True}
-            obj = get_object_or_404(queryset, **filter_kwargs)
+            obj = get_list_or_404(queryset, **filter_kwargs)[0]
 
             # May raise a permission denied
             self.check_object_permissions(self.request, obj)

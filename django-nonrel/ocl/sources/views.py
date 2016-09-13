@@ -6,6 +6,7 @@ from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
+from django.shortcuts import get_list_or_404
 from rest_framework.response import Response
 from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
@@ -198,6 +199,7 @@ class SourceVersionListView(SourceVersionBaseView,
 class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, UpdateAPIView):
     is_latest = False
     serializer_class = SourceVersionDetailSerializer
+    permission_classes = (CanViewConceptDictionaryVersion,)
 
     def initialize(self, request, path_info_segment, **kwargs):
         self.is_latest = kwargs.pop('is_latest', False)
@@ -230,12 +232,12 @@ class SourceVersionRetrieveUpdateView(SourceVersionBaseView, RetrieveAPIView, Up
         if self.is_latest:
             # Determine the base queryset to use.
             if queryset is None:
-                queryset = self.filter_queryset(self.get_queryset())
+                queryset = self.filter_queryset(self.get_queryset().order_by('-created_at'))
             else:
                 pass  # Deprecation warning
 
             filter_kwargs = {'released': True}
-            obj = get_object_or_404(queryset, **filter_kwargs)
+            obj = get_list_or_404(queryset, **filter_kwargs)[0]
 
             # May raise a permission denied
             self.check_object_permissions(self.request, obj)
