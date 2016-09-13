@@ -1149,42 +1149,46 @@ class MappingViewsTest(MappingBaseTest):
 
 class SourceViewTest(SourceBaseTest):
     def test_update_source_head(self):
+
         source = Source(
             name='source',
-            mnemonic='source11',
+            mnemonic='source12',
             full_name='Source One',
             source_type='Dictionary',
             public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
-            description='This is the first test source'
+            description='This is the first test source',
+            is_active=True
         )
 
         kwargs = {
             'parent_resource': self.org1
         }
+
         Source.persist_new(source, self.user1, **kwargs)
 
-        data = {
-            'full_name': "s11"
-        }
+        c = Client()
+        c.login(username='user1', password='user1')
+        response = c.put('/orgs/org1/sources/source12/', json.dumps({"website": "https://www.uno.com/",
+                                                                     "description": "test desc",
+                                                                     "default_locale": "ar",
+                                                                     "source_type": "Indicator Registry",
+                                                                     "full_name": "test_updated_name",
+                                                                     "public_access": "View",
+                                                                     "external_id": "57ac81eab29215063d7b1624",
+                                                                     "supported_locales": "ar, en"}),
+                         content_type="application/json")
+        self.assertEquals(response.status_code, 200)
 
-        kwargs = {
-            'source': source.mnemonic,
-            'user': self.user1.username
-
-        }
-
-        # c = Client()
-        # self.client.post('/login/', {'username': 'user1', 'password': 'user1'})
-        self.client.login(username='user1', password='user1')
-        # response = self.client.put('/users/user1/sources/source11/', data=data)
-        response = self.client.put(reverse('source-detail', kwargs=kwargs), data=data)
-        print 'res===', response.status_code
         head=source.get_head()
         self.assertEquals(head.mnemonic,'HEAD')
-        self.assertEquals(head.full_name,'Source One')
+        self.assertEquals(head.website, 'https://www.uno.com/')
+        self.assertEquals(head.description, 'test desc')
+        self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
+        self.assertEquals(head.full_name,'test_updated_name')
+
 
 class SourceVersionViewTest(SourceBaseTest):
     def test_latest_version(self):
