@@ -78,7 +78,10 @@ class SourceVersion(ConceptContainerVersionModel):
             self.concepts = list(seed_concepts_from.concepts)
 
     def head_sibling(self):
-        return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
+        try :
+            return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
+        except Exception as e:
+            return None
 
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version
@@ -86,21 +89,22 @@ class SourceVersion(ConceptContainerVersionModel):
             self.mappings = list(seed_mappings_from.mappings)
 
 
-    def update_version_data(self, obj):
+    def update_version_data(self, obj=None):
 
         if obj:
             self.description = obj.description
         else:
             obj = self.head_sibling()
 
-        self.name = obj.name
-        self.full_name = obj.full_name
-        self.website = obj.website
-        self.public_access = obj.public_access
-        self.source_type = obj.source_type
-        self.supported_locales = obj.supported_locales
-        self.default_locale = obj.default_locale
-        self.external_id = obj.external_id
+        if obj:
+            self.name = obj.name
+            self.full_name = obj.full_name
+            self.website = obj.website
+            self.public_access = obj.public_access
+            self.source_type = obj.source_type
+            self.supported_locales = obj.supported_locales
+            self.default_locale = obj.default_locale
+            self.external_id = obj.external_id
 
     def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()

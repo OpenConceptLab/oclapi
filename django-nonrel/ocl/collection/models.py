@@ -232,16 +232,20 @@ class CollectionVersion(ConceptContainerVersionModel):
         if obj:
             self.description = obj.description
         else:
-            obj = self.head_sibling()
+            try:
+                obj = self.head_sibling()
+            except Exception as e:
+                obj = None
 
-        self.name = obj.name
-        self.full_name = obj.full_name
-        self.website = obj.website
-        self.public_access = obj.public_access
-        self.collection_type = obj.collection_type
-        self.supported_locales = obj.supported_locales
-        self.default_locale = obj.default_locale
-        self.external_id = obj.external_id
+        if obj:
+            self.name = obj.name
+            self.full_name = obj.full_name
+            self.website = obj.website
+            self.public_access = obj.public_access
+            self.collection_type = obj.collection_type
+            self.supported_locales = obj.supported_locales
+            self.default_locale = obj.default_locale
+            self.external_id = obj.external_id
 
     @classmethod
     def get_head(self, id):
