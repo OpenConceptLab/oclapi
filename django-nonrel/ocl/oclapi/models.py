@@ -345,7 +345,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         kwargs['seed_mappings'] = True
         return cls.persist_changes(obj, **kwargs)
 
-    def update_metadata(self):
+    def update_version_data(self, obj=None):
         pass
 
     @classmethod
@@ -409,7 +409,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         if seed_references:
             obj.seed_references()
 
-        obj.update_metadata()
+        obj.update_version_data()
 
         try:
             obj.save(**kwargs)

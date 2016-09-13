@@ -225,23 +225,20 @@ class CollectionVersion(ConceptContainerVersionModel):
             obj.fill_data_for_reference(col_reference)
         return super(CollectionVersion, cls).persist_changes(obj, **kwargs)
 
-    def update_metadata(self, obj = None):
+    def update_version_data(self, obj=None):
         if obj:
-            self.name = obj.name
-            self.full_name = obj.full_name
-            self.website = obj.website
-            self.public_access = obj.public_access
-            self.collection_type = obj.collection_type
-            self.supported_locales = obj.supported_locales
-            self.default_locale = obj.default_locale
             self.description = obj.description
-            self.external_id = obj.external_id
+        else:
+            obj = self.head_sibling()
 
-        else :
-            metadata_from = self.previous_version or self.parent_version
-            if metadata_from:
-                self.name = metadata_from.name
-                self.full_name = metadata_from.full_name
+        self.name = obj.name
+        self.full_name = obj.full_name
+        self.website = obj.website
+        self.public_access = obj.public_access
+        self.collection_type = obj.collection_type
+        self.supported_locales = obj.supported_locales
+        self.default_locale = obj.default_locale
+        self.external_id = obj.external_id
 
     @classmethod
     def get_head(self, id):

@@ -126,7 +126,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
             self._errors.update(errors)
         else:
             head_obj = obj.get_head();
-            head_obj.update_metadata(obj)
+            head_obj.update_version_data(obj)
             head_obj.save();
 
 
