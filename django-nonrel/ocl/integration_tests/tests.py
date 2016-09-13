@@ -1765,6 +1765,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         Source.persist_new(source, self.user1, **kwargs)
 
         expected_references = []
+        expressions = []
         for i in range(11):
             mnemonic = 'concept1' + str(i)
             concept1 = Concept(
@@ -1780,10 +1781,11 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             }
             Concept.persist_new(concept1, self.user1, **kwargs)
             reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
+            expressions += [reference]
             expected_references += [{'reference_type': 'concepts', 'expression': reference}]
-            collection.expressions = [reference]
-            collection.full_clean()
-            collection.save()
+        collection.expressions = expressions
+        collection.full_clean()
+        collection.save()
 
         head = CollectionVersion.get_head(collection.id)
 
