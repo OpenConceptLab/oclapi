@@ -909,3 +909,35 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertFalse(retired)
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertTrue(mapping.retired)
+
+    def test_edit_mapping_make_new_version_positive(self):
+        mapping1 = Mapping(
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='mapping1',
+        )
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+        self.assertEquals(0, len(source_version.mappings))
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        errors = Mapping.persist_new(mapping1, self.user1, **kwargs)
+        self.assertEquals(0, len(errors))
+
+        self.assertEquals(1,len(MappingVersion.objects.filter(versioned_object_id=mapping1.id)))
+
+        mapping1.map_type='BROADER_THAN'
+        Mapping.persist_changes(mapping1, self.user1)
+
+        self.assertEquals(2, len(MappingVersion.objects.filter(versioned_object_id=mapping1.id)))
+
+        old_version = MappingVersion.objects.get(versioned_object_id=mapping1.id, is_latest_version=False)
+
+        new_version= MappingVersion.objects.get(versioned_object_id=mapping1.id, is_latest_version=True)
+
+        self.assertFalse(old_version.is_latest_version)
+        self.assertTrue(new_version.is_latest_version)
+        self.assertEquals(new_version.map_type,'BROADER_THAN')
+        self.assertEquals(old_version.map_type,'Same As')
+
