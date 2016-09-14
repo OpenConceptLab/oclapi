@@ -6,7 +6,7 @@ from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
-from tasks import update_children_for_source_version
+from tasks import update_children_for_resource_version
 from oclapi.settings.common import Common
 
 
@@ -223,4 +223,4 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         if errors:
             self._errors.update(errors)
         else:
-            update_children_for_source_version.delay(obj.id)
+            update_children_for_resource_version.delay(obj.id, 'source')
