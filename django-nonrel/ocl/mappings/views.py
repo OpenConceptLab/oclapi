@@ -5,13 +5,15 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from concepts.permissions import CanEditParentDictionary, CanViewParentDictionary
-from mappings.filters import PublicMappingsSearchFilter, SourceRestrictedMappingsFilter
+from mappings.filters import PublicMappingsSearchFilter, SourceRestrictedMappingsFilter, CollectionRestrictedMappingFilter
 from mappings.models import Mapping
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin, BaseAPIView
 from sources.models import SourceVersion
+from orgs.models import Organization
+from users.models import UserProfile
 
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 
@@ -89,7 +91,7 @@ class MappingListView(MappingBaseView,
     queryset = Mapping.objects.filter(is_active=True)
     serializer_class = MappingCreateSerializer
     solr_fields = {}
-    filter_backends = [SourceRestrictedMappingsFilter,]
+    filter_backends = [SourceRestrictedMappingsFilter, CollectionRestrictedMappingFilter]
     solr_fields = {
         'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
         'concept': {'sortable': False, 'filterable': True, 'facet': False},
@@ -98,6 +100,7 @@ class MappingListView(MappingBaseView,
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'mapType': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'collection': {'sortable': False, 'filterable': True, 'facet': True},
         'owner': {'sortable': False, 'filterable': True, 'facet': True},
         'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
         'conceptSource': {'sortable': False, 'filterable': True, 'facet': True},
@@ -136,6 +139,17 @@ class MappingListView(MappingBaseView,
         if not self.include_retired:
             queryset = queryset.filter(~Q(retired=True))
         return queryset
+
+
+    def get_owner(self):
+        owner = None
+        if 'user' in self.kwargs:
+            owner_id = self.kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in self.kwargs:
+            owner_id = self.kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
 
 
 class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
