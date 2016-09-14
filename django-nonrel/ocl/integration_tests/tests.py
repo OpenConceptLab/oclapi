@@ -1771,7 +1771,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         data = json.dumps({'references': [reference]})
         response = c.delete(path, data, 'application/json')
         self.assertEquals(response.status_code, 200)
-        self.assertJSONEqual(response.content, {'references': []})
+        self.assertJSONEqual(response.content, {'message': 'ok!'})
         collection = Collection.objects.get(id=collection.id)
         head = CollectionVersion.get_head(collection.id)
         self.assertEquals(len(collection.references), 0)

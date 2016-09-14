@@ -477,14 +477,15 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(head.mappings), 1)
         self.assertEquals(len(head.references), 3)
 
-        resulted_references = collection.delete_references([references[0], references[2]])
+        deleted_concepts, deleted_mappings = collection.delete_references([references[0], references[2]])
 
         head = CollectionVersion.get_head(collection.id)
         collection = Collection.objects.get(id=collection.id)
 
-        self.assertEquals(len(resulted_references), 1)
-        self.assertEquals(resulted_references[0], from_concept_reference)
+        self.assertEquals(len(deleted_concepts), 1)
+        self.assertEquals(len(deleted_mappings), 1)
         self.assertEquals(len(collection.references), 1)
+        self.assertEquals(collection.references[0].expression, from_concept_reference)
         self.assertEquals(len(head.references), 1)
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.mappings), 0)
@@ -509,7 +510,7 @@ class CollectionTest(CollectionBaseTest):
         )
         Collection.persist_new(collection, self.user1, **kwargs)
 
-        collection.delete_references([])
+        self.assertEquals(collection.delete_references([]), [[],[]])
 
 
 class CollectionClassMethodTest(CollectionBaseTest):
