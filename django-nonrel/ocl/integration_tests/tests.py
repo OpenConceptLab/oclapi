@@ -104,9 +104,7 @@ class MappingImporterTest(MappingBaseTest):
     def test_import_job_for_change_in_data(self):
         stdout_stub = TestStream()
         stderr_stub = TestStream()
-        mapping = Mapping.objects.create(
-            created_by=self.user1,
-            updated_by=self.user1,
+        mapping = Mapping(
             parent=self.source1,
             map_type='SAME-AS',
             from_concept=self.concept3,
@@ -114,6 +112,10 @@ class MappingImporterTest(MappingBaseTest):
             to_concept_code='413532003',
             external_id='junk'
         )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
         source_version = SourceVersion.get_latest_version_of(self.source1)
         source_version.mappings = [mapping.id]
         source_version.save()
