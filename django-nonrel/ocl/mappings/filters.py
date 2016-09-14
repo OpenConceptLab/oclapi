@@ -1,4 +1,5 @@
-from oclapi.filters import HaystackSearchFilter
+from oclapi.filters import HaystackSearchFilter, SimpleHaystackSearchFilter
+from collection.models import Collection, CollectionVersion
 
 __author__ = 'misternando'
 
@@ -15,5 +16,20 @@ class SourceRestrictedMappingsFilter(HaystackSearchFilter):
 
     def get_filters(self, request, view):
         filters = super(SourceRestrictedMappingsFilter, self).get_filters(request, view)
-        filters.update({'source_version': view.parent_resource_version.id})
+        if 'collection' not in view.kwargs:
+            filters.update({'source_version': view.parent_resource_version.id})
+        return filters
+
+
+class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
+    def get_filters(self, request, view):
+        filters = super(CollectionRestrictedMappingFilter, self).get_filters(request, view)
+        if 'collection' in view.kwargs:
+            owner = view.get_owner()
+            collection = Collection.objects.get(parent_id=owner.id, mnemonic=view.kwargs['collection'])
+            if 'version' in view.kwargs:
+                collection_version = CollectionVersion.objects.get(versioned_object_id=collection.id, mnemonic=view.kwargs['version'])
+                filters.update({'collection_version': collection_version.id})
+            else:
+                filters.update({'collection': collection.id})
         return filters
