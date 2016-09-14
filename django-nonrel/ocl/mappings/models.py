@@ -1,9 +1,10 @@
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from concepts.models import Concept
-from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
@@ -248,9 +249,15 @@ class Mapping(BaseModel):
 
         errored_action = 'saving mapping'
         persisted = False
+        initial_version=None
         try:
             obj.save(**kwargs)
-
+            #mapping version save start
+            initial_version = MappingVersion.for_mapping(obj)
+            initial_version.save()
+            initial_version.mnemonic = initial_version.id
+            initial_version.save()
+            # mapping version save end
             # Add the mapping to its parent source version
             errored_action = 'associating mapping with parent resource'
             parent_children = getattr(parent_resource_version, child_list_attribute) or []
@@ -305,6 +312,155 @@ class Mapping(BaseModel):
             diffs['extras'] = {'was': extras1, 'is': extras2}
 
         return diffs
+
+
+class MappingVersion(ResourceVersionModel):
+    parent = models.ForeignKey(Source, related_name='mappings_version_from')
+    map_type = models.TextField()
+    from_concept = models.ForeignKey(Concept, related_name='mappings_version_from')
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_version_to', db_index=False)
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to', db_index=False)
+    to_concept_code = models.TextField(null=True, blank=True)
+    to_concept_name = models.TextField(null=True, blank=True)
+    retired = models.BooleanField(default=False)
+    external_id = models.TextField(null=True, blank=True)
+
+    class Meta:
+        pass
+
+    @property
+    def source(self):
+        return self.parent.mnemonic
+
+    @property
+    def owner(self):
+        return self.parent.owner_name
+
+    @property
+    def owner_type(self):
+        return self.parent.owner_type
+
+    @property
+    def from_source(self):
+        return self.from_concept.parent
+
+    @property
+    def from_source_owner(self):
+        return self.from_source.owner_name
+
+    @property
+    def from_source_owner_mnemonic(self):
+        return self.from_source.owner.mnemonic
+
+    @property
+    def from_source_owner_type(self):
+        return self.from_source.owner_type
+
+    @property
+    def from_source_name(self):
+        return self.from_source.mnemonic
+
+    @property
+    def from_source_url(self):
+        self.from_source.url
+
+    @property
+    def from_source_shorthand(self):
+        return "%s:%s" % (self.from_source_owner_mnemonic, self.from_source_name)
+
+    @property
+    def from_concept_code(self):
+        return self.from_concept.mnemonic
+
+    @property
+    def from_concept_name(self):
+        return self.from_concept.display_name
+
+    @property
+    def from_concept_url(self):
+        return self.from_concept.url
+
+    @property
+    def from_concept_shorthand(self):
+        return "%s:%s" % (self.from_source_shorthand, self.from_concept_code)
+
+    def get_to_source(self):
+        return self.to_source or self.to_concept and self.to_concept.parent
+
+    @property
+    def to_source_name(self):
+        return self.get_to_source() and self.get_to_source().mnemonic
+
+    @property
+    def to_source_url(self):
+        to_source = self.get_to_source()
+        return to_source.url if to_source else None
+
+    @property
+    def to_source_owner(self):
+        return self.get_to_source() and unicode(self.get_to_source().parent)
+
+    @property
+    def to_source_owner_mnemonic(self):
+        return self.get_to_source() and self.get_to_source().owner.mnemonic
+
+    @property
+    def to_source_owner_type(self):
+        return self.get_to_source() and self.get_to_source().owner_type
+
+    @property
+    def to_source_shorthand(self):
+        return self.get_to_source() and "%s:%s" % (self.to_source_owner_mnemonic, self.to_source_name)
+
+    def get_to_concept_name(self):
+        return self.to_concept_name or (self.to_concept and self.to_concept.display_name)
+
+    def get_to_concept_code(self):
+        return self.to_concept_code or (self.to_concept and self.to_concept.mnemonic)
+
+    @property
+    def to_concept_url(self):
+        return self.to_concept.url if self.to_concept else None
+
+    @property
+    def to_concept_shorthand(self):
+        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (
+        self.to_source_shorthand, self.to_concept_code)
+
+    @property
+    def public_can_view(self):
+        return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
+
+    @staticmethod
+    def resource_type():
+        return MAPPING_RESOURCE_TYPE
+
+    @staticmethod
+    def get_url_kwarg():
+        return 'mapping'
+
+    @classmethod
+    def for_mapping(cls, mapping, previous_version=None, parent_version=None):
+        return MappingVersion(
+            public_access=mapping.public_access,
+            is_active=True,
+            parent=mapping.parent,
+            map_type=mapping.map_type,
+            from_concept=mapping.from_concept,
+            to_concept=mapping.to_concept,
+            to_source=mapping.to_source,
+            to_concept_code=mapping.to_concept_code,
+            to_concept_name=mapping.to_concept_name,
+            retired=mapping.retired,
+            external_id=mapping.external_id,
+            versioned_object_id=mapping.id,
+            versioned_object_type=ContentType.objects.get_for_model(Mapping),
+            released=False,
+            previous_version=previous_version,
+            parent_version=parent_version,
+            created_by=mapping.created_by,
+            updated_by=mapping.updated_by
+        )
 
 
 @receiver(post_save, sender=Source)
