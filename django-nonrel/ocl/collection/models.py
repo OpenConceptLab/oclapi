@@ -5,11 +5,14 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
-from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel
+from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping
 from django.db.models import Max
+from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
+
 
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
@@ -21,11 +24,15 @@ class Collection(ConceptContainerModel):
     expressions = []
     @property
     def concepts_url(self):
-        return reverse_resource(self, 'collection-concept-list')
+        owner = self.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def mappings_url(self):
-        return reverse_resource(self, 'collection-mapping-list')
+        owner = self.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('concept-mapping-list', kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def versions_url(self):
@@ -36,6 +43,10 @@ class Collection(ConceptContainerModel):
     @property
     def resource_type(self):
         return COLLECTION_TYPE
+
+    @property
+    def public_can_view(self):
+        return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
 
     @classmethod
     def get_version_model(cls):
@@ -91,9 +102,10 @@ class Collection(ConceptContainerModel):
 
     def delete_references(self, references):
         self.expressions = []
+        children_to_reduce = {'concept_ids': [], 'mapping_ids': []}
         if len(references) > 0:
             head = CollectionVersion.get_head_of(self)
-            children_to_reduce = reduce(self._reduce_func, references, {'concept_ids': [], 'mapping_ids': []})
+            children_to_reduce = reduce(self._reduce_func, references, children_to_reduce)
             head.concepts = list(set(head.concepts) - set(children_to_reduce['concept_ids']))
             head.mappings = list(set(head.mappings) - set(children_to_reduce['mapping_ids']))
             head.references = filter(lambda ref: ref.expression not in references, head.references)
@@ -102,7 +114,7 @@ class Collection(ConceptContainerModel):
             head.save()
             self.full_clean()
             self.save()
-        return self.current_references()
+        return [children_to_reduce['concept_ids'], children_to_reduce['mapping_ids']]
 
     def current_references(self):
         return map(lambda ref: ref.expression, self.references)
@@ -129,6 +141,12 @@ class CollectionReference(models.Model):
     @property
     def reference_type(self):
         return self.expression.split('/')[5]
+
+    @staticmethod
+    def diff(ctx, _from):
+        prev_expressions = map(lambda r: r.expression, _from)
+        return filter(lambda ref: ref.expression not in prev_expressions, ctx)
+
 
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))

@@ -512,6 +512,20 @@ class CollectionTest(CollectionBaseTest):
 
         self.assertEquals(collection.delete_references([]), [[],[]])
 
+    def test_concepts_url(self):
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection.full_clean()
+        collection.save()
+
+        self.assertEquals(collection.concepts_url, '/orgs/org1/sources/collection1/concepts/')
+
+    def test_mappings_url(self):
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection.full_clean()
+        collection.save()
+
+        self.assertEquals(collection.mappings_url, '/orgs/org1/sources/org1/concepts/collection1/mappings/')
+
 
 class CollectionClassMethodTest(CollectionBaseTest):
 
@@ -1745,6 +1759,12 @@ class CollectionReferenceTest(CollectionBaseTest):
         except ValidationError as e:
             self.assertEquals(len(e.messages), 1)
             self.assertEquals(e.messages, ['This mapping is retired.'])
+
+    def test_diff(self):
+        superset = [CollectionReference(expression='foo'), CollectionReference(expression='bar')]
+        subset = [CollectionReference(expression='foo'), CollectionReference(expression='tao')]
+        self.assertEquals(CollectionReference.diff(superset, subset), [superset[1]])
+        self.assertEquals(CollectionReference.diff(subset, superset), [subset[1]])
 
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
