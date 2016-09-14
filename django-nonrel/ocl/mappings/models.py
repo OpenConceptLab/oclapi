@@ -200,6 +200,17 @@ class Mapping(BaseModel):
         persisted = False
         try:
             obj.save(**kwargs)
+
+            prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True);
+            prev_latest_version.is_latest_version = False
+
+            new_latest_version  = MappingVersion.for_mapping(obj)
+            new_latest_version.previous_version = prev_latest_version
+            prev_latest_version.save()
+            new_latest_version.save()
+            new_latest_version.mnemonic = new_latest_version.id
+            new_latest_version.save()
+
             persisted = True
         finally:
             if not persisted:
