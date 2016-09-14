@@ -29,6 +29,8 @@ class MappingIndex(OCLSearchIndex, indexes.Indexable):
     fromConceptOwnerType = SortOrFilterField(indexed=True, stored=True, faceted=True)
     toConceptOwnerType = SortOrFilterField(indexed=True, stored=True, faceted=True)
     source_version = FilterField()
+    collection = FilterField()
+    collection_version = FilterField()
     public_can_view = indexes.BooleanField(model_attr='public_can_view', indexed=True, stored=True)
     is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
 
@@ -49,6 +51,8 @@ class MappingIndex(OCLSearchIndex, indexes.Indexable):
         self.prepared_data['fromConceptOwnerType'] = obj.from_source_owner_type
         self.prepared_data['toConceptOwnerType'] = obj.to_source_owner_type
         self.prepared_data['conceptOwnerType'] = [obj.from_source_owner_type, obj.to_source_owner_type]
+        self.prepared_data['collection_version'] = obj.collection_version_ids
+        self.prepared_data['collection'] = obj.collection_ids
 
         source_version_ids = []
         source = obj.parent
@@ -61,3 +65,11 @@ class MappingIndex(OCLSearchIndex, indexes.Indexable):
         self.prepared_data['source_version'] = source_version_ids
 
         return self.prepared_data
+
+
+    def prepare_collection_version(self, obj):
+        return obj.collection_version_ids
+
+
+    def prepare_collection(self, obj):
+        return obj.collection_ids
