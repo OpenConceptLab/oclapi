@@ -168,7 +168,7 @@
 
     <field name="lastUpdate" type="date" indexed="true" stored="true" multiValued="false" />
 
-    <field name="name" type="lowercase" indexed="true" stored="true" multiValued="true" />
+    <field name="name" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="sourceType" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
@@ -212,7 +212,7 @@
 
     <field name="collection_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
-    <field name="collection" type="lowercase" indexed="true" stored="true" multiValued="false" />
+    <field name="collection" type="lowercase" indexed="true" stored="true" multiValued="true" />
 
     <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
 
