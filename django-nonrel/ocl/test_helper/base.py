@@ -3,7 +3,7 @@ from concepts.models import Concept, ConceptVersion, LocalizedText
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -21,3 +21,4 @@ class OclApiBaseTestCase(TestCase):
         Collection.objects.filter().delete()
         CollectionVersion.objects.filter().delete()
         Mapping.objects.filter().delete()
+        MappingVersion.objects.filter().delete()

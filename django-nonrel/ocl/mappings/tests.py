@@ -645,7 +645,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         Concept.persist_new(toConcept, self.user1, **kwargs)
 
         mapping = Mapping(
-            map_type='Same As',
+            map_type='foobar',
             from_concept=fromConcept,
             to_concept=toConcept,
             external_id='mapping',
@@ -658,7 +658,8 @@ class MappingVersionTest(MappingVersionBaseTest):
 
         from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
-        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+        mapping = Mapping.objects.filter()[1]
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.id + '/'
 
         references = [concept1_reference, from_concept_reference, mapping_reference]
 
@@ -666,7 +667,6 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection.full_clean()
         collection.save()
 
-        mapping = Mapping.objects.filter()[0]
         self.assertEquals(mapping.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_version_ids(self):
@@ -756,7 +756,8 @@ class MappingVersionTest(MappingVersionBaseTest):
 
         from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
-        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+        mapping = Mapping.objects.filter()[1]
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.id + '/'
 
         references = [concept1_reference, from_concept_reference, mapping_reference]
 
@@ -764,7 +765,6 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection.full_clean()
         collection.save()
 
-        mapping = Mapping.objects.filter()[0]
         self.assertEquals(mapping.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
 
 class MappingClassMethodsTest(MappingBaseTest):
