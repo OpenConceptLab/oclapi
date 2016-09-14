@@ -29,13 +29,14 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
         model_attr='public_can_view', indexed=True, stored=True)
     retired = indexes.BooleanField(
         model_attr='retired', indexed=True, stored=True, faceted=True)
-    source = SortOrFilterField(
-        model_attr='parent_resource', indexed=True, stored=True, faceted=True)
+    source = SortOrFilterField(model_attr='parent_resource', indexed=True, stored=True, faceted=True)
     owner = SortOrFilterField(
         model_attr='owner_name', indexed=True, stored=True, faceted=True)
     ownerType = SortOrFilterField(
         model_attr='owner_type', indexed=True, stored=True, faceted=True)
     source_version = FilterField()
+    collection = FilterField()
+    collection_version = FilterField()
     is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
 
     def get_model(self):
@@ -48,13 +49,6 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
                 locales.add(name.locale)
         return list(locales)
 
-    def prepare_name(self, obj):
-        names = set()
-        for name in obj.names:
-            if name.locale is not None:
-                names.add(name.name)
-        return list(names)
-
     def prepare_source_version(self, obj):
         source_version_ids = []
         source = obj.source
@@ -66,3 +60,9 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
             if obj.id in sv.concepts:
                 source_version_ids.append(sv.id)
         return source_version_ids
+
+    def prepare_collection_version(self, obj):
+        return obj.collection_version_ids
+
+    def prepare_collection(self, obj):
+        return obj.collection_ids
