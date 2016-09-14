@@ -7,7 +7,7 @@ from rest_framework.generics import (RetrieveAPIView, get_object_or_404, UpdateA
                                      DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView,
                                      ListCreateAPIView, ListAPIView)
 from rest_framework.response import Response
-from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilter
+from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilter, LimitCollectionVersionFilter
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
 from concepts.serializers import (ConceptDetailSerializer, ConceptVersionListSerializer,
@@ -22,6 +22,8 @@ from oclapi.models import ACCESS_TYPE_NONE, ResourceVersionModel
 from oclapi.views import (ConceptDictionaryMixin, VersionedResourceChildMixin, BaseAPIView,
                           ChildResourceMixin, parse_updated_since_param, ResourceVersionMixin)
 from sources.models import SourceVersion
+from orgs.models import Organization
+from users.models import UserProfile
 
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -111,6 +113,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'collection': {'sortable': False, 'filterable': True, 'facet': True},
         'owner': {'sortable': False, 'filterable': True, 'facet': True},
         'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
@@ -208,7 +211,6 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
                              ListWithHeadersMixin):
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
-    filter_backends = [LimitSourceVersionFilter,]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
@@ -218,6 +220,7 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
+        'collection': {'sortable': False, 'filterable': True, 'facet': True},
         'owner': {'sortable': False, 'filterable': True, 'facet': True},
         'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
@@ -236,6 +239,11 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         return context
 
     def get(self, request, *args, **kwargs):
+        if 'collection' in kwargs:
+            self.filter_backends = [LimitCollectionVersionFilter]
+        else:
+            self.filter_backends = [LimitSourceVersionFilter]
+
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
@@ -249,6 +257,16 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         if self.updated_since:
             queryset = queryset.filter(updated_at__gte=self.updated_since)
         return queryset
+
+    def get_owner(self):
+        owner = None
+        if 'user' in self.kwargs:
+            owner_id = self.kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in self.kwargs:
+            owner_id = self.kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
 
 
 class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, RetrieveAPIView):
