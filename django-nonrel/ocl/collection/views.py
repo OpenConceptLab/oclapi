@@ -1,6 +1,6 @@
 import logging
 from django.conf import settings
-from collection.models import Collection, CollectionVersion
+from collection.models import Collection, CollectionVersion, CollectionReference
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
 from concepts.models import Concept, ConceptVersion
@@ -8,7 +8,6 @@ from concepts.serializers import ConceptListSerializer
 from django.http import HttpResponse, HttpResponseForbidden
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
-from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
 from oclapi.permissions import HasAccessToVersionedObject
@@ -21,6 +20,8 @@ from orgs.models import Organization
 from tasks import export_collection
 from celery_once import AlreadyQueued
 from django.shortcuts import get_list_or_404
+from collection.filters import CollectionSearchFilter
+from tasks import update_collection_in_solr, delete_resources_from_collection_in_solr
 
 
 logger = logging.getLogger('oclapi')
@@ -102,6 +103,7 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+        prev_refs = self.parent_resource.references
         created = False
         save_kwargs = {'force_update': True, 'expressions': request.DATA.get("expressions")}
 
@@ -115,6 +117,8 @@ class CollectionReferencesView(CollectionBaseView,
             self.parent_resource = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.parent_resource, created=created)
+                update_collection_in_solr.delay(serializer.object.get_head().id,
+                                                CollectionReference.diff(serializer.object.references, prev_refs))
                 return Response(serializer.data, status=success_status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -135,13 +139,15 @@ class CollectionReferencesView(CollectionBaseView,
         if not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'references': (self.parent_resource.delete_references(references))}, status=status.HTTP_200_OK)
+        unreferenced_concepts, unreferenced_mappings = self.parent_resource.delete_references(references)
+        delete_resources_from_collection_in_solr.delay(self.parent_resource.get_head().id, unreferenced_concepts, unreferenced_mappings)
+        return Response({'message': 'ok!'}, status=status.HTTP_200_OK)
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,
                          ListWithHeadersMixin):
     serializer_class = CollectionCreateSerializer
-    filter_backends = [HaystackSearchFilter]
+    filter_backends = [CollectionSearchFilter]
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
@@ -278,30 +284,6 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeader
         return queryset.filter(parent_version=self.resource_version, is_active=True)
 
 
-class CollectionConceptListView(CollectionBaseView,
-                                BaseAPIView,
-                                ListWithHeadersMixin):
-    serializer_class = ConceptListSerializer
-
-    def get(self, request, *args, **kwargs):
-        collection = self.get_object()
-        object_version = CollectionVersion.get_head(collection.id)
-        self.object_list = Concept.objects.filter(id__in=object_version.concepts)
-        return self.list(request, *args, **kwargs)
-
-
-class CollectionVersionConceptListView(CollectionVersionBaseView,
-                                       ListWithHeadersMixin):
-    serializer_class = ConceptListSerializer
-
-    def get(self, request, *args, **kwargs):
-        object_version = self.versioned_object
-        if object_version.mnemonic == 'HEAD':
-            self.object_list = Concept.objects.filter(id__in=object_version.concepts)
-        else:
-            self.object_list = ConceptVersion.objects.filter(id__in=object_version.concepts)
-        return self.list(request, *args, **kwargs)
-
 
 class CollectionVersionReferenceListView(CollectionVersionBaseView,
                                        ListWithHeadersMixin):
@@ -312,28 +294,6 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
         self.object_list = object_version.references
         return self.list(request, *args, **kwargs)
 
-
-class CollectionMappingListView(CollectionBaseView,
-                                BaseAPIView,
-                                ListWithHeadersMixin):
-    serializer_class = MappingDetailSerializer
-    def get(self, request, *args, **kwargs):
-        self.kwargs = kwargs
-        collection = self.get_object()
-        object_version = CollectionVersion.get_head(collection.id)
-
-        self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
-        return self.list(request, *args, **kwargs)
-
-
-class CollectionVersionMappingListView(CollectionVersionBaseView,
-                                       ListWithHeadersMixin):
-    serializer_class = MappingDetailSerializer
-
-    def get(self, request, *args, **kwargs):
-        object_version = self.versioned_object
-        self.object_list = Mapping.objects.filter(id__in=object_version.mappings)
-        return self.list(request, *args, **kwargs)
 
 
 class CollectionVersionExportView(ResourceAttributeChildMixin):
