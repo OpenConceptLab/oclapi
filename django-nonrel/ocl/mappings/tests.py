@@ -6,6 +6,8 @@ Replace this with more appropriate tests for your application.
 """
 from urlparse import urlparse
 
+from django.contrib.contenttypes.models import ContentType
+
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -13,7 +15,7 @@ from django.db.utils import IntegrityError
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
@@ -159,6 +161,21 @@ class MappingBaseTest(OclApiBaseTestCase):
             'parent_resource': self.source2,
         }
         Concept.persist_new(self.concept4, self.user1, **kwargs)
+
+class MappingVersionBaseTest(MappingBaseTest):
+    def setUp(self):
+        super(MappingVersionBaseTest, self).setUp()
+        self.mapping1 = Mapping(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='versionmapping1',
+        )
+        self.mapping1.full_clean()
+        self.mapping1.save()
 
 class MappingTest(MappingBaseTest):
 
@@ -400,6 +417,158 @@ class MappingTest(MappingBaseTest):
         self.assertNotEquals(public_access, self.source1.public_access)
         self.assertEquals(self.source1.public_access, mapping.public_access)
 
+class MappingVersionTest(MappingVersionBaseTest):
+
+    def test_create_mapping_positive(self):
+        mapping_version = MappingVersion(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='mappingversion1',
+            versioned_object_id=self.mapping1.id,
+            mnemonic='tempid',
+            versioned_object_type=ContentType.objects.get_for_model(Mapping),
+        )
+        mapping_version.full_clean()
+        mapping_version.save()
+
+        self.assertTrue(MappingVersion.objects.filter(versioned_object_id = self.mapping1.id).exists())
+        mapping_version = MappingVersion.objects.get(versioned_object_id = self.mapping1.id)
+        self.assertEquals(ACCESS_TYPE_VIEW, mapping_version.public_access)
+        self.assertEquals('user1', mapping_version.created_by)
+        self.assertEquals('user1', mapping_version.updated_by)
+        self.assertEquals(self.source1, mapping_version.parent)
+        self.assertEquals('Same As', mapping_version.map_type)
+        self.assertEquals(self.concept1, mapping_version.from_concept)
+        self.assertEquals(self.concept2, mapping_version.to_concept)
+        self.assertEquals(self.source1, mapping_version.from_source)
+        self.assertEquals(self.source1.owner_name, mapping_version.from_source_owner)
+        self.assertEquals(self.source1.mnemonic, mapping_version.from_source_name)
+        self.assertEquals(self.source1, mapping_version.get_to_source())
+        self.assertEquals(self.source1.owner_name, mapping_version.to_source_owner)
+        self.assertEquals(self.concept2.mnemonic, mapping_version.get_to_concept_code())
+        self.assertEquals(self.concept2.display_name, mapping_version.get_to_concept_name())
+
+    def test_create_mapping_negative__no_created_by(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                updated_by=self.user1,
+                parent=self.source1,
+                map_type='Same As',
+                from_concept=self.concept1,
+                to_concept=self.concept2,
+                external_id='mapping111',
+                versioned_object_id=self.mapping1.id,
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_create_mapping_negative__no_updated_by(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                created_by=self.user1,
+                parent=self.source1,
+                map_type='Same As',
+                from_concept=self.concept1,
+                to_concept=self.concept2,
+                external_id='mapping1',
+                versioned_object_id=self.mapping1.id,
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_create_mapping_negative__no_parent(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                created_by=self.user1,
+                updated_by=self.user1,
+                map_type='Same As',
+                from_concept=self.concept1,
+                to_concept=self.concept2,
+                external_id='mapping1',
+                versioned_object_id=self.mapping1.id,
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_create_mapping_negative__no_map_type(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=self.source1,
+                from_concept=self.concept1,
+                to_concept=self.concept2,
+                external_id='mapping1',
+                versioned_object_id=self.mapping1.id,
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_create_mapping_negative__no_from_concept(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=self.source1,
+                map_type='Same As',
+                to_concept=self.concept2,
+                external_id='mapping1',
+                versioned_object_id=self.mapping1.id,
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_create_mapping_negative__no_version_object(self):
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=self.source1,
+                map_type='Same As',
+                from_concept=self.concept1,
+                to_concept=self.concept2,
+                external_id='mapping1',
+                versioned_object_type=ContentType.objects.get_for_model(Mapping),
+                mnemonic='tempid'
+            )
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def test_mapping_access_changes_with_source(self):
+        public_access = self.source1.public_access
+        mapping_version = MappingVersion(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            public_access=public_access,
+            external_id='mapping1',
+            versioned_object_id=self.mapping1.id,
+            versioned_object_type=ContentType.objects.get_for_model(Mapping),
+            mnemonic='tempid'
+        )
+        mapping_version.full_clean()
+        mapping_version.save()
+
+        self.assertEquals(self.source1.public_access, mapping_version.public_access)
+        self.source1.public_access = ACCESS_TYPE_VIEW
+        self.source1.save()
 
 class MappingClassMethodsTest(MappingBaseTest):
 
@@ -438,6 +607,45 @@ class MappingClassMethodsTest(MappingBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.mappings))
         self.assertTrue(mapping.id in source_version.mappings)
+
+    def test_persist_new_version_created_positive(self):
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='mapping1',
+        )
+        source_version = SourceVersion.get_latest_version_of(self.source1)
+        self.assertEquals(0, len(source_version.mappings))
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        errors = Mapping.persist_new(mapping, self.user1, **kwargs)
+        self.assertEquals(0, len(errors))
+
+        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
+        mapping = Mapping.objects.get(external_id='mapping1')
+        self.assertTrue(MappingVersion.objects.filter(versioned_object_id=mapping.id, is_latest_version=True).exists())
+        mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
+        self.assertEquals(self.source1.public_access, mapping_version.public_access)
+        self.assertEquals('user1', mapping_version.created_by)
+        self.assertEquals('user1', mapping_version.updated_by)
+        self.assertEquals(self.source1, mapping_version.parent)
+        self.assertEquals('Same As', mapping_version.map_type)
+        self.assertEquals(self.concept1, mapping_version.from_concept)
+        self.assertEquals(self.concept2, mapping_version.to_concept)
+        self.assertEquals(self.source1, mapping_version.from_source)
+        self.assertEquals(self.source1.owner_name, mapping_version.from_source_owner)
+        self.assertEquals(self.source1.mnemonic, mapping_version.from_source_name)
+        self.assertEquals(self.source1, mapping_version.get_to_source())
+        self.assertEquals(self.source1.owner_name, mapping_version.to_source_owner)
+        self.assertEquals(self.concept2.mnemonic, mapping_version.get_to_concept_code())
+        self.assertEquals(self.concept2.display_name, mapping_version.get_to_concept_name())
+
+        source_version = SourceVersion.objects.get(id=source_version.id)
+        self.assertEquals(1, len(source_version.mappings))
+        self.assertTrue(mapping.id in source_version.mappings)
+
 
     def test_persist_new_negative__no_creator(self):
         mapping = Mapping(

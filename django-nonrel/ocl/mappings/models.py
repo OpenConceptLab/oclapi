@@ -324,6 +324,7 @@ class MappingVersion(ResourceVersionModel):
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
+    is_latest_version = models.BooleanField(default=True)
 
     class Meta:
         pass
