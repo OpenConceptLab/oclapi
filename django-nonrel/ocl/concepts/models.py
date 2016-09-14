@@ -1,9 +1,7 @@
-from itertools import chain
 from urlparse import urljoin
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -14,8 +12,8 @@ from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
-from oclapi.utils import reverse_resource, reverse_resource_version
 from sources.models import SourceVersion, Source
+from django.db.models import get_model
 
 
 class LocalizedText(models.Model):
@@ -182,6 +180,10 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     def get_version_model():
         return ConceptVersion
 
+    @property
+    def get_latest_version(self):
+        return ConceptVersion.objects.filter(versioned_object_id=self.id).order_by('-created_at')[:1][0]
+
 
 class ConceptVersion(ResourceVersionModel):
     external_id = models.TextField(null=True, blank=True)
@@ -246,6 +248,23 @@ class ConceptVersion(ResourceVersionModel):
     @property
     def source(self):
         return self.versioned_object.parent
+
+    @property
+    def collections(self):
+        versions = self.collection_versions
+        return map(lambda v: v.versioned_object, versions)
+
+    @property
+    def collection_ids(self):
+        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri}))
+
+    @property
+    def collection_versions(self):
+        return get_model('collection', 'CollectionVersion').objects.filter(concepts=self.id)
+
+    @property
+    def collection_version_ids(self):
+        return map(lambda v: v.id, self.collection_versions)
 
     @property
     def mappings_url(self):

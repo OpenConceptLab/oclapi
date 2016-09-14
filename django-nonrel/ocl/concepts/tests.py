@@ -13,6 +13,7 @@ from orgs.models import Organization
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
+from collection.models import Collection, CollectionVersion
 from test_helper.base import OclApiBaseTestCase
 
 class ConceptBaseTest(OclApiBaseTestCase):
@@ -223,6 +224,39 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept.objects.get(id=concept.id)
         self.assertNotEquals(public_access, self.source1.public_access)
         self.assertEquals(self.source1.public_access, concept.public_access)
+
+    def test_get_latest_version(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept12',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        concept = Concept.objects.get(mnemonic=concept1.mnemonic)
+        concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
+        self.assertEquals(concept.get_latest_version.id, concept_version1.id)
 
 
 class ConceptClassMethodsTest(ConceptBaseTest):
@@ -684,6 +718,161 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion.objects.get(versioned_object_id=self.concept1.id)
         expected_names_list = ['concept1', 'Fred']
         self.assertItemsEqual(concept_version.all_names, expected_names_list)
+
+    def test_collections_ids(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept12',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        anotherConcept = Concept(
+            mnemonic='anotherConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(anotherConcept, self.user1, **kwargs)
+
+        another_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=anotherConcept.mnemonic).mnemonic + '/'
+        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=concept1.mnemonic).mnemonic + '/'
+
+        references = [concept1_reference, another_concept_reference]
+
+        collection.expressions = references
+        collection.full_clean()
+        collection.save()
+
+        concept_version = ConceptVersion.objects.get(versioned_object_id=Concept.objects.get(mnemonic=concept1.mnemonic).id)
+
+        self.assertEquals(concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
+
+    def test_collections_version_ids(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept12',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        another_concept = Concept(
+            mnemonic='anotherConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(another_concept, self.user1, **kwargs)
+
+        another_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=another_concept.mnemonic).mnemonic + '/'
+        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=concept1.mnemonic).mnemonic + '/'
+
+        references = [concept1_reference, another_concept_reference]
+
+        collection.expressions = references
+        collection.full_clean()
+        collection.save()
+
+        concept_version = ConceptVersion.objects.get(
+            versioned_object_id=Concept.objects.get(mnemonic=another_concept.mnemonic).id)
+
+        version = CollectionVersion.for_base_object(collection, 'version1')
+        kwargs = {}
+        CollectionVersion.persist_new(version, **kwargs)
+        self.assertEquals(concept_version.collection_version_ids, [CollectionVersion.objects.get(mnemonic='version1').id])
+
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 

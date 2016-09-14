@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from concepts.models import Concept
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source
+from django.db.models import get_model
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 
@@ -161,6 +162,23 @@ class Mapping(BaseModel):
     @property
     def public_can_view(self):
         return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
+
+    @property
+    def collections(self):
+        versions = self.collection_versions
+        return map(lambda v: v.versioned_object, versions)
+
+    @property
+    def collection_ids(self):
+        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
+
+    @property
+    def collection_versions(self):
+        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
+
+    @property
+    def collection_version_ids(self):
+        return map(lambda v: v.id, self.collection_versions)
 
     @staticmethod
     def resource_type():
