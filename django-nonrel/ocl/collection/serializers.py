@@ -6,6 +6,7 @@ from oclapi.serializers import ResourceVersionSerializer
 from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
+from tasks import update_children_for_collection_version
 
 class CollectionListSerializer(serializers.Serializer):
     # TODO id and short code are same .. remove one of them
@@ -222,4 +223,7 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
-        self._errors.update(errors)
+        if errors:
+            self._errors.update(errors)
+        else:
+            update_children_for_collection_version.delay(obj.id)
