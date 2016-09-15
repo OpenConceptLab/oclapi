@@ -20,7 +20,7 @@ class SearchQuerySetWrapper(object):
         return result.object
 
     def __iter__(self):
-        for result in self.sqs:
+        for result in self.sqs[0:10]:
             yield result.object
 
 
@@ -124,14 +124,12 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                 if default_sort:
                     sqs = sqs.order_by(default_sort)
             sqs = sqs.models(view.model)
-            sqs = sqs.load_all()
             if hasattr(sqs, 'load_all_queryset'):
                 sqs = sqs.load_all_queryset(view.model, queryset)
             return SearchQuerySetWrapper(sqs)
 
         if hasattr(view, 'default_order_by'):
             queryset = queryset.order_by(view.default_order_by)
-
         return queryset
 
 

@@ -28,6 +28,7 @@ from users.models import UserProfile
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
 INCLUDE_INVERSE_MAPPINGS_PARAM = 'includeInverseMappings'
+LIMIT_PARAM = 'limit'
 
 
 class ConceptBaseView(ChildResourceMixin):
@@ -135,6 +136,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
+        self.limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 25)
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -146,7 +148,7 @@ class ConceptVersionListAllView(BaseAPIView, ListWithHeadersMixin):
         queryset = queryset.filter(**self.default_filters)
         if not self.request.user.is_staff:
             queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
-        return queryset
+        return queryset[0:self.limit]
 
 
 class ConceptCreateView(ConceptBaseView,

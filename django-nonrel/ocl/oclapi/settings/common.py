@@ -196,6 +196,8 @@ class Common(Configuration):
     # the cost of performance. BaseSignalProcessor does not update the index at all, which
     # means the index must be updated manually (e.g. using the haystack update_index command).
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+    HAYSTACK_ITERATOR_LOAD_PER_QUERY = 25
+    HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
 
     # Celery settings
     CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'
