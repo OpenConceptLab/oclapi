@@ -128,7 +128,9 @@ class CollectionReferencesView(CollectionBaseView,
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return Collection.objects.get(id=self.parent_resource.id).references
+        search_query = self.request.QUERY_PARAMS.get('q', '')
+        references = Collection.objects.get(id=self.parent_resource.id).references
+        return [r for r in references if search_query in r.expression]
 
     def destroy(self,request, *args, **kwargs):
         if not self.parent_resource:
