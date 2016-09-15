@@ -292,8 +292,12 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
     serializer_class = CollectionReferenceSerializer
 
     def get(self, request, *args, **kwargs):
+        search_query = self.request.QUERY_PARAMS.get('q', '')
         object_version = self.versioned_object
-        self.object_list = object_version.references
+        self.object_list = [
+            r for r in object_version.references
+            if search_query in r.expression
+        ]
         return self.list(request, *args, **kwargs)
 
 
