@@ -1,6 +1,8 @@
 from oclapi.filters import SimpleHaystackSearchFilter
 from collection.models import Collection, CollectionVersion
 
+LATEST = 'latest'
+
 __author__ = 'misternando'
 
 
@@ -37,7 +39,11 @@ class LimitCollectionVersionFilter(ConceptSearchFilter):
             owner = view.get_owner()
             collection = Collection.objects.get(parent_id=owner.id, mnemonic=view.kwargs['collection'])
             if 'version' in view.kwargs and view.kwargs['version'] != 'HEAD':
-                collection_version = CollectionVersion.objects.get(versioned_object_id=collection.id, mnemonic=view.kwargs['version'])
+                print view.kwargs['version']
+                if view.kwargs['version'] == LATEST:
+                    collection_version = CollectionVersion.get_latest_released_version_of(collection)
+                else:
+                    collection_version = CollectionVersion.objects.get(versioned_object_id=collection.id, mnemonic=view.kwargs['version'])
                 filters.update({'collection_version': collection_version.id})
             else:
                 filters.update({'collection': collection.id})
