@@ -1,16 +1,19 @@
 version: '2'
 services:
   mongo:
+    restart: always
     container_name: ocl_mongo
     image: mongo
     ports:
       - "27017:27017"
   redis:
+    restart: always
     container_name: ocl_redis
     image: redis
     ports:
       - "6379:6379"
   solr:
+    restart: always
     build:
       context: ../../
       dockerfile: ./django-nonrel/ocl/Dockerfile.solr
@@ -18,6 +21,7 @@ services:
     ports:
       - "8983:8983"
   ocl_api:
+    restart: always
     container_name: ocl_api
     extends:
       file: docker-common.yml
@@ -36,6 +40,7 @@ services:
     volumes:
       - .:/code
   ocl_worker:
+    restart: always
     container_name: ocl_worker
     extends:
       file: docker-common.yml
@@ -54,6 +59,7 @@ services:
     environment:
       - C_FORCE_ROOT=1
   ocl_flower:
+    restart: always
     container_name: ocl_flower
     extends:
       file: docker-common.yml
