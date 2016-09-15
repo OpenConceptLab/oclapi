@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from concepts.fields import ConceptURLField, SourceURLField
 from concepts.models import Concept
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 
 __author__ = 'misternando'
 
@@ -28,6 +28,27 @@ class MappingBaseSerializer(serializers.Serializer):
         model = Mapping
         lookup_field = 'mnemonic'
 
+class MappingVersionBaseSerializer(serializers.Serializer):
+
+    def restore_object(self, attrs, instance=None):
+        mapping_version = instance if instance else MappingVersion()
+        mapping_version.map_type = attrs.get('map_type', mapping_version.map_type)
+        from_concept = None
+        try:
+            from_concept = mapping_version.from_concept
+        except Concept.DoesNotExist: pass
+        mapping_version.retired = attrs.get('retired', mapping_version.retired)
+        mapping_version.from_concept = attrs.get('from_concept', from_concept)
+        mapping_version.to_concept = attrs.get('to_concept', mapping_version.to_concept)
+        mapping_version.to_source = attrs.get('to_source', mapping_version.to_source)
+        mapping_version.to_concept_name = attrs.get('to_concept_name', mapping_version.to_concept_name)
+        mapping_version.to_concept_code = attrs.get('to_concept_code', mapping_version.to_concept_code)
+        mapping_version.external_id = attrs.get('external_id', mapping_version.external_id)
+        return mapping_version
+
+    class Meta:
+        model = MappingVersion
+        lookup_field = 'mnemonic'
 
 class MappingDetailSerializer(MappingBaseSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -64,6 +85,40 @@ class MappingDetailSerializer(MappingBaseSerializer):
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
 
+class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
+    type = serializers.CharField(source='resource_type', read_only=True)
+    id = serializers.CharField(read_only=True)
+    external_id = serializers.CharField(required=False)
+    retired = serializers.BooleanField(required=False)
+    map_type = serializers.CharField(required=True)
+
+    from_source_owner = serializers.CharField(read_only=True)
+    from_source_owner_type = serializers.CharField(read_only=True)
+    from_source_name = serializers.CharField(read_only=True)
+    from_source_url = serializers.URLField(read_only=True)
+    from_concept_code = serializers.CharField(read_only=True)
+    from_concept_name = serializers.CharField(read_only=True)
+    from_concept_url = serializers.URLField()
+
+    to_source_owner = serializers.CharField(read_only=True)
+    to_source_owner_type = serializers.CharField(read_only=True)
+    to_source_name = serializers.CharField(read_only=True)
+    to_source_url = serializers.URLField()
+    to_concept_code = serializers.CharField(source='get_to_concept_code')
+    to_concept_name = serializers.CharField(source='get_to_concept_name')
+    to_concept_url = serializers.URLField()
+
+    source = serializers.CharField(read_only=True)
+    owner = serializers.CharField(read_only=True)
+    owner_type = serializers.CharField(read_only=True)
+    url = serializers.CharField(read_only=True)
+
+    extras = serializers.WritableField(required=False)
+
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    created_by = serializers.CharField(read_only=True)
+    updated_by = serializers.CharField(read_only=True)
 
 class MappingListSerializer(MappingBaseSerializer):
     external_id = serializers.CharField(required=False)

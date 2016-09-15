@@ -6,8 +6,9 @@ from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView,
 from rest_framework.response import Response
 from concepts.permissions import CanEditParentDictionary, CanViewParentDictionary
 from mappings.filters import PublicMappingsSearchFilter, SourceRestrictedMappingsFilter, CollectionRestrictedMappingFilter
-from mappings.models import Mapping
-from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer
+from mappings.models import Mapping, MappingVersion
+from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer, \
+    MappingVersionDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin, BaseAPIView
@@ -48,6 +49,19 @@ class MappingBaseView(ConceptDictionaryMixin):
             queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset
 
+class MappingVersionBaseView(ConceptDictionaryMixin):
+    lookup_field = 'mapping_version'
+    model = MappingVersion
+    include_retired = False
+    permission_classes = (CanViewParentDictionary,)
+    queryset = MappingVersion.objects.filter(is_active=True)
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(MappingVersionBaseView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_queryset(self):
+        queryset = MappingVersion.objects.filter(is_active=True)
+        return queryset
+
 
 class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, DestroyAPIView):
     serializer_class = MappingDetailSerializer
@@ -83,6 +97,14 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class MappingVersionDetailView(MappingVersionBaseView, RetrieveAPIView):
+    serializer_class = MappingVersionDetailSerializer
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(MappingVersionDetailView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_level(self):
+        return 1
 
 class MappingListView(MappingBaseView,
                       ListAPIView,

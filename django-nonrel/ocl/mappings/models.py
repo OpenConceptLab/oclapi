@@ -9,7 +9,7 @@ from sources.models import Source
 from django.db.models import get_model
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
-
+MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
 
 class Mapping(BaseModel):
     parent = models.ForeignKey(Source, related_name='mappings_from')
@@ -463,7 +463,7 @@ class MappingVersion(ResourceVersionModel):
 
     @staticmethod
     def resource_type():
-        return MAPPING_RESOURCE_TYPE
+        return MAPPING_VERSION_RESOURCE_TYPE
 
     @staticmethod
     def get_url_kwarg():
