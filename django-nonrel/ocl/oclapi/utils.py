@@ -51,8 +51,11 @@ def reverse_resource_version(resource, viewname, args=None, kwargs=None, request
     Assumes that resource extends ResourceVersionMixin, and therefore has a versioned_object attribute.
     """
     kwargs = kwargs or {}
+    val = None
+    if resource.mnemonic and resource.mnemonic != '':
+        val = resource.mnemonic
     kwargs.update({
-        resource.get_url_kwarg(): resource.mnemonic
+        resource.get_url_kwarg(): val
     })
     return reverse_resource(resource.versioned_object, viewname, args, kwargs, request, format, **extra)
 

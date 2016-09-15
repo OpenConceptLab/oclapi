@@ -467,7 +467,7 @@ class MappingVersion(ResourceVersionModel):
 
     @staticmethod
     def get_url_kwarg():
-        return 'mapping'
+        return 'mapping_version'
 
     @classmethod
     def for_mapping(cls, mapping, previous_version=None, parent_version=None):
