@@ -1,6 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.models import Concept
+from mappings.models import Mapping
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -23,10 +24,6 @@ class SourceListSerializer(serializers.Serializer):
 
 
 class SourceCreateOrUpdateSerializer(serializers.Serializer):
-    class ActiveConceptsField(serializers.IntegerField):
-        def field_to_native(self, obj, field_name):
-            return Concept.objects.filter(is_active=True, retired=False, parent_id=obj.id).count()
-
     class Meta:
         model = Source
         lookup_field = 'mnemonic'
@@ -46,6 +43,11 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.external_id = attrs.get('external_id', source.external_id)
         return source
 
+    def get_active_concepts(self, obj):
+        return Concept.objects.filter(
+            is_active=True, retired=False, parent_id=obj.id
+        ).count()
+
 
 class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -63,7 +65,7 @@ class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     url = serializers.CharField(read_only=True)
     versions_url = serializers.CharField(read_only=True)
     concepts_url = serializers.CharField(read_only=True)
-    active_concepts = SourceCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
+    active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -97,7 +99,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     url = serializers.CharField(read_only=True)
     versions_url = serializers.CharField(read_only=True)
     concepts_url = serializers.CharField(read_only=True)
-    active_concepts = SourceCreateOrUpdateSerializer.ActiveConceptsField(read_only=True)
+    active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -148,6 +150,8 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     updated_on = serializers.DateTimeField(source='updated_at')
     extras = serializers.WritableField()
     external_id = serializers.CharField(required=False)
+    active_mappings = serializers.IntegerField(required=False)
+    active_concepts = serializers.IntegerField(required=False)
 
     class Meta:
         model = SourceVersion

@@ -1276,6 +1276,57 @@ class SourceVersionViewTest(SourceBaseTest):
 
 
 class SourceVersionExportViewTest(SourceBaseTest):
+
+    @mock_s3
+    def test_source_version_concept_seeding(self):
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        concept2 = Concept(mnemonic='concept2', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
+        Concept.persist_new(concept2, self.user1, **kwargs)
+
+        mapping = Mapping(
+            parent=source,
+            map_type='SAME-AS',
+            from_concept=concept1,
+            to_source=source,
+            to_concept=concept2,
+            external_id='junk'
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        response = c.post('/orgs/' + self.org1.name + '/sources/' + source.mnemonic + '/versions/',
+            {'id': 'v1', 'description': 'v1' }
+        )
+        source_version = SourceVersion.objects.get(mnemonic='v1')
+
+        self.assertEquals(response.status_code, 201)
+        self.assertEquals(source_version.active_concepts, 2)
+
     @mock_s3
     def test_post(self):
         source = Source(

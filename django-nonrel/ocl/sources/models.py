@@ -55,6 +55,8 @@ class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
+    active_concepts = models.IntegerField(blank=True, default=0)
+    active_mappings = models.IntegerField(blank=True, default=0)
     _ocl_processing = models.BooleanField(default=False)
 
     def update_concept_version(self, concept_version):
@@ -105,6 +107,8 @@ class SourceVersion(ConceptContainerVersionModel):
             self.supported_locales = obj.supported_locales
             self.default_locale = obj.default_locale
             self.external_id = obj.external_id
+            self.active_concepts = len(self.concepts)
+            self.active_mappings = len(self.mappings)
 
     def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()
