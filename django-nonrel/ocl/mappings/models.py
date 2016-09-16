@@ -225,8 +225,7 @@ class Mapping(BaseModel):
             new_latest_version  = MappingVersion.for_mapping(obj)
             new_latest_version.previous_version = prev_latest_version
             prev_latest_version.save()
-            new_latest_version.save()
-            new_latest_version.mnemonic = new_latest_version.id
+            new_latest_version.mnemonic = int(prev_latest_version.mnemonic)+1
             new_latest_version.save()
 
             persisted = True
@@ -283,8 +282,7 @@ class Mapping(BaseModel):
             obj.save(**kwargs)
             #mapping version save start
             initial_version = MappingVersion.for_mapping(obj)
-            initial_version.save()
-            initial_version.mnemonic = initial_version.id
+            initial_version.mnemonic = 1
             initial_version.save()
             # mapping version save end
             # Add the mapping to its parent source version

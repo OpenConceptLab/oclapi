@@ -59,7 +59,7 @@ class MappingVersionBaseView(ConceptDictionaryMixin):
         super(MappingVersionBaseView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_queryset(self):
-        queryset = MappingVersion.objects.filter(is_active=True)
+        queryset = MappingVersion.objects.filter(is_active=True, versioned_object_id=self.kwargs.get('mapping'))
         return queryset
 
 

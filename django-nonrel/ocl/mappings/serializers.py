@@ -86,6 +86,7 @@ class MappingDetailSerializer(MappingBaseSerializer):
     updated_by = serializers.CharField(read_only=True)
 
 class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
+    version = serializers.CharField(source='mnemonic')
     type = serializers.CharField(source='resource_type', read_only=True)
     id = serializers.CharField(read_only=True)
     external_id = serializers.CharField(required=False)
