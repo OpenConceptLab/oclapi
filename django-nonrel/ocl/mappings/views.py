@@ -106,8 +106,9 @@ class MappingVersionsListView(ConceptDictionaryMixin, ListWithHeadersMixin):
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return MappingVersion.objects.filter(versioned_object_id=self.parent_resource.id,
+        queryset = MappingVersion.objects.filter(versioned_object_id=self.parent_resource.id,
                                              is_active=True)
+        return queryset.order_by('-mnemonic')
 
 class MappingVersionDetailView(MappingVersionBaseView, RetrieveAPIView):
     serializer_class = MappingVersionDetailSerializer
