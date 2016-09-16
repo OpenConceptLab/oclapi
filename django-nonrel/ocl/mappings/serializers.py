@@ -90,6 +90,7 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     is_latest_version = serializers.BooleanField(source='is_latest_version')
     type = serializers.CharField(source='resource_type', read_only=True)
     id = serializers.CharField(read_only=True)
+    versioned_object_id = serializers.CharField(source='versioned_object_id')
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
     map_type = serializers.CharField(required=True)
