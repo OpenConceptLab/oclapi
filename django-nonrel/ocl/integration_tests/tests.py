@@ -1908,6 +1908,110 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertJSONEqual(response.content, [expected_references[10]])
 
 
+    def test_reference_sorting(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        concept2 = Concept(
+            mnemonic='concept2',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='Second',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept2, self.user1, **kwargs)
+
+        references = [
+            '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/',
+            '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[1].mnemonic + '/'
+        ]
+        collection.expressions = references
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(collection.references), 2)
+        self.assertEquals(len(head.references), 2)
+        self.assertEquals(len(head.concepts), 2)
+
+        kwargs = {
+            'user': 'user1',
+            'collection': collection.mnemonic
+        }
+
+        c = Client()
+        path = reverse('collection-references', kwargs=kwargs)
+
+        # Default response
+        response = c.get(path)
+        response_content = json.loads(response.content)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(references[0], response_content[0]['expression'])
+        self.assertEquals(references[1], response_content[1]['expression'])
+
+        # Sort ASC
+        response = c.get(path, {'search_sort': 'ASC'})
+        response_content = json.loads(response.content)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(references[0], response_content[0]['expression'])
+        self.assertEquals(references[1], response_content[1]['expression'])
+
+        # Sort DESC
+        response = c.get(path, {'search_sort': 'DESC'})
+        response_content = json.loads(response.content)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(references[0], response_content[1]['expression'])
+        self.assertEquals(references[1], response_content[0]['expression'])
+
+
 class CollectionVersionViewTest(SourceBaseTest):
     def test_latest_version(self):
         collection = Collection(

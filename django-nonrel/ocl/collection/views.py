@@ -129,8 +129,11 @@ class CollectionReferencesView(CollectionBaseView,
 
     def get_queryset(self):
         search_query = self.request.QUERY_PARAMS.get('q', '')
+        sort = self.request.QUERY_PARAMS.get('search_sort', 'ASC')
+
         references = Collection.objects.get(id=self.parent_resource.id).references
-        return [r for r in references if search_query in r.expression]
+        references = [r for r in references if search_query in r.expression]
+        return references if sort == 'ASC' else list(reversed(references))
 
     def destroy(self,request, *args, **kwargs):
         if not self.parent_resource:
@@ -293,13 +296,14 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
 
     def get(self, request, *args, **kwargs):
         search_query = self.request.QUERY_PARAMS.get('q', '')
+        sort = self.request.QUERY_PARAMS.get('search_sort', 'ASC')
         object_version = self.versioned_object
-        self.object_list = [
+        references = [
             r for r in object_version.references
             if search_query in r.expression
         ]
+        self.object_list = references if sort == 'ASC' else list(reversed(references))
         return self.list(request, *args, **kwargs)
-
 
 
 class CollectionVersionExportView(ResourceAttributeChildMixin):
