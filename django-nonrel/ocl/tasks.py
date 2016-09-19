@@ -39,7 +39,7 @@ def export_collection(version_id):
     logger.info('Finding collection version...')
     version = CollectionVersion.objects.get(id=version_id)
     logger.info('Found collection version %s.  Beginning export...' % version.mnemonic)
-    write_export_file(version, 'collection', 'collection.serializers.CollectionDetailSerializer', logger)
+    write_export_file(version, 'collection', 'collection.serializers.CollectionVersionDetailSerializer', logger)
     logger.info('Export complete!')
 
 

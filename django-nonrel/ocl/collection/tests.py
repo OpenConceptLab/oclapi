@@ -1620,6 +1620,67 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
 
+        def test_collection_active_concepts_and_mappings(self):
+            source = Source(
+                name='source',
+                mnemonic='source',
+                full_name='Source One',
+                source_type='Dictionary',
+                public_access=ACCESS_TYPE_EDIT,
+                default_locale='en',
+                supported_locales=['en'],
+                website='www.source1.com',
+                description='This is the first test source'
+            )
+            kwargs = {
+                'parent_resource': self.org1
+            }
+            Source.persist_new(source, self.user1, **kwargs)
+
+            concept = Concept(
+                mnemonic='concept',
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=source,
+                concept_class='First',
+                names=[LocalizedText.objects.create(name='User', locale='es')],
+            )
+
+            concept1 = Concept(
+                mnemonic='concept1',
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=source,
+                concept_class='First',
+                names=[LocalizedText.objects.create(name='User', locale='es')],
+            )
+
+            kwargs = {
+                'parent_resource': source,
+            }
+            Concept.persist_new(concept, self.user1, **kwargs)
+            Concept.persist_new(concept1, self.user1, **kwargs)
+
+            self.collection1.expressions = [
+                '/orgs/org1/sources/source/concepts/concept/',
+                '/orgs/org1/sources/source/concepts/concept1/'
+            ]
+            self.collection1.full_clean()
+            self.collection1.save()
+
+            collection_version = CollectionVersion(
+                name='version1',
+                mnemonic='version1',
+                versioned_object=self.collection1,
+                created_by=self.user1,
+                updated_by=self.user1,
+            )
+            collection_version.full_clean()
+            collection_version.save()
+
+            self.assertEquals(len(collection_version.concepts), 1)
+            self.assertEquals(len(collection_version.references), 1)
+            self.assertEquals(collection_version.active_concepts, 1)
 
 class CollectionReferenceTest(CollectionBaseTest):
     def setUp(self):

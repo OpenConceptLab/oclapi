@@ -7,6 +7,7 @@ from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
 from tasks import update_children_for_resource_version
+from concepts.models import Concept
 
 class CollectionListSerializer(serializers.Serializer):
     # TODO id and short code are same .. remove one of them
@@ -42,6 +43,11 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.external_id = attrs.get('external_id', collection.external_id)
         return collection
 
+    def get_active_concepts(self, obj):
+        return Concept.objects.filter(
+            is_active=True, retired=False, parent_id=obj.id
+        ).count()
+
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -70,6 +76,8 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
+    active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
+
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -113,6 +121,8 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
     references = CollectionReferenceSerializer(many=True)
+    active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
+
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -181,6 +191,9 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     extras = serializers.WritableField()
     external_id = serializers.CharField(required=False)
     references = CollectionReferenceSerializer(many=True)
+    active_concepts = serializers.IntegerField(required=False)
+    active_mappings = serializers.IntegerField(required=False)
+
 
     class Meta:
         model = CollectionVersion

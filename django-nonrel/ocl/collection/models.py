@@ -153,6 +153,8 @@ class CollectionVersion(ConceptContainerVersionModel):
     collection_type = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
+    active_concepts = models.IntegerField(default=0)
+    active_mappings = models.IntegerField(default=0)
 
     def fill_data_for_reference(self, a_reference):
         if a_reference.concepts:
@@ -264,6 +266,8 @@ class CollectionVersion(ConceptContainerVersionModel):
             self.supported_locales = obj.supported_locales
             self.default_locale = obj.default_locale
             self.external_id = obj.external_id
+            self.active_concepts = len(self.concepts)
+            self.active_mappings = len(self.mappings)
 
     @classmethod
     def get_head(self, id):

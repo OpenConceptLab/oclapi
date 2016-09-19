@@ -55,8 +55,8 @@ class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
-    active_concepts = models.IntegerField(blank=True, default=0)
-    active_mappings = models.IntegerField(blank=True, default=0)
+    active_concepts = models.IntegerField(default=0)
+    active_mappings = models.IntegerField(default=0)
     _ocl_processing = models.BooleanField(default=False)
 
     def update_concept_version(self, concept_version):
