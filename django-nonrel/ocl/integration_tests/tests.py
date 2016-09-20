@@ -19,6 +19,7 @@ from collection.models import Collection, CollectionVersion
 from sources.tests import SourceBaseTest
 from collection.tests import CollectionBaseTest
 from django.utils.encoding import force_str
+from tasks import update_collection_in_solr
 
 # @override_settings(HAYSTACK_SIGNAL_PROCESSOR='haystack.signals.BaseSignalProcessor') #see if this can also be done at some point later
 class ConceptImporterTest(ConceptBaseTest):
@@ -211,6 +212,93 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(2, len(source_head_concepts))
         for concept in content:
             self.assertTrue(concept['version'] in source_head_concepts)
+
+
+class ConceptVersionAllView(ConceptBaseTest):
+
+    def test_collection_concept_version_list(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+        source_version = SourceVersion.get_latest_version_of(source)
+        expressions = []
+        for i in range(11):
+            mnemonic = 'concept' + str(i)
+            concept = Concept(
+                mnemonic=mnemonic,
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=source,
+                concept_class='First',
+                names=[LocalizedText.objects.create(name='User', locale='es')],
+            )
+            kwargs = {
+                'parent_resource': source,
+            }
+            Concept.persist_new(concept, self.user1, **kwargs)
+            reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
+            expressions += [reference]
+            concept = Concept.objects.get(mnemonic=mnemonic)
+            concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
+            source_version.update_concept_version(concept_version)
+
+        collection.expressions = expressions
+        collection.full_clean()
+        collection.save()
+
+        concept = Concept.objects.filter(mnemonic='concept1')[0]
+        concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
+
+        ConceptVersion.persist_clone(concept_version.clone(), self.user1)
+        update_collection_in_solr(collection.get_head().id, collection.references)
+        self.assertEquals(concept.num_versions, 2)
+
+        self.client.login(username='user1', password='user1')
+        url = reverse('concept-create', kwargs={'user': 'user1', 'collection': collection.mnemonic})
+        response_for_page_1 = self.client.get(url)
+        result = json.loads(response_for_page_1.content)
+        self.assertEquals(response_for_page_1.status_code, 200)
+        self.assertEquals(len(result), 10)
+        self.assertEquals(response_for_page_1._headers.get('num_found')[1], '11')
+        self.assertEquals(ConceptVersion.objects.count(), 12)
+        versioned_object_ids = map(lambda v: v.get('id'), result)
+
+        response_for_page_2 = self.client.get(url + '?page=2')
+        self.assertEquals(response_for_page_2.status_code, 200)
+        result = json.loads(response_for_page_2.content)
+        self.assertEquals(len(result), 1)
+        versioned_object_ids += (map(lambda v: v.get('id'), result))
+        self.assertEquals(len(set(versioned_object_ids)), 11)
+
 
 class OCLClient(Client):
 

@@ -59,8 +59,10 @@ class ListWithHeadersMixin(ListModelMixin):
         skip_pagination = compress or return_all
 
         # Switch between paginated or standard style responses
+        sorted_list = self.prepend_head(self.object_list) if len(self.object_list) > 0 else self.object_list
+
         if not skip_pagination:
-            page = self.paginate_queryset(self.prepend_head(self.object_list))
+            page = self.paginate_queryset(sorted_list)
             if page is not None:
                 serializer = self.get_pagination_serializer(page)
                 results = serializer.data
@@ -69,7 +71,7 @@ class ListWithHeadersMixin(ListModelMixin):
                 else:
                     return Response(results, headers=serializer.headers)
 
-        serializer = self.get_serializer(self.prepend_head(self.object_list), many=True)
+        serializer = self.get_serializer(sorted_list, many=True)
 
         results = serializer.data
         if facets:
@@ -79,9 +81,26 @@ class ListWithHeadersMixin(ListModelMixin):
 
     @staticmethod
     def prepend_head(objects):
+        if hasattr(objects[0], 'versioned_object_id') and type(objects).__name__ == 'SearchQuerySetWrapper':
+            objects = ListWithHeadersMixin.dedup(objects)
+
         if len(objects) > 0 and hasattr(objects[0], 'mnemonic'):
             head_el = [el for el in objects if hasattr(el, 'mnemonic') and el.mnemonic == HEAD]
             if head_el:
                 objects = head_el + [el for el in objects if el.mnemonic != HEAD]
 
         return objects
+
+
+    @staticmethod
+    def _reduce_func(prev, current):
+        prev_version_ids = map(lambda v: v.versioned_object_id, prev)
+        if current.versioned_object_id not in prev_version_ids:
+            prev.append(current)
+        return prev
+
+
+    @staticmethod
+    def dedup(versions):
+        versions.limit_iter = False
+        return reduce(ListWithHeadersMixin._reduce_func, versions, [])

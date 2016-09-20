@@ -5,9 +5,10 @@ from rest_framework.filters import BaseFilterBackend
 
 class SearchQuerySetWrapper(object):
 
-    def __init__(self, sqs):
+    def __init__(self, sqs, limit_iter=True):
         self.sqs = sqs
         self.sqs._fill_cache(0,10)
+        self.limit_iter = limit_iter
         self.facets = sqs.facet_counts()
 
     def __len__(self):
@@ -20,7 +21,8 @@ class SearchQuerySetWrapper(object):
         return result.object
 
     def __iter__(self):
-        for result in self.sqs[0:10]:
+        iteration = self.sqs[0:10] if self.limit_iter else self.sqs
+        for result in iteration:
             yield result.object
 
 
