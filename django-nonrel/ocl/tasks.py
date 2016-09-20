@@ -13,7 +13,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from celery_once import QueueOnce
 from concepts.models import ConceptVersion, Concept
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 from collection.models import CollectionVersion
@@ -50,8 +50,13 @@ def update_children_for_resource_version(version_id, _type):
     _resource.save()
     versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
     update_all_in_index(ConceptVersion, versions)
-    mappings = Mapping.objects.filter(id__in=_resource.mappings)
-    update_all_in_index(Mapping, mappings)
+    if _type == 'collection':
+        mappingVersions = MappingVersion.objects.filter(id__in=_resource.mappings)
+        update_all_in_index(MappingVersion, mappingVersions)
+    else:
+        mappings = Mapping.objects.filter(id__in=_resource.mappings)
+        update_all_in_index(Mapping, mappings)
+
     _resource._ocl_processing = False
     _resource.save()
 
