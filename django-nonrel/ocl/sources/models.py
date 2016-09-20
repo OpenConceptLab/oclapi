@@ -87,8 +87,15 @@ class SourceVersion(ConceptContainerVersionModel):
 
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version
+        mappings = list()
         if seed_mappings_from:
-            self.mappings = list(seed_mappings_from.mappings)
+            mappings = list(seed_mappings_from.mappings)
+        latestMappingVersions = list()
+        for mapping in mappings:
+            klass = get_class('mappings.models.MappingVersion')
+            latestMappingVersion = klass.get_latest_version_by_id(mapping)
+            latestMappingVersions.append(latestMappingVersion.id)
+        self.mappings = latestMappingVersions
 
 
     def update_version_data(self, obj=None):

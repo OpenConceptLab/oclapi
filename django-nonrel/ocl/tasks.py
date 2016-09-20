@@ -50,13 +50,8 @@ def update_children_for_resource_version(version_id, _type):
     _resource.save()
     versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
     update_all_in_index(ConceptVersion, versions)
-    if _type == 'collection':
-        mappingVersions = MappingVersion.objects.filter(id__in=_resource.mappings)
-        update_all_in_index(MappingVersion, mappingVersions)
-    else:
-        mappings = Mapping.objects.filter(id__in=_resource.mappings)
-        update_all_in_index(Mapping, mappings)
-
+    mappingVersions = MappingVersion.objects.filter(id__in=_resource.mappings)
+    update_all_in_index(MappingVersion, mappingVersions)
     _resource._ocl_processing = False
     _resource.save()
 
