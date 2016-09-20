@@ -151,7 +151,11 @@ class MappingListView(MappingBaseView,
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
+        if 'version' in kwargs and kwargs.get('version') != 'HEAD':
+            self.model = MappingVersion
+            self.serializer_class = MappingVersionDetailSerializer
+        else:
+            self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):

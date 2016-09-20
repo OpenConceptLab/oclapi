@@ -508,6 +508,11 @@ class MappingVersion(ResourceVersionModel):
             updated_by=mapping.updated_by
         )
 
+    @classmethod
+    def get_latest_version_by_id(cls, id):
+        return MappingVersion.objects.get(
+            versioned_object_id=id, is_latest_version=True)
+
 
 @receiver(post_save, sender=Source)
 def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):

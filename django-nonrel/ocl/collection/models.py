@@ -8,7 +8,7 @@ from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class
 from concepts.models import Concept, ConceptVersion
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from django.db.models import Max
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
@@ -177,7 +177,12 @@ class CollectionVersion(ConceptContainerVersionModel):
     def seed_mappings(self):
         seed_mappings_from = self.head_sibling()
         if seed_mappings_from:
-            self.mappings = list(seed_mappings_from.mappings)
+            mappings = list(seed_mappings_from.mappings)
+            latestMappingVersions = list()
+        for mapping in mappings:
+            latestMappingVersion = MappingVersion.get_latest_version_by_id(mapping)
+            latestMappingVersions.append(latestMappingVersion.id)
+            self.mappings = latestMappingVersions
 
     def seed_references(self):
         seed_references_from = self.head_sibling()
