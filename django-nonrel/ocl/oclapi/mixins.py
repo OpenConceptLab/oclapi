@@ -47,7 +47,7 @@ class ListWithHeadersMixin(ListModelMixin):
 
     def list(self, request, *args, **kwargs):
         if request.QUERY_PARAMS.get('csv', False):
-            return self.list_as_csv()
+            return self.list_as_csv(request)
 
         if self.object_list is None:
             self.object_list = self.filter_queryset(self.get_queryset())
@@ -84,8 +84,10 @@ class ListWithHeadersMixin(ListModelMixin):
         else:
             return Response(results)
 
-    def list_as_csv(self):
-        data = self.get_csv_rows() if hasattr(self, 'get_csv_rows') else self.get_queryset().values()
+    def list_as_csv(self, request):
+        queryset = self.get_queryset() if request.user.username == self.parent_resource.created_by else self.get_queryset()[0:100]
+        data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
+
         return render_to_csv_response(data)
 
     @staticmethod
