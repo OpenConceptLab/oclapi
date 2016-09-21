@@ -3,6 +3,7 @@ from django.core.urlresolvers import resolve
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from djqscsv import render_to_csv_response
+from oclapi.utils import compact
 
 __author__ = 'misternando'
 
@@ -88,7 +89,12 @@ class ListWithHeadersMixin(ListModelMixin):
         queryset = self.get_queryset() if request.user.username == self.parent_resource.created_by else self.get_queryset()[0:100]
         data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
 
-        return render_to_csv_response(data)
+        try:
+            kwargs = {'filename': '_'.join(compact(self.parent_resource.uri.split('/')))}
+        except Exception:
+            kwargs = {}
+
+        return render_to_csv_response(data, **kwargs)
 
     @staticmethod
     def prepend_head(objects):
