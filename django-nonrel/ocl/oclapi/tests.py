@@ -96,6 +96,7 @@ class UtilsTest(OclApiBaseTestCase):
         self.assertListEqual(compact([1, 2, None, 3]), [1, 2, 3])
         self.assertListEqual(compact([None, 2, None, 3]), [2, 3])
         self.assertListEqual(compact([None]), [])
+        self.assertListEqual(compact([""]), [])
 
     def test_extract_values(self):
         self.assertListEqual(extract_values({'k1': 1, 'k2': '2', 'k3': None, 'k4': 'foobar'}, ['k2', 'k1', 'k3']), ['2', 1, None])

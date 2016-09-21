@@ -209,7 +209,7 @@ def do_update(connection, backend, index, qs, batch_size=1000):
 
 
 def compact(_list):
-    return filter(partial(is_not, None), _list)
+    return filter(None, _list)
 
 
 def extract_values(_dict, keys):
