@@ -1,6 +1,7 @@
 from django.core.urlresolvers import resolve
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
+from djqscsv import render_to_csv_response
 
 __author__ = 'misternando'
 
@@ -78,6 +79,9 @@ class ListWithHeadersMixin(ListModelMixin):
             return Response({'results': results, 'facets': facets})
         else:
             return Response(results)
+
+    def list_as_csv(self):
+        return render_to_csv_response(self.get_csv_rows())
 
     @staticmethod
     def prepend_head(objects):

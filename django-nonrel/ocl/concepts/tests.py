@@ -15,6 +15,8 @@ from sources.models import Source, SourceVersion
 from users.models import UserProfile
 from collection.models import Collection, CollectionVersion
 from test_helper.base import OclApiBaseTestCase
+from concepts.views import ConceptVersionListView
+import datetime
 
 class ConceptBaseTest(OclApiBaseTestCase):
 
@@ -878,8 +880,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def setUp(self):
         super(ConceptVersionStaticMethodsTest, self).setUp()
-        self.concept1 = Concept(
-            mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
+        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
         display_name = LocalizedText(name='concept1', locale='en')
         self.concept1.names.append(display_name)
         kwargs = {
@@ -971,3 +972,27 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(2, self.concept1.num_versions)
         self.assertEquals(
             self.concept_version, ConceptVersion.get_latest_version_of(self.concept1))
+
+
+class ConceptVersionListViewTest(ConceptBaseTest):
+    def test_get_csv_rows(self):
+        concept = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
+        display_name = LocalizedText(name='concept1', locale='en')
+        concept.names.append(display_name)
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+        concept_version = concept.get_latest_version
+
+        view = ConceptVersionListView()
+        view.parent_resource_version = self.source1.get_head()
+        view.child_list_attribute = 'concepts'
+        csv_rows = view.get_csv_rows()
+
+        self.assertEquals(len(csv_rows), 1)
+        self.assertDictEqual(csv_rows[0], {'retired': False, 'updated_by': 'user1', 'datatype': None, 'display_locale': '',
+                           'created_at': concept_version.created_at, 'concept_class': 'First',
+                           'uri': concept_version.uri, 'created_by': 'user1', 'updated_at': concept_version.updated_at,
+                           'names': 'concept1 en', 'display_name': '', 'external_id': None,
+                           'id': concept_version.id, 'descriptions': ''})

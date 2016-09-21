@@ -24,6 +24,8 @@ from oclapi.views import (ConceptDictionaryMixin, VersionedResourceChildMixin, B
 from sources.models import SourceVersion
 from orgs.models import Organization
 from users.models import UserProfile
+from oclapi.utils import compact, extract_values
+
 
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -241,15 +243,43 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         return context
 
     def get(self, request, *args, **kwargs):
-        if 'collection' in kwargs:
-            self.filter_backends = [LimitCollectionVersionFilter]
-        else:
-            self.filter_backends = [LimitSourceVersionFilter]
-
+        self.filter_backends = [LimitCollectionVersionFilter] if 'collection' in kwargs else [LimitSourceVersionFilter]
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
-        return self.list(request, *args, **kwargs)
+        csv_format = request.QUERY_PARAMS.get('csv', False)
+        if csv_format:
+            return self.list_as_csv()
+        else:
+            return self.list(request, *args, **kwargs)
+
+    def get_csv_rows(self):
+        queryset = self.get_queryset()
+        values = queryset.values('id', 'external_id', 'uri', 'concept_class', 'datatype', 'retired', 'names',
+                                            'descriptions', 'created_by', 'updated_by', 'created_at', 'updated_at')
+
+        for value in values:
+            names = value.get('names')
+            descriptions = value.get('descriptions')
+
+            value['names'] = self.join_values(names)
+            value['descriptions'] = self.join_values(descriptions)
+
+            preferred_name = self.preferred_name(names)
+            value['display_name'] = preferred_name.get('name')
+            value['display_locale'] = preferred_name.get('locale')
+
+        values.field_names.extend(['display_name', 'display_locale'])
+        return values
+
+    def join_values(self, objects):
+        localize_text_keys = ['name', 'locale', 'type']
+        return ', '.join(
+            map(lambda obj: ' '.join(compact(extract_values(obj[1], localize_text_keys))), objects))
+
+    def preferred_name(self, names):
+        return next((name for name in names if name[1].get('locale_preferred')), [None, {'name': '', 'locale': ''}])[1]
+
 
     def get_queryset(self):
         queryset = super(ConceptVersionListView, self).get_queryset()

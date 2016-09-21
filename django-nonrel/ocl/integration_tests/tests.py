@@ -2137,4 +2137,3 @@ class CollectionVersionViewTest(SourceBaseTest):
         result = json.loads(response.content)
         self.assertEquals(result['id'], 'version2')
         self.assertEquals(result['released'], True)
-
