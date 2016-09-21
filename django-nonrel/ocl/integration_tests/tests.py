@@ -656,16 +656,6 @@ class MappingViewsTest(MappingBaseTest):
         self.source4 = Source.objects.get(id=self.source4.id)
         self.source4_version1 = SourceVersion.get_latest_version_of(self.source4)
 
-        # Create a new version of the source
-        kwargs = {
-            'org': self.org2.mnemonic,
-            'source': self.source4.mnemonic,
-        }
-        data = {
-            'id': '2.0',
-            'released': True
-        }
-        self.client.post(reverse('sourceversion-list', kwargs=kwargs), data)
         # Create a mapping in the latest version
         kwargs = {
             'org': self.org2.mnemonic,
@@ -678,6 +668,19 @@ class MappingViewsTest(MappingBaseTest):
             'external_id': 'mapping5',
         }
         self.client.post(reverse('mapping-list', kwargs=kwargs), data)
+
+        # Create a new version of the source
+        kwargs = {
+            'org': self.org2.mnemonic,
+            'source': self.source4.mnemonic,
+        }
+        data = {
+            'id': '2.0',
+            'released': True,
+            'previous_version': 'HEAD'
+        }
+        self.client.post(reverse('sourceversion-list', kwargs=kwargs), data)
+
         self.mapping5 = Mapping.objects.get(external_id='mapping5')
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
@@ -717,6 +720,7 @@ class MappingViewsTest(MappingBaseTest):
         mapping = self.mapping4
         self.client.login(username='user1', password='user1')
         kwargs = {
+            'user': self.userprofile1.username,
             'source': self.source3.mnemonic,
             'version': self.source_version2.mnemonic,
         }
