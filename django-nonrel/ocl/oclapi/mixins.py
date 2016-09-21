@@ -1,3 +1,4 @@
+
 from django.core.urlresolvers import resolve
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
@@ -45,6 +46,9 @@ class ListWithHeadersMixin(ListModelMixin):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
 
     def list(self, request, *args, **kwargs):
+        if request.QUERY_PARAMS.get('csv', False):
+            return self.list_as_csv()
+
         if self.object_list is None:
             self.object_list = self.filter_queryset(self.get_queryset())
 
@@ -81,7 +85,8 @@ class ListWithHeadersMixin(ListModelMixin):
             return Response(results)
 
     def list_as_csv(self):
-        return render_to_csv_response(self.get_csv_rows())
+        data = self.get_csv_rows() if hasattr(self, 'get_csv_rows') else self.get_queryset().values()
+        return render_to_csv_response(data)
 
     @staticmethod
     def prepend_head(objects):

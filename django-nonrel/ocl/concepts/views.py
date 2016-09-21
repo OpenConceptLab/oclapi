@@ -247,11 +247,8 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         self.updated_since = parse_updated_since_param(request)
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.serializer_class = ConceptVersionDetailSerializer if self.is_verbose(request) else ConceptVersionListSerializer
-        csv_format = request.QUERY_PARAMS.get('csv', False)
-        if csv_format:
-            return self.list_as_csv()
-        else:
-            return self.list(request, *args, **kwargs)
+
+        return self.list(request, *args, **kwargs)
 
     def get_csv_rows(self):
         queryset = self.get_queryset()
