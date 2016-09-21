@@ -10,6 +10,9 @@ from rest_framework.reverse import reverse
 from rest_framework.utils import encoders
 from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
+from operator import is_not, itemgetter
+from functools import partial
+
 
 __author__ = 'misternando'
 
@@ -203,3 +206,13 @@ def do_update(connection, backend, index, qs, batch_size=1000):
 
         # Clear out the DB connections queries because it bloats up RAM.
         connection.queries = []
+
+
+def compact(_list):
+    return filter(partial(is_not, None), _list)
+
+
+def extract_values(_dict, keys):
+    values = itemgetter(*keys)(_dict)
+    values = values if type(values).__name__ == 'tuple'  or type(values).__name__ == 'list' else [values]
+    return list(values)

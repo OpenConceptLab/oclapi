@@ -4,6 +4,7 @@ from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
 from test_helper.base import OclApiBaseTestCase
+from oclapi.utils import compact, extract_values
 
 class ResourceVersionModelBaseTest(OclApiBaseTestCase):
 
@@ -89,3 +90,14 @@ class ResourceVersionTest(ResourceVersionModelBaseTest):
         self.assertFalse(SourceVersion.objects.filter(versioned_object_id=source.id).exists())
         self.assertIsNone(SourceVersion.get_latest_version_of(source))
 
+
+class UtilsTest(OclApiBaseTestCase):
+    def test_compact(self):
+        self.assertListEqual(compact([1, 2, None, 3]), [1, 2, 3])
+        self.assertListEqual(compact([None, 2, None, 3]), [2, 3])
+        self.assertListEqual(compact([None]), [])
+
+    def test_extract_values(self):
+        self.assertListEqual(extract_values({'k1': 1, 'k2': '2', 'k3': None, 'k4': 'foobar'}, ['k2', 'k1', 'k3']), ['2', 1, None])
+        self.assertListEqual(extract_values({'k1': '2'}, ['k1']), ['2'])
+        self.assertListEqual(extract_values({'k1': 1}, ['k1']), [1])
