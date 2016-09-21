@@ -250,7 +250,10 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
 
         return self.list(request, *args, **kwargs)
 
-    def get_csv_rows(self, queryset):
+    def get_csv_rows(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+
         values = queryset.values('id', 'external_id', 'uri', 'concept_class', 'datatype', 'retired', 'names',
                                             'descriptions', 'created_by', 'updated_by', 'created_at', 'updated_at')
 
