@@ -153,6 +153,7 @@ class CollectionVersion(ConceptContainerVersionModel):
     collection_type = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
+    retired = models.BooleanField(default=False)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
 
