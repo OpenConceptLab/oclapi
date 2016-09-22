@@ -100,7 +100,8 @@ class MappingImporterTest(MappingBaseTest):
         self.assertEquals(inserted_mapping.to_source, self.source1)
         self.assertEquals(inserted_mapping.from_source, self.source2)
         mapping_ids = SourceVersion.get_latest_version_of(self.source1).mappings
-        self.assertEquals(mapping_ids[0], inserted_mapping.id)
+        mapping_version = MappingVersion.objects.get(versioned_object_id=inserted_mapping.id, is_latest_version=True)
+        self.assertEquals(mapping_ids[0], mapping_version.id)
 
     def test_import_job_for_change_in_data(self):
         stdout_stub = TestStream()
