@@ -266,11 +266,11 @@ class CollectionVersionRetrieveUpdateDestroyView(CollectionVersionRetrieveUpdate
 
     def destroy(self, request, *args, **kwargs):
         version = self.get_object()
+        version.delete()
         # below commented as per issue 170
         # if version.released:
         #     errors = {'non_field_errors' : ['Cannot deactivate a version that is currently released.  Please release another version before deactivating this one.']}
         #     return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-        return super(CollectionVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
 
 
 class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMixin):
