@@ -73,6 +73,20 @@ class SourceVersion(ConceptContainerVersionModel):
         if save_previous_version:
             previous_version.save()
 
+    def update_mapping_version(self, mapping_version):
+        previous_version = mapping_version.previous_version
+        save_previous_version = False
+        if previous_version and previous_version.id in self.mappings:
+            save_previous_version = True
+            index = self.mappings.index(previous_version.id)
+            self.mappings[index] = mapping_version.id
+        else:
+            self.mappings.append(mapping_version.id)
+        self.save()
+        mapping_version.save()
+        if save_previous_version:
+            previous_version.save()
+
 
     def seed_concepts(self):
         seed_concepts_from = self.head_sibling()
@@ -87,15 +101,8 @@ class SourceVersion(ConceptContainerVersionModel):
 
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version
-        mappings = list()
         if seed_mappings_from:
-            mappings = list(seed_mappings_from.mappings)
-        latestMappingVersions = list()
-        for mapping in mappings:
-            klass = get_class('mappings.models.MappingVersion')
-            latestMappingVersion = klass.get_latest_version_by_id(mapping)
-            latestMappingVersions.append(latestMappingVersion.id)
-        self.mappings = latestMappingVersions
+            self.mappings = list(seed_mappings_from.mappings)
 
 
     def update_version_data(self, obj=None):

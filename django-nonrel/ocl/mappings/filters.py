@@ -17,8 +17,7 @@ class SourceRestrictedMappingsFilter(HaystackSearchFilter):
 
     def get_filters(self, request, view):
         filters = super(SourceRestrictedMappingsFilter, self).get_filters(request, view)
-        if 'collection' not in view.kwargs:
-            filters.update({'source_version': view.parent_resource_version.id})
+        filters.update({'source_version': view.parent_resource_version.id})
         return filters
 
 
@@ -37,7 +36,7 @@ class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
                 filters.update({'collection_version': collection_version.id})
             else:
                 filters.update({'collection': collection.id})
-        elif 'source' in view.kwargs:
-            filters.update({'source_version': view.parent_resource_version.id})
+        # elif 'source' in view.kwargs:
+        #     filters.update({'source_version': view.parent_resource_version.id})
 
         return filters

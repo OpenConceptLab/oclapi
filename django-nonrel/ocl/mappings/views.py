@@ -126,7 +126,6 @@ class MappingListView(MappingBaseView,
     queryset = Mapping.objects.filter(is_active=True)
     serializer_class = MappingCreateSerializer
     solr_fields = {}
-    filter_backends = [SourceRestrictedMappingsFilter, CollectionRestrictedMappingFilter]
     solr_fields = {
         'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
         'concept': {'sortable': False, 'filterable': True, 'facet': False},
@@ -150,12 +149,13 @@ class MappingListView(MappingBaseView,
     }
 
     def get(self, request, *args, **kwargs):
+        # if 'version' not in kwargs:
+        #     kwargs['version'] = 'HEAD'
+        self.filter_backends = [CollectionRestrictedMappingFilter] if 'collection' in kwargs else [SourceRestrictedMappingsFilter]
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        if 'version' in kwargs and kwargs.get('version') != 'HEAD':
-            self.model = MappingVersion
-            self.serializer_class = MappingVersionDetailSerializer
-        else:
-            self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
+        self.model = MappingVersion
+        self.queryset = MappingVersion.objects.filter(is_active=True)
+        self.serializer_class = MappingVersionDetailSerializer
         return super(MappingListView, self).get(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -165,7 +165,11 @@ class MappingListView(MappingBaseView,
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, parent_resource=self.parent_resource)
+            save_kwargs = {
+                'force_insert': True,
+                'parent_resource': self.parent_resource,
+            }
+            self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
                 headers = self.get_success_headers(serializer.data)

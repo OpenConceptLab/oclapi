@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from concepts.models import Concept
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
-from sources.models import Source
+from sources.models import Source, SourceVersion
 from django.db.models import get_model
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
@@ -217,6 +217,7 @@ class Mapping(BaseModel):
 
         persisted = False
         try:
+            source_version = SourceVersion.get_head_of(obj.parent)
             obj.save(**kwargs)
 
             prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True);
@@ -224,9 +225,12 @@ class Mapping(BaseModel):
 
             new_latest_version  = MappingVersion.for_mapping(obj)
             new_latest_version.previous_version = prev_latest_version
-            prev_latest_version.save()
-            new_latest_version.mnemonic = int(prev_latest_version.mnemonic)+1
+            new_latest_version.mnemonic = int(prev_latest_version.mnemonic) + 1
             new_latest_version.save()
+
+            source_version.update_mapping_version(new_latest_version)
+            prev_latest_version.save()
+
 
             persisted = True
         finally:
@@ -271,7 +275,7 @@ class Mapping(BaseModel):
         # Get the parent source version and its initial list of mappings IDs
         parent_resource_version = kwargs.pop('parent_resource_version', None)
         if parent_resource_version is None:
-            parent_resource_version = parent_resource.get_version_model().get_latest_version_of(parent_resource)
+            parent_resource_version = parent_resource.get_version_model().get_head_of(parent_resource)
         child_list_attribute = kwargs.pop('mapping_list_attribute', 'mappings')
         initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
 
@@ -288,13 +292,13 @@ class Mapping(BaseModel):
             # Add the mapping to its parent source version
             errored_action = 'associating mapping with parent resource'
             parent_children = getattr(parent_resource_version, child_list_attribute) or []
-            parent_children.append(obj.id)
+            parent_children.append(initial_version.id)
             setattr(parent_resource_version, child_list_attribute, parent_children)
             parent_resource_version.save()
 
             # Save the mapping again to trigger the Solr update
             errored_action = 'saving mapping to trigger Solr update'
-            obj.save()
+            initial_version.save()
             persisted = True
         finally:
             if not persisted:
@@ -510,6 +514,7 @@ class MappingVersion(ResourceVersionModel):
 
     @classmethod
     def get_latest_version_by_id(cls, id):
+
         return MappingVersion.objects.get(
             versioned_object_id=id, is_latest_version=True)
 
@@ -527,6 +532,10 @@ def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
             update_index |= True
             mapping.public_access = instance.public_access
         if update_index:
+            for mapping_version in MappingVersion.objects.filter(versioned_object_id=mapping.id):
+                mapping_version.is_active = instance.is_active
+                mapping_version.public_access = instance.public_access
+                mapping_version.save()
             mapping.save()
 
 

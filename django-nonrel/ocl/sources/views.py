@@ -10,8 +10,8 @@ from django.shortcuts import get_list_or_404
 from rest_framework.response import Response
 from concepts.models import ConceptVersion
 from concepts.serializers import ConceptVersionDetailSerializer
-from mappings.models import Mapping
-from mappings.serializers import MappingDetailSerializer
+from mappings.models import MappingVersion
+from mappings.serializers import MappingVersionDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionary
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
@@ -96,14 +96,14 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
 
         if include_mappings:
             all_children = source_version.mappings
-            queryset = Mapping.objects.filter(is_active=True)
+            queryset = MappingVersion.objects.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
             queryset = queryset.filter(id__in=all_children)
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
             queryset = queryset[offset:offset+limit]
-            serializer = MappingDetailSerializer(queryset, many=True)
+            serializer = MappingVersionDetailSerializer(queryset, many=True)
             data['mappings'] = serializer.data
 
         return Response(data)

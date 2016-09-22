@@ -412,6 +412,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         obj.update_version_data()
 
         try:
+            persisted = False
             obj.save(**kwargs)
             persisted = True
         finally:
