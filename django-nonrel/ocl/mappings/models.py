@@ -288,6 +288,8 @@ class Mapping(BaseModel):
             initial_version = MappingVersion.for_mapping(obj)
             initial_version.mnemonic = 1
             initial_version.save()
+            # update URL
+            obj.save()
             # mapping version save end
             # Add the mapping to its parent source version
             errored_action = 'associating mapping with parent resource'
@@ -307,6 +309,8 @@ class Mapping(BaseModel):
                 parent_resource_version.save()
                 if obj.id:
                     obj.delete()
+                if initial_version and initial_version.id:
+                    initial_version.delete()
         return errors
 
     @classmethod

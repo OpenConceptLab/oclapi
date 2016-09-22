@@ -149,8 +149,6 @@ class MappingListView(MappingBaseView,
     }
 
     def get(self, request, *args, **kwargs):
-        # if 'version' not in kwargs:
-        #     kwargs['version'] = 'HEAD'
         self.filter_backends = [CollectionRestrictedMappingFilter] if 'collection' in kwargs else [SourceRestrictedMappingsFilter]
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
         self.model = MappingVersion
