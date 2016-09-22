@@ -38,7 +38,7 @@ class MappingBaseView(ConceptDictionaryMixin):
                 self.parent_resource_version = self.parent_resource
                 self.parent_resource = self.parent_resource.versioned_object
             else:
-                self.parent_resource_version = SourceVersion.get_latest_version_of(self.parent_resource)
+                self.parent_resource_version = self.parent_resource.get_head()
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
