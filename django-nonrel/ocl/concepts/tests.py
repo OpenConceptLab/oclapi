@@ -16,7 +16,6 @@ from users.models import UserProfile
 from collection.models import Collection, CollectionVersion
 from test_helper.base import OclApiBaseTestCase
 from concepts.views import ConceptVersionListView
-import datetime
 
 class ConceptBaseTest(OclApiBaseTestCase):
 
