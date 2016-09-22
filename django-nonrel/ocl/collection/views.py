@@ -132,7 +132,7 @@ class CollectionReferencesView(CollectionBaseView,
         sort = self.request.QUERY_PARAMS.get('search_sort', 'ASC')
 
         references = Collection.objects.get(id=self.parent_resource.id).references
-        references = [r for r in references if search_query in r.expression]
+        references = [r for r in references if search_query.upper() in r.expression.upper()]
         return references if sort == 'ASC' else list(reversed(references))
 
     def destroy(self,request, *args, **kwargs):
@@ -300,7 +300,7 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
         object_version = self.versioned_object
         references = [
             r for r in object_version.references
-            if search_query in r.expression
+            if search_query.upper() in r.expression.upper()
         ]
         self.object_list = references if sort == 'ASC' else list(reversed(references))
         return self.list(request, *args, **kwargs)
