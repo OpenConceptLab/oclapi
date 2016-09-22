@@ -188,6 +188,10 @@ class Mapping(BaseModel):
     def get_url_kwarg():
         return 'mapping'
 
+    @property
+    def get_latest_version(self):
+        return MappingVersion.objects.filter(versioned_object_id=self.id, is_latest_version=True)[:1][0]
+
     @classmethod
     def retire(cls, obj, updated_by, **kwargs):
         if obj.retired:
@@ -521,6 +525,8 @@ class MappingVersion(ResourceVersionModel):
 
         return MappingVersion.objects.get(
             versioned_object_id=id, is_latest_version=True)
+
+
 
 
 @receiver(post_save, sender=Source)

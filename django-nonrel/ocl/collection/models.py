@@ -177,14 +177,13 @@ class CollectionVersion(ConceptContainerVersionModel):
 
     def seed_mappings(self):
         seed_mappings_from = self.head_sibling()
-        mappings = list()
         if seed_mappings_from:
             mappings = list(seed_mappings_from.mappings)
-        latestMappingVersions = list()
-        for mapping in mappings:
-            latestMappingVersion = MappingVersion.get_latest_version_by_id(mapping)
-            latestMappingVersions.append(latestMappingVersion.id)
-        self.mappings = latestMappingVersions
+            latestMappingVersions = list()
+            for mapping in mappings:
+                latestMappingVersion = MappingVersion.get_latest_version_by_id(mapping)
+                latestMappingVersions.append(latestMappingVersion.id)
+            self.mappings = latestMappingVersions
 
     def seed_references(self):
         seed_references_from = self.head_sibling()

@@ -35,7 +35,7 @@ class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
 
                 filters.update({'collection_version': collection_version.id})
             else:
-                filters.update({'collection': collection.id})
+                filters.update({'collection_version': collection.get_head().id})
         # elif 'source' in view.kwargs:
         #     filters.update({'source_version': view.parent_resource_version.id})
 

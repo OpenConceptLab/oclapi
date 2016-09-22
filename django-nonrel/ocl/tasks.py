@@ -65,6 +65,7 @@ def resource(version_id, type):
 
 @celery.task
 def update_collection_in_solr(version_id, references):
+    print 'version_id == ', version_id
     cv = CollectionVersion.objects.get(id=version_id)
     cv._ocl_processing = True
     cv.save()
@@ -73,18 +74,20 @@ def update_collection_in_solr(version_id, references):
     for ref in references:
         if len(ref.concepts) > 0:
             concepts += ref.concepts
-        if hasattr(ref, 'mappings') and ref.mappings is not None:
+        if ref.mappings and len(ref.mappings) > 0:
             mappings += ref.mappings
 
-    version_ids = map(lambda c: c.get_latest_version.id, concepts)
-    versions = ConceptVersion.objects.filter(mnemonic__in=version_ids)
+    concept_version_ids = map(lambda c: c.get_latest_version.id, concepts)
+    concept_versions = ConceptVersion.objects.filter(mnemonic__in=concept_version_ids)
 
-    if len(versions) > 0:
-        update_all_in_index(ConceptVersion, versions)
+    mapping_version_ids = map(lambda m: m.get_latest_version.id, mappings)
+    mapping_versions = MappingVersion.objects.filter(id__in=mapping_version_ids)
 
-    if len(mappings) > 0:
-        mappings = Mapping.objects.filter(id__in=map(lambda m: m.id, mappings))
-        update_all_in_index(Mapping, mappings)
+    if len(concept_versions) > 0:
+        update_all_in_index(ConceptVersion, concept_versions)
+
+    if len(mapping_versions) > 0:
+        update_all_in_index(MappingVersion, mapping_versions)
 
     cv._ocl_processing = False
     cv.save()
