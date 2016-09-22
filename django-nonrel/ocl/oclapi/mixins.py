@@ -85,23 +85,29 @@ class ListWithHeadersMixin(ListModelMixin):
             return Response(results)
 
     def get_csv(self, request):
+        user = request.QUERY_PARAMS.get('user', None)
+
         self.renderer_classes = (JSONPRenderer, JSONRenderer)
 
         filename = None
         url = None
+        is_owner = user == self.parent_resource.created_by
+
         try:
-            filename = '_'.join(compact(self.parent_resource.uri.split('/')))
-            kwargs = {'filename': filename}
+            filename = '_'.join(compact(self.parent_resource_version.uri.split('/')))
+            kwargs = {
+                'filename': filename,
+            }
         except Exception:
             kwargs = {}
 
         if filename:
-            url = get_csv_from_s3(filename)
+            url = get_csv_from_s3(filename, is_owner)
 
         if not url:
-            queryset = self.get_queryset() if request.user.username == self.parent_resource.created_by else self.get_queryset()[0:100]
+            queryset = self.get_queryset() if is_owner else self.get_queryset()[0:100]
             data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
-            url = write_csv_to_s3(data, **kwargs)
+            url = write_csv_to_s3(data, is_owner, **kwargs)
 
         return Response({'url': url}, status=200)
 

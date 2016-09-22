@@ -184,7 +184,7 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     os.chdir(cwd)
 
 
-def write_csv_to_s3(data, **kwargs):
+def write_csv_to_s3(data, is_owner, **kwargs):
     cwd = cd_temp()
     csv_file = csv_file_for(data, **kwargs)
     csv_file.close()
@@ -197,7 +197,8 @@ def write_csv_to_s3(data, **kwargs):
 
     bucket = S3ConnectionFactory.get_export_bucket()
     k = Key(bucket)
-    k.key = 'downloads/%s' % gz.name
+    _dir = 'downloads/creator/' if is_owner else 'downloads/reader/'
+    k.key = _dir + gz.name
     k.set_metadata('Content-Encoding', 'gzip')
     k.set_metadata('Content-Type', 'text/csv')
     k.set_contents_from_filename(gz.name)
@@ -206,8 +207,9 @@ def write_csv_to_s3(data, **kwargs):
     return bucket.get_key(k.key).generate_url(expires_in=60)
 
 
-def get_csv_from_s3(filename):
-    filename = 'downloads/' + filename + '.csv.gz'
+def get_csv_from_s3(filename, is_owner):
+    _dir = 'downloads/creator' if is_owner else 'downloads/reader'
+    filename = _dir + filename + '.csv.gz'
     bucket = S3ConnectionFactory.get_export_bucket()
     key = bucket.get_key(filename)
     return key.generate_url(expires_in=60) if key else None
