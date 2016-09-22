@@ -65,7 +65,6 @@ def resource(version_id, type):
 
 @celery.task
 def update_collection_in_solr(version_id, references):
-    print 'version_id == ', version_id
     cv = CollectionVersion.objects.get(id=version_id)
     cv._ocl_processing = True
     cv.save()
@@ -107,7 +106,9 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
 
     if len(mappings) > 0:
         mappings = Mapping.objects.filter(id__in=mappings)
-        update_all_in_index(Mapping, mappings)
+        version_ids = map(lambda m: m.get_latest_version.id, mappings)
+        versions = MappingVersion.objects.filter(mnemonic__in=version_ids)
+        update_all_in_index(MappingVersion, versions)
 
     cv._ocl_processing = False
     cv.save()
