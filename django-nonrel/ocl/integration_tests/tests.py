@@ -11,7 +11,7 @@ from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.unittest.case import skip
 from integration_tests.models import TestStream
 from mappings.importer import MappingsImporter
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
 from sources.models import Source, SourceVersion
@@ -696,7 +696,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(2, len(content))
 
     def test_mappings_list_positive__latest_version(self):
-        mapping = self.mapping4
+        mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping4.id)
         self.client.login(username='user1', password='user1')
         kwargs = {
             'source': self.source3.mnemonic
@@ -706,14 +706,14 @@ class MappingViewsTest(MappingBaseTest):
         content_list = json.loads(response.content)
         self.assertEquals(1, len(content_list))
         content = content_list[0]
-        self.assertEquals(mapping.external_id, content['external_id'])
-        self.assertEquals(mapping.map_type, content['map_type'])
-        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
-        self.assertEquals(mapping.to_source_url, content['to_source_url'])
-        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
-        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
-        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
-        self.assertEquals(mapping.url, content['url'])
+        self.assertEquals(mapping_version.external_id, content['external_id'])
+        self.assertEquals(mapping_version.map_type, content['map_type'])
+        self.assertEquals(mapping_version.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping_version.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping_version.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping_version.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping_version.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping_version.url, content['url'])
 
     @skip("need to adapt for mapping versions")
     def test_mappings_list_positive__explicit_version(self):
@@ -738,7 +738,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-    def test_mappings_list_negative__explicit_version(self):
+    def test_mappings_list_positive__contains_head(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
             'source': self.source3.mnemonic,
@@ -747,7 +747,7 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.get(reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
-        self.assertEquals(0, len(content))
+        self.assertEquals(1, len(content))
 
     def test_mappings_list_positive__user_owner(self):
         self.client.login(username='user1', password='user1')
@@ -783,7 +783,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-    def test_mappings_list_negative__explicit_user_and_version(self):
+    def test_mappings_list_positive__contains_head(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
             'user': self.user1.username,
@@ -793,10 +793,10 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.get(reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
-        self.assertEquals(0, len(content))
+        self.assertEquals(1, len(content))
 
     def test_mappings_list_positive__org_owner(self):
-        mapping = self.mapping3
+        mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping3.id)
         self.client.login(username='user2', password='user2')
         kwargs = {
             'org': self.org2.mnemonic,
@@ -807,14 +807,14 @@ class MappingViewsTest(MappingBaseTest):
         content_list = json.loads(response.content)
         self.assertEquals(1, len(content_list))
         content = content_list[0]
-        self.assertEquals(mapping.external_id, content['external_id'])
-        self.assertEquals(mapping.map_type, content['map_type'])
-        self.assertEquals(mapping.from_concept_url, content['from_concept_url'])
-        self.assertEquals(mapping.to_source_url, content['to_source_url'])
-        self.assertEquals(mapping.get_to_concept_code(), content['to_concept_code'])
-        self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
-        self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
-        self.assertEquals(mapping.url, content['url'])
+        self.assertEquals(mapping_version.external_id, content['external_id'])
+        self.assertEquals(mapping_version.map_type, content['map_type'])
+        self.assertEquals(mapping_version.from_concept_url, content['from_concept_url'])
+        self.assertEquals(mapping_version.to_source_url, content['to_source_url'])
+        self.assertEquals(mapping_version.get_to_concept_code(), content['to_concept_code'])
+        self.assertEquals(mapping_version.get_to_concept_name(), content['to_concept_name'])
+        self.assertEquals(mapping_version.to_concept_url, content['to_concept_url'])
+        self.assertEquals(mapping_version.url, content['url'])
 
     @skip("need to adapt for mapping versions")
     def test_mappings_list_positive__explicit_org_and_version(self):
@@ -839,7 +839,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-    def test_mappings_list_negative__explicit_org_and_version(self):
+    def test_mappings_list_positive__contains_head(self):
         self.client.login(username='user2', password='user2')
         kwargs = {
             'org': self.org2.mnemonic,
@@ -849,7 +849,9 @@ class MappingViewsTest(MappingBaseTest):
         response = self.client.get(reverse('mapping-list', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
-        self.assertEquals(0, len(content))
+        self.assertEquals(1, len(content))
+        self.assertEquals(1, int(content[0].get('version')))
+        self.assertTrue(content[0].get('is_latest_version'))
 
     def test_mappings_get_positive(self):
         self.client.login(username='user1', password='user1')
