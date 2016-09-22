@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import tempfile
+import gzip
 
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
@@ -11,7 +12,8 @@ from rest_framework.utils import encoders
 from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
 from operator import is_not, itemgetter
-from functools import partial
+from djqscsv import csv_file_for
+
 
 
 __author__ = 'misternando'
@@ -107,9 +109,7 @@ def get_class(kls):
 
 
 def write_export_file(version, resource_type, resource_serializer_type, logger):
-    cwd = os.getcwd()
-    tmpdir = tempfile.mkdtemp()
-    os.chdir(tmpdir)
+    cwd = cd_temp()
     logger.info('Writing export file to tmp directory: %s' % tmpdir)
 
     logger.info('Found %s version %s.  Looking up resource...' % (resource_type, version.mnemonic))
@@ -182,6 +182,43 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     k.set_contents_from_filename('export.tgz')
     logger.info('Uploaded to %s.' % k.key)
     os.chdir(cwd)
+
+
+def write_csv_to_s3(data, **kwargs):
+    cwd = cd_temp()
+    csv_file = csv_file_for(data, **kwargs)
+    csv_file.close()
+    reader = open(os.path.abspath(csv_file.name), 'r')
+    gz = gzip.open(csv_file.name + '.gz', 'wb')
+    lines = reader.readlines()
+    gz.writelines(lines)
+    gz.close()
+    reader.close()
+
+    bucket = S3ConnectionFactory.get_export_bucket()
+    k = Key(bucket)
+    k.key = 'downloads/%s' % gz.name
+    k.set_metadata('Content-Encoding', 'gzip')
+    k.set_metadata('Content-Type', 'text/csv')
+    k.set_contents_from_filename(gz.name)
+
+    os.chdir(cwd)
+    return bucket.get_key(k.key).generate_url(expires_in=60)
+
+
+def get_csv_from_s3(filename):
+    filename = 'downloads/' + filename + '.csv.gz'
+    bucket = S3ConnectionFactory.get_export_bucket()
+    key = bucket.get_key(filename)
+    return key.generate_url(expires_in=60) if key else None
+
+
+def cd_temp():
+    cwd = os.getcwd()
+    tmpdir = tempfile.mkdtemp()
+    os.chdir(tmpdir)
+    return cwd
+
 
 def update_all_in_index(model, qs):
     if not qs.exists():

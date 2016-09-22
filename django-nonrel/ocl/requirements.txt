@@ -1,6 +1,7 @@
 git+https://github.com/django-nonrel/django@nonrel-1.5
 git+https://github.com/django-nonrel/djangotoolbox
 git+https://github.com/django-nonrel/mongodb-engine
+git+https://github.com/snyaggarwal/django-queryset-csv
 boto==2.38.0
 celery[redis]==3.1.17
 celery_once==0.1.4
@@ -17,4 +18,3 @@ wsgiref==0.1.2
 python-dateutil==2.2
 gunicorn==18.0
 moto==0.4.25
-django-queryset-csv

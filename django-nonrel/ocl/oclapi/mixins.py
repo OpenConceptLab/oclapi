@@ -1,9 +1,7 @@
-
 from django.core.urlresolvers import resolve
+from oclapi.utils import compact, write_csv_to_s3, get_csv_from_s3
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
-from djqscsv import render_to_csv_response
-from oclapi.utils import compact
 
 __author__ = 'misternando'
 
@@ -48,7 +46,7 @@ class ListWithHeadersMixin(ListModelMixin):
 
     def list(self, request, *args, **kwargs):
         if request.QUERY_PARAMS.get('csv', False):
-            return self.list_as_csv(request)
+            return self.get_csv(request)
 
         if self.object_list is None:
             self.object_list = self.filter_queryset(self.get_queryset())
@@ -85,16 +83,24 @@ class ListWithHeadersMixin(ListModelMixin):
         else:
             return Response(results)
 
-    def list_as_csv(self, request):
-        queryset = self.get_queryset() if request.user.username == self.parent_resource.created_by else self.get_queryset()[0:100]
-        data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
-
+    def get_csv(self, request):
+        filename = None
+        url = None
         try:
-            kwargs = {'filename': '_'.join(compact(self.parent_resource.uri.split('/')))}
+            filename = '_'.join(compact(self.parent_resource.uri.split('/')))
+            kwargs = {'filename': filename}
         except Exception:
             kwargs = {}
 
-        return render_to_csv_response(data, **kwargs)
+        if filename:
+            url = get_csv_from_s3(filename)
+
+        if not url:
+            queryset = self.get_queryset() if request.user.username == self.parent_resource.created_by else self.get_queryset()[0:100]
+            data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
+            url = write_csv_to_s3(data, **kwargs)
+
+        return Response({'message': 'ok'}, status=200, template_name=None, headers={'Location': url})
 
     @staticmethod
     def prepend_head(objects):
