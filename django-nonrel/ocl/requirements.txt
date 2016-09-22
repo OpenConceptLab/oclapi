@@ -18,3 +18,4 @@ wsgiref==0.1.2
 python-dateutil==2.2
 gunicorn==18.0
 moto==0.4.25
+djangorestframework-jsonp
