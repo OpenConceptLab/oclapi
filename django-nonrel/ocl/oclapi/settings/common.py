@@ -152,6 +152,7 @@ class Common(Configuration):
             'rest_framework.renderers.JSONRenderer',
             'rest_framework.renderers.BrowsableAPIRenderer',
             'oclapi.renderers.ZippedJSONRenderer',
+            'rest_framework_jsonp.renderers.JSONPRenderer',
         ),
         'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'oclapi.negotiation.OptionallyCompressContentNegotiation',
         # Use hyperlinked styles by default.
