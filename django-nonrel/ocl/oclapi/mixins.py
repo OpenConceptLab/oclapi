@@ -89,9 +89,9 @@ class ListWithHeadersMixin(ListModelMixin):
         filename = None
         url = None
         is_owner = user == self.parent_resource.created_by
-
         try:
-            filename = '_'.join(compact(self.parent_resource_version.uri.split('/')))
+            path = request.__dict__.get('_request').path
+            filename = '_'.join(compact(path.split('/')))
             kwargs = {
                 'filename': filename,
             }
