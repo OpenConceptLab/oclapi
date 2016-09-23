@@ -2,6 +2,7 @@ from django.core.urlresolvers import resolve
 from oclapi.utils import compact, write_csv_to_s3, get_csv_from_s3
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
+from oclapi.utils import compact, extract_values
 
 __author__ = 'misternando'
 
@@ -89,8 +90,14 @@ class ListWithHeadersMixin(ListModelMixin):
         filename = None
         url = None
 
-        parent = self.parent_resource if hasattr(self, 'parent_resource') else self.versioned_object
-        is_owner = user == parent.created_by
+        if hasattr(self, 'parent_resource'):
+            parent = self.parent_resource
+        elif hasattr(self, 'versioned_object'):
+            parent = self.versioned_object
+        else:
+            parent = None
+
+        is_owner = (user == parent.created_by) if parent else False
         try:
             path = request.__dict__.get('_request').path
             filename = '_'.join(compact(path.split('/')))
@@ -135,3 +142,34 @@ class ListWithHeadersMixin(ListModelMixin):
     def dedup(versions):
         versions.limit_iter = False
         return reduce(ListWithHeadersMixin._reduce_func, versions, [])
+
+
+class ConceptVersionCSVFormatterMixin():
+    def get_csv_rows(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+
+        values = queryset.values('id', 'external_id', 'uri', 'concept_class', 'datatype', 'retired', 'names',
+                                            'descriptions', 'created_by', 'updated_by', 'created_at', 'updated_at')
+
+        for value in values:
+            names = value.get('names')
+            descriptions = value.get('descriptions')
+
+            value['names'] = self.join_values(names)
+            value['descriptions'] = self.join_values(descriptions)
+
+            preferred_name = self.preferred_name(names)
+            value['display_name'] = preferred_name.get('name')
+            value['display_locale'] = preferred_name.get('locale')
+
+        values.field_names.extend(['display_name', 'display_locale'])
+        return values
+
+    def join_values(self, objects):
+        localize_text_keys = ['name', 'locale', 'type']
+        return ', '.join(
+            map(lambda obj: ' '.join(compact(extract_values(obj[1], localize_text_keys))), objects))
+
+    def preferred_name(self, names):
+        return next((name for name in names if name[1].get('locale_preferred')), [None, {'name': '', 'locale': ''}])[1]

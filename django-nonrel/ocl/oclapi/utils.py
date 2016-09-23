@@ -212,7 +212,7 @@ def get_csv_from_s3(filename, is_owner):
     filename = _dir + filename + '.csv.gz'
     bucket = S3ConnectionFactory.get_export_bucket()
     key = bucket.get_key(filename)
-    return key.generate_url(expires_in=60) if key else None
+    return key.generate_url(expires_in=600) if key else None
 
 
 def cd_temp():
