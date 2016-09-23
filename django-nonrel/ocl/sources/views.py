@@ -250,9 +250,7 @@ class SourceVersionRetrieveUpdateDestroyView(SourceVersionRetrieveUpdateView, De
 
     def destroy(self, request, *args, **kwargs):
         version = self.get_object()
-        if version.released:
-            errors = {'non_field_errors' : ['Cannot deactivate a version that is currently released.  Please release another version before deactivating this one.']}
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        version.delete()
         return super(SourceVersionRetrieveUpdateDestroyView, self).destroy(request, *args, **kwargs)
 
 

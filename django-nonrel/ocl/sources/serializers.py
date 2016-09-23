@@ -126,6 +126,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
 class SourceVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='mnemonic')
     released = serializers.CharField()
+    retired = serializers.BooleanField()
     owner = serializers.CharField(source='parent_resource')
     owner_type = serializers.CharField(source='parent_resource_type')
     owner_url = serializers.CharField(source='parent_url')
@@ -143,6 +144,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     id = serializers.CharField(required=True, source='mnemonic')
     description = serializers.CharField()
     released = serializers.BooleanField()
+    retired = serializers.BooleanField()
     owner = serializers.CharField(source='parent_resource')
     owner_type = serializers.CharField(source='parent_resource_type')
     owner_url = serializers.CharField(source='parent_url')
@@ -186,6 +188,7 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
         instance.mnemonic = attrs.get(self.Meta.lookup_field, instance.mnemonic)
         instance.description = attrs.get('description', instance.description)
         instance.released = attrs.get('released', instance.released)
+        instance.retired = attrs.get('retired', instance.retired)
         instance._previous_version_mnemonic = attrs.get('previous_version_mnemonic', instance.previous_version_mnemonic)
         instance._parent_version_mnemonic = attrs.get('parent_version_mnemonic', instance.parent_version_mnemonic)
         instance.extras = attrs.get('extras', instance.extras)
@@ -200,6 +203,7 @@ class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):
 class SourceVersionUpdateSerializer(SourceVersionCreateOrUpdateSerializer):
     id = serializers.CharField(required=False, source='mnemonic')
     released = serializers.BooleanField(required=False)
+    retired = serializers.BooleanField(required=False)
     description = serializers.CharField(required=False)
     previous_version = serializers.CharField(required=False, source='previous_version_mnemonic')
     parent_version = serializers.CharField(required=False, source='parent_version_mnemonic')
