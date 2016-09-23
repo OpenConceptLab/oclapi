@@ -93,6 +93,7 @@ class Common(Configuration):
     )
 
     MIDDLEWARE_CLASSES = (
+        'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
@@ -116,6 +117,7 @@ class Common(Configuration):
         'django.contrib.staticfiles',
         # Uncomment the next line to enable the admin:
         'django.contrib.admin',
+        'corsheaders',
         # Uncomment the next line to enable admin documentation:
         # 'django.contrib.admindocs',
         # Core OCL app
@@ -152,7 +154,6 @@ class Common(Configuration):
             'rest_framework.renderers.JSONRenderer',
             'rest_framework.renderers.BrowsableAPIRenderer',
             'oclapi.renderers.ZippedJSONRenderer',
-            'rest_framework_jsonp.renderers.JSONPRenderer',
         ),
         'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'oclapi.negotiation.OptionallyCompressContentNegotiation',
         # Use hyperlinked styles by default.
@@ -191,6 +192,17 @@ class Common(Configuration):
     }
 
     BROKER_URL = 'redis://redis.openconceptlab.org:6379/0'
+
+    CORS_ORIGIN_ALLOW_ALL = True
+
+    CORS_ALLOW_METHODS = (
+        'GET',
+    )
+
+    # CORS_ORIGIN_WHITELIST = (
+    #     'google.com',
+    #     'hostname.example.com',
+    # )
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at

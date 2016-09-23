@@ -2,7 +2,6 @@ from django.core.urlresolvers import resolve
 from oclapi.utils import compact, write_csv_to_s3, get_csv_from_s3
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
-from rest_framework_jsonp.renderers import JSONPRenderer, JSONRenderer
 
 __author__ = 'misternando'
 
@@ -86,8 +85,6 @@ class ListWithHeadersMixin(ListModelMixin):
 
     def get_csv(self, request):
         user = request.QUERY_PARAMS.get('user', None)
-
-        self.renderer_classes = (JSONPRenderer, JSONRenderer)
 
         filename = None
         url = None
