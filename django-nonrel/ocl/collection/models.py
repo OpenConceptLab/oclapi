@@ -226,7 +226,7 @@ class CollectionVersion(ConceptContainerVersionModel):
     def last_mapping_update(self):
         if not self.mappings:
             return None
-        klass = get_class('mappings.models.Mapping')
+        klass = get_class('mappings.models.MappingVersion')
         mappings = klass.objects.filter(id__in=self.mappings)
         if not mappings.exists():
             return None

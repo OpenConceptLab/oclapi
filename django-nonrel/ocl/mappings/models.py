@@ -163,11 +163,6 @@ class Mapping(BaseModel):
     def public_can_view(self):
         return self.public_access in [ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW]
 
-    @property
-    def collections(self):
-        versions = self.collection_versions
-        return map(lambda v: v.versioned_object, versions)
-
     @staticmethod
     def resource_type():
         return MAPPING_RESOURCE_TYPE
@@ -475,7 +470,7 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def collection_versions(self):
-        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
+        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.versioned_object.id, mnemonic='HEAD')
 
     @property
     def collection_version_ids(self):

@@ -3,6 +3,7 @@ from mappings.models import Mapping, MappingVersion
 from oclapi.search_backends import SortOrFilterField, FilterField
 from oclapi.search_indexes import OCLSearchIndex
 from sources.models import SourceVersion
+from django.db.models import get_model
 
 __author__ = 'misternando'
 

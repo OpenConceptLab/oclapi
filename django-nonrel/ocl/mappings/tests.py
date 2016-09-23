@@ -572,7 +572,6 @@ class MappingVersionTest(MappingVersionBaseTest):
         self.source1.public_access = ACCESS_TYPE_VIEW
         self.source1.save()
 
-    @skip('failed becuse of introducing mapping version .. wip')
     def test_collections_ids(self):
         kwargs = {
             'parent_resource': self.userprofile1
@@ -668,10 +667,9 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection.expressions = references
         collection.full_clean()
         collection.save()
+        mv = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
+        self.assertEquals(mv.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
 
-        self.assertEquals(mapping.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
-
-    @skip('need to fix because of introduction of mapping version')
     def test_collections_version_ids(self):
         kwargs = {
             'parent_resource': self.userprofile1
@@ -767,8 +765,8 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection.expressions = references
         collection.full_clean()
         collection.save()
-
-        self.assertEquals(mapping.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
+        mv = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
+        self.assertEquals(mv.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
 
 class MappingClassMethodsTest(MappingBaseTest):
 
