@@ -88,7 +88,9 @@ class ListWithHeadersMixin(ListModelMixin):
 
         filename = None
         url = None
-        is_owner = user == self.parent_resource.created_by
+
+        parent = self.parent_resource if hasattr(self, 'parent_resource') else self.versioned_object
+        is_owner = user == parent.created_by
         try:
             path = request.__dict__.get('_request').path
             filename = '_'.join(compact(path.split('/')))
