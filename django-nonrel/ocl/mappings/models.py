@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from concepts.models import Concept
@@ -470,7 +471,8 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def collection_versions(self):
-        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.versioned_object.id, mnemonic='HEAD')
+        # TODO: bad solution, look for right fix
+        return get_model('collection', 'CollectionVersion').objects.filter(Q(mappings=self.versioned_object.id, mnemonic='HEAD') | Q(mappings=self.id))
 
     @property
     def collection_version_ids(self):
