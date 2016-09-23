@@ -46,11 +46,19 @@ class ListWithHeadersMixin(ListModelMixin):
         return request.QUERY_PARAMS.get(self.verbose_param, False)
 
     def list(self, request, *args, **kwargs):
-        if request.QUERY_PARAMS.get('csv', False):
+        is_csv = request.QUERY_PARAMS.get('csv', False)
+        search_string = request.QUERY_PARAMS.get('q', False)
+
+        if is_csv and not search_string:
             return self.get_csv(request)
 
         if self.object_list is None:
             self.object_list = self.filter_queryset(self.get_queryset())
+
+        if is_csv and search_string:
+            klass = type(self.object_list[0])
+            queryset = klass.objects.filter(id__in=self.get_object_ids())
+            return self.get_csv(request, queryset)
 
         # Skip pagination if compressed results are requested
         meta = request._request.META
@@ -84,20 +92,20 @@ class ListWithHeadersMixin(ListModelMixin):
         else:
             return Response(results)
 
-    def get_csv(self, request):
-        user = request.QUERY_PARAMS.get('user', None)
+    def get_object_ids(self):
+        self.object_list.limit_iter = False
+        return map(lambda o: o.id, self.object_list[0:100])
 
-        filename = None
-        url = None
+    def get_csv(self, request, queryset=None):
+        filename, url, prepare_new_file, is_owner = None, None, True, False
 
-        if hasattr(self, 'parent_resource'):
-            parent = self.parent_resource
-        elif hasattr(self, 'versioned_object'):
-            parent = self.versioned_object
-        else:
-            parent = None
+        parent = self.get_parent()
 
-        is_owner = (user == parent.created_by) if parent else False
+        if parent:
+            prepare_new_file = False
+            user = request.QUERY_PARAMS.get('user', None)
+            is_owner = (user == parent.created_by)
+
         try:
             path = request.__dict__.get('_request').path
             filename = '_'.join(compact(path.split('/')))
@@ -107,15 +115,28 @@ class ListWithHeadersMixin(ListModelMixin):
         except Exception:
             kwargs = {}
 
-        if filename:
+        if filename and prepare_new_file:
             url = get_csv_from_s3(filename, is_owner)
 
         if not url:
-            queryset = self.get_queryset() if is_owner else self.get_queryset()[0:100]
+            queryset = queryset or self._get_query_set_from_view(is_owner)
             data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
             url = write_csv_to_s3(data, is_owner, **kwargs)
 
         return Response({'url': url}, status=200)
+
+    def _get_query_set_from_view(self, is_owner):
+        return self.get_queryset() if is_owner else self.get_queryset()[0:100]
+
+    def get_parent(self):
+        if hasattr(self, 'parent_resource'):
+            parent = self.parent_resource
+        elif hasattr(self, 'versioned_object'):
+            parent = self.versioned_object
+        else:
+            parent = None
+
+        return parent
 
     @staticmethod
     def prepend_head(objects):
