@@ -140,9 +140,6 @@ class ListWithHeadersMixin(ListModelMixin):
 
     @staticmethod
     def prepend_head(objects):
-        if hasattr(objects[0], 'versioned_object_id') and type(objects).__name__ == 'SearchQuerySetWrapper':
-            objects = ListWithHeadersMixin.dedup(objects)
-
         if len(objects) > 0 and hasattr(objects[0], 'mnemonic'):
             head_el = [el for el in objects if hasattr(el, 'mnemonic') and el.mnemonic == HEAD]
             if head_el:
@@ -150,19 +147,12 @@ class ListWithHeadersMixin(ListModelMixin):
 
         return objects
 
-
     @staticmethod
     def _reduce_func(prev, current):
         prev_version_ids = map(lambda v: v.versioned_object_id, prev)
         if current.versioned_object_id not in prev_version_ids:
             prev.append(current)
         return prev
-
-
-    @staticmethod
-    def dedup(versions):
-        versions.limit_iter = False
-        return reduce(ListWithHeadersMixin._reduce_func, versions, [])
 
 
 class ConceptVersionCSVFormatterMixin():
