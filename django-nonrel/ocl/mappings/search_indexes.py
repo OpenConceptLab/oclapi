@@ -52,9 +52,6 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
         self.prepared_data['fromConceptOwnerType'] = obj.from_source_owner_type
         self.prepared_data['toConceptOwnerType'] = obj.to_source_owner_type
         self.prepared_data['conceptOwnerType'] = [obj.from_source_owner_type, obj.to_source_owner_type]
-        self.prepared_data['collection_version'] = obj.collection_version_ids
-        self.prepared_data['collection'] = obj.collection_ids
-
 
         source_version_ids = []
         source = obj.parent

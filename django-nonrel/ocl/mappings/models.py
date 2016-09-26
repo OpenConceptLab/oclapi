@@ -174,7 +174,7 @@ class Mapping(BaseModel):
 
     @property
     def get_latest_version(self):
-        return MappingVersion.objects.filter(versioned_object_id=self.id, is_latest_version=True)[:1][0]
+        return MappingVersion.objects.filter(versioned_object_id=self.id).order_by('-created_at')[:1][0]
 
     @classmethod
     def retire(cls, obj, updated_by, **kwargs):
@@ -421,6 +421,10 @@ class MappingVersion(ResourceVersionModel):
         return to_source.url if to_source else None
 
     @property
+    def to_mapping_url(self):
+        return self.versioned_object.uri
+
+    @property
     def to_source_owner(self):
         return self.get_to_source() and unicode(self.get_to_source().parent)
 
@@ -466,13 +470,11 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def collection_ids(self):
-        return map(lambda c: c.id,
-                   get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
+        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri})) if self.is_latest_version else []
 
     @property
     def collection_versions(self):
-        # TODO: bad solution, look for right fix
-        return get_model('collection', 'CollectionVersion').objects.filter(Q(mappings=self.versioned_object.id, mnemonic='HEAD') | Q(mappings=self.id))
+        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
 
     @property
     def collection_version_ids(self):

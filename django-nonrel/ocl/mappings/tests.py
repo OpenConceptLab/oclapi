@@ -21,7 +21,7 @@ from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
-from collection.models import Collection
+from collection.models import Collection, CollectionVersion, CollectionReference
 from test_helper.base import OclApiBaseTestCase
 from unittest import skip
 
@@ -668,7 +668,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection.full_clean()
         collection.save()
         mv = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
-        self.assertEquals(mv.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
+        self.assertEquals(mv.collection_ids, [collection.id])
 
     def test_collections_version_ids(self):
         kwargs = {
@@ -755,18 +755,30 @@ class MappingVersionTest(MappingVersionBaseTest):
 
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
-        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
-        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
         mapping = Mapping.objects.filter()[1]
         mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.id + '/'
 
-        references = [concept1_reference, from_concept_reference, mapping_reference]
+        references = [mapping_reference]
 
         collection.expressions = references
         collection.full_clean()
         collection.save()
-        mv = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
-        self.assertEquals(mv.collection_version_ids, [Collection.objects.get(mnemonic=collection.mnemonic).get_head().id])
+
+        mapping_version = MappingVersion.objects.filter()[0]
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            mappings=[mapping_version.id]
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        self.assertEquals(mapping_version.collection_version_ids, [collection_version.id])
+
 
 class MappingClassMethodsTest(MappingBaseTest):
 

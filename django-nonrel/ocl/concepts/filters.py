@@ -39,7 +39,6 @@ class LimitCollectionVersionFilter(ConceptSearchFilter):
             owner = view.get_owner()
             collection = Collection.objects.get(parent_id=owner.id, mnemonic=view.kwargs['collection'])
             if 'version' in view.kwargs and view.kwargs['version'] != 'HEAD':
-                print view.kwargs['version']
                 if view.kwargs['version'] == LATEST:
                     collection_version = CollectionVersion.get_latest_released_version_of(collection)
                 else:

@@ -936,43 +936,6 @@ class ConceptVersionTest(ConceptBaseTest):
         CollectionVersion.persist_new(version, **kwargs)
         self.assertEquals(concept_version.collection_version_ids, [CollectionVersion.objects.get(mnemonic='version1').id])
 
-    def test_is_latest(self):
-        source = Source(
-            name='source',
-            mnemonic='source',
-            full_name='Source One',
-            source_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.source1.com',
-            description='This is the first test source'
-        )
-        kwargs = {
-            'parent_resource': self.org1
-        }
-        Source.persist_new(source, self.user1, **kwargs)
-
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
-        concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
-        self.assertTrue(concept_version.is_latest)
-        ConceptVersion.persist_clone(concept_version.clone(), self.user1)
-        self.assertFalse(concept_version.is_latest)
-        new_concept_version = ConceptVersion.objects.filter(versioned_object_id=concept1.id).order_by('-created_at')[0]
-        self.assertTrue(new_concept_version.is_latest)
-
-
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
     def setUp(self):

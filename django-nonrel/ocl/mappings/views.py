@@ -27,9 +27,6 @@ class MappingBaseView(ConceptDictionaryMixin):
     child_list_attribute = 'mappings'
     include_retired = False
     permission_classes = (CanViewParentDictionary,)
-    parent_resource_version = None
-    parent_resource_version_model = SourceVersion
-    child_list_attribute = 'mappings'
 
     def initialize(self, request, path_info_segment, **kwargs):
         super(MappingBaseView, self).initialize(request, path_info_segment, **kwargs)

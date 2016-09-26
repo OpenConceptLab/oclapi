@@ -27,7 +27,7 @@ class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
         if 'collection' in view.kwargs:
             owner = view.get_owner()
             collection = Collection.objects.get(parent_id=owner.id, mnemonic=view.kwargs['collection'])
-            if 'version' in view.kwargs:
+            if 'version' in view.kwargs and view.kwargs['version'] != 'HEAD':
                 if view.kwargs['version'] == LATEST:
                     collection_version = CollectionVersion.get_latest_released_version_of(collection)
                 else:
@@ -35,6 +35,6 @@ class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
 
                 filters.update({'collection_version': collection_version.id})
             else:
-                filters.update({'collection_version': collection.get_head().id})
+                filters.update({'collection': collection.id})
 
         return filters
