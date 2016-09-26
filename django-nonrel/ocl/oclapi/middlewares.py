@@ -1,5 +1,6 @@
 import re
 import logging
+from time import time
 from django.utils.termcolors import colorize
 from rest_framework.authtoken.models import Token
 
@@ -13,17 +14,20 @@ class RequestLogMiddleware(object):
     """
 
     def process_request(self, request):
+        request.request_start_time = time()
         remote_addr = request.META.get('REMOTE_ADDR')
         user = self.get_user(request)
         username = user.username
-        email = user.email
-        request_logger.info(colorize("[{} - {}] [User IP - {}] {} {}".format(
-            username, email, remote_addr, request.method, request.get_full_path()), fg="cyan")
+        request_logger.info(colorize("{} {} {} {}".format(
+            username, remote_addr, request.method, request.get_full_path()), fg="cyan")
         )
         self.log_body(self.chunked_to_max(request.body))
 
     def process_response(self, request, response):
-        resp_log = "{} {} - {}".format(request.method, request.get_full_path(), response.status_code)
+        response_time = time() - request.request_start_time
+        resp_log = "{} sec {} {} : {}".format(
+            response_time, request.method, request.get_full_path(), response.status_code
+        )
         if (response.status_code in range(400, 600)):
             request_logger.info(colorize(resp_log, fg="magenta"))
             self.log_resp_body(response, level=logging.ERROR)
