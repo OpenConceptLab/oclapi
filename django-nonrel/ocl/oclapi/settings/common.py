@@ -99,6 +99,7 @@ class Common(Configuration):
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
+        'oclapi.middlewares.RequestLogMiddleware',
     )
 
     ROOT_URLCONF = 'urls'
@@ -271,6 +272,10 @@ class Common(Configuration):
             'oclapi': {
                 'handlers': ['console', 'logfile'],
                 'level': 'DEBUG',
+            },
+            'request_logger': {
+                'handlers': ['console', 'logfile'],
+                'level': 'INFO',
             },
         }
     }
