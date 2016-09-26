@@ -33,6 +33,7 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
     collection_version = FilterField()
     public_can_view = indexes.BooleanField(model_attr='public_can_view', indexed=True, stored=True)
     is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
+    is_latest_version = indexes.BooleanField(model_attr='is_latest_version', indexed=True, stored=True)
 
     def get_model(self):
         return MappingVersion

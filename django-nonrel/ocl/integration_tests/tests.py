@@ -739,7 +739,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-    def test_mappings_list_positive__contains_head(self):
+    def test_mappings_list_positive__contains_head_length(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
             'source': self.source3.mnemonic,
@@ -784,7 +784,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-    def test_mappings_list_positive__contains_head(self):
+    def test_mappings_list_positive__contains_head_with_user(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
             'user': self.user1.username,

@@ -8,10 +8,10 @@ from concepts.permissions import CanEditParentDictionary, CanViewParentDictionar
 from mappings.filters import PublicMappingsSearchFilter, SourceRestrictedMappingsFilter, CollectionRestrictedMappingFilter
 from mappings.models import Mapping, MappingVersion
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer, MappingDetailSerializer, MappingListSerializer, \
-    MappingVersionDetailSerializer
+    MappingVersionDetailSerializer, MappingVersionListSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
-from oclapi.views import ConceptDictionaryMixin, BaseAPIView
+from oclapi.views import ConceptDictionaryMixin, BaseAPIView, parse_updated_since_param, VersionedResourceChildMixin
 from sources.models import SourceVersion
 from orgs.models import Organization
 from users.models import UserProfile
@@ -97,35 +97,18 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class MappingVersionsListView(ConceptDictionaryMixin, ListWithHeadersMixin):
-    serializer_class = MappingVersionDetailSerializer
+class MappingVersionMixin():
+    lookup_field = 'mapping_version'
+    pk_field = 'mnemonic'
+    model = MappingVersion
+    parent_resource_version_model = SourceVersion
     permission_classes = (CanViewParentDictionary,)
+    child_list_attribute = 'mappings'
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
 
-    def get_queryset(self):
-        queryset = MappingVersion.objects.filter(versioned_object_id=self.parent_resource.id,
-                                             is_active=True)
-        return queryset.order_by('-mnemonic')
-
-class MappingVersionDetailView(MappingVersionBaseView, RetrieveAPIView):
-    serializer_class = MappingVersionDetailSerializer
-    def initialize(self, request, path_info_segment, **kwargs):
-        super(MappingVersionDetailView, self).initialize(request, path_info_segment, **kwargs)
-
-    def get_level(self):
-        return 1
-
-class MappingListView(MappingBaseView,
-                      ListAPIView,
-                      CreateAPIView,
-                      ListWithHeadersMixin,
-                      mixins.CreateModelMixin):
-    queryset = Mapping.objects.filter(is_active=True)
-    serializer_class = MappingCreateSerializer
-    solr_fields = {}
+class MappingVersionsListView(MappingVersionMixin, VersionedResourceChildMixin,
+                              ListWithHeadersMixin):
+    serializer_class = MappingVersionListSerializer
     solr_fields = {
         'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
         'concept': {'sortable': False, 'filterable': True, 'facet': False},
@@ -151,10 +134,60 @@ class MappingListView(MappingBaseView,
     def get(self, request, *args, **kwargs):
         self.filter_backends = [CollectionRestrictedMappingFilter] if 'collection' in kwargs else [SourceRestrictedMappingsFilter]
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        self.model = MappingVersion
-        self.queryset = MappingVersion.objects.filter(is_active=True)
+        self.updated_since = parse_updated_since_param(request)
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(MappingVersionsListView, self).get_queryset()
+        queryset = queryset.filter(is_active=True)
+        if not self.include_retired:
+            queryset = queryset.filter(~Q(retired=True))
+        if self.updated_since:
+            queryset = queryset.filter(updated_at__gte=self.updated_since)
+        return queryset
+
+    def get_owner(self):
+        owner = None
+        if 'user' in self.kwargs:
+            owner_id = self.kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in self.kwargs:
+            owner_id = self.kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
+
+
+class MappingVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
+    serializer_class = MappingVersionListSerializer
+    permission_classes = (CanViewParentDictionary,)
+
+    def get(self, request, *args, **kwargs):
         self.serializer_class = MappingVersionDetailSerializer
-        return super(MappingListView, self).get(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return MappingVersion.objects.filter(versioned_object_id=self.parent_resource.id, is_active=True)
+
+
+class MappingVersionDetailView(MappingVersionBaseView, RetrieveAPIView):
+    serializer_class = MappingVersionDetailSerializer
+    def initialize(self, request, path_info_segment, **kwargs):
+        super(MappingVersionDetailView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_level(self):
+        return 1
+
+class MappingListView(MappingBaseView,
+                      ListAPIView,
+                      CreateAPIView,
+                      ListWithHeadersMixin,
+                      mixins.CreateModelMixin):
+    queryset = Mapping.objects.filter(is_active=True)
+    serializer_class = MappingCreateSerializer
+
+    def get(self, request, *args, **kwargs):
+        delegate_view = MappingVersionsListView.as_view()
+        return delegate_view(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         self.permission_classes = (CanEditParentDictionary,)
@@ -194,9 +227,9 @@ class MappingListView(MappingBaseView,
 
 
 class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
-    model = Mapping
+    model = MappingVersion
     filter_backends = [PublicMappingsSearchFilter,]
-    queryset = Mapping.objects.filter(is_active=True)
+    queryset = MappingVersion.objects.filter(is_active=True)
     solr_fields = {
         'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},
         'concept': {'sortable': False, 'filterable': True, 'facet': False},
@@ -218,10 +251,11 @@ class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
         'toConceptOwnerType': {'sortable': False, 'filterable': True, 'facet': True},
     }
     include_retired = False
+    default_filters = {'is_active': True, 'is_latest_version': True}
 
     def get(self, request, *args, **kwargs):
         self.include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-        self.serializer_class = MappingDetailSerializer if self.is_verbose(request) else MappingListSerializer
+        self.serializer_class = MappingVersionDetailSerializer if self.is_verbose(request) else MappingVersionListSerializer
         self.limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 25)
         return self.list(request, *args, **kwargs)
 
