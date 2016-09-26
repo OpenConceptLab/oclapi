@@ -226,6 +226,7 @@ class MappingListView(MappingBaseView,
 class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
     model = MappingVersion
     filter_backends = [PublicMappingsSearchFilter,]
+    permission_classes = (CanEditParentDictionary,)
     queryset = MappingVersion.objects.filter(is_active=True)
     solr_fields = {
         'lastUpdate': {'sortable': True, 'filterable': False, 'facet': False},

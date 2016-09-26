@@ -47,7 +47,7 @@ class ListWithHeadersMixin(ListModelMixin):
 
     def list(self, request, *args, **kwargs):
         is_csv = request.QUERY_PARAMS.get('csv', False)
-        search_string = request.QUERY_PARAMS.get('q', False)
+        search_string = request.QUERY_PARAMS.get('type', None)
 
         if is_csv and not search_string:
             return self.get_csv(request)
