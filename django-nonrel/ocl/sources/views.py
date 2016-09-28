@@ -8,7 +8,9 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from django.shortcuts import get_list_or_404
 from rest_framework.response import Response
-from concepts.models import ConceptVersion
+from concepts.models import ConceptVersion, Concept
+from mappings.models import Mapping
+from collection.models import CollectionVersion
 from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import MappingVersion
 from mappings.serializers import MappingVersionDetailSerializer
@@ -22,6 +24,7 @@ from tasks import export_source
 from celery_once import AlreadyQueued
 from users.models import UserProfile
 from orgs.models import Organization
+from django.db.models import Q
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -107,6 +110,55 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             data['mappings'] = serializer.data
 
         return Response(data)
+
+    def destroy(self, request, *args, **kwargs):
+        resource_used_message = '''Resources from this source are being
+        referenced elsewhere please delete them before deleting the source.'''
+
+        source = self.get_object()
+        source_versions = SourceVersion.objects.filter(
+            versioned_object_id=source.id
+        )
+        concepts = Concept.objects.filter(parent_id=source.id)
+        mappings = Mapping.objects.filter(parent_id=source.id)
+
+        concept_ids = [c.id for c in concepts]
+        mapping_ids = [m.id for m in mappings]
+
+        concept_versions = ConceptVersion.objects.filter(
+            versioned_object_id__in=concept_ids
+        )
+        mapping_versions = MappingVersion.objects.filter(
+            versioned_object_id__in=mapping_ids
+        )
+
+        concept_version_ids = [c.id for c in concept_versions]
+        mapping_version_ids = [m.id for m in mapping_versions]
+
+        # Check if concepts from this source are in any collection
+        collections = CollectionVersion.objects.filter(concepts__in=concept_version_ids)
+        if collections:
+            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if mappings from this source are in any collection
+        collections = CollectionVersion.objects.filter(mappings__in=mapping_version_ids)
+        if collections:
+            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if mappings from this source are referred in any sources
+        mapping_versions = MappingVersion.objects.filter(
+            Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
+        )
+        if mapping_versions:
+            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        concepts.delete()
+        concept_versions.delete()
+        mappings.delete()
+        mapping_versions.delete()
+        source_versions.delete()
+        source.delete()
+        return Response({'detail': 'Successfully deleted source.'}, status=204)
 
 
 class SourceListView(SourceBaseView,

@@ -3,6 +3,7 @@ from moto import mock_s3
 from urlparse import urlparse
 from concepts.importer import ConceptsImporter
 from concepts.models import Concept, LocalizedText, ConceptVersion
+from orgs.models import Organization
 from concepts.tests import ConceptBaseTest
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -1899,7 +1900,6 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
         Concept.persist_new(concept1, self.user1, **kwargs)
 
-
         reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
         collection.expressions = [reference]
         collection.full_clean()
@@ -2144,3 +2144,161 @@ class CollectionVersionViewTest(SourceBaseTest):
         result = json.loads(response.content)
         self.assertEquals(result['id'], 'version2')
         self.assertEquals(result['released'], True)
+
+
+class SourceDeleteViewTest(SourceBaseTest):
+    def setUp(self):
+        self.tearDown()
+        super(SourceDeleteViewTest, self).setUp()
+        self.source1 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            )
+        kwargs = {
+            'parent_resource': self.org1,
+        }
+        Source.persist_new(self.source1, self.org1, **kwargs)
+
+        self.concept1 = Concept(
+            mnemonic='1',
+            created_by=self.org1,
+            updated_by=self.org1,
+            parent=self.source1,
+            concept_class='Diagnosis',
+            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Concept.persist_new(self.concept1, self.org1, **kwargs)
+
+        self.concept2 = Concept(
+            mnemonic='2',
+            created_by=self.org1,
+            updated_by=self.org1,
+            parent=self.source1,
+            concept_class='Diagnosis',
+            external_id='2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Concept.persist_new(self.concept2, self.org1, **kwargs)
+
+        self.mapping = Mapping(
+            parent=self.source1,
+            map_type='SAME-AS',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='junk'
+        )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Mapping.persist_new(self.mapping, self.org1, **kwargs)
+
+        self.collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(self.collection, self.org1, parent_resource=self.org1)
+
+        self.collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.collection,
+            released=True,
+            created_by=self.org1,
+            updated_by=self.org1,
+        )
+        CollectionVersion.persist_new(self.collection_version)
+
+    def test_delete_source_with_referenced_mapping_in_collection(self):
+        self.collection.expressions = [self.mapping.uri]
+        self.collection.full_clean()
+        self.collection.save()
+
+        self.client.login(username='user1', password='user1')
+        path = reverse('source-detail', kwargs={'org': self.org1.name, 'source': self.source1.mnemonic})
+        response = self.client.delete(path)
+        self.assertEquals(response.status_code, 400)
+        message = json.loads(response.content)['detail']
+        self.assertTrue('please delete them before deleting the source.' in message)
+
+    def test_delete_source_with_referenced_concept_in_collection(self):
+        self.collection.expressions = [self.concept1.uri]
+        self.collection.full_clean()
+        self.collection.save()
+
+        self.client.login(username='user1', password='user1')
+        path = reverse('source-detail', kwargs={'org': self.org1.name, 'source': self.source1.mnemonic})
+        response = self.client.delete(path)
+        self.assertEquals(response.status_code, 400)
+        message = json.loads(response.content)['detail']
+        self.assertTrue('please delete them before deleting the source.' in message)
+
+    def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
+        self.source2 = Source(
+            name='source2',
+            mnemonic='source2',
+            full_name='Source Two',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            )
+        kwargs = {
+            'parent_resource': self.org1,
+        }
+        Source.persist_new(self.source2, self.org1, **kwargs)
+
+        self.concept3 = Concept(
+            mnemonic='3',
+            created_by=self.org1,
+            updated_by=self.org1,
+            parent=self.source2,
+            concept_class='Diagnosis',
+            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': self.source2,
+        }
+        Concept.persist_new(self.concept3, self.org1, **kwargs)
+
+        self.mapping2 = Mapping(
+            parent=self.source2,
+            map_type='SAME-AS',
+            from_concept=self.concept1,
+            to_concept=self.concept3,
+            external_id='junk'
+        )
+        kwargs = {
+            'parent_resource': self.source2,
+        }
+        Mapping.persist_new(self.mapping2, self.org1, **kwargs)
+
+        self.client.login(username='user1', password='user1')
+        path = reverse('source-detail', kwargs={'org': self.org1.name, 'source': self.source1.mnemonic})
+        response = self.client.delete(path)
+        self.assertEquals(response.status_code, 400)
+        message = json.loads(response.content)['detail']
+        self.assertTrue('please delete them before deleting the source.' in message)
