@@ -714,7 +714,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping_version.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping_version.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping_version.to_concept_url, content['to_concept_url'])
-        self.assertEquals(mapping_version.url, content['url'])
+        self.assertEquals(self.mapping4.url, content['url'])# in case of HEAD, main will be fetched
 
     @skip("need to adapt for mapping versions")
     def test_mappings_list_positive__explicit_version(self):
@@ -815,7 +815,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping_version.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping_version.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping_version.to_concept_url, content['to_concept_url'])
-        self.assertEquals(mapping_version.url, content['url'])
+        self.assertEquals(self.mapping3.url, content['url'])  # in case of HEAD, main will be fetched
 
     @skip("need to adapt for mapping versions")
     def test_mappings_list_positive__explicit_org_and_version(self):

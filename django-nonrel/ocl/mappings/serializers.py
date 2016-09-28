@@ -153,7 +153,10 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
     to_source_url = serializers.URLField()
     to_concept_code = serializers.CharField(source='get_to_concept_code')
     to_concept_name = serializers.CharField(source='get_to_concept_name')
-    url = serializers.CharField(read_only=True)
+    # url = serializers.CharField(read_only=True)
+    # TODO: This is bad solution. in case of HEAD, main mapping should be fetched
+    # and if that happend then we need not to set the url as we do below
+    url = serializers.SerializerMethodField(method_name='get_url')
     version = serializers.CharField(source='mnemonic')
     id = serializers.CharField(read_only=True)
     versioned_object_id = serializers.CharField(source='versioned_object_id')
@@ -171,6 +174,12 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
         model = MappingVersion
         versioned_object_field_name = 'url'
         versioned_object_view_name = 'mapping-detail'
+
+
+    def get_url(self, obj):
+        if obj.is_latest_version:
+            return Mapping.objects.get(id=obj.versioned_object_id).url
+        return obj.url
 
 
 
