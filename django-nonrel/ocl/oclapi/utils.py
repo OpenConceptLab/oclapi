@@ -110,7 +110,7 @@ def get_class(kls):
 
 def write_export_file(version, resource_type, resource_serializer_type, logger):
     cwd = cd_temp()
-    logger.info('Writing export file to tmp directory: %s' % tmpdir)
+    logger.info('Writing export file to tmp directory: %s' % cwd)
 
     logger.info('Found %s version %s.  Looking up resource...' % (resource_type, version.mnemonic))
     resource = version.versioned_object
