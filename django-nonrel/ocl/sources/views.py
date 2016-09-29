@@ -152,7 +152,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         # Check if mappings from this source are referred in any sources
         mapping_versions = MappingVersion.objects.filter(
             Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
-        )
+        ).exclude(parent_id=source.id)
         if mapping_versions:
             return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
 
