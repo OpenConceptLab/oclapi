@@ -22,6 +22,7 @@ from celery_once import AlreadyQueued
 from django.shortcuts import get_list_or_404
 from collection.filters import CollectionSearchFilter
 from tasks import update_collection_in_solr, delete_resources_from_collection_in_solr
+from django.core.exceptions import ValidationError
 
 
 logger = logging.getLogger('oclapi')
@@ -103,9 +104,10 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+        expressions = request.DATA.get("expressions")
         prev_refs = self.parent_resource.references
         created = False
-        save_kwargs = {'force_update': True, 'expressions': request.DATA.get("expressions")}
+        save_kwargs = {'force_update': True, 'expressions': expressions}
 
         success_status_code = status.HTTP_200_OK
 
@@ -115,13 +117,17 @@ class CollectionReferencesView(CollectionBaseView,
         if serializer.is_valid():
             self.pre_save(serializer.object)
             self.parent_resource = serializer.save(**save_kwargs)
-            if serializer.is_valid():
-                self.post_save(self.parent_resource, created=created)
-                update_collection_in_solr.delay(serializer.object.get_head().id,
-                                                CollectionReference.diff(serializer.object.references, prev_refs))
-                return Response(serializer.data, status=success_status_code)
+            self.post_save(self.parent_resource, created=created)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        update_collection_in_solr.delay(
+            serializer.object.get_head().id,
+            CollectionReference.diff(serializer.object.references, prev_refs)
+        )
+
+        if 'references' in serializer.errors:
+            serializer.object.save()
+            return Response(serializer.errors['references'], status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=success_status_code)
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = CollectionReferenceSerializer

@@ -72,7 +72,7 @@ class Collection(ConceptContainerModel):
             if error:
                 errors[expression] = error
         if errors:
-            raise ValidationError(errors)
+            raise ValidationError({'references': [errors]})
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
