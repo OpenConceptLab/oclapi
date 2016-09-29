@@ -249,7 +249,7 @@ class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPI
         if self.is_latest:
             # Determine the base queryset to use.
             if queryset is None:
-                queryset = self.filter_queryset(self.get_queryset().order_by('-created_at'))
+                queryset = self.filter_queryset(self.get_queryset().filter(retired=False).order_by('-created_at'))
             else:
                 pass  # Deprecation warning
 
