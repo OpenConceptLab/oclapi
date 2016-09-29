@@ -136,12 +136,16 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         mapping_version_ids = [m.id for m in mapping_versions]
 
         # Check if concepts from this source are in any collection
-        collections = CollectionVersion.objects.filter(concepts__in=concept_version_ids)
+        collections = CollectionVersion.objects.filter(
+            Q(concepts__in=concept_version_ids) | Q(concepts__in=concept_ids)
+        )
         if collections:
             return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if mappings from this source are in any collection
-        collections = CollectionVersion.objects.filter(mappings__in=mapping_version_ids)
+        collections = CollectionVersion.objects.filter(
+            Q(mappings__in=mapping_version_ids) | Q(mappings__in=mapping_ids)
+        )
         if collections:
             return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
 
