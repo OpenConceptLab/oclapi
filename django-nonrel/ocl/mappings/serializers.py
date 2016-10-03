@@ -118,11 +118,12 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     url = serializers.CharField(read_only=True)
 
     extras = serializers.WritableField(required=False)
-
+    update_comment = serializers.CharField(required=False)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
+
 
 class MappingListSerializer(MappingBaseSerializer):
     external_id = serializers.CharField(required=False)
@@ -169,6 +170,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
     to_source_name = serializers.CharField(read_only=True)
     versioned_object_url = serializers.CharField(source='to_mapping_url')
     is_latest_version = serializers.BooleanField(source='is_latest_version')
+    update_comment = serializers.CharField(required=False)
 
     class Meta:
         model = MappingVersion
@@ -210,5 +212,8 @@ class MappingUpdateSerializer(MappingBaseSerializer):
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
-        errors = Mapping.persist_changes(obj, request_user)
+        if 'update_comment' in kwargs:
+            errors = Mapping.persist_changes(obj, request_user, update_comment = kwargs.get('update_comment'))
+        else :
+            errors = Mapping.persist_changes(obj, request_user)
         self._errors.update(errors)

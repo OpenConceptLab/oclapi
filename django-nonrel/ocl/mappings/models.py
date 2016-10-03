@@ -186,7 +186,7 @@ class Mapping(BaseModel):
         return True
 
     @classmethod
-    def persist_changes(cls, obj, updated_by, **kwargs):
+    def persist_changes(cls, obj, updated_by, update_comment=None, **kwargs):
         errors = dict()
         obj.updated_by = updated_by
         try:
@@ -213,6 +213,7 @@ class Mapping(BaseModel):
 
             new_latest_version  = MappingVersion.for_mapping(obj)
             new_latest_version.previous_version = prev_latest_version
+            new_latest_version.update_comment = update_comment
             new_latest_version.mnemonic = int(prev_latest_version.mnemonic) + 1
             new_latest_version.save()
 
@@ -348,6 +349,7 @@ class MappingVersion(ResourceVersionModel):
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
+    update_comment = models.TextField(null=True, blank=True)
 
     class Meta:
         pass

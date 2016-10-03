@@ -77,6 +77,10 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
 
         created = False
         save_kwargs = {'force_update': True}
+        if 'update_comment' in request.DATA:
+            save_kwargs =  {'force_update':True, 'update_comment': request.DATA.get('update_comment')}
+        else:
+            save_kwargs = {'force_update': True}
         success_status_code = status.HTTP_200_OK
 
         serializer = self.get_serializer(self.object, data=request.DATA,
