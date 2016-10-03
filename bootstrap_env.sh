@@ -20,6 +20,7 @@ apt-get install python-setuptools
 easy_install virtualenv
 apt-get install nodejs
 apt-get install npm
+ln -s /usr/bin/nodejs /usr/bin/node
 apt-get install libpq-dev
 apt-get install libffi-dev
 apt-get install htop
