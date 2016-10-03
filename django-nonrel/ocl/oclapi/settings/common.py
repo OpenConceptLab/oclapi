@@ -93,8 +93,8 @@ class Common(Configuration):
     )
 
     MIDDLEWARE_CLASSES = (
-        'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
+        'corsheaders.middleware.CorsMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',

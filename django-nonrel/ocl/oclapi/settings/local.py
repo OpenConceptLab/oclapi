@@ -23,7 +23,6 @@ class Test(Local):
         }
     }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
-    INSTALLED_APPS = Common.INSTALLED_APPS
 
 class IntegrationTest(Common):
     """
