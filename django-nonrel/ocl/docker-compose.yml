@@ -6,7 +6,7 @@ services:
     ports:
       - "27017:27017"
     networks:
-      app_net:
+      ocl_default:
         ipv4_address: 172.18.0.4
   redis:
     container_name: ocl_redis
