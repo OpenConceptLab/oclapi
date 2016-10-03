@@ -152,8 +152,8 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     active_mappings = resource_serializer.object.active_mappings
     if active_mappings:
         logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), active_mappings, batch_size))
-        mapping_class = get_class('mappings.models.Mapping')
-        mapping_serializer_class = get_class('mappings.serializers.MappingDetailSerializer')
+        mapping_class = get_class('mappings.models.MappingVersion')
+        mapping_serializer_class = get_class('mappings.serializers.MappingVersionDetailSerializer')
         for start in range(0, active_mappings, batch_size):
             end = min(start + batch_size, active_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
