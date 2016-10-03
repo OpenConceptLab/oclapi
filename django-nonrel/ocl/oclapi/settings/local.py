@@ -23,6 +23,7 @@ class Test(Local):
         }
     }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
+    INSTALLED_APPS = Common.INSTALLED_APPS
 
 class IntegrationTest(Common):
     """
@@ -47,3 +48,4 @@ class IntegrationTest(Common):
 
     BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    INSTALLED_APPS = Common.INSTALLED_APPS
