@@ -1204,7 +1204,6 @@ class SourceVersionClassMethodTest(SourceBaseTest):
 
 class SourceVersionListViewTest(SourceBaseTest):
 
-    @skip('dont know why its failing temp skip.. wip')
     def test_get(self):
         source = Source(
             name='source',
