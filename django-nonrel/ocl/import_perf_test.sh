@@ -24,7 +24,7 @@ yes | python manage.py rebuild_index
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import mappings"
-if [ $runtime -ge 410 ];
+if [ $runtime -ge 420 ];
 then
 	echo >&2 "It has taken longer to import mappings"
 	exit 1;
