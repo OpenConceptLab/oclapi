@@ -978,7 +978,8 @@ class MappingViewsTest(MappingBaseTest):
             'mapping': mapping.mnemonic,
         }
         data = {
-            'map_type': 'Something Else'
+            'map_type': 'Something Else',
+            'update_comment':'test update'
         }
         response = self.client.put(
             reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
@@ -991,6 +992,8 @@ class MappingViewsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertEquals(mapping.map_type, content['map_type'])
         self.assertEquals('Something Else', content['map_type'])
+        mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
+        self.assertEquals(mapping_version.update_comment, 'test update')
 
     def test_mappings_update_positive__user_owner(self):
         self.client.login(username='user1', password='user1')
