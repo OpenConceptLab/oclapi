@@ -107,7 +107,7 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     if len(mappings) > 0:
         mappings = Mapping.objects.filter(id__in=mappings)
         version_ids = map(lambda m: m.get_latest_version.id, mappings)
-        versions = MappingVersion.objects.filter(mnemonic__in=version_ids)
+        versions = MappingVersion.objects.filter(id__in=version_ids)
         update_all_in_index(MappingVersion, versions)
 
     cv._ocl_processing = False
