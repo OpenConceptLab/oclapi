@@ -18,8 +18,8 @@ services:
       - mongo
       - solr
     links:
-      - "mongo:api.dev.openconceptlab.org"
-      - "solr:solr.dev.openconceptlab.org"
+      - "mongo:mongo.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
     ports:
       #ports for debugging
       - "8001:8001"
