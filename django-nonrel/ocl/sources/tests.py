@@ -4,19 +4,20 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import json
+import unittest
+
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
+from concepts.models import Concept, LocalizedText
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
-from sources.models import Source, SourceVersion
-from concepts.models import Concept, LocalizedText, ConceptVersion
-from users.models import UserProfile
-from django.core.urlresolvers import reverse
-import json
+from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_TYPE_OPENMRS
 from test_helper.base import OclApiBaseTestCase
-from unittest import skip
+from users.models import UserProfile
 
 class SourceBaseTest(OclApiBaseTestCase):
     def setUp(self):
@@ -160,6 +161,17 @@ class SourceTest(SourceBaseTest):
         self.assertEquals(self.userprofile1.resource_type, source.parent_resource_type)
         self.assertEquals(0, source.num_versions)
 
+    def test_create_source_with_openmrs_validation_type(self):
+        source = Source(
+            name='source1',
+            mnemonic='source1',
+            parent=self.org1,
+            created_by=self.user1,
+            updated_by=self.user1,
+            custom_validation_type=CUSTOM_VALIDATION_TYPE_OPENMRS)
+
+        self.assertEquals("OpenMRS", source.custom_validation_type)
+
 class SourceClassMethodTest(SourceBaseTest):
 
     def setUp(self):
@@ -175,6 +187,7 @@ class SourceClassMethodTest(SourceBaseTest):
             website='www.source1.com',
             description='This is the first test source'
         )
+
 
     def test_persist_new_positive(self):
         kwargs = {
