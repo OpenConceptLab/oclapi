@@ -3,6 +3,7 @@ from oclapi.utils import compact, write_csv_to_s3, get_csv_from_s3
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from oclapi.utils import compact, extract_values
+from users.models import UserProfile
 
 __author__ = 'misternando'
 
@@ -97,14 +98,14 @@ class ListWithHeadersMixin(ListModelMixin):
         return map(lambda o: o.id, self.object_list[0:100])
 
     def get_csv(self, request, queryset=None):
-        filename, url, prepare_new_file, is_owner = None, None, True, False
+        filename, url, prepare_new_file, is_member = None, None, True, False
 
         parent = self.get_parent()
 
         if parent:
             prepare_new_file = False
             user = request.QUERY_PARAMS.get('user', None)
-            is_owner = (user == parent.created_by)
+            is_member = self._is_member(parent, user)
 
         try:
             path = request.__dict__.get('_request').path
@@ -116,17 +117,20 @@ class ListWithHeadersMixin(ListModelMixin):
             kwargs = {}
 
         if filename and prepare_new_file:
-            url = get_csv_from_s3(filename, is_owner)
+            url = get_csv_from_s3(filename, is_member)
 
         if not url:
-            queryset = queryset or self._get_query_set_from_view(is_owner)
+            queryset = queryset or self._get_query_set_from_view(is_member)
             data = self.get_csv_rows(queryset) if hasattr(self, 'get_csv_rows') else queryset.values()
-            url = write_csv_to_s3(data, is_owner, **kwargs)
+            url = write_csv_to_s3(data, is_member, **kwargs)
 
         return Response({'url': url}, status=200)
 
-    def _get_query_set_from_view(self, is_owner):
-        return self.get_queryset() if is_owner else self.get_queryset()[0:100]
+    def _is_member(self, parent, requesting_user):
+        return UserProfile.objects.get(mnemonic=requesting_user).id in parent.owner.members
+
+    def _get_query_set_from_view(self, is_member):
+        return self.get_queryset() if is_member else self.get_queryset()[0:100]
 
     def get_parent(self):
         if hasattr(self, 'parent_resource'):
