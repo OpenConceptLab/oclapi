@@ -137,7 +137,8 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
 
 class CollectionVersionListSerializer(ResourceVersionSerializer):
     id = serializers.CharField(source='mnemonic')
-    released = serializers.CharField()
+    released = serializers.BooleanField(required=False)
+    retired = serializers.BooleanField(required=False)
     owner = serializers.CharField(source='parent_resource')
     owner_type = serializers.CharField(source='parent_resource_type')
     owner_url = serializers.CharField(source='parent_url')

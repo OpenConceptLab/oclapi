@@ -1,0 +1,369 @@
+[2016/10/03 03:10:38] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/[0m
+[2016/10/03 03:10:39] INFO    : [36m0.704265832901 sec GET /users/rkadiyan/ : 200[0m
+[2016/10/03 03:10:39] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/orgs/?limit=20[0m
+[2016/10/03 03:10:39] INFO    : [36m0.0127408504486 sec GET /users/rkadiyan/orgs/?limit=20 : 200[0m
+[2016/10/03 03:10:39] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/?limit=20[0m
+[2016/10/03 03:10:39] INFO    : [36m0.158066987991 sec GET /users/rkadiyan/sources/?limit=20 : 200[0m
+[2016/10/03 03:10:39] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/?limit=20[0m
+[2016/10/03 03:10:39] INFO    : [36m0.0290269851685 sec GET /users/rkadiyan/collections/?limit=20 : 200[0m
+[2016/10/03 03:10:41] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/[0m
+[2016/10/03 03:10:41] INFO    : [36m0.0205299854279 sec GET /users/rkadiyan/collections/Collec1/ : 200[0m
+[2016/10/03 03:10:42] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/[0m
+[2016/10/03 03:10:42] INFO    : [36m0.0171310901642 sec GET /users/rkadiyan/collections/Collec1/ : 200[0m
+[2016/10/03 03:10:42] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 03:10:42] INFO    : [36m0.0236351490021 sec GET /users/rkadiyan/collections/Collec1/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:42] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/references/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:42] INFO    : [36m0.0125758647919 sec GET /users/rkadiyan/collections/Collec1/references/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:45] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/[0m
+[2016/10/03 03:10:45] INFO    : [36m0.0199699401855 sec GET /users/rkadiyan/collections/Collec1/ : 200[0m
+[2016/10/03 03:10:45] INFO    : [36mrkadiyan 172.18.0.1 GET /orgs/?limit=0[0m
+[2016/10/03 03:10:45] INFO    : [36m0.0150589942932 sec GET /orgs/?limit=0 : 200[0m
+[2016/10/03 03:10:48] INFO    : [36mrkadiyan 172.18.0.1 GET /users/?limit=0[0m
+[2016/10/03 03:10:48] INFO    : [36m0.0122010707855 sec GET /users/?limit=0 : 200[0m
+[2016/10/03 03:10:50] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/?limit=0[0m
+[2016/10/03 03:10:50] INFO    : [36m0.0327131748199 sec GET /users/rkadiyan/sources/?limit=0 : 200[0m
+[2016/10/03 03:10:51] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s1/versions/?limit=0[0m
+[2016/10/03 03:10:51] INFO    : [36m0.0189170837402 sec GET /users/rkadiyan/sources/s1/versions/?limit=0 : 200[0m
+[2016/10/03 03:10:53] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s1/HEAD/mappings/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:53] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s1/HEAD/concepts/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:54] INFO    : [36m0.158375024796 sec GET /users/rkadiyan/sources/s1/HEAD/concepts/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:54] INFO    : [36m0.173645019531 sec GET /users/rkadiyan/sources/s1/HEAD/mappings/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:56] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/versions/?limit=0[0m
+[2016/10/03 03:10:56] INFO    : [36m0.0188999176025 sec GET /users/rkadiyan/sources/s2/versions/?limit=0 : 200[0m
+[2016/10/03 03:10:56] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:56] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:56] INFO    : [36m0.0631620883942 sec GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:56] INFO    : [36m0.0719339847565 sec GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:57] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:58] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:10:58] INFO    : [36m0.0425720214844 sec GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:10:58] INFO    : [36m0.0678379535675 sec GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:11:06] INFO    : [36mrkadiyan 172.18.0.1 PUT /users/rkadiyan/collections/Collec1/references/[0m
+[2016/10/03 03:11:06] INFO    : [36m0.128386974335 sec PUT /users/rkadiyan/collections/Collec1/references/ : 200[0m
+[2016/10/03 03:11:06] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/[0m
+[2016/10/03 03:11:06] INFO    : [36m0.0201830863953 sec GET /users/rkadiyan/collections/Collec1/ : 200[0m
+[2016/10/03 03:11:06] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 03:11:06] INFO    : [36m0.0326428413391 sec GET /users/rkadiyan/collections/Collec1/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 03:11:06] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/references/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:11:06] INFO    : [36m0.0147240161896 sec GET /users/rkadiyan/collections/Collec1/references/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:11:08] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/collections/Collec1/[0m
+[2016/10/03 03:11:08] INFO    : [36m0.0160121917725 sec GET /users/rkadiyan/collections/Collec1/ : 200[0m
+[2016/10/03 03:11:08] INFO    : [36mrkadiyan 172.18.0.1 GET /orgs/?limit=0[0m
+[2016/10/03 03:11:08] INFO    : [36m0.0149810314178 sec GET /orgs/?limit=0 : 200[0m
+[2016/10/03 03:11:12] INFO    : [36mrkadiyan 172.18.0.1 GET /users/?limit=0[0m
+[2016/10/03 03:11:12] INFO    : [36m0.0137429237366 sec GET /users/?limit=0 : 200[0m
+[2016/10/03 03:11:13] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/?limit=0[0m
+[2016/10/03 03:11:13] INFO    : [36m0.0268459320068 sec GET /users/rkadiyan/sources/?limit=0 : 200[0m
+[2016/10/03 03:11:15] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/versions/?limit=0[0m
+[2016/10/03 03:11:15] INFO    : [36m0.0261418819427 sec GET /users/rkadiyan/sources/s2/versions/?limit=0 : 200[0m
+[2016/10/03 03:11:16] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:11:16] INFO    : [36mrkadiyan 172.18.0.1 GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1[0m
+[2016/10/03 03:11:16] INFO    : [36m0.0477809906006 sec GET /users/rkadiyan/sources/s2/HEAD/concepts/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:11:16] INFO    : [36m0.0603981018066 sec GET /users/rkadiyan/sources/s2/HEAD/mappings/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 03:11:20] INFO    : [36mrkadiyan 172.18.0.1 PUT /users/rkadiyan/collections/Collec1/references/[0m
+[2016/10/03 03:11:20] INFO    : [35m0.0253620147705 sec PUT /users/rkadiyan/collections/Collec1/references/ : 400[0m
+[2016/10/03 03:11:20] ERROR   : [35m{"/users/rkadiyan/sources/s2/concepts/d2d/": ["Reference Already Exists!"]}, - 400[0m
+[2016/10/03 07:44:25] INFO    : [35m0.703665018082 sec GET /users/rkadiyan/ : 500[0m
+[2016/10/03 07:44:38] INFO    : [35m0.647206068039 sec GET /users/rkadiyan/ : 500[0m
+[2016/10/03 07:47:02] INFO    : [36m 172.18.0.1 POST /users/[0m
+[2016/10/03 07:47:03] INFO    : [35m0.470007181168 sec POST /users/ : 401[0m
+[2016/10/03 07:47:03] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:47:09] INFO    : [36m 172.18.0.1 POST /users/login/[0m
+[2016/10/03 07:47:09] INFO    : [35m0.0065279006958 sec POST /users/login/ : 401[0m
+[2016/10/03 07:47:09] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:47:09] INFO    : [36m 172.18.0.1 GET /users/hello/[0m
+[2016/10/03 07:47:09] INFO    : [35m0.00646185874939 sec GET /users/hello/ : 401[0m
+[2016/10/03 07:47:09] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:47:09] INFO    : [36m 172.18.0.1 GET /users/hello/orgs/?limit=20[0m
+[2016/10/03 07:47:09] INFO    : [35m0.00510001182556 sec GET /users/hello/orgs/?limit=20 : 401[0m
+[2016/10/03 07:47:09] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:47:09] INFO    : [36m 172.18.0.1 GET /users/hello/sources/?limit=20[0m
+[2016/10/03 07:47:09] INFO    : [35m0.00515699386597 sec GET /users/hello/sources/?limit=20 : 401[0m
+[2016/10/03 07:47:09] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:47:09] INFO    : [36m 172.18.0.1 GET /users/hello/collections/?limit=20[0m
+[2016/10/03 07:47:09] INFO    : [35m0.00452280044556 sec GET /users/hello/collections/?limit=20 : 401[0m
+[2016/10/03 07:47:09] ERROR   : [35m{"detail": "Invalid token"}, - 401[0m
+[2016/10/03 07:49:56] INFO    : [36m 172.18.0.1 GET /[0m
+[2016/10/03 07:49:56] INFO    : [35m0.170387983322 sec GET / : 401[0m
+[2016/10/03 07:49:56] INFO    : [36m 172.18.0.1 GET /favicon.ico[0m
+[2016/10/03 07:49:56] INFO    : [35m0.00814199447632 sec GET /favicon.ico : 404[0m
+[2016/10/03 07:49:59] INFO    : [36m 172.18.0.1 GET /admin/authtoken/token/[0m
+[2016/10/03 07:49:59] INFO    : [36m0.0249950885773 sec GET /admin/authtoken/token/ : 200[0m
+[2016/10/03 07:50:03] INFO    : [36m 172.18.0.1 POST /admin/authtoken/token/[0m
+[2016/10/03 07:50:03] INFO    : [36m0.0431258678436 sec POST /admin/authtoken/token/ : 302[0m
+[2016/10/03 07:50:03] INFO    : [36mroot 172.18.0.1 GET /admin/authtoken/token/[0m
+[2016/10/03 07:50:03] INFO    : [36m0.0368669033051 sec GET /admin/authtoken/token/ : 200[0m
+[2016/10/03 07:50:03] INFO    : [36mroot 172.18.0.1 GET /admin/jsi18n/[0m
+[2016/10/03 07:50:03] INFO    : [36m0.0484828948975 sec GET /admin/jsi18n/ : 200[0m
+[2016/10/03 07:54:21] INFO    : [36mroot 172.18.0.1 POST /users/[0m
+[2016/10/03 07:54:22] INFO    : [36m0.714502096176 sec POST /users/ : 201[0m
+[2016/10/03 07:54:32] INFO    : [36mroot 172.18.0.1 POST /users/login/[0m
+[2016/10/03 07:54:32] INFO    : [36m0.0204060077667 sec POST /users/login/ : 200[0m
+[2016/10/03 07:54:33] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 07:54:33] INFO    : [36m0.0106909275055 sec GET /users/helloz/ : 200[0m
+[2016/10/03 07:54:33] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 07:54:33] INFO    : [36m0.00921392440796 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 07:54:33] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 07:54:33] INFO    : [36m0.0305120944977 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 07:54:33] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 07:54:33] INFO    : [36m0.035434961319 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:06:09] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:10] INFO    : [36m0.432023048401 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:23] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/sources/[0m
+[2016/10/03 08:06:23] INFO    : [36m0.142695903778 sec POST /users/helloz/sources/ : 201[0m
+[2016/10/03 08:06:23] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:06:23] INFO    : [36m0.0252120494843 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:06:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:31] INFO    : [36m0.0116050243378 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:06:31] INFO    : [36m0.00991582870483 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:06:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:06:31] INFO    : [36m0.0305731296539 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:06:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:06:31] INFO    : [36m0.0232927799225 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:06:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:34] INFO    : [36m0.013594865799 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:06:34] INFO    : [36m0.0124869346619 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:06:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:06:34] INFO    : [36m0.0232980251312 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:06:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:06:34] INFO    : [36m0.0206661224365 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:06:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:36] INFO    : [36m0.0130491256714 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:06:36] INFO    : [36m0.0101881027222 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:06:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:06:36] INFO    : [36m0.015625 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:06:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:06:36] INFO    : [36m0.0198857784271 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:06:37] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:37] INFO    : [36m0.0116820335388 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:46] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:46] INFO    : [36m0.0154509544373 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:52] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/collections/[0m
+[2016/10/03 08:06:52] INFO    : [36m0.120151996613 sec POST /users/helloz/collections/ : 201[0m
+[2016/10/03 08:06:52] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:06:52] INFO    : [36m0.016716003418 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:06:58] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:06:58] INFO    : [36m0.0151698589325 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:06:58] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:06:58] INFO    : [36m0.0108079910278 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:06:58] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:06:58] INFO    : [36m0.0260019302368 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:06:58] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:06:58] INFO    : [36m0.021842956543 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:06:59] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:06:59] INFO    : [36m0.0357551574707 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:07:00] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:07:00] INFO    : [36m0.0235469341278 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:07:00] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1[0m
+[2016/10/03 08:07:01] INFO    : [36m0.0819849967957 sec GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1 : 200[0m
+[2016/10/03 08:07:01] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:07:01] INFO    : [36m0.0134348869324 sec GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:07:02] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:07:02] INFO    : [36m0.0223119258881 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:07:11] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/sources/source01/concepts/[0m
+[2016/10/03 08:07:11] INFO    : [36m0.273319959641 sec POST /users/helloz/sources/source01/concepts/ : 201[0m
+[2016/10/03 08:07:11] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/3r23r/[0m
+[2016/10/03 08:07:11] INFO    : [36m0.0262558460236 sec GET /users/helloz/sources/source01/concepts/3r23r/ : 200[0m
+[2016/10/03 08:07:13] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true[0m
+[2016/10/03 08:07:13] INFO    : [36m0.0251228809357 sec GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true : 200[0m
+[2016/10/03 08:07:20] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:07:20] INFO    : [36m0.0240290164948 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:07:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:07:21] INFO    : [36m0.0224421024323 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:07:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1[0m
+[2016/10/03 08:07:21] INFO    : [36m0.039116859436 sec GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1 : 200[0m
+[2016/10/03 08:07:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:07:21] INFO    : [36m0.0193419456482 sec GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:07:22] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:07:22] INFO    : [36m0.025130033493 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:12:36] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/sources/source01/concepts/[0m
+[2016/10/03 08:12:36] INFO    : [36m0.168874979019 sec POST /users/helloz/sources/source01/concepts/ : 201[0m
+[2016/10/03 08:12:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/aaa/[0m
+[2016/10/03 08:12:36] INFO    : [36m0.0194368362427 sec GET /users/helloz/sources/source01/concepts/aaa/ : 200[0m
+[2016/10/03 08:14:12] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:12] INFO    : [36m0.0212361812592 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:13] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:13] INFO    : [36m0.030503988266 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:13] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/mappings/?limit=25&verbose=true&page=1[0m
+[2016/10/03 08:14:13] INFO    : [36m0.0405919551849 sec GET /users/helloz/sources/source01/mappings/?limit=25&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:13] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:14:13] INFO    : [36m0.0219399929047 sec GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:16] INFO    : [36m0.02219414711 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:21] INFO    : [36m0.0210919380188 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1[0m
+[2016/10/03 08:14:22] INFO    : [36m0.0343639850616 sec GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:22] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:14:22] INFO    : [36m0.0146999359131 sec GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:23] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/aaa/[0m
+[2016/10/03 08:14:23] INFO    : [36m0.0203020572662 sec GET /users/helloz/sources/source01/concepts/aaa/ : 200[0m
+[2016/10/03 08:14:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:31] INFO    : [36m0.019434928894 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:23] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:14:23] INFO    : [36m0.0276339054108 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:14:23] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1[0m
+[2016/10/03 08:14:23] INFO    : [36m0.0328440666199 sec GET /users/helloz/sources/source01/concepts/?limit=25&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:23] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:14:23] INFO    : [36m0.013200044632 sec GET /users/helloz/sources/source01/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:25] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/3r23r/[0m
+[2016/10/03 08:14:25] INFO    : [36m0.0236849784851 sec GET /users/helloz/sources/source01/concepts/3r23r/ : 200[0m
+[2016/10/03 08:14:27] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true[0m
+[2016/10/03 08:14:27] INFO    : [36m0.0347590446472 sec GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true : 200[0m
+[2016/10/03 08:14:33] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/sources/source01/mappings/[0m
+[2016/10/03 08:14:33] INFO    : [36m0.212651968002 sec POST /users/helloz/sources/source01/mappings/ : 201[0m
+[2016/10/03 08:14:33] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true[0m
+[2016/10/03 08:14:33] INFO    : [36m0.0335109233856 sec GET /users/helloz/sources/source01/concepts/3r23r/?includeInverseMappings=true&verbose=true&includeMappings=true : 200[0m
+[2016/10/03 08:14:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:14:34] INFO    : [36m0.0146009922028 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:14:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:14:34] INFO    : [36m0.010400056839 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:14:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:14:34] INFO    : [36m0.0189609527588 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:14:34] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:14:34] INFO    : [36m0.0211129188538 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:14:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:14:36] INFO    : [36m0.0167310237885 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:14:38] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:14:38] INFO    : [36m0.0213279724121 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:14:39] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:14:39] INFO    : [36m0.0220739841461 sec GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:39] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:14:39] INFO    : [36m0.0214920043945 sec GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:43] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:14:43] INFO    : [36m0.0175170898438 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:14:43] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:14:43] INFO    : [36m0.0138309001923 sec GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:14:44] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=1[0m
+[2016/10/03 08:14:44] INFO    : [36m0.0150852203369 sec GET /users/helloz/collections/coll/versions/?limit=1 : 200[0m
+[2016/10/03 08:14:44] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:14:44] INFO    : [36m0.0150780677795 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:14:47] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=1[0m
+[2016/10/03 08:14:47] INFO    : [36m0.0189299583435 sec GET /users/helloz/collections/coll/versions/?limit=1 : 200[0m
+[2016/10/03 08:14:47] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/collections/coll/versions/[0m
+[2016/10/03 08:14:47] INFO    : [36m0.0490820407867 sec POST /users/helloz/collections/coll/versions/ : 201[0m
+[2016/10/03 08:14:47] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:14:47] INFO    : [36m0.0166308879852 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:14:47] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:14:47] INFO    : [36m0.0289061069489 sec GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:15:26] INFO    : [36mhelloz 172.18.0.1 PUT /users/helloz/collections/coll/r24r/[0m
+[2016/10/03 08:15:26] INFO    : [36m0.0225291252136 sec PUT /users/helloz/collections/coll/r24r/ : 200[0m
+[2016/10/03 08:15:29] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:15:30] INFO    : [36m0.0190119743347 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:15:30] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:15:30] INFO    : [36m0.0425980091095 sec GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:15:30] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:15:30] INFO    : [36m0.0130870342255 sec GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:15:31] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:15:31] INFO    : [36m0.024304151535 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:15:31] INFO    : [36mhelloz 172.18.0.1 GET /orgs/?limit=0[0m
+[2016/10/03 08:15:31] INFO    : [36m0.00993299484253 sec GET /orgs/?limit=0 : 200[0m
+[2016/10/03 08:15:34] INFO    : [36mhelloz 172.18.0.1 GET /users/?limit=0[0m
+[2016/10/03 08:15:34] INFO    : [36m0.0131530761719 sec GET /users/?limit=0 : 200[0m
+[2016/10/03 08:15:35] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=0[0m
+[2016/10/03 08:15:35] INFO    : [36m0.0259931087494 sec GET /users/helloz/sources/?limit=0 : 200[0m
+[2016/10/03 08:15:37] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0[0m
+[2016/10/03 08:15:37] INFO    : [36m0.0239980220795 sec GET /users/helloz/sources/source01/versions/?limit=0 : 200[0m
+[2016/10/03 08:15:39] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/HEAD/concepts/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:15:39] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/HEAD/mappings/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:15:39] INFO    : [36m0.102572917938 sec GET /users/helloz/sources/source01/HEAD/concepts/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:15:39] INFO    : [36m0.105185031891 sec GET /users/helloz/sources/source01/HEAD/mappings/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:15:43] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=0[0m
+[2016/10/03 08:15:43] INFO    : [36m0.0250329971313 sec GET /users/helloz/collections/?limit=0 : 200[0m
+[2016/10/03 08:15:45] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=0[0m
+[2016/10/03 08:15:45] INFO    : [36m0.0210430622101 sec GET /users/helloz/collections/coll/versions/?limit=0 : 200[0m
+[2016/10/03 08:15:56] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=0[0m
+[2016/10/03 08:15:56] INFO    : [36m0.0247139930725 sec GET /users/helloz/sources/?limit=0 : 200[0m
+[2016/10/03 08:15:58] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0[0m
+[2016/10/03 08:15:58] INFO    : [36m0.0191659927368 sec GET /users/helloz/sources/source01/versions/?limit=0 : 200[0m
+[2016/10/03 08:16:08] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:16:08] INFO    : [36m0.0206301212311 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:16:10] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:16:10] INFO    : [36m0.017205953598 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:16:10] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:16:10] INFO    : [36m0.0195817947388 sec GET /users/helloz/collections/coll/versions/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:16:17] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=0[0m
+[2016/10/03 08:16:17] INFO    : [36m0.0233449935913 sec GET /users/helloz/collections/?limit=0 : 200[0m
+[2016/10/03 08:16:18] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=0[0m
+[2016/10/03 08:16:18] INFO    : [36m0.0233950614929 sec GET /users/helloz/collections/coll/versions/?limit=0 : 200[0m
+[2016/10/03 08:32:54] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:32:54] INFO    : [36m0.0272769927979 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:32:54] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:32:54] INFO    : [36m0.00978899002075 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:32:54] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:32:54] INFO    : [36m0.0345950126648 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:32:54] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:32:54] INFO    : [36m0.021782875061 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:33:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:33:16] INFO    : [36m0.0204060077667 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:33:17] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:33:17] INFO    : [36m0.024158000946 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:33:17] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:33:17] INFO    : [36m0.0227119922638 sec GET /users/helloz/sources/source01/versions/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:33:19] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=1[0m
+[2016/10/03 08:33:19] INFO    : [36m0.017639875412 sec GET /users/helloz/sources/source01/versions/?limit=1 : 200[0m
+[2016/10/03 08:33:19] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:33:19] INFO    : [36m0.023766040802 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:33:40] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=1[0m
+[2016/10/03 08:33:40] INFO    : [36m0.017637014389 sec GET /users/helloz/sources/source01/versions/?limit=1 : 200[0m
+[2016/10/03 08:33:40] INFO    : [36mhelloz 172.18.0.1 POST /users/helloz/sources/source01/versions/[0m
+[2016/10/03 08:33:40] INFO    : [36m0.0261068344116 sec POST /users/helloz/sources/source01/versions/ : 201[0m
+[2016/10/03 08:33:40] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/[0m
+[2016/10/03 08:33:40] INFO    : [36m0.0293819904327 sec GET /users/helloz/sources/source01/ : 200[0m
+[2016/10/03 08:33:40] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:33:40] INFO    : [36m0.0342099666595 sec GET /users/helloz/sources/source01/versions/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:33:30] INFO    : [36mhelloz 172.18.0.1 PUT /users/helloz/sources/source01/wqd/[0m
+[2016/10/03 08:33:30] INFO    : [36m0.0276041030884 sec PUT /users/helloz/sources/source01/wqd/ : 200[0m
+[2016/10/03 08:33:32] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:33:32] INFO    : [36m0.0146970748901 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:33:32] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:33:32] INFO    : [36m0.00857901573181 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:33:32] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:33:32] INFO    : [36m0.0223908424377 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:33:32] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:33:32] INFO    : [36m0.0303711891174 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:33:35] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:33:35] INFO    : [36m0.0168149471283 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:33:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:33:36] INFO    : [36m0.0186769962311 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:33:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1[0m
+[2016/10/03 08:33:36] INFO    : [36m0.0175919532776 sec GET /users/helloz/collections/coll/versions/?limit=0&verbose=true&page=1 : 200[0m
+[2016/10/03 08:33:36] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1[0m
+[2016/10/03 08:33:36] INFO    : [36m0.0131840705872 sec GET /users/helloz/collections/coll/references/?limit=10&verbose=true&page=1 : 200[0m
+[2016/10/03 08:33:37] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/coll/[0m
+[2016/10/03 08:33:37] INFO    : [36m0.0169079303741 sec GET /users/helloz/collections/coll/ : 200[0m
+[2016/10/03 08:33:38] INFO    : [36mhelloz 172.18.0.1 GET /orgs/?limit=0[0m
+[2016/10/03 08:33:38] INFO    : [36m0.0172500610352 sec GET /orgs/?limit=0 : 200[0m
+[2016/10/03 08:33:41] INFO    : [36mhelloz 172.18.0.1 GET /users/?limit=0[0m
+[2016/10/03 08:33:41] INFO    : [36m0.014631986618 sec GET /users/?limit=0 : 200[0m
+[2016/10/03 08:33:42] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=0[0m
+[2016/10/03 08:33:42] INFO    : [36m0.0175778865814 sec GET /users/helloz/sources/?limit=0 : 200[0m
+[2016/10/03 08:33:43] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/source01/versions/?limit=0[0m
+[2016/10/03 08:33:43] INFO    : [36m0.0196990966797 sec GET /users/helloz/sources/source01/versions/?limit=0 : 200[0m
+[2016/10/03 08:34:00] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:34:00] INFO    : [36m0.0231690406799 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:34:01] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:34:01] INFO    : [36m0.0120680332184 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:34:01] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:34:01] INFO    : [36m0.0312550067902 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:34:01] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:34:01] INFO    : [36m0.0208058357239 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:34:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:34:16] INFO    : [36m0.0109438896179 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:34:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:34:16] INFO    : [36m0.00933408737183 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:34:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:34:16] INFO    : [36m0.0202968120575 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:34:16] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:34:16] INFO    : [36m0.0188789367676 sec GET /users/helloz/collections/?limit=20 : 200[0m
+[2016/10/03 08:34:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/[0m
+[2016/10/03 08:34:21] INFO    : [36m0.0124289989471 sec GET /users/helloz/ : 200[0m
+[2016/10/03 08:34:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/orgs/?limit=20[0m
+[2016/10/03 08:34:21] INFO    : [36m0.012797832489 sec GET /users/helloz/orgs/?limit=20 : 200[0m
+[2016/10/03 08:34:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/sources/?limit=20[0m
+[2016/10/03 08:34:21] INFO    : [36m0.0180761814117 sec GET /users/helloz/sources/?limit=20 : 200[0m
+[2016/10/03 08:34:21] INFO    : [36mhelloz 172.18.0.1 GET /users/helloz/collections/?limit=20[0m
+[2016/10/03 08:34:21] INFO    : [36m0.0147588253021 sec GET /users/helloz/collections/?limit=20 : 200[0m
