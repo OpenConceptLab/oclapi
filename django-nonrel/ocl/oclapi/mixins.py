@@ -127,7 +127,8 @@ class ListWithHeadersMixin(ListModelMixin):
         return Response({'url': url}, status=200)
 
     def _is_member(self, parent, requesting_user):
-        return UserProfile.objects.get(mnemonic=requesting_user).id in parent.owner.members
+        owner = parent.owner
+        return UserProfile.objects.get(mnemonic=requesting_user).id in owner.members if type(owner).__name__ == 'Organization' else requesting_user == parent.created_by
 
     def _get_query_set_from_view(self, is_member):
         return self.get_queryset() if is_member else self.get_queryset()[0:100]
