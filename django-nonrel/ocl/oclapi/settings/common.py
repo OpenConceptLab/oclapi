@@ -181,7 +181,7 @@ class Common(Configuration):
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
-            'URL': 'http://solr.openconceptlab.org:8983/solr/collection1'
+            'URL': 'http://127.0.0.1:8983/solr/collection1'
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
@@ -190,12 +190,12 @@ class Common(Configuration):
     DATABASES = {
         'default': {
             'ENGINE': 'django_mongodb_engine',
-            'HOST': 'mongo.openconceptlab.org',
+            'HOST': '127.0.0.1',
             'NAME': 'ocl',
         }
     }
 
-    BROKER_URL = 'redis://redis.openconceptlab.org:6379/0'
+    BROKER_URL = 'redis://127.0.0.1:6379/0'
 
     CORS_ORIGIN_ALLOW_ALL = True
 
@@ -217,7 +217,7 @@ class Common(Configuration):
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
 
     # Celery settings
-    CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
     # Set these in your postactivate hook if you use virtualenvwrapper
     AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')

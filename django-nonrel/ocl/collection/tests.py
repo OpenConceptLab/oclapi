@@ -1753,12 +1753,10 @@ class CollectionReferenceTest(CollectionBaseTest):
         reference = CollectionReference(expression=expression)
         try:
             reference.full_clean()
-            self.assertTrue(False)
         except ValidationError as e:
-            self.assertEquals(len(e.messages), 1)
-            self.assertEquals(e.messages, ['This concept is retired.'])
+            self.assertTrue(False)
 
-    def test_adding_retired_mapping_negative(self):
+    def test_adding_retired_mapping_positive(self):
         source = Source(
             name='source',
             mnemonic='source',
@@ -1816,10 +1814,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
         try:
             reference.full_clean()
-            self.assertTrue(False)
         except ValidationError as e:
-            self.assertEquals(len(e.messages), 1)
-            self.assertEquals(e.messages, ['This mapping is retired.'])
+            self.assertTrue(False)
 
     def test_diff(self):
         superset = [CollectionReference(expression='foo'), CollectionReference(expression='bar')]
