@@ -183,6 +183,26 @@ class SourceListView(SourceBaseView,
         self.serializer_class = SourceDetailSerializer if self.is_verbose(request) else SourceListSerializer
         return self.list(request, *args, **kwargs)
 
+    def get_csv_rows(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+
+        values = queryset.values('id', 'public_access', 'created_at', 'updated_at', 'updated_by', 'is_active', 'uri',
+                                            'name', 'full_name', 'default_locale', 'supported_locales', 'website','description','external_id', 'source_type')
+
+        for value in values:
+            head = SourceVersion.objects.get(versioned_object_id=value.get('id'), mnemonic='HEAD')
+            value['active_concepts'] = head.active_concepts
+            value['active_mappings'] = head.active_mappings
+            value['versions'] = SourceVersion.objects.filter(versioned_object_id=value.get('id')).count()
+            value['owner'] =head.parent_resource
+            value['owner_type'] = head.parent_resource_type()
+            value['owner_url'] = head.parent_url
+
+        values.field_names.extend(['active_concepts', 'active_mappings', 'versions','owner','owner_type','owner_url'])
+
+        return values
+
 
 class SourceExtrasView(ConceptDictionaryExtrasView):
     pass

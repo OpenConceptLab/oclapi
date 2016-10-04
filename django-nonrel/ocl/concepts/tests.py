@@ -1055,4 +1055,4 @@ class ConceptVersionListViewTest(ConceptBaseTest):
                            'created_at': concept_version.created_at, 'concept_class': 'First',
                            'uri': concept_version.uri, 'created_by': 'user1', 'updated_at': concept_version.updated_at,
                            'names': 'concept1 en', 'display_name': '', 'external_id': None,
-                           'id': concept_version.id, 'descriptions': ''})
+                           'id': concept_version.id, 'descriptions': '', 'owner':concept_version.parent_resource, 'owner_type':concept_version.parent_resource_type(), 'owner_url':concept_version.parent_url})

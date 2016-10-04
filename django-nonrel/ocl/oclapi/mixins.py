@@ -169,6 +169,7 @@ class ConceptVersionCSVFormatterMixin():
                                             'descriptions', 'created_by', 'updated_by', 'created_at', 'updated_at')
 
         for value in values:
+            concept_ver = self.model.objects.get(id=value.get('id'))
             names = value.get('names')
             descriptions = value.get('descriptions')
 
@@ -178,8 +179,11 @@ class ConceptVersionCSVFormatterMixin():
             preferred_name = self.preferred_name(names)
             value['display_name'] = preferred_name.get('name')
             value['display_locale'] = preferred_name.get('locale')
+            value['owner'] = concept_ver.parent_resource
+            value['owner_type'] = concept_ver.parent_resource_type()
+            value['owner_url'] = concept_ver.parent_url
 
-        values.field_names.extend(['display_name', 'display_locale'])
+        values.field_names.extend(['display_name', 'display_locale','owner','owner_type','owner_url'])
         return values
 
     def join_values(self, objects):
