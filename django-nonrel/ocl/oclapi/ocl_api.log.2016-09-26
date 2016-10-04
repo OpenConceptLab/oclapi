@@ -1,0 +1,7 @@
+[2016/09/26 07:35:55] DEBUG   : Export requested for collection version HEAD - Requesting AWS-S3 key
+[2016/09/26 07:35:58] DEBUG   : Export requested for collection version version1 - Requesting AWS-S3 key
+[2016/09/26 07:35:58] DEBUG   :    Key does not exist for collection version version1
+[2016/09/26 07:36:03] DEBUG   : Export requested for collection version version1 - Requesting AWS-S3 key
+[2016/09/26 07:36:03] DEBUG   :    Key does not exist for collection version version1
+[2016/09/26 07:36:05] DEBUG   : Export requested for collection version version1 - Requesting AWS-S3 key
+[2016/09/26 07:36:05] DEBUG   :    Key does not exist for collection version version1
