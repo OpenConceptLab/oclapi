@@ -17,6 +17,7 @@ class Common(Configuration):
 
     DEFAULT_FROM_EMAIL = 'no-reply@openconceptlab.org'
     EMAIL_HOST = 'openconceptlab.org'
+    EMAIL_SUBJECT_PREFIX = '[openconceptlab.org] '
 
     # Hosts/domain names that are valid for this site; required if DEBUG is False
     # See https://docs.djangoproject.com/en/1.3/ref/settings/#allowed-hosts
