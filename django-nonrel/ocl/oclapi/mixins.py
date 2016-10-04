@@ -127,6 +127,9 @@ class ListWithHeadersMixin(ListModelMixin):
         return Response({'url': url}, status=200)
 
     def _is_member(self, parent, requesting_user):
+        if not parent or type(parent).__name__ in ['UserProfile', 'Organization']:
+            return False
+
         owner = parent.owner
         return UserProfile.objects.get(mnemonic=requesting_user).id in owner.members if type(owner).__name__ == 'Organization' else requesting_user == parent.created_by
 
