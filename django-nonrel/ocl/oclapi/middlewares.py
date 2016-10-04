@@ -24,7 +24,7 @@ class RequestLogMiddleware(object):
         self.log_body(self.chunked_to_max(request.body))
 
     def process_response(self, request, response):
-        response_time = time() - request.request_start_time
+        response_time = time() - getattr(request, 'request_start_time', time())
         resp_log = "{} sec {} {} : {}".format(
             response_time, request.method, request.get_full_path(), response.status_code
         )
