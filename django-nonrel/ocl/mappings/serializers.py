@@ -123,6 +123,7 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     updated_at = serializers.DateTimeField(read_only=True)
     created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
+    versioned_object_url = serializers.CharField(source='to_mapping_url')
 
 
 class MappingListSerializer(MappingBaseSerializer):
