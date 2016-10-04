@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 mkdir -p ~/backups
 
 MONGO_IP=`docker inspect --format '{{ .NetworkSettings.Networks.ocl_default.IPAddress }}' ocl_mongo`
