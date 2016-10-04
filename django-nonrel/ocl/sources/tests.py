@@ -15,7 +15,7 @@ from django.core.urlresolvers import reverse
 from concepts.models import Concept, LocalizedText
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
-from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_TYPE_OPENMRS
+from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import OclApiBaseTestCase
 from users.models import UserProfile
 
@@ -168,9 +168,9 @@ class SourceTest(SourceBaseTest):
             parent=self.org1,
             created_by=self.user1,
             updated_by=self.user1,
-            custom_validation_type=CUSTOM_VALIDATION_TYPE_OPENMRS)
+            custom_validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        self.assertEquals("OpenMRS", source.custom_validation_type)
+        self.assertEquals("OpenMRS", source.custom_validation_schema)
 
 class SourceClassMethodTest(SourceBaseTest):
 

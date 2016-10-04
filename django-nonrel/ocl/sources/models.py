@@ -11,12 +11,12 @@ from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, A
 from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
-CUSTOM_VALIDATION_TYPE_OPENMRS = 'OpenMRS'
+CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
 HEAD = 'HEAD'
 
 class Source(ConceptContainerModel):
     source_type = models.TextField(blank=True)
-    custom_validation_type = models.TextField(blank=True)
+    custom_validation_schema = models.TextField(blank=True)
 
     @property
     def concepts_url(self):
@@ -55,7 +55,7 @@ SOURCE_VERSION_TYPE = 'Source Version'
 
 class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
-    custom_validation_type = models.TextField(blank=True)
+    custom_validation_schema = models.TextField(blank=True)
     concepts = ListField()
     mappings = ListField()
     retired = models.BooleanField(default=False)
@@ -123,7 +123,7 @@ class SourceVersion(ConceptContainerVersionModel):
             self.public_access = obj.public_access
             self.source_type = obj.source_type
             self.supported_locales = obj.supported_locales
-            self.custom_validation_type = obj.custom_validation_type
+            self.custom_validation_schema = obj.custom_validation_schema
             self.default_locale = obj.default_locale
             self.external_id = obj.external_id
             self.active_concepts = len(self.concepts)
@@ -195,7 +195,7 @@ class SourceVersion(ConceptContainerVersionModel):
             source_type=source.source_type,
             public_access=source.public_access,
             default_locale=source.default_locale,
-            custom_validation_type=source.custom_validation_type,
+            custom_validation_schema=source.custom_validation_schema,
             supported_locales=source.supported_locales,
             website=source.website,
             description=source.description,
