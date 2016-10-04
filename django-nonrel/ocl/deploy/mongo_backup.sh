@@ -6,5 +6,5 @@ MONGO_IP=`docker inspect --format '{{ .NetworkSettings.Networks.ocl_default.IPAd
 
 rm -rf /tmp/mongodump && mkdir /tmp/mongodump
 docker run -it --rm --link ocl_mongo:mongo --net=ocl_default -v /tmp/mongodump:/tmp mongo bash -c "mongodump -v --host `echo $MONGO_IP`:27017 --db ocl --out=/tmp"
-tar -cvf ~/backups/mongo_`date +"%Y%m%d%H%M%S"` -C /tmp/mongodump *
+tar -cvf ~/backups/mongo_`date +"%Y%m%d%H%M%S"`.tar.gz -C /tmp/mongodump .
 rm -rf /tmp/mongodump
