@@ -1046,6 +1046,7 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         concept_version = concept.get_latest_version
 
         view = ConceptVersionListView()
+        view.kwargs = {}
         view.parent_resource_version = self.source1.get_head()
         view.child_list_attribute = 'concepts'
         csv_rows = view.get_csv_rows()
