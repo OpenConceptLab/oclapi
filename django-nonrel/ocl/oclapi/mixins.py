@@ -4,6 +4,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from oclapi.utils import compact, extract_values
 from users.models import UserProfile
+from oclapi.filters import SearchQuerySetWrapper
 
 __author__ = 'misternando'
 
@@ -84,6 +85,11 @@ class ListWithHeadersMixin(ListModelMixin):
                     return Response({'results': results, 'facets': facets}, headers=serializer.headers)
                 else:
                     return Response(results, headers=serializer.headers)
+
+        limit = int(request.QUERY_PARAMS.get('limit'))
+
+        if limit == 0 and isinstance(sorted_list, SearchQuerySetWrapper):
+            sorted_list.limit_iter = False
 
         serializer = self.get_serializer(sorted_list, many=True)
 
