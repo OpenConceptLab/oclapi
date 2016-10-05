@@ -842,10 +842,7 @@ class ConceptVersionTest(ConceptBaseTest):
         }
         Concept.persist_new(concept1, self.user1, **kwargs)
         initial_concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
-        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
-            mnemonic=concept1.mnemonic).mnemonic + '/'
-
-        references = [concept1_reference]
+        references = [concept1.uri, initial_concept_version.uri]
 
         collection.expressions = references
         collection.full_clean()
@@ -854,7 +851,7 @@ class ConceptVersionTest(ConceptBaseTest):
         ConceptVersion.persist_clone(initial_concept_version.clone(), self.user1)
         new_concept_version = ConceptVersion.objects.filter(versioned_object_id=concept1.id).order_by('-created_at')[0]
 
-        self.assertEquals(initial_concept_version.collection_ids, [])
+        self.assertEquals(initial_concept_version.collection_ids, [collection.id])
         self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_version_ids(self):

@@ -256,7 +256,10 @@ class ConceptVersion(ResourceVersionModel):
 
     @property
     def collection_ids(self):
-        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri})) if self.is_latest_version else []
+        if self.is_latest_version:
+            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri}))
+        else:
+            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
 
     @property
     def collection_versions(self):
