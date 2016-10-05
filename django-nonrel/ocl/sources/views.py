@@ -193,8 +193,8 @@ class SourceListView(SourceBaseView,
 
         for value in values:
             head = SourceVersion.objects.get(versioned_object_id=value.get('id'), mnemonic='HEAD')
-            value['active_concepts'] = head.active_concepts
-            value['active_mappings'] = head.active_mappings
+            value['active_concepts'] = ConceptVersion.objects.filter(is_active=True,retired=False, id__in=head.concepts).count()
+            value['active_mappings'] = MappingVersion.objects.filter(is_active=True,retired=False, id__in=head.mappings).count()
             value['versions'] = SourceVersion.objects.filter(versioned_object_id=value.get('id')).count()
             value['owner'] =head.parent_resource
             value['owner_type'] = head.parent_resource_type()
