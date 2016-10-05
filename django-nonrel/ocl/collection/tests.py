@@ -14,7 +14,7 @@ from orgs.models import Organization
 from users.models import UserProfile
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from sources.models import Source, SourceVersion
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from unittest import skip
 from test_helper.base import OclApiBaseTestCase
 
@@ -1109,7 +1109,6 @@ class CollectionVersionTest(CollectionBaseTest):
         collection_version = CollectionVersion.get_latest_version_of(collection)
         self.assertEquals(collection_version.export_path, "user1/collection_version1." + collection_version.last_child_update.strftime('%Y%m%d%H%M%S') + ".tgz")
 
-
     def test_last_child_update(self):
         source = Source(
             name='source',
@@ -1172,6 +1171,190 @@ class CollectionVersionTest(CollectionBaseTest):
         Collection.persist_new(collection, self.user1, parent_resource=self.org1)
         collection_version = CollectionVersion.get_latest_version_of(collection)
         self.assertEquals(collection_version.last_child_update, collection_version.updated_at)
+
+    def test_seed_concepts(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept = Concept(
+            mnemonic='concept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+
+        concept2 = Concept(
+            mnemonic='concept2',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='not First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept2, self.user1, **kwargs)
+
+        concept1_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
+        concept2_latest_version = concept2.get_latest_version
+
+        head_version = CollectionVersion(
+            name='HEAD',
+            mnemonic='HEAD',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            concepts=[concept2.id, concept1_version.id]
+        )
+        head_version.full_clean()
+        head_version.save()
+
+        version1 = CollectionVersion(
+            name='v1',
+            mnemonic='v1',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        version1.full_clean()
+        version1.save()
+
+        self.assertEquals(len(version1.concepts), 0)
+        version1.seed_concepts()
+        self.assertEquals(len(version1.concepts), 2)
+        self.assertEquals(version1.concepts, [concept2_latest_version.id, concept1_version.id])
+
+    def test_seed_mappings(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        fromConcept1 = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept1, self.user1, **kwargs)
+
+        fromConcept2 = Concept(
+            mnemonic='fromConcept2',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept2, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept1,
+            to_concept=toConcept,
+            external_id='mapping',
+            retired=True,
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        mapping2 = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept2,
+            to_concept=toConcept,
+            external_id='mapping',
+            retired=True,
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping2, self.user1, **kwargs)
+        mapping2_version = MappingVersion.objects.get(versioned_object_id=mapping2.id)
+        mapping1_latest_version = mapping.get_latest_version
+
+        head_version = CollectionVersion(
+            name='HEAD',
+            mnemonic='HEAD',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            mappings=[mapping2_version.id, mapping.id]
+        )
+        head_version.full_clean()
+        head_version.save()
+
+        version1 = CollectionVersion(
+            name='v1',
+            mnemonic='v1',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        version1.full_clean()
+        version1.save()
+
+        self.assertEquals(len(version1.mappings), 0)
+        version1.seed_mappings()
+        self.assertEquals(len(version1.mappings), 2)
+        self.assertEquals(version1.mappings, [mapping2_version.id, mapping1_latest_version.id])
 
 
 class CollectionVersionClassMethodTest(CollectionBaseTest):
@@ -1682,6 +1865,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             self.assertEquals(len(collection_version.references), 1)
             self.assertEquals(collection_version.active_concepts, 1)
 
+
 class CollectionReferenceTest(CollectionBaseTest):
     def setUp(self):
         super(CollectionReferenceTest, self).setUp()
@@ -1715,6 +1899,112 @@ class CollectionReferenceTest(CollectionBaseTest):
             expression='/users/gaurav/sources/ABC-10/concepts/a15/'
         )
         self.assertEquals(reference.reference_type, 'concepts')
+
+    def test_reference_as_concept_version(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept = Concept(
+            mnemonic='concept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept, self.user1, **kwargs)
+
+        concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
+
+        expression = '/orgs/' + self.org1.mnemonic + '/sources/' +\
+            source.mnemonic + '/concepts/' + concept.mnemonic + '/' + concept_version.id + '/'
+
+        reference = CollectionReference(expression=expression)
+        reference.full_clean()
+
+        self.assertEquals(len(reference.concepts), 1)
+        self.assertEquals(type(reference.concepts[0]), ConceptVersion)
+        self.assertEquals(reference.concepts[0].id, concept_version.id)
+
+    def test_reference_as_mapping_version(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        fromConcept = Concept(
+            mnemonic='fromConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(fromConcept, self.user1, **kwargs)
+
+        toConcept = Concept(
+            mnemonic='toConcept',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(toConcept, self.user1, **kwargs)
+
+        mapping = Mapping(
+            map_type='Same As',
+            from_concept=fromConcept,
+            to_concept=toConcept,
+            external_id='mapping',
+            retired=True,
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+        mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id)
+
+        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/' + mapping_version.mnemonic + '/')
+
+        reference.full_clean()
+
+        self.assertEquals(len(reference.mappings), 1)
+        self.assertEquals(type(reference.mappings[0]), MappingVersion)
+        self.assertEquals(reference.mappings[0].id, mapping_version.id)
 
     def test_adding_retired_concept_negative(self):
         source = Source(

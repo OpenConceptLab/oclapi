@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class
+from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class, compact
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping, MappingVersion
 from django.db.models import Max
@@ -122,21 +122,28 @@ class Collection(ConceptContainerModel):
 
 COLLECTION_VERSION_TYPE = "Collection Version"
 
+
 class CollectionReference(models.Model):
     expression = models.TextField()
     concepts = None
     mappings = None
 
     def clean(self):
-        self.concepts = Concept.objects.filter(uri=self.expression)
+        concept_klass, mapping_klass = self._resource_klasses()
+        self.concepts = concept_klass.objects.filter(uri=self.expression)
         if not self.concepts:
-            self.mappings = Mapping.objects.filter(uri=self.expression)
+            self.mappings = mapping_klass.objects.filter(uri=self.expression)
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
-        #     elif self.mappings[0].retired:
-        #         raise ValidationError({'detail': ['This mapping is retired.']})
-        # elif self.concepts[0].retired:
-        #     raise ValidationError({'detail': ['This concept is retired.']})
+
+    def _resource_klasses(self):
+        expression_parts_count = len(compact(self.expression.split('/')))
+        if expression_parts_count == 6:
+            return [Concept, Mapping]
+        elif expression_parts_count == 7:
+            return [ConceptVersion, MappingVersion]
+        else:
+            raise ValidationError({'detail': ['Expression specified is not valid.']})
 
     @property
     def reference_type(self):
@@ -165,25 +172,25 @@ class CollectionVersion(ConceptContainerVersionModel):
         self.references.append(a_reference)
 
     def seed_concepts(self):
-        seed_concepts_from = self.head_sibling()
-        if seed_concepts_from:
-            concepts = list(seed_concepts_from.concepts)
-            latest_concept_versions = list()
-            for concept in concepts:
-                latestConceptVersion = ConceptVersion.get_latest_version_by_id(concept)
-                latest_concept_versions.append(latestConceptVersion.id)
-
-            self.concepts = latest_concept_versions
+        self._seed_resources('concepts', ConceptVersion)
 
     def seed_mappings(self):
+        self._seed_resources('mappings', MappingVersion)
+
+    def _seed_resources(self, resource_type, resource_klass):
         seed_mappings_from = self.head_sibling()
         if seed_mappings_from:
-            mappings = list(seed_mappings_from.mappings)
-            latestMappingVersions = list()
-            for mapping in mappings:
-                latestMappingVersion = MappingVersion.get_latest_version_by_id(mapping)
-                latestMappingVersions.append(latestMappingVersion.id)
-            self.mappings = latestMappingVersions
+            resources = list(getattr(seed_mappings_from, resource_type))
+            result = list()
+
+            for resource_id in resources:
+                resource_latest_version = resource_klass.get_latest_version_by_id(resource_id)
+                if resource_latest_version:
+                    result.append(resource_latest_version.id)
+                else:
+                    result.append(resource_id)
+
+            setattr(self, resource_type, result)
 
     def seed_references(self):
         seed_references_from = self.head_sibling()
