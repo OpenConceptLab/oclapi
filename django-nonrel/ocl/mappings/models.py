@@ -472,7 +472,10 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def collection_ids(self):
-        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri})) if self.is_latest_version else []
+        if self.is_latest_version:
+            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri}))
+        else:
+            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
 
     @property
     def collection_versions(self):
@@ -511,11 +514,8 @@ class MappingVersion(ResourceVersionModel):
 
     @classmethod
     def get_latest_version_by_id(cls, id):
-
-        return MappingVersion.objects.get(
-            versioned_object_id=id, is_latest_version=True)
-
-
+        versions = MappingVersion.objects.filter(versioned_object_id=id, is_latest_version=True).order_by('-created_at')
+        return versions[0] if versions else None
 
 
 @receiver(post_save, sender=Source)

@@ -656,19 +656,21 @@ class MappingVersionTest(MappingVersionBaseTest):
         }
 
         Mapping.persist_new(mapping, self.user1, **kwargs)
+        initial_mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id)
+        new_mapping_version = MappingVersion.for_mapping(mapping)
+        new_mapping_version.mnemonic = 98
+        new_mapping_version.save()
 
         from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
         mapping = Mapping.objects.filter()[1]
-        mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.id + '/'
-
-        references = [concept1_reference, from_concept_reference, mapping_reference]
+        references = [concept1_reference, from_concept_reference, mapping.uri, initial_mapping_version.uri]
 
         collection.expressions = references
         collection.full_clean()
         collection.save()
-        mv = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
-        self.assertEquals(mv.collection_ids, [collection.id])
+        self.assertEquals(initial_mapping_version.collection_ids, [collection.id])
+        self.assertEquals(new_mapping_version.collection_ids, [collection.id])
 
     def test_collections_version_ids(self):
         kwargs = {
