@@ -112,8 +112,8 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         return Response(data)
 
     def destroy(self, request, *args, **kwargs):
-        resource_used_message = '''Resources from this source are being
-        referenced elsewhere please delete them before deleting the source.'''
+        resource_used_message = '''This source cannot be deleted because others have created mapping or references that point to it.
+        To delete this source, you must first delete all linked mappings and references and try again.'''
 
         source = self.get_object()
         source_versions = SourceVersion.objects.filter(
