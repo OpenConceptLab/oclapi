@@ -76,11 +76,8 @@ def update_collection_in_solr(version_id, references):
         if ref.mappings and len(ref.mappings) > 0:
             mappings += ref.mappings
 
-    concept_version_ids = map(lambda c: c.get_latest_version.id, concepts)
-    concept_versions = ConceptVersion.objects.filter(mnemonic__in=concept_version_ids)
-
-    mapping_version_ids = map(lambda m: m.get_latest_version.id, mappings)
-    mapping_versions = MappingVersion.objects.filter(id__in=mapping_version_ids)
+    concept_versions = ConceptVersion.objects.filter(mnemonic__in=_get_version_ids(concepts, 'Concept'))
+    mapping_versions = MappingVersion.objects.filter(id__in=_get_version_ids(mappings, 'Mapping'))
 
     if len(concept_versions) > 0:
         update_all_in_index(ConceptVersion, concept_versions)
@@ -90,6 +87,10 @@ def update_collection_in_solr(version_id, references):
 
     cv._ocl_processing = False
     cv.save()
+
+
+def _get_version_ids(resources, klass):
+    return map(lambda c: c.get_latest_version.id if type(c).__name__ == klass else c.id, resources)
 
 
 @celery.task
