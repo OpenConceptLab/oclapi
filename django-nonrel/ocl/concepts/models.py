@@ -250,24 +250,8 @@ class ConceptVersion(ResourceVersionModel):
         return self.versioned_object.parent
 
     @property
-    def collections(self):
-        versions = self.collection_versions
-        return map(lambda v: v.versioned_object, versions)
-
-    @property
-    def collection_ids(self):
-        if self.is_latest_version:
-            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri}))
-        else:
-            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
-
-    @property
     def collection_versions(self):
         return get_model('collection', 'CollectionVersion').objects.filter(concepts=self.id)
-
-    @property
-    def collection_version_ids(self):
-        return map(lambda v: v.id, self.collection_versions)
 
     @property
     def mappings_url(self):

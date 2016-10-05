@@ -100,14 +100,18 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     cv.save()
 
     if len(concepts) > 0:
-        concepts = Concept.objects.filter(id__in=concepts)
-        version_ids = map(lambda c: c.get_latest_version.id, concepts)
+        _concepts = Concept.objects.filter(id__in=concepts)
+        concept_version_ids = list(set(concepts) - set(map(lambda c: c.id, _concepts)))
+        # concept_version_ids = concepts
+        # concept_version_ids += [(map(lambda c: c.id, _concepts))]
+        version_ids = map(lambda c: c.get_latest_version.id, _concepts) + concept_version_ids
         versions = ConceptVersion.objects.filter(mnemonic__in=version_ids)
         update_all_in_index(ConceptVersion, versions)
 
     if len(mappings) > 0:
-        mappings = Mapping.objects.filter(id__in=mappings)
-        version_ids = map(lambda m: m.get_latest_version.id, mappings)
+        _mappings = Mapping.objects.filter(id__in=mappings)
+        mapping_version_ids = list(set(concepts) - set(map(lambda m: m.id, _mappings)))
+        version_ids = map(lambda m: m.get_latest_version.id, _mappings) + mapping_version_ids
         versions = MappingVersion.objects.filter(id__in=version_ids)
         update_all_in_index(MappingVersion, versions)
 

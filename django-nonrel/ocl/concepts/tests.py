@@ -854,6 +854,63 @@ class ConceptVersionTest(ConceptBaseTest):
         self.assertEquals(initial_concept_version.collection_ids, [collection.id])
         self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
+    def test_collections_ids_with_latest_concept_version(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection2',
+            mnemonic='collection2',
+            full_name='Collection Two',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the second test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='concept12',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        initial_concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
+        ConceptVersion.persist_clone(initial_concept_version.clone(), self.user1)
+        new_concept_version = ConceptVersion.objects.filter(versioned_object_id=concept1.id).order_by('-created_at')[0]
+
+        collection.expressions = [new_concept_version.uri]
+        collection.full_clean()
+        collection.save()
+
+        self.assertEquals(initial_concept_version.collection_ids, [])
+        self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
+
     def test_collections_version_ids(self):
         kwargs = {
             'parent_resource': self.userprofile1
