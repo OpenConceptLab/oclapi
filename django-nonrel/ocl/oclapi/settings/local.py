@@ -1,6 +1,7 @@
 from oclapi.settings.common import *
 from configurations import values
 
+
 class Local(Common):
 
     # DEBUG = False
@@ -10,6 +11,21 @@ class Local(Common):
 
     INSTALLED_APPS = Common.INSTALLED_APPS
     INTERNAL_IPS = ('localhost',)
+
+
+class Dev(Local):
+    """
+    Settings for unit testing
+    """
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_mongodb_engine',
+            'HOST': 'mongo.openconceptlab.org',
+            'NAME': 'test',
+        }
+    }
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
+
 
 class Test(Local):
     """
@@ -23,6 +39,7 @@ class Test(Local):
         }
     }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
+
 
 class IntegrationTest(Common):
     """
