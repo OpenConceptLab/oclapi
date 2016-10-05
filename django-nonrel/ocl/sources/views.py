@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db import IntegrityError
 from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse, HttpResponseForbidden
@@ -192,8 +193,8 @@ class SourceListView(SourceBaseView,
 
         for value in values:
             head = SourceVersion.objects.get(versioned_object_id=value.get('id'), mnemonic='HEAD')
-            value['active_concepts'] = head.active_concepts
-            value['active_mappings'] = head.active_mappings
+            value['active_concepts'] = ConceptVersion.objects.filter(is_active=True,retired=False, id__in=head.concepts).count()
+            value['active_mappings'] = MappingVersion.objects.filter(is_active=True,retired=False, id__in=head.mappings).count()
             value['versions'] = SourceVersion.objects.filter(versioned_object_id=value.get('id')).count()
             value['owner'] =head.parent_resource
             value['owner_type'] = head.parent_resource_type()
@@ -253,13 +254,18 @@ class SourceVersionListView(SourceVersionBaseView,
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True, versioned_object=self.versioned_object)
-            if serializer.is_valid():
-                self.post_save(self.object, created=True)
-                headers = self.get_success_headers(serializer.data)
-                serializer = SourceVersionDetailSerializer(self.object, context={'request': request})
-                return Response(serializer.data, status=status.HTTP_201_CREATED,
-                                headers=headers)
+            try:
+                self.object = serializer.save(force_insert=True, versioned_object=self.versioned_object)
+                if serializer.is_valid():
+                    self.post_save(self.object, created=True)
+                    headers = self.get_success_headers(serializer.data)
+                    serializer = SourceVersionDetailSerializer(self.object, context={'request': request})
+                    return Response(serializer.data, status=status.HTTP_201_CREATED,
+                                    headers=headers)
+            except IntegrityError, e:
+                result = {'error':str(e), 'detail':'Source version  \'%s\' already exist. ' % serializer.data.get('id')}
+                return Response(result, status=status.HTTP_409_CONFLICT)
+
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

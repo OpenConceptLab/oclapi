@@ -1377,6 +1377,46 @@ class SourceVersionViewTest(SourceBaseTest):
         self.assertEquals(result['released'], True)
 
 
+    def test_new_version_with_duplicate_id_409_received(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version.full_clean()
+        source_version.save()
+
+        self.client.login(username='user1', password='user1')
+        data = {
+            'id':'version1',
+            'description':'desc',
+            'previous_version':'HEAD'
+        }
+        response = self.client.post(
+            reverse('sourceversion-list', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}), data)
+        self.assertEquals(response.status_code, 409)
+
+
 class SourceVersionExportViewTest(SourceBaseTest):
 
     @mock_s3
@@ -2148,6 +2188,41 @@ class CollectionVersionViewTest(SourceBaseTest):
         self.assertEquals(result['id'], 'version2')
         self.assertEquals(result['released'], True)
 
+
+    def test_new_version_with_duplicate_id_409_received(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        self.client.login(username='user1', password='user1')
+        data = {
+            'id': 'version1',
+            'description': 'desc',
+            'previous_version': 'HEAD'
+        }
+        response = self.client.post(reverse('collectionversion-list',
+                                           kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}), data)
+        self.assertEquals(response.status_code, 409)
 
 class SourceDeleteViewTest(SourceBaseTest):
     def setUp(self):

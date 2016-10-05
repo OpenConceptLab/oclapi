@@ -11,6 +11,7 @@ from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource, reverse_resource_version
 from oclapi.settings.common import Common
+from django.db.models import get_model
 
 HEAD = 'HEAD'
 
@@ -172,6 +173,30 @@ class ResourceVersionModel(BaseModel):
     @property
     def parent_url(self):
         return self.versioned_object.parent_url
+
+    @property
+    def collections(self):
+        versions = self.collection_versions
+        return map(lambda v: v.versioned_object, versions)
+
+    @property
+    def collection_ids(self):
+        if self.is_latest_version:
+            return list(set(self._collection_ids_for_versioned_object() + self._collection_ids_for_version()))
+        else:
+            return self._collection_ids_for_version()
+
+    def _collection_ids_for_versioned_object(self):
+        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(
+            references={'expression': self.versioned_object.uri}))
+
+    def _collection_ids_for_version(self):
+        return map(lambda c: c.id,
+                   get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
+
+    @property
+    def collection_version_ids(self):
+        return map(lambda v: v.id, self.collection_versions)
 
     @classmethod
     def get_latest_version_of(cls, versioned_object):

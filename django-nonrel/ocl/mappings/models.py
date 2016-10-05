@@ -466,21 +466,8 @@ class MappingVersion(ResourceVersionModel):
         return MAPPING_VERSION_RESOURCE_TYPE
 
     @property
-    def collections(self):
-        versions = self.collection_versions
-        return map(lambda v: v.versioned_object, versions)
-
-    @property
-    def collection_ids(self):
-        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(references={'expression': self.versioned_object.uri})) if self.is_latest_version else []
-
-    @property
     def collection_versions(self):
         return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
-
-    @property
-    def collection_version_ids(self):
-        return map(lambda v: v.id, self.collection_versions)
 
     @staticmethod
     def get_url_kwarg():
@@ -511,11 +498,8 @@ class MappingVersion(ResourceVersionModel):
 
     @classmethod
     def get_latest_version_by_id(cls, id):
-
-        return MappingVersion.objects.get(
-            versioned_object_id=id, is_latest_version=True)
-
-
+        versions = MappingVersion.objects.filter(versioned_object_id=id, is_latest_version=True).order_by('-created_at')
+        return versions[0] if versions else None
 
 
 @receiver(post_save, sender=Source)
