@@ -130,9 +130,9 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
         if errors:
             self._errors.update(errors)
         else:
-            head_obj = obj.get_head();
+            head_obj = obj.get_head()
             head_obj.update_version_data(obj)
-            head_obj.save();
+            head_obj.save()
 
 
 class CollectionVersionListSerializer(ResourceVersionSerializer):
