@@ -2317,7 +2317,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('please delete them before deleting the source.' in message)
+        self.assertTrue('This source cannot be deleted because others have created mapping or references that point to it.' in message)
 
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
@@ -2329,7 +2329,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('please delete them before deleting the source.' in message)
+        self.assertTrue('This source cannot be deleted because others have created mapping or references that point to it.' in message)
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(
@@ -2379,4 +2379,4 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('please delete them before deleting the source.' in message)
+        self.assertTrue('To delete this source, you must first delete all linked mappings and references and try again.' in message)
