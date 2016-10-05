@@ -39,7 +39,7 @@ class CollectionBaseTest(OclApiBaseTestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
-        self.name = LocalizedText.objects.create(name='Fred', locale='es')
+        self.name = LocalizedText.objects.create(name='Fred', locale='es', type='FULLY_SPECIFIED')
 
 
 class CollectionTest(CollectionBaseTest):
@@ -200,7 +200,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -258,7 +258,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -271,7 +271,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -348,7 +348,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -414,7 +414,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -427,7 +427,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -440,7 +440,7 @@ class CollectionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1195,7 +1195,7 @@ class CollectionVersionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1208,7 +1208,7 @@ class CollectionVersionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='not First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1269,7 +1269,7 @@ class CollectionVersionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1282,7 +1282,7 @@ class CollectionVersionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1295,7 +1295,7 @@ class CollectionVersionTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1826,7 +1826,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
                 updated_by=self.user1,
                 parent=source,
                 concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es')],
+                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
             )
 
             concept1 = Concept(
@@ -1835,7 +1835,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
                 updated_by=self.user1,
                 parent=source,
                 concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es')],
+                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
             )
 
             kwargs = {
@@ -1923,7 +1923,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1965,7 +1965,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -1978,7 +1978,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2029,7 +2029,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
             retired=True,
         )
         kwargs = {
@@ -2069,7 +2069,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2082,7 +2082,7 @@ class CollectionReferenceTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2139,7 +2139,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2176,7 +2176,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2189,7 +2189,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,

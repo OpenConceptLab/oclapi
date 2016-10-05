@@ -114,7 +114,7 @@ class MappingBaseTest(OclApiBaseTestCase):
         Source.persist_new(self.source2, self.user1, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
 
-        self.name = LocalizedText.objects.create(name='Fred', locale='en')
+        self.name = LocalizedText.objects.create(name='Fred', locale='en', type='FULLY_SPECIFIED')
 
         self.concept1 = Concept(
             mnemonic='concept1',
@@ -612,7 +612,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -625,7 +625,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -638,7 +638,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -712,7 +712,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -725,7 +725,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -738,7 +738,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,

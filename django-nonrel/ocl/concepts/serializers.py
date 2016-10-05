@@ -72,6 +72,7 @@ class ConceptDetailSerializer(serializers.Serializer):
         self._errors.update(errors)
 
 
+
 class ConceptVersionsSerializer(serializers.Serializer):
     version = serializers.CharField(source='mnemonic')
     previous_version = serializers.CharField(source='previous_version_mnemonic')
