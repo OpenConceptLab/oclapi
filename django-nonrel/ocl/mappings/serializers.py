@@ -88,7 +88,7 @@ class MappingDetailSerializer(MappingBaseSerializer):
 
 class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     version = serializers.CharField(source='mnemonic')
-    is_latest_version = serializers.BooleanField(source='is_latest_version')
+    is_latest_version = serializers.CharField()
     type = serializers.CharField(source='resource_type', read_only=True)
     id = serializers.CharField(read_only=True)
     versioned_object_id = serializers.CharField(source='versioned_object_id')
@@ -170,7 +170,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
     to_source_owner_type = serializers.CharField(read_only=True)
     to_source_name = serializers.CharField(read_only=True)
     versioned_object_url = serializers.CharField(source='to_mapping_url')
-    is_latest_version = serializers.BooleanField(source='is_latest_version')
+    is_latest_version = serializers.CharField()
     update_comment = serializers.CharField(required=False)
 
     class Meta:

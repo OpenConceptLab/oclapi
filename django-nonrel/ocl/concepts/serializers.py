@@ -98,6 +98,7 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     display_locale = serializers.CharField()
     version = serializers.CharField(source='mnemonic')
     mappings = MappingListField(read_only=True)
+    is_latest_version = serializers.CharField()
 
     class Meta:
         model = ConceptVersion
@@ -143,6 +144,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     version_created_by = serializers.CharField()
     extras = serializers.WritableField()
     mappings = MappingListField(read_only=True)
+    is_latest_version = serializers.CharField()
 
     class Meta:
         model = ConceptVersion
