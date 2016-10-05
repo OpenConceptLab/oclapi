@@ -40,7 +40,7 @@ class SourceBaseTest(OclApiBaseTestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
-        self.name = LocalizedText.objects.create(name='Fred', locale='es')
+        self.name = LocalizedText.objects.create(name='Fred', locale='es', type='FULLY_SPECIFIED')
 
 
 class SourceTest(SourceBaseTest):
@@ -1260,7 +1260,8 @@ class SourceVersionListViewTest(SourceBaseTest):
         )
         display_name = LocalizedText(
             name='concept',
-            locale='en'
+            locale='en',
+            type='FULLY_SPECIFIED'
         )
         concept.names.append(display_name)
         kwargs = {

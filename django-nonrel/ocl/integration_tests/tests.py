@@ -145,7 +145,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
         )
         display_name = LocalizedText(
             name='concept1',
-            locale='en'
+            locale='en',
+            type = 'FULLY_SPECIFIED'
         )
         self.concept1.names.append(display_name)
         kwargs = {
@@ -191,7 +192,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         )
         display_name = LocalizedText(
             name='concept2',
-            locale='en'
+            locale='en', type='FULLY_SPECIFIED'
         )
         concept2.names.append(display_name)
         kwargs = {
@@ -261,7 +262,7 @@ class ConceptVersionAllView(ConceptBaseTest):
                 updated_by=self.user1,
                 parent=source,
                 concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es')],
+                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
             )
             kwargs = {
                 'parent_resource': source,
@@ -1936,7 +1937,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2015,7 +2016,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
                 updated_by=self.user1,
                 parent=source,
                 concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es')],
+                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
             )
             kwargs = {
                 'parent_resource': source,
@@ -2089,7 +2090,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2102,7 +2103,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='Second',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': source,
@@ -2251,7 +2252,7 @@ class SourceDeleteViewTest(SourceBaseTest):
             parent=self.source1,
             concept_class='Diagnosis',
             external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -2265,7 +2266,7 @@ class SourceDeleteViewTest(SourceBaseTest):
             parent=self.source1,
             concept_class='Diagnosis',
             external_id='2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -2355,7 +2356,7 @@ class SourceDeleteViewTest(SourceBaseTest):
             parent=self.source2,
             concept_class='Diagnosis',
             external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
         kwargs = {
             'parent_resource': self.source2,

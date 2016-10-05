@@ -1,4 +1,3 @@
-from urlparse import urljoin
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -14,6 +13,8 @@ from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
 from django.db.models import get_model
+from django.core.exceptions import ValidationError
+from django_mongodb_engine.contrib import MongoDBManager
 
 
 class LocalizedText(models.Model):
@@ -45,6 +46,35 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     names = ListField(EmbeddedModelField(LocalizedText))
     descriptions = ListField(EmbeddedModelField(LocalizedText))
     retired = models.BooleanField(default=False)
+
+    objects = MongoDBManager()
+
+    def clean(self):
+        # Concept requires at least one fully specified name
+        fully_specified_name_count = len(filter(lambda n: n.type == "FULLY_SPECIFIED", self.names))
+
+        if fully_specified_name_count < 1:
+            raise ValidationError({'names': ['Concept requires at least one fully specified name']})
+
+        # Concept preferred_name should be unique for same source and locale.
+        validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
+        preferred_names_in_concept = dict()
+        name_id = lambda n: n.locale + n.name
+
+        for name in self.names:
+            if not name.locale_preferred:
+                continue
+
+            # making sure names in the submitted concept meet the same rule
+            if preferred_names_in_concept.has_key(name_id(name)):
+                raise ValidationError(validation_error)
+
+            preferred_names_in_concept[name_id(name)] = True
+
+            # querying the preferred names in source for the same rule
+            raw_query = {'parent_id': self.parent_id, 'names.name': name.name, 'names.locale': name.locale, 'names.locale_preferred': True}
+            if Concept.objects.raw_query(raw_query).count() > 0:
+                raise ValidationError(validation_error)
 
     @property
     def display_name(self):
