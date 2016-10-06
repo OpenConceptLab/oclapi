@@ -95,7 +95,11 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
             return Response(
                 {'non_field_errors': 'Could not find concept to retire'},
                 status=status.HTTP_404_NOT_FOUND)
-        errors = Concept.retire(concept, request.user)
+        update_comment = None
+        if 'update_comment' in request.DATA :
+            update_comment = request.DATA.get('update_comment')
+
+        errors = Concept.retire(concept, request.user, update_comment=update_comment)
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
