@@ -19,7 +19,7 @@ class UserListView(BaseAPIView,
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
         'username': {'sortable': True, 'filterable': False},
-        'date_joined': {'sortable': True, 'default': 'asc', 'filterable': False},
+        'dateJoined': {'sortable': True, 'default': 'asc', 'filterable': False},
         'company': {'sortable': False, 'filterable': True},
         'location': {'sortable': False, 'filterable': True},
     }
