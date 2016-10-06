@@ -100,20 +100,22 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     cv.save()
 
     if len(concepts) > 0:
-        _concepts = Concept.objects.filter(id__in=concepts)
-        concept_version_ids = list(set(concepts) - set(map(lambda c: c.id, _concepts)))
-        # concept_version_ids = concepts
-        # concept_version_ids += [(map(lambda c: c.id, _concepts))]
-        version_ids = map(lambda c: c.get_latest_version.id, _concepts) + concept_version_ids
-        versions = ConceptVersion.objects.filter(mnemonic__in=version_ids)
-        update_all_in_index(ConceptVersion, versions)
+        index_resource(concepts, Concept, ConceptVersion, 'mnemonic__in')
 
     if len(mappings) > 0:
-        _mappings = Mapping.objects.filter(id__in=mappings)
-        mapping_version_ids = list(set(concepts) - set(map(lambda m: m.id, _mappings)))
-        version_ids = map(lambda m: m.get_latest_version.id, _mappings) + mapping_version_ids
-        versions = MappingVersion.objects.filter(id__in=version_ids)
-        update_all_in_index(MappingVersion, versions)
+        index_resource(mappings, Mapping, MappingVersion, 'id__in')
 
     cv._ocl_processing = False
     cv.save()
+
+
+def index_resource(resource_ids, resource_klass, resource_version_klass, identifier):
+    _resource_ids = resource_klass.objects.filter(id__in=resource_ids)
+    resource_version_ids = list(set(resource_ids) - set(map(lambda m: m.id, _resource_ids)))
+    version_ids = map(lambda r: r.get_latest_version.id, _resource_ids) + resource_version_ids
+    kwargs = {}
+    kwargs[identifier] = version_ids
+    versions = resource_version_klass.objects.filter(**kwargs)
+    update_all_in_index(resource_version_klass, versions)
+
+
