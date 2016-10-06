@@ -6,6 +6,8 @@ from collection.models import Collection, CollectionVersion, CollectionReference
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
 from concepts.models import Concept, ConceptVersion
+from mappings.models import MappingVersion
+from sources.models import SourceVersion
 from concepts.serializers import ConceptListSerializer
 from django.http import HttpResponse, HttpResponseForbidden
 from mappings.models import Mapping
@@ -106,7 +108,34 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        expressions = request.DATA.get("expressions")
+        expressions = []
+        data = request.DATA.get("data")
+        concept_expressions = data.get('concepts', [])
+        mapping_expressions = data.get('mappings', [])
+        uri = data['uri']
+        ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
+
+        if concept_expressions == '*':
+            concepts = []
+            resource_container = ResourceContainer.objects.get(uri=uri)
+            concepts.extend(
+                Concept.objects.filter(parent_id=resource_container.versioned_object_id)
+            )
+            expressions.extend(map(lambda c: c.uri, concepts))
+        else:
+            expressions.extend(concept_expressions)
+
+        if mapping_expressions == '*':
+            mappings = []
+            resource_container = ResourceContainer.objects.get(uri=uri)
+            mappings.extend(
+                Mapping.objects.filter(parent_id=resource_container.versioned_object_id)
+            )
+            expressions.extend(map(lambda m: m.uri, mappings))
+        else:
+            expressions.extend(mapping_expressions)
+
+        expressions = set(expressions)
         prev_refs = self.parent_resource.references
         created = False
         save_kwargs = {'force_update': True, 'expressions': expressions}

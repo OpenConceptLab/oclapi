@@ -2153,6 +2153,184 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertEquals(references[0], response_content[1]['expression'])
         self.assertEquals(references[1], response_content[0]['expression'])
 
+    def test_add_all_concept_references(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection1',
+            mnemonic='collection1',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the one test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        for i in range(11):
+            mnemonic = 'concept1' + str(i)
+            concept1 = Concept(
+                mnemonic=mnemonic,
+                created_by=self.user1,
+                updated_by=self.user1,
+                parent=source,
+                concept_class='First',
+                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            )
+            kwargs = {
+                'parent_resource': source,
+            }
+            Concept.persist_new(concept1, self.user1, **kwargs)
+
+        c = Client()
+        response = c.put(
+            reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic}),
+            json.dumps({
+                'data': {
+                'concepts': '*',
+                'mappings': [],
+                'uri': '/orgs/org1/sources/source/HEAD/'
+            }}),
+            'application/json'
+        )
+        collection = Collection.objects.get(id=collection.id)
+
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(collection.references), 11)
+
+    def test_add_all_mappings_references(self):
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+
+        collection = Collection(
+            name='collection1',
+            mnemonic='collection1',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection2.com',
+            description='This is the one test collection'
+        )
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        concept1 = Concept(
+            mnemonic='c1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        concept2 = Concept(
+            mnemonic='c2',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept2, self.user1, **kwargs)
+
+        concept3 = Concept(
+            mnemonic='c3',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            concept_class='First',
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Concept.persist_new(concept3, self.user1, **kwargs)
+
+        mapping1 = Mapping(
+            parent=source,
+            map_type='SAME-AS',
+            from_concept=concept1,
+            to_concept=concept2,
+            external_id='something'
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping1, self.user1, **kwargs)
+
+        mapping2 = Mapping(
+            parent=source,
+            map_type='SAME-AS',
+            from_concept=concept2,
+            to_concept=concept3,
+            external_id='anything'
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping2, self.user1, **kwargs)
+
+        c = Client()
+        response = c.put(
+            reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic}),
+            json.dumps({
+                'data': {
+                'concepts': [concept1.uri],
+                'mappings': '*',
+                'uri': '/orgs/org1/sources/source/HEAD/'
+            }}),
+            'application/json'
+        )
+        collection = Collection.objects.get(id=collection.id)
+
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(collection.references), 3)
+
 
 class CollectionVersionViewTest(SourceBaseTest):
     def test_latest_version(self):
