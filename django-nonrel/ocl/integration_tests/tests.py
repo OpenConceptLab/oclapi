@@ -1241,7 +1241,7 @@ class MappingViewsTest(MappingBaseTest):
         self.source2.public_access = ACCESS_TYPE_NONE
         Source.persist_changes(self.source2, self.user2)
         response = self.client.get(reverse('concept-mapping-list', kwargs=kwargs))
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 403)
 
     @skip('Feature not ready.')
     def test_all_mappings__positive(self):
