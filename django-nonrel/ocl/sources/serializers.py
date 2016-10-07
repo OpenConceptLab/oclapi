@@ -230,10 +230,9 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         version.mnemonic = attrs.get(self.Meta.lookup_field)
         return super(SourceVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
-    @transaction.atomic
     def save_object(self, obj, **kwargs):
         try:
-            with transaction.atomic():
+            with transaction.commit_on_success():
                 request_user = self.context['request'].user
 
                 errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
