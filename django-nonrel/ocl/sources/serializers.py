@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.models import Concept
@@ -9,6 +10,7 @@ from sources.models import Source, SourceVersion
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from tasks import update_children_for_resource_version
 from oclapi.settings.common import Common
+from django.db import transaction
 
 
 class SourceListSerializer(serializers.Serializer):
@@ -228,10 +230,17 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         version.mnemonic = attrs.get(self.Meta.lookup_field)
         return super(SourceVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
+    @transaction.atomic
     def save_object(self, obj, **kwargs):
-        request_user = self.context['request'].user
-        errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
-        if errors:
-            self._errors.update(errors)
-        else:
-            update_children_for_resource_version.delay(obj.id, 'source')
+        try:
+            with transaction.atomic():
+                request_user = self.context['request'].user
+
+                errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
+                if errors:
+                    self._errors.update(errors)
+                else:
+                    update_children_for_resource_version.delay(obj.id, 'source')
+        except Exception:
+            raise ValidationError({'failed': 'please try again!'})
+
