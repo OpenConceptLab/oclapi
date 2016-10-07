@@ -231,15 +231,12 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
         return super(SourceVersionCreateSerializer, self).restore_object(attrs, instance=version)
 
     def save_object(self, obj, **kwargs):
-        try:
-            with transaction.commit_on_success():
-                request_user = self.context['request'].user
+        with transaction.commit_on_success():
+            request_user = self.context['request'].user
 
-                errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
-                if errors:
-                    self._errors.update(errors)
-                else:
-                    update_children_for_resource_version.delay(obj.id, 'source')
-        except Exception:
-            raise ValidationError({'failed': 'please try again!'})
+            errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
+            if errors:
+                self._errors.update(errors)
+            else:
+                update_children_for_resource_version.delay(obj.id, 'source')
 
