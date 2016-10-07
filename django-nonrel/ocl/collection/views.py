@@ -108,12 +108,14 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        expressions = []
         data = request.DATA.get("data")
+        expressions = data.get('expressions', [])
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
-        uri = data['uri']
-        ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
+        uri = data.get('uri')
+
+        if '*' in [concept_expressions, mapping_expressions]:
+            ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
 
         if concept_expressions == '*':
             concepts = []
