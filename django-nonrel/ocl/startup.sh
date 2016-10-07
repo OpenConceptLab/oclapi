@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "from django.contrib.auth.models import User; user = User.objects.create_superuser('root', 'root@example.com', 'Root123') if (User.objects.filter(username='root').count() < 1) else None" | python manage.py shell
+echo "from django.contrib.auth.models import User; from users.models import UserProfile; from orgs.models import Organization; UserProfile.objects.create(user=User.objects.create_superuser('root', 'root@example.com', 'Root123'), organizations=map(lambda o: o.id, Organization.objects.filter(created_by='root')), mnemonic='root')" | python manage.py shell
 echo "Settings for: $1"
 echo "Configurations for: $2"
 
