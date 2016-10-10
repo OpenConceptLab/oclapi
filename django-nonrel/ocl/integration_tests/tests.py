@@ -1,4 +1,5 @@
 import json
+import mock
 from moto import mock_s3
 from urlparse import urlparse
 from concepts.importer import ConceptsImporter
@@ -2153,6 +2154,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertEquals(references[0], response_content[1]['expression'])
         self.assertEquals(references[1], response_content[0]['expression'])
 
+    @mock.patch('django.conf.settings.CELERY_ALWAYS_EAGER', True, create=True)
     def test_add_all_concept_references(self):
         kwargs = {
             'parent_resource': self.userprofile1
@@ -2218,6 +2220,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(collection.references), 11)
 
+    @mock.patch('django.conf.settings.CELERY_ALWAYS_EAGER', True, create=True)
     def test_add_all_mappings_references(self):
         kwargs = {
             'parent_resource': self.userprofile1

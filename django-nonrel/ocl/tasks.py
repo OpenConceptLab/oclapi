@@ -16,7 +16,7 @@ from concepts.models import ConceptVersion, Concept
 from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
-from collection.models import CollectionVersion
+from collection.models import CollectionVersion, CollectionReference
 
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
@@ -109,6 +109,55 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     cv.save()
 
 
+@celery.task
+def add_multiple_references(SerializerClass, user, data, parent_resource):
+    expressions = data.get('expressions', [])
+    concept_expressions = data.get('concepts', [])
+    mapping_expressions = data.get('mappings', [])
+    uri = data.get('uri')
+
+    if '*' in [concept_expressions, mapping_expressions]:
+        ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
+
+    if concept_expressions == '*':
+        concepts = []
+        resource_container = ResourceContainer.objects.get(uri=uri)
+        concepts.extend(
+            Concept.objects.filter(parent_id=resource_container.versioned_object_id)
+        )
+        expressions.extend(map(lambda c: c.uri, concepts))
+    else:
+        expressions.extend(concept_expressions)
+
+    if mapping_expressions == '*':
+        mappings = []
+        resource_container = ResourceContainer.objects.get(uri=uri)
+        mappings.extend(
+            Mapping.objects.filter(parent_id=resource_container.versioned_object_id)
+        )
+        expressions.extend(map(lambda m: m.uri, mappings))
+    else:
+        expressions.extend(mapping_expressions)
+
+    expressions = set(expressions)
+    prev_refs = parent_resource.references
+    save_kwargs = {
+        'force_update': True, 'expressions': expressions, 'user': user
+    }
+
+    serializer = SerializerClass(parent_resource, partial=True)
+
+    serializer.save(**save_kwargs)
+    update_collection_in_solr.delay(
+        serializer.object.get_head().id,
+        CollectionReference.diff(serializer.object.references, prev_refs)
+    )
+
+    if 'references' in serializer.errors:
+        serializer.object.save()
+        return serializer.errors['references']
+
+
 def index_resource(resource_ids, resource_klass, resource_version_klass, identifier):
     _resource_ids = resource_klass.objects.filter(id__in=resource_ids)
     resource_version_ids = list(set(resource_ids) - set(map(lambda m: m.id, _resource_ids)))
@@ -117,5 +166,3 @@ def index_resource(resource_ids, resource_klass, resource_version_klass, identif
     kwargs[identifier] = version_ids
     versions = resource_version_klass.objects.filter(**kwargs)
     update_all_in_index(resource_version_klass, versions)
-
-

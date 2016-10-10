@@ -123,11 +123,11 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     references = CollectionReferenceSerializer(many=True)
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
 
-
     def save_object(self, obj, **kwargs):
-        request_user = self.context['request'].user
+        request_user = kwargs.pop('user', None) or self.context['request'].user
         errors = Collection.persist_changes(obj, request_user, **kwargs)
         if errors:
+            self._errors = self._errors or {}
             self._errors.update(errors)
         else:
             head_obj = obj.get_head()

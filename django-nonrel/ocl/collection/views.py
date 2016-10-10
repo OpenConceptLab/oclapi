@@ -21,7 +21,7 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from users.models import UserProfile
 from orgs.models import Organization
-from tasks import export_collection
+from tasks import export_collection, add_multiple_references
 from celery_once import AlreadyQueued
 from django.shortcuts import get_list_or_404
 from collection.filters import CollectionSearchFilter
@@ -108,59 +108,23 @@ class CollectionReferencesView(CollectionBaseView,
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        data = request.DATA.get("data")
-        expressions = data.get('expressions', [])
+        data = request.DATA.get('data')
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
-        uri = data.get('uri')
 
-        if '*' in [concept_expressions, mapping_expressions]:
-            ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
-
-        if concept_expressions == '*':
-            concepts = []
-            resource_container = ResourceContainer.objects.get(uri=uri)
-            concepts.extend(
-                Concept.objects.filter(parent_id=resource_container.versioned_object_id)
+        errors = False
+        if mapping_expressions == '*' or concept_expressions == '*':
+            add_multiple_references.delay(
+                self.serializer_class, self.request.user, data, self.parent_resource
             )
-            expressions.extend(map(lambda c: c.uri, concepts))
         else:
-            expressions.extend(concept_expressions)
-
-        if mapping_expressions == '*':
-            mappings = []
-            resource_container = ResourceContainer.objects.get(uri=uri)
-            mappings.extend(
-                Mapping.objects.filter(parent_id=resource_container.versioned_object_id)
+            errors = add_multiple_references(
+                self.serializer_class, self.request.user, data, self.parent_resource
             )
-            expressions.extend(map(lambda m: m.uri, mappings))
-        else:
-            expressions.extend(mapping_expressions)
 
-        expressions = set(expressions)
-        prev_refs = self.parent_resource.references
-        created = False
-        save_kwargs = {'force_update': True, 'expressions': expressions}
-
-        success_status_code = status.HTTP_200_OK
-
-        serializer = self.get_serializer(self.parent_resource, data=request.DATA,
-                                         files=request.FILES, partial=True)
-
-        if serializer.is_valid():
-            self.pre_save(serializer.object)
-            self.parent_resource = serializer.save(**save_kwargs)
-            self.post_save(self.parent_resource, created=created)
-
-        update_collection_in_solr.delay(
-            serializer.object.get_head().id,
-            CollectionReference.diff(serializer.object.references, prev_refs)
-        )
-
-        if 'references' in serializer.errors:
-            serializer.object.save()
-            return Response(serializer.errors['references'], status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=success_status_code)
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = CollectionReferenceSerializer
