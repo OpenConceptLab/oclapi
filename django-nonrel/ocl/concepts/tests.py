@@ -4,18 +4,16 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-from django.contrib.auth.models import User
+from unittest import skip
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from concepts.models import Concept, LocalizedText, ConceptVersion
-from orgs.models import Organization
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from sources.models import Source, SourceVersion
-from users.models import UserProfile
-from collection.models import Collection, CollectionVersion
-from test_helper.base import OclApiBaseTestCase
 from concepts.views import ConceptVersionListView
+from oclapi.models import ACCESS_TYPE_VIEW
+from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from test_helper.base import *
+
 
 class ConceptBaseTest(OclApiBaseTestCase):
 
@@ -49,7 +47,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
-            description='This is the first test source'
+            description='This is the first test source',
+            custom_validation_schema=None
         )
 
         kwargs = {
@@ -67,7 +66,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
             default_locale='fr',
             supported_locales=['fr'],
             website='www.source2.com',
-            description='This is the second test source'
+            description='This is the second test source',
+            custom_validation_schema=None
         )
         kwargs = {
             'parent_resource': self.org2,
@@ -1295,15 +1295,43 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         view.child_list_attribute = 'concepts'
         csv_rows = view.get_csv_rows()
         self.assertEquals(len(csv_rows), 1)
-        self.assertEquals(csv_rows[0].get('Retired'), False)
-        self.assertEquals(csv_rows[0].get('Datatype'), None)
-        self.assertEquals(csv_rows[0].get('Concept ID'), concept.mnemonic)
-        self.assertEquals(csv_rows[0].get('External ID'), None)
-        self.assertEquals(csv_rows[0].get('URI'), concept_version.uri)
-        self.assertEquals(csv_rows[0].get('Synonyms'), 'concept1 [FULLY_SPECIFIED] [en]')
+        self.assertDictEqual(csv_rows[0], {'retired': False, 'updated_by': 'user1', 'datatype': None, 'display_locale': '',
+                           'created_at': concept_version.created_at, 'concept_class': 'First',
+                           'uri': concept_version.uri, 'created_by': 'user1', 'updated_at': concept_version.updated_at,
+                           'names': 'concept1 en FULLY_SPECIFIED', 'display_name': '', 'external_id': None,
+                           'id': concept_version.id, 'descriptions': '', 'owner':concept_version.parent_resource, 'owner_type':concept_version.parent_resource_type(), 'owner_url':concept_version.parent_url})
 
-        # self.assertDictEqual(csv_rows[0], {'Retired': False, 'Datatype': None, 'Concept ID': concept.mnemonic, 'External ID': None, 'Description': '',
-        #                                    'URI': concept_version.uri, 'Source': 'source1',
-        #                                    'Synonyms': 'concept1 [FULLY_SPECIFIED] [en]', 'Last Updated': concept.created_at, 'Owner': 'org1',
-        #                                    'Concept Class': concept_version.concept_class,'Preferred Name': '', 'Updated By': concept_version.created_by, 'Preferred Name Locale': ''})
 
+class ConceptCustomValidationSchemaTest(ConceptBaseTest):
+
+    def test_concept_should_have_exactly_one_preferred_name(self):
+        user = create_user()
+
+        name = create_localized_text('ExactlyOnePreferredName')
+        name.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name, name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Custom validation rules require a concept to have exactly one preferred name')
+
+
+    @skip("NOT YET")
+    def test_a_preferred_name_can_neither_be_a_short_name_an_index_search_term_nor_a_voided_name(self):
+        self.assertEquals(1, 0)
+
+    @skip("NOT YET")
+    def test_a_name_should_be_unique_except_for_the_short_name(self):
+        self.assertEquals(1, 0)
