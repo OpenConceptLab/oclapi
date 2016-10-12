@@ -17,13 +17,6 @@ class Dev(Local):
     """
     Settings for unit testing
     """
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_mongodb_engine',
-            'HOST': 'mongo.openconceptlab.org',
-            'NAME': 'test',
-        }
-    }
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
 
 
