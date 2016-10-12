@@ -62,18 +62,29 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
 
         ###241 Rule 1################################################
-            preferred_names_in_concept = dict()
-            name_id = lambda n: n.locale + n.name
+            preferred_name_locales_in_concept = dict()
 
             for name in self.names:
                 if not name.locale_preferred:
                     continue
 
-                if preferred_names_in_concept.has_key(name_id(name)):
+                if preferred_name_locales_in_concept.has_key(name.locale):
                     raise ValidationError({'names': ['Custom validation rules require a concept to have exactly one preferred name']})
 
-                preferred_names_in_concept[name_id(name)] = True
+                preferred_name_locales_in_concept[name.locale] = True
+
+
         ##############################################################
+
+        ###241 Rule 2################################################
+            preferred_names_in_concept = map(lambda no: no.name,filter(lambda n: n.locale_preferred, self.names))
+            short_names_in_concept = map(lambda no: no.name, filter(lambda n: n.type == "SHORT", self.names))
+
+            if set(preferred_names_in_concept).intersection(short_names_in_concept):
+                raise ValidationError({'names': ['Custom validation rules require a preferred name to be different than a short name']})
+
+        ##############################################################
+
 
         # Concept preferred_name should be unique for same source and locale.
         validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}

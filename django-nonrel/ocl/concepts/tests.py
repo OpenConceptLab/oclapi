@@ -1304,11 +1304,17 @@ class ConceptVersionListViewTest(ConceptBaseTest):
 
 class ConceptCustomValidationSchemaTest(ConceptBaseTest):
 
-    def test_concept_should_have_exactly_one_preferred_name(self):
+    def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
         user = create_user()
 
-        name = create_localized_text('ExactlyOnePreferredName')
-        name.locale_preferred = True
+        name_en1 = create_localized_text('PreferredName')
+        name_en1.locale_preferred = True
+
+        name_en2 = create_localized_text('PreferredName')
+        name_en2.locale_preferred = True
+
+        name_tr = create_localized_text('PreferredName', locale="tr")
+        name_tr.locale_preferred = True
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
@@ -1317,7 +1323,7 @@ class ConceptCustomValidationSchemaTest(ConceptBaseTest):
             created_by=user,
             parent=source,
             concept_class='First',
-            names=[name, name],
+            names=[name_en1, name_en2, name_tr],
         )
 
         kwargs = {'parent_resource': source, }
@@ -1328,9 +1334,36 @@ class ConceptCustomValidationSchemaTest(ConceptBaseTest):
         self.assertEquals(errors['names'][0], 'Custom validation rules require a concept to have exactly one preferred name')
 
 
-    @skip("NOT YET")
-    def test_a_preferred_name_can_neither_be_a_short_name_an_index_search_term_nor_a_voided_name(self):
-        self.assertEquals(1, 0)
+    def test_a_preferred_name_can_not_be_a_short_name(self):
+        user = create_user()
+
+        short_name = create_localized_text("ShortName")
+        short_name.type = "SHORT"
+
+        name = create_localized_text('ShortName')
+        name.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[short_name, name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Custom validation rules require a preferred name to be different than a short name')
+
+
+    #_an_index_search_term
+
+    #_a_voided_name
 
     @skip("NOT YET")
     def test_a_name_should_be_unique_except_for_the_short_name(self):
