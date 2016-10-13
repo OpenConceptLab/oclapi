@@ -1,0 +1,86 @@
+[
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d57",
+      "fields": {
+        "name": "Numeric"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d58",
+      "fields": {
+          "name": "Coded"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d59",
+      "fields": {
+          "name": "Text"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d60",
+      "fields": {
+          "name": "N/A"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d61",
+      "fields": {
+          "name": "Document"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d62",
+      "fields": {
+          "name": "Date"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d63",
+      "fields": {
+          "name": "Time"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d64",
+      "fields": {
+          "name": "Datetime"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d65",
+      "fields": {
+          "name": "Boolean"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d66",
+      "fields": {
+          "name": "Rule"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d67",
+      "fields": {
+          "name": "Structured Numeric"
+      }
+  },
+  {
+      "model": "selection_attributes.ConceptDataType",
+      "pk": "580084236538870047563d68",
+      "fields": {
+          "name": "Complex"
+      }
+  }
+ ]

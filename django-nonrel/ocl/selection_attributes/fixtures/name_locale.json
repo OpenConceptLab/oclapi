@@ -1,0 +1,1474 @@
+[
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b100",
+     "fields": {
+         "name": "Abkhazian",
+         "code": "ab"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b102",
+     "fields": {
+         "name": "Afar",
+         "code": "aa"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b103",
+     "fields": {
+         "name": "Afrikaans",
+         "code": "af"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b104",
+     "fields": {
+         "name": "Akan",
+         "code": "ak"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b105",
+     "fields": {
+         "name": "Albanian",
+         "code": "sq"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b106",
+     "fields": {
+         "name": "Amharic",
+         "code": "am"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b107",
+     "fields": {
+         "name": "Arabic",
+         "code": "ar"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b108",
+     "fields": {
+         "name": "Aragonese",
+         "code": "an"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b109",
+     "fields": {
+         "name": "Armenian",
+         "code": "hy"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b110",
+     "fields": {
+         "name": "Assamese",
+         "code": "as"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b111",
+     "fields": {
+         "name": "Avaric",
+         "code": "av"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b112",
+     "fields": {
+         "name": "Avestan",
+         "code": "ae"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b113",
+     "fields": {
+         "name": "Aymara",
+         "code": "ay"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b114",
+     "fields": {
+         "name": "Azerbaijani",
+         "code": "az"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b115",
+     "fields": {
+         "name": "Bambara",
+         "code": "bm"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b116",
+     "fields": {
+         "name": "Bashkir",
+         "code": "ba"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b117",
+     "fields": {
+         "name": "Basque",
+         "code": "eu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b118",
+     "fields": {
+         "name": "Belarusian",
+         "code": "be"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b119",
+     "fields": {
+         "name": "Bengali",
+         "code": "bn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b120",
+     "fields": {
+         "name": "Bihari",
+         "code": "languages bh"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b121",
+     "fields": {
+         "name": "Bislama",
+         "code": "bi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b122",
+     "fields": {
+         "name": "Bosnian",
+         "code": "bs"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b123",
+     "fields": {
+         "name": "Breton",
+         "code": "br"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b124",
+     "fields": {
+         "name": "Bulgarian",
+         "code": "bg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b125",
+     "fields": {
+         "name": "Burmese",
+         "code": "my"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b126",
+     "fields": {
+         "name": "Catalan",
+         "code": "ca"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b127",
+     "fields": {
+         "name": "Central",
+         "code": "Khmer km"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b128",
+     "fields": {
+         "name": "Chamorro",
+         "code": "ch"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b129",
+     "fields": {
+         "name": "Chechen",
+         "code": "ce"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b130",
+     "fields": {
+         "name": "Chewa",
+         "code": "ny"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b131",
+     "fields": {
+         "name": "Chinese",
+         "code": "zh"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b132",
+     "fields": {
+         "name": "Chuvash",
+         "code": "cv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b133",
+     "fields": {
+         "name": "Cornish",
+         "code": "kw"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b134",
+     "fields": {
+         "name": "Corsican",
+         "code": "co"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b135",
+     "fields": {
+         "name": "Cree",
+         "code": "cr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b136",
+     "fields": {
+         "name": "Croatian",
+         "code": "hr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b137",
+     "fields": {
+         "name": "Czech",
+         "code": "cs"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b138",
+     "fields": {
+         "name": "Danish",
+         "code": "da"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b139",
+     "fields": {
+         "name": "Divehi",
+         "code": "dv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b140",
+     "fields": {
+         "name": "Dutch",
+         "code": "nl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b141",
+     "fields": {
+         "name": "Dzongkha",
+         "code": "dz"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b142",
+     "fields": {
+         "name": "English",
+         "code": "en"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b143",
+     "fields": {
+         "name": "Esperanto",
+         "code": "eo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b144",
+     "fields": {
+         "name": "Estonian",
+         "code": "et"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b145",
+     "fields": {
+         "name": "Ewe",
+         "code": "ee"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b146",
+     "fields": {
+         "name": "Faroese",
+         "code": "fo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b147",
+     "fields": {
+         "name": "Fijian",
+         "code": "fj"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b148",
+     "fields": {
+         "name": "Finnish",
+         "code": "fi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b149",
+     "fields": {
+         "name": "French",
+         "code": "fr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b150",
+     "fields": {
+         "name": "Fulah",
+         "code": "ff"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b151",
+     "fields": {
+         "name": "Galician",
+         "code": "gl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b152",
+     "fields": {
+         "name": "Ganda",
+         "code": "lg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b153",
+     "fields": {
+         "name": "Georgian",
+         "code": "ka"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b154",
+     "fields": {
+         "name": "German",
+         "code": "de"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b155",
+     "fields": {
+         "name": "Greek",
+         "code": " Modern (1453-) el"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b156",
+     "fields": {
+         "name": "Greenlandic",
+         "code": "kl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b157",
+     "fields": {
+         "name": "Guarani",
+         "code": "gn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b158",
+     "fields": {
+         "name": "Gujarati",
+         "code": "gu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b159",
+     "fields": {
+         "name": "Haitian",
+         "code": "Creole ht"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b160",
+     "fields": {
+         "name": "Hausa",
+         "code": "ha"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b161",
+     "fields": {
+         "name": "Hebrew",
+         "code": "he"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b162",
+     "fields": {
+         "name": "Herero",
+         "code": "hz"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b163",
+     "fields": {
+         "name": "Hindi",
+         "code": "hi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b164",
+     "fields": {
+         "name": "Hiri",
+         "code": "Motu ho"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b165",
+     "fields": {
+         "name": "Hungarian",
+         "code": "hu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b166",
+     "fields": {
+         "name": "Icelandic",
+         "code": "is"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b167",
+     "fields": {
+         "name": "Ido",
+         "code": "io"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b168",
+     "fields": {
+         "name": "Igbo",
+         "code": "ig"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b169",
+     "fields": {
+         "name": "Indonesian",
+         "code": "id"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b170",
+     "fields": {
+         "name": "Interlingua",
+         "code": "(International Auxiliary Language Association) ia"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b171",
+     "fields": {
+         "name": "Inuktitut",
+         "code": "iu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b172",
+     "fields": {
+         "name": "Inupiaq",
+         "code": "ik"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b173",
+     "fields": {
+         "name": "Irish",
+         "code": "ga"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b174",
+     "fields": {
+         "name": "Italian",
+         "code": "it"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b175",
+     "fields": {
+         "name": "Japanese",
+         "code": "ja"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b176",
+     "fields": {
+         "name": "Javanese",
+         "code": "jv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b177",
+     "fields": {
+         "name": "Kannada",
+         "code": "kn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b178",
+     "fields": {
+         "name": "Kanuri",
+         "code": "kr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b179",
+     "fields": {
+         "name": "Kashmiri",
+         "code": "ks"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b180",
+     "fields": {
+         "name": "Kazakh",
+         "code": "kk"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b181",
+     "fields": {
+         "name": "Kikuyu",
+         "code": "ki"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b182",
+     "fields": {
+         "name": "Kinyarwanda",
+         "code": "rw"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b183",
+     "fields": {
+         "name": "Kirghiz",
+         "code": "ky"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b184",
+     "fields": {
+         "name": "Komi",
+         "code": "kv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b185",
+     "fields": {
+         "name": "Kongo",
+         "code": "kg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b186",
+     "fields": {
+         "name": "Korean",
+         "code": "ko"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b187",
+     "fields": {
+         "name": "Kuanyama",
+         "code": "kj"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b188",
+     "fields": {
+         "name": "Kurdish",
+         "code": "ku"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b189",
+     "fields": {
+         "name": "Lao",
+         "code": "lo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b190",
+     "fields": {
+         "name": "Latin",
+         "code": "la"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b191",
+     "fields": {
+         "name": "Latvian",
+         "code": "lv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b192",
+     "fields": {
+         "name": "Letzeburgesch",
+         "code": "lb"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b193",
+     "fields": {
+         "name": "Limburgan",
+         "code": "li"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b194",
+     "fields": {
+         "name": "Lingala",
+         "code": "ln"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b195",
+     "fields": {
+         "name": "Lithuanian",
+         "code": "lt"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b196",
+     "fields": {
+         "name": "Luba",
+         "code": "Katanga lu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b197",
+     "fields": {
+         "name": "Macedonian",
+         "code": "mk"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b198",
+     "fields": {
+         "name": "Malagasy",
+         "code": "mg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b199",
+     "fields": {
+         "name": "Malay",
+         "code": "ms"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b200",
+     "fields": {
+         "name": "Malayalam",
+         "code": "ml"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b201",
+     "fields": {
+         "name": "Maltese",
+         "code": "mt"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b202",
+     "fields": {
+         "name": "Manx",
+         "code": "gv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b203",
+     "fields": {
+         "name": "Maori",
+         "code": "mi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b204",
+     "fields": {
+         "name": "Marathi",
+         "code": "mr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b205",
+     "fields": {
+         "name": "Marshallese",
+         "code": "mh"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b206",
+     "fields": {
+         "name": "Mongolian",
+         "code": "mn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b207",
+     "fields": {
+         "name": "Nauru",
+         "code": "na"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b208",
+     "fields": {
+         "name": "Navajo",
+         "code": "nv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b209",
+     "fields": {
+         "name": "Ndebele",
+         "code": " North nd"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b210",
+     "fields": {
+         "name": "Ndebele",
+         "code": " South nr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b211",
+     "fields": {
+         "name": "Ndonga",
+         "code": "ng"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b212",
+     "fields": {
+         "name": "Nepali",
+         "code": "ne"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b213",
+     "fields": {
+         "name": "Northern",
+         "code": "Sami se"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b214",
+     "fields": {
+         "name": "Norwegian",
+         "code": "no"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b215",
+     "fields": {
+         "name": "Norwegian",
+         "code": "Bokmål nb"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b216",
+     "fields": {
+         "name": "Norwegian",
+         "code": "Nynorsk nn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b217",
+     "fields": {
+         "name": "Occidental",
+         "code": "ie"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b218",
+     "fields": {
+         "name": "Occitan",
+         "code": "(post 1500) oc"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b219",
+     "fields": {
+         "name": "Ojibwa",
+         "code": "oj"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b220",
+     "fields": {
+         "name": "Old",
+         "code": "Bulgarian cu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b221",
+     "fields": {
+         "name": "Oriya",
+         "code": "or"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b222",
+     "fields": {
+         "name": "Oromo",
+         "code": "om"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b223",
+     "fields": {
+         "name": "Ossetian",
+         "code": "os"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b224",
+     "fields": {
+         "name": "Pali",
+         "code": "pi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b225",
+     "fields": {
+         "name": "Pashto",
+         "code": "ps"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b226",
+     "fields": {
+         "name": "Persian",
+         "code": "fa"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b227",
+     "fields": {
+         "name": "Polish",
+         "code": "pl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b228",
+     "fields": {
+         "name": "Portuguese",
+         "code": "pt"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b229",
+     "fields": {
+         "name": "Punjabi",
+         "code": "pa"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b230",
+     "fields": {
+         "name": "Quechua",
+         "code": "qu"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b231",
+     "fields": {
+         "name": "Romanian",
+         "code": "ro"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b232",
+     "fields": {
+         "name": "Romansh",
+         "code": "rm"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b233",
+     "fields": {
+         "name": "Rundi",
+         "code": "rn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b234",
+     "fields": {
+         "name": "Russian",
+         "code": "ru"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b235",
+     "fields": {
+         "name": "Samoan",
+         "code": "sm"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b236",
+     "fields": {
+         "name": "Sango",
+         "code": "sg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b237",
+     "fields": {
+         "name": "Sanskrit",
+         "code": "sa"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b238",
+     "fields": {
+         "name": "Sardinian",
+         "code": "sc"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b239",
+     "fields": {
+         "name": "Scottish",
+         "code": "Gaelic gd"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b240",
+     "fields": {
+         "name": "Serbian",
+         "code": "sr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b241",
+     "fields": {
+         "name": "Shona",
+         "code": "sn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b242",
+     "fields": {
+         "name": "Sichuan",
+         "code": "Yi ii"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b243",
+     "fields": {
+         "name": "Sindhi",
+         "code": "sd"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b244",
+     "fields": {
+         "name": "Sinhalese",
+         "code": "si"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b245",
+     "fields": {
+         "name": "Slovak",
+         "code": "sk"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b246",
+     "fields": {
+         "name": "Slovenian",
+         "code": "sl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b247",
+     "fields": {
+         "name": "Somali",
+         "code": "so"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b248",
+     "fields": {
+         "name": "Sotho",
+         "code": " Southern st"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b249",
+     "fields": {
+         "name": "Spanish",
+         "code": "es"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b250",
+     "fields": {
+         "name": "Sundanese",
+         "code": "su"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b251",
+     "fields": {
+         "name": "Swahili",
+         "code": "sw"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b252",
+     "fields": {
+         "name": "Swati",
+         "code": "ss"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b253",
+     "fields": {
+         "name": "Swedish",
+         "code": "sv"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b254",
+     "fields": {
+         "name": "Tagalog",
+         "code": "tl"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b255",
+     "fields": {
+         "name": "Tahitian",
+         "code": "ty"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b256",
+     "fields": {
+         "name": "Tajik",
+         "code": "tg"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b257",
+     "fields": {
+         "name": "Tamil",
+         "code": "ta"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b258",
+     "fields": {
+         "name": "Tatar",
+         "code": "tt"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b259",
+     "fields": {
+         "name": "Telugu",
+         "code": "te"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b260",
+     "fields": {
+         "name": "Thai",
+         "code": "th"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b261",
+     "fields": {
+         "name": "Tibetan",
+         "code": "bo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b262",
+     "fields": {
+         "name": "Tigrinya",
+         "code": "ti"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b263",
+     "fields": {
+         "name": "Tonga",
+         "code": "(Tonga Islands) to"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b264",
+     "fields": {
+         "name": "Tsonga",
+         "code": "ts"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b265",
+     "fields": {
+         "name": "Tswana",
+         "code": "tn"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b266",
+     "fields": {
+         "name": "Turkish",
+         "code": "tr"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b267",
+     "fields": {
+         "name": "Turkmen",
+         "code": "tk"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b268",
+     "fields": {
+         "name": "Twi",
+         "code": "tw"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b269",
+     "fields": {
+         "name": "Uighur",
+         "code": "ug"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b270",
+     "fields": {
+         "name": "Ukrainian",
+         "code": "uk"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b271",
+     "fields": {
+         "name": "Urdu",
+         "code": "ur"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b272",
+     "fields": {
+         "name": "Uzbek",
+         "code": "uz"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b273",
+     "fields": {
+         "name": "Venda",
+         "code": "ve"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b274",
+     "fields": {
+         "name": "Vietnamese",
+         "code": "vi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b275",
+     "fields": {
+         "name": "Volapük",
+         "code": "vo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b276",
+     "fields": {
+         "name": "Walloon",
+         "code": "wa"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b277",
+     "fields": {
+         "name": "Welsh",
+         "code": "cy"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b278",
+     "fields": {
+         "name": "Western",
+         "code": "Frisian fy"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b279",
+     "fields": {
+         "name": "Wolof",
+         "code": "wo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b280",
+     "fields": {
+         "name": "Xhosa",
+         "code": "xh"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b281",
+     "fields": {
+         "name": "Yiddish",
+         "code": "yi"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b282",
+     "fields": {
+         "name": "Yoruba",
+         "code": "yo"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b283",
+     "fields": {
+         "name": "Zhuang",
+         "code": "za"
+     }
+ },
+ {
+     "model": "selection_attributes.NameLocale",
+     "pk": "58008423653887004756b284",
+     "fields": {
+         "name": "Zulu",
+         "code": "zu"
+     }
+ }
+]

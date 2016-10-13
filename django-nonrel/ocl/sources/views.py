@@ -169,6 +169,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
 class SourceListView(SourceBaseView,
                      ConceptDictionaryCreateMixin,
                      ListWithHeadersMixin):
+
     serializer_class = SourceCreateSerializer
     filter_backends = [SourceSearchFilter]
     solr_fields = {

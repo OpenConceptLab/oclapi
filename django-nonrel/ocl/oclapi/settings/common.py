@@ -140,6 +140,7 @@ class Common(Configuration):
         'concepts',
         'collection',
         'mappings',
+        'selection_attributes',
         'integration_tests',
     )
 
