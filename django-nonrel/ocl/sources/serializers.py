@@ -111,7 +111,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     versions = serializers.IntegerField(source='num_versions', read_only=True)
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
-    created_by = serializers.CharField(source='owner', read_only=True)
+    created_by = serializers.CharField(read_only=True)
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
