@@ -168,6 +168,36 @@ class CollectionListView(CollectionBaseView,
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         return self.list(request, *args, **kwargs)
 
+    def get_csv_rows(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+
+
+        values = queryset.values('mnemonic', 'name', 'full_name', 'collection_type', 'description', 'default_locale',
+                                 'supported_locales', 'website', 'external_id', 'updated_at', 'updated_by', 'uri')
+
+
+        for value in values:
+            value['Owner'] = Collection.objects.get(uri=value['uri']).parent.name
+            value['Collection ID'] = value.pop('mnemonic')
+            value['Collection Name'] = value.pop('name')
+            value['Collection Full Name'] = value.pop('full_name')
+            value['Collection Type'] = value.pop('collection_type')
+            value['Description'] = value.pop('description')
+            value['Default Locale'] = value.pop('default_locale')
+            value['Supported Locales'] = ",".join(value.pop('supported_locales'))
+            value['Website'] = value.pop('website')
+            value['External ID'] = value.pop('external_id')
+            value['Last Updated'] = value.pop('updated_at')
+            value['Updated By'] = value.pop('updated_by')
+            value['URI'] = value.pop('uri')
+
+
+        values.field_names.extend(['Owner','Collection ID','Collection Name','Collection Full Name','Collection Type','Description','Default Locale','Supported Locales','Website'
+                                      ,'External ID','Last Updated','Updated By','URI'])
+        del values.field_names[0:12]
+        return values
+
 class CollectionExtrasView(ConceptDictionaryExtrasView):
     pass
 

@@ -188,20 +188,30 @@ class SourceListView(SourceBaseView,
         if not queryset:
             queryset = self.get_queryset()
 
-        values = queryset.values('id', 'public_access', 'created_at', 'updated_at', 'updated_by', 'is_active', 'uri',
-                                            'name', 'full_name', 'default_locale', 'supported_locales', 'website','description','external_id', 'source_type')
+
+        values = queryset.values('mnemonic', 'name', 'full_name', 'source_type', 'description', 'default_locale',
+                                 'supported_locales', 'website', 'external_id', 'updated_at', 'updated_by', 'uri')
+
 
         for value in values:
-            head = SourceVersion.objects.get(versioned_object_id=value.get('id'), mnemonic='HEAD')
-            value['active_concepts'] = ConceptVersion.objects.filter(is_active=True,retired=False, id__in=head.concepts).count()
-            value['active_mappings'] = MappingVersion.objects.filter(is_active=True,retired=False, id__in=head.mappings).count()
-            value['versions'] = SourceVersion.objects.filter(versioned_object_id=value.get('id')).count()
-            value['owner'] =head.parent_resource
-            value['owner_type'] = head.parent_resource_type()
-            value['owner_url'] = head.parent_url
+            value['Owner'] = Source.objects.get(uri=value['uri']).parent.name
+            value['Source ID'] = value.pop('mnemonic')
+            value['Source Name'] = value.pop('name')
+            value['Source Full Name'] = value.pop('full_name')
+            value['Source Type'] = value.pop('source_type')
+            value['Description'] = value.pop('description')
+            value['Default Locale'] = value.pop('default_locale')
+            value['Supported Locales'] = ",".join(value.pop('supported_locales'))
+            value['Website'] = value.pop('website')
+            value['External ID'] = value.pop('external_id')
+            value['Last Updated'] = value.pop('updated_at')
+            value['Updated By'] = value.pop('updated_by')
+            value['URI'] = value.pop('uri')
 
-        values.field_names.extend(['active_concepts', 'active_mappings', 'versions','owner','owner_type','owner_url'])
 
+        values.field_names.extend(['Owner','Source ID','Source Name','Source Full Name','Source Type','Description','Default Locale','Supported Locales','Website'
+                                      ,'External ID','Last Updated','Updated By','URI'])
+        del values.field_names[0:12]
         return values
 
 
