@@ -175,24 +175,34 @@ class ConceptVersionCSVFormatterMixin():
             queryset = self.get_queryset()
 
         values = queryset.values('id', 'external_id', 'uri', 'concept_class', 'datatype', 'retired', 'names',
-                                            'descriptions', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                                            'descriptions', 'created_by', 'created_at')
 
         for value in values:
-            concept_ver = self.model.objects.get(id=value.get('id'))
-            names = value.get('names')
-            descriptions = value.get('descriptions')
+            concept_ver = self.model.objects.get(id=value.pop('id'))
+            value['Owner'] = concept_ver.owner
+            value['Source'] = concept_ver.parent_resource
+            value['Concept ID']  = concept_ver.versioned_object.mnemonic
 
-            value['names'] = self.join_values(names)
-            value['descriptions'] = self.join_values(descriptions)
+            names = value.pop('names')
+            descriptions = value.pop('descriptions')
 
             preferred_name = self.preferred_name(names)
-            value['display_name'] = preferred_name.get('name')
-            value['display_locale'] = preferred_name.get('locale')
-            value['owner'] = concept_ver.parent_resource
-            value['owner_type'] = concept_ver.parent_resource_type()
-            value['owner_url'] = concept_ver.parent_url
+            value['Preferred Name'] = preferred_name.get('name')
+            value['Preferred Name Locale'] = preferred_name.get('locale')
+            value['Concept Class'] = value.pop('concept_class')
+            value['Datatype'] = value.pop('datatype')
+            value['Retired'] = value.pop('retired')
+            value['Synonyms'] = self.get_formatted_values(names)
+            value['Desciption'] = self.get_formatted_values(descriptions)
+            value['External ID'] = value.pop('external_id')
+            value['Last Updated'] = value.pop('created_at')
+            value['Updated By'] = value.pop('created_by')
+            value['URI'] = value.pop('uri')
 
-        values.field_names.extend(['display_name', 'display_locale','owner','owner_type','owner_url'])
+
+        values.field_names.extend(['Owner','Source','Concept ID','Preferred Name','Preferred Name Locale','Concept Class','Datatype','Retired','Synonyms','Desciption'
+                                      ,'External ID','Last Updated','Updated By','URI'])
+        del values.field_names[0:10]
         return values
 
     def join_values(self, objects):
@@ -202,3 +212,11 @@ class ConceptVersionCSVFormatterMixin():
 
     def preferred_name(self, names):
         return next((name for name in names if name[1].get('locale_preferred')), [None, {'name': '', 'locale': ''}])[1]
+
+    def get_formatted_values(self, items):
+        formated_synonym=[]
+        for item in items:
+            formated_synonym.append((item[1].get('name') if 'name' in item[1] else '') + (' [' + item[1].get('type') + ']' if 'type' in item[1] and item[1].get('type') else '')
+                                    + (' [' + item[1].get('locale') + ']' if 'locale' in item[1] and item[1].get('locale') else ''))
+        return ';'.join(formated_synonym)
+
