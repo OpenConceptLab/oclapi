@@ -268,6 +268,39 @@ class MappingListAllView(BaseAPIView, ListWithHeadersMixin):
         self.limit = request.QUERY_PARAMS.get(LIMIT_PARAM, 25)
         return self.list(request, *args, **kwargs)
 
+    def get_csv_rows(self, queryset=None):
+        if not queryset:
+            queryset = self.get_queryset()
+
+
+        values = queryset.values('map_type','versioned_object_id','uri')
+
+
+        for value in values:
+            mapping = Mapping.objects.get(id=value.pop('versioned_object_id'))
+            value['From Concept Owner'] = mapping.from_source_owner
+            value['From Concept Source'] = mapping.from_source_name
+            value['From Concept Code'] = mapping.from_concept_code
+            value['From Concept Name'] = mapping.from_concept_name
+            value['Map Type'] = value.pop('map_type')
+            value['To Concept Owner'] = mapping.to_source_owner
+            value['To Concept Source'] = mapping.to_source_name
+            value['To Concept Code'] = mapping.get_to_concept_code()
+            value['To Concept Name'] = mapping.get_to_concept_name()
+            value['Internal/External'] = 'Internal' if mapping.to_concept_url else 'External'
+            value['Retired'] = mapping.retired
+            value['External ID'] = mapping.external_id
+            value['Last Updated'] = mapping.updated_at
+            value['Updated By'] = mapping.updated_by
+            value['Mapping Owner'] = mapping.owner
+            value['Mapping Source'] = mapping.source
+            value['URI'] = value.pop('uri')
+
+        values.field_names.extend(['From Concept Owner','From Concept Source','From Concept Code','From Concept Name','Map Type','To Concept Owner',
+                                   'To Concept Source','To Concept Code','To Concept Name','Internal/External','Retired','External ID','Last Updated','Updated By','Mapping Owner','Mapping Source','URI'])
+        del values.field_names[0:3]
+        return values
+
     def get_queryset(self):
         queryset = super(MappingListAllView, self).get_queryset()
         if not self.include_retired:
