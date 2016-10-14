@@ -193,14 +193,14 @@ class ConceptVersionCSVFormatterMixin():
             value['Datatype'] = value.pop('datatype')
             value['Retired'] = value.pop('retired')
             value['Synonyms'] = self.get_formatted_values(names)
-            value['Desciption'] = self.get_formatted_values(descriptions)
+            value['Description'] = self.get_formatted_values(descriptions)
             value['External ID'] = value.pop('external_id')
             value['Last Updated'] = value.pop('created_at')
             value['Updated By'] = value.pop('created_by')
             value['URI'] = value.pop('uri')
 
 
-        values.field_names.extend(['Owner','Source','Concept ID','Preferred Name','Preferred Name Locale','Concept Class','Datatype','Retired','Synonyms','Desciption'
+        values.field_names.extend(['Owner','Source','Concept ID','Preferred Name','Preferred Name Locale','Concept Class','Datatype','Retired','Synonyms','Description'
                                       ,'External ID','Last Updated','Updated By','URI'])
         del values.field_names[0:10]
         return values
