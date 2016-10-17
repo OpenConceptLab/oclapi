@@ -1331,8 +1331,8 @@ class ConceptCustomValidationSchemaTest(ConceptBaseTest):
         errors = Concept.persist_new(concept, user, **kwargs)
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Custom validation rules require a concept to have exactly one preferred name')
-
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a concept to have exactly one preferred name')
 
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()
@@ -1358,13 +1358,82 @@ class ConceptCustomValidationSchemaTest(ConceptBaseTest):
         errors = Concept.persist_new(concept, user, **kwargs)
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Custom validation rules require a preferred name to be different than a short name')
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a preferred name to be different than a short name')
+
+    def test_a_preferred_name_can_not_be_an_index_search_term(self):
+        user = create_user()
+
+        name = create_localized_text("FullySpecifiedName")
+
+        index_name = create_localized_text("IndexTermName")
+        index_name.type = "INDEX_TERM"
+        index_name.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name, index_name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a preferred name not to be an index/search term')
+
+    def test_a_name_can_be_equal_to_a_short_name(self):
+        user = create_user()
+
+        name = create_localized_text("aName")
+
+        short_name = create_localized_text("aName")
+        short_name.type = "SHORT"
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[short_name, name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(0, len(errors))
+
+    def test_a_name_should_be_unique(self):
+        user = create_user()
+
+        name = create_localized_text("aName")
+
+        another_name = create_localized_text("aName")
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name, another_name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Custom validation rules require all names except type=SHORT to be unique')
 
 
-    #_an_index_search_term
-
-    #_a_voided_name
-
-    @skip("NOT YET")
-    def test_a_name_should_be_unique_except_for_the_short_name(self):
-        self.assertEquals(1, 0)

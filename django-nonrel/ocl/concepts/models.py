@@ -69,21 +69,41 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
                     continue
 
                 if preferred_name_locales_in_concept.has_key(name.locale):
-                    raise ValidationError({'names': ['Custom validation rules require a concept to have exactly one preferred name']})
+                    raise ValidationError({
+                        'names': ['Custom validation rules require a concept to have exactly one preferred name']
+                    })
 
                 preferred_name_locales_in_concept[name.locale] = True
 
-
-        ##############################################################
+        #############################################################
 
         ###241 Rule 2################################################
             preferred_names_in_concept = map(lambda no: no.name,filter(lambda n: n.locale_preferred, self.names))
+
+            if len(filter(lambda n: n.type == "INDEX_TERM" and n.locale_preferred == True, self.names)) > 0:
+                raise ValidationError({
+                    'names': ['Custom validation rules require a preferred name not to be an index/search term']
+                })
+
             short_names_in_concept = map(lambda no: no.name, filter(lambda n: n.type == "SHORT", self.names))
 
             if set(preferred_names_in_concept).intersection(short_names_in_concept):
-                raise ValidationError({'names': ['Custom validation rules require a preferred name to be different than a short name']})
+                raise ValidationError({
+                    'names': ['Custom validation rules require a preferred name to be different than a short name']
+                })
 
-        ##############################################################
+        #############################################################
+
+        ###241 Rule 3################################################
+            name_id = lambda n: n.locale + n.name
+
+            non_short_names_in_concept = map(name_id, filter(lambda n: n.type != "SHORT", self.names))
+            name_set = set(non_short_names_in_concept)
+
+            if len(name_set) != len(non_short_names_in_concept):
+                raise ValidationError({'names': ['Custom validation rules require all names except type=SHORT to be unique']})
+
+        #############################################################
 
 
         # Concept preferred_name should be unique for same source and locale.
