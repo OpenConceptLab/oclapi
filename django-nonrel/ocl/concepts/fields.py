@@ -23,7 +23,12 @@ class ListField(WritableField):
             return value
         else:
             if not isinstance(value, list):
-                msg = self.error_messages['invalid'] % value
+                #TODO replace this message with django translation
+                if '%' in self.error_messages['invalid']:
+                    msg = self.error_messages['invalid'] % value
+                else:
+                    msg = self.error_messages['invalid']
+
                 raise ValidationError(msg)
             return map(lambda e: self.element_from_native(e), value)
 
