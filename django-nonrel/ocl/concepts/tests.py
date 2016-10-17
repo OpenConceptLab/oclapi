@@ -1295,12 +1295,17 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         view.child_list_attribute = 'concepts'
         csv_rows = view.get_csv_rows()
         self.assertEquals(len(csv_rows), 1)
-        self.assertDictEqual(csv_rows[0], {'retired': False, 'updated_by': 'user1', 'datatype': None, 'display_locale': '',
-                           'created_at': concept_version.created_at, 'concept_class': 'First',
-                           'uri': concept_version.uri, 'created_by': 'user1', 'updated_at': concept_version.updated_at,
-                           'names': 'concept1 en FULLY_SPECIFIED', 'display_name': '', 'external_id': None,
-                           'id': concept_version.id, 'descriptions': '', 'owner':concept_version.parent_resource, 'owner_type':concept_version.parent_resource_type(), 'owner_url':concept_version.parent_url})
+        self.assertEquals(csv_rows[0].get('Retired'), False)
+        self.assertEquals(csv_rows[0].get('Datatype'), None)
+        self.assertEquals(csv_rows[0].get('Concept ID'), concept.mnemonic)
+        self.assertEquals(csv_rows[0].get('External ID'), None)
+        self.assertEquals(csv_rows[0].get('URI'), concept_version.uri)
+        self.assertEquals(csv_rows[0].get('Synonyms'), 'concept1 [FULLY_SPECIFIED] [en]')
 
+        # self.assertDictEqual(csv_rows[0], {'Retired': False, 'Datatype': None, 'Concept ID': concept.mnemonic, 'External ID': None, 'Description': '',
+        #                                    'URI': concept_version.uri, 'Source': 'source1',
+        #                                    'Synonyms': 'concept1 [FULLY_SPECIFIED] [en]', 'Last Updated': concept.created_at, 'Owner': 'org1',
+        #                                    'Concept Class': concept_version.concept_class,'Preferred Name': '', 'Updated By': concept_version.created_by, 'Preferred Name Locale': ''})
 
 class ConceptCustomValidationSchemaTest(ConceptBaseTest):
 
