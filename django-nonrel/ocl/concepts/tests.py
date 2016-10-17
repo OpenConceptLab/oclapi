@@ -1307,7 +1307,7 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         #                                    'Synonyms': 'concept1 [FULLY_SPECIFIED] [en]', 'Last Updated': concept.created_at, 'Owner': 'org1',
         #                                    'Concept Class': concept_version.concept_class,'Preferred Name': '', 'Updated By': concept_version.created_by, 'Preferred Name Locale': ''})
 
-class ConceptCustomValidationSchemaTest(ConceptBaseTest):
+class OpenMRSConceptValidationTest(ConceptBaseTest):
 
     def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
         user = create_user()
