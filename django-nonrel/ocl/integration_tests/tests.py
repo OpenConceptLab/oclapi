@@ -2,6 +2,7 @@ import json
 import mock
 from moto import mock_s3
 from urlparse import urlparse
+from rest_framework import status
 from concepts.importer import ConceptsImporter
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from orgs.models import Organization
@@ -169,6 +170,141 @@ class ConceptCreateViewTest(ConceptBaseTest):
         source_head_concepts = SourceVersion.objects.get(mnemonic='HEAD', versioned_object_id=self.source1.id).concepts
         self.assertEquals(1, len(source_head_concepts))
         self.assertEquals(content[0]['version'], source_head_concepts[0])
+
+    def test_create_concept_without_fully_specified_name(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "ordinary"
+            }, {
+                "name": "gribal enfeksiyon",
+                "locale": 'en',
+                "name_type": "special"
+            }]
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_concept_with_more_than_one_preferred_name_in_concept(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "FULLY_SPECIFIED"
+            }, {
+                "name": "grip",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "special"
+            }]
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_concept_with_more_than_one_preferred_name_in_source(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps([{
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "locale_preferred": "false",
+                "name_type": "FULLY_SPECIFIED"
+            }, {
+                "name": "gribal enfeksiyon",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "special"
+            }]
+        }, {
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "locale_preferred": "false",
+                "name_type": "FULLY_SPECIFIED"
+            }, {
+                "name": "gribal enfeksiyon",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "special"
+            }]}])
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        print(response.status_code)
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @skip("not yet")
+    def test_update_concept_without_fully_specified_name(self):
+        self.client.login(username='user1', password='user1')
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }]
+        })
+
+        responseCreate = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+            'concept': '12399000'
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "ordinary"
+            }]
+        })
+
+        responseUpdate = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(responseUpdate.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_dispatch_with_head_and_versions(self):
         source_version = SourceVersion(
