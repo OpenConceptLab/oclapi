@@ -51,6 +51,9 @@ class OpenMRSConceptValidator():
                 {'names': ['Custom validation rules require all names except type=SHORT to be unique']})
 
     def should_have_at_least_one_description(self):
-        if len(self.concept.descriptions) == 0:
+        # TODO Instead of filtering, maybe we should disallow empty names from client
+        valid_descriptions = filter(lambda d: d.name.strip() != u'', self.concept.descriptions)
+
+        if len(valid_descriptions) == 0:
             raise ValidationError(
                 {'descriptions': ['Custom validation rules require at least one description']})
