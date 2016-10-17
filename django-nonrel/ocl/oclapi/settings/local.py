@@ -19,7 +19,6 @@ class Dev(Local):
     """
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
 
-
 class Test(Local):
     """
     Settings for unit testing

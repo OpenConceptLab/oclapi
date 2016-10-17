@@ -4,18 +4,16 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-from django.contrib.auth.models import User
+from unittest import skip
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from concepts.models import Concept, LocalizedText, ConceptVersion
-from orgs.models import Organization
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from sources.models import Source, SourceVersion
-from users.models import UserProfile
-from collection.models import Collection, CollectionVersion
-from test_helper.base import OclApiBaseTestCase
 from concepts.views import ConceptVersionListView
+from oclapi.models import ACCESS_TYPE_VIEW
+from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from test_helper.base import *
+
 
 class ConceptBaseTest(OclApiBaseTestCase):
 
@@ -49,7 +47,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
             default_locale='en',
             supported_locales=['en'],
             website='www.source1.com',
-            description='This is the first test source'
+            description='This is the first test source',
+            custom_validation_schema=None
         )
 
         kwargs = {
@@ -67,7 +66,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
             default_locale='fr',
             supported_locales=['fr'],
             website='www.source2.com',
-            description='This is the second test source'
+            description='This is the second test source',
+            custom_validation_schema=None
         )
         kwargs = {
             'parent_resource': self.org2,
@@ -1306,4 +1306,139 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         #                                    'URI': concept_version.uri, 'Source': 'source1',
         #                                    'Synonyms': 'concept1 [FULLY_SPECIFIED] [en]', 'Last Updated': concept.created_at, 'Owner': 'org1',
         #                                    'Concept Class': concept_version.concept_class,'Preferred Name': '', 'Updated By': concept_version.created_by, 'Preferred Name Locale': ''})
+
+class ConceptCustomValidationSchemaTest(ConceptBaseTest):
+
+    def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
+        user = create_user()
+
+        name_en1 = create_localized_text('PreferredName')
+        name_en1.locale_preferred = True
+
+        name_en2 = create_localized_text('PreferredName')
+        name_en2.locale_preferred = True
+
+        name_tr = create_localized_text('PreferredName', locale="tr")
+        name_tr.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name_en1, name_en2, name_tr],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a concept to have exactly one preferred name')
+
+    def test_a_preferred_name_can_not_be_a_short_name(self):
+        user = create_user()
+
+        short_name = create_localized_text("ShortName")
+        short_name.type = "SHORT"
+
+        name = create_localized_text('ShortName')
+        name.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[short_name, name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a preferred name to be different than a short name')
+
+    def test_a_preferred_name_can_not_be_an_index_search_term(self):
+        user = create_user()
+
+        name = create_localized_text("FullySpecifiedName")
+
+        index_name = create_localized_text("IndexTermName")
+        index_name.type = "INDEX_TERM"
+        index_name.locale_preferred = True
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name, index_name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require a preferred name not to be an index/search term')
+
+    def test_a_name_can_be_equal_to_a_short_name(self):
+        user = create_user()
+
+        name = create_localized_text("aName")
+
+        short_name = create_localized_text("aName")
+        short_name.type = "SHORT"
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[short_name, name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(0, len(errors))
+
+    def test_a_name_should_be_unique(self):
+        user = create_user()
+
+        name = create_localized_text("aName")
+
+        another_name = create_localized_text("aName")
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept = Concept(
+            mnemonic='EOPN',
+            created_by=user,
+            parent=source,
+            concept_class='First',
+            names=[name, another_name],
+        )
+
+        kwargs = {'parent_resource': source, }
+
+        errors = Concept.persist_new(concept, user, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Custom validation rules require all names except type=SHORT to be unique')
+
 

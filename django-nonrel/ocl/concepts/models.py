@@ -8,10 +8,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from uuidfield import UUIDField
+
+from concepts.custom_validators import OpenMRSConceptValidator
 from concepts.mixins import DictionaryItemMixin
 from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
-from sources.models import SourceVersion, Source
+from sources.models import SourceVersion, Source, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from django.db.models import get_model
 from django.core.exceptions import ValidationError
 from django_mongodb_engine.contrib import MongoDBManager
@@ -55,6 +57,10 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
 
         if fully_specified_name_count < 1:
             raise ValidationError({'names': ['Concept requires at least one fully specified name']})
+
+        if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+            custom_validator = OpenMRSConceptValidator(self)
+            custom_validator.validate()
 
         # Concept preferred_name should be unique for same source and locale.
         validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
@@ -123,6 +129,13 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     @property
     def num_stars(self):
         return 0
+
+    @property
+    def custom_validation_schema(self):
+        if not hasattr(self, 'parent') or self.parent is None:
+            return None
+
+        return self.parent.custom_validation_schema
 
     def get_bidirectional_mappings(self):
         module = __import__('mappings.models', fromlist=['models'])
