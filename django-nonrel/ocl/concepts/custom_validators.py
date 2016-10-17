@@ -9,6 +9,7 @@ class OpenMRSConceptValidator():
         self.must_have_exactly_one_preferred_name()
         self.preferred_name_should_be_different_than_index_term()
         self.all_non_short_names_must_be_unique()
+        self.should_have_at_least_one_description()
 
     def must_have_exactly_one_preferred_name(self):
         preferred_name_locales_in_concept = dict()
@@ -48,3 +49,8 @@ class OpenMRSConceptValidator():
         if len(name_set) != len(non_short_names_in_concept):
             raise ValidationError(
                 {'names': ['Custom validation rules require all names except type=SHORT to be unique']})
+
+    def should_have_at_least_one_description(self):
+        if len(self.concept.descriptions) == 0:
+            raise ValidationError(
+                {'descriptions': ['Custom validation rules require at least one description']})
