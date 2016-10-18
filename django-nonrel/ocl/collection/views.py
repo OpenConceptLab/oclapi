@@ -178,7 +178,7 @@ class CollectionListView(CollectionBaseView,
 
 
         for value in values:
-            value['Owner'] = Collection.objects.get(uri=value['uri']).parent.name
+            value['Owner'] = Collection.objects.get(uri=value['uri']).parent.mnemonic
             value['Collection ID'] = value.pop('mnemonic')
             value['Collection Name'] = value.pop('name')
             value['Collection Full Name'] = value.pop('full_name')

@@ -195,7 +195,7 @@ class SourceListView(SourceBaseView,
 
 
         for value in values:
-            value['Owner'] = Source.objects.get(uri=value['uri']).parent.name
+            value['Owner'] = Source.objects.get(uri=value['uri']).parent.mnemonic
             value['Source ID'] = value.pop('mnemonic')
             value['Source Name'] = value.pop('name')
             value['Source Full Name'] = value.pop('full_name')
