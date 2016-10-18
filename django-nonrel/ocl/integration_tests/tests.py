@@ -16,13 +16,14 @@ from integration_tests.models import TestStream
 from mappings.importer import MappingsImporter
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
-from sources.models import Source, SourceVersion
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, ACCESS_TYPE_VIEW
+from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from collection.models import Collection, CollectionVersion
 from sources.tests import SourceBaseTest
 from collection.tests import CollectionBaseTest
 from django.utils.encoding import force_str
 from tasks import update_collection_in_solr
+from test_helper.base import create_user, create_source
 
 # @override_settings(HAYSTACK_SIGNAL_PROCESSOR='haystack.signals.BaseSignalProcessor') #see if this can also be done at some point later
 class ConceptImporterTest(ConceptBaseTest):
@@ -189,6 +190,32 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "name": "gribal enfeksiyon",
                 "locale": 'en',
                 "name_type": "special"
+            }]
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_concept_without_description(self):
+        user = create_user()
+
+        source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS, organization=self.org1)
+
+        self.client.login(username=user.username, password=user.password)
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source_with_open_mrs.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
             }]
         })
 
