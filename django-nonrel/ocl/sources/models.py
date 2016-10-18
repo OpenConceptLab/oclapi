@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField
+from djangotoolbox.fields import ListField, DictField
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class
 
@@ -63,6 +63,7 @@ class SourceVersion(ConceptContainerVersionModel):
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
     _ocl_processing = models.BooleanField(default=False)
+    source_snapshot = DictField(null=True, blank=True)
 
     def update_concept_version(self, concept_version):
         previous_version = concept_version.previous_version
@@ -129,6 +130,7 @@ class SourceVersion(ConceptContainerVersionModel):
             self.external_id = obj.external_id
             self.active_concepts = len(self.concepts)
             self.active_mappings = len(self.mappings)
+
 
     def get_export_key(self):
         bucket = S3ConnectionFactory.get_export_bucket()
@@ -208,7 +210,8 @@ class SourceVersion(ConceptContainerVersionModel):
             created_by=source.created_by,
             updated_by=source.updated_by,
             external_id=source.external_id,
-            extras=source.extras
+            extras=source.extras,
+
         )
 
 @receiver(post_save)

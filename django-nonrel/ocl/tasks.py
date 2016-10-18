@@ -30,7 +30,7 @@ def export_source(version_id):
     logger.info('Finding source version...')
     version = SourceVersion.objects.get(id=version_id)
     logger.info('Found source version %s.  Beginning export...' % version.mnemonic)
-    write_export_file(version, 'source', 'sources.serializers.SourceVersionDetailSerializer', logger)
+    write_export_file(version, 'source', 'sources.serializers.SourceVersionExportSerializer', logger)
     logger.info('Export complete!')
 
 
@@ -39,7 +39,7 @@ def export_collection(version_id):
     logger.info('Finding collection version...')
     version = CollectionVersion.objects.get(id=version_id)
     logger.info('Found collection version %s.  Beginning export...' % version.mnemonic)
-    write_export_file(version, 'collection', 'collection.serializers.CollectionVersionDetailSerializer', logger)
+    write_export_file(version, 'collection', 'collection.serializers.CollectionVersionExportSerializer', logger)
     logger.info('Export complete!')
 
 

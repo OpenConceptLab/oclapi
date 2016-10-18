@@ -216,6 +216,42 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
         )
         return default_fields
 
+class CollectionVersionExportSerializer(ResourceVersionSerializer):
+    type = serializers.CharField(required=True, source='resource_type')
+    id = serializers.CharField(required=True, source='mnemonic')
+    description = serializers.CharField()
+    released = serializers.BooleanField()
+    retired = serializers.BooleanField()
+    owner = serializers.CharField(source='parent_resource')
+    owner_type = serializers.CharField(source='parent_resource_type')
+    owner_url = serializers.CharField(source='parent_url')
+    created_on = serializers.DateTimeField(source='created_at')
+    updated_on = serializers.DateTimeField(source='updated_at')
+    extras = serializers.WritableField()
+    external_id = serializers.CharField(required=False)
+    references = CollectionReferenceSerializer(many=True)
+    collection = serializers.WritableField(source="collection_snapshot")
+    active_concepts = serializers.IntegerField(required=False)
+    active_mappings = serializers.IntegerField(required=False)
+
+
+    class Meta:
+        model = CollectionVersion
+        versioned_object_view_name = 'collection-detail'
+        versioned_object_field_name = 'collectionUrl'
+
+    def get_default_fields(self):
+        default_fields = super(CollectionVersionExportSerializer, self).get_default_fields()
+        if self.opts.view_name is None:
+            self.opts.view_name = self._get_default_view_name(self.opts.model)
+        default_fields.update(
+            {
+                'parentVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='parent_version', view_name=self.opts.view_name),
+                'previousVersionUrl': HyperlinkedResourceVersionIdentityField(related_attr='previous_version', view_name=self.opts.view_name),
+            }
+        )
+        return default_fields
+
 
 class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerializer):
     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
@@ -233,6 +269,7 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
+        obj.collection_snapshot = CollectionDetailSerializer(kwargs['versioned_object']).data
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)
