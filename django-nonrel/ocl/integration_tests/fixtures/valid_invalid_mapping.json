@@ -1,0 +1,5 @@
+{"map_type": "SAME-AS", "retired": false, "from_concept_url": "/orgs/org2/sources/source2/concepts/concept3/", "to_concept_url": "/orgs/org2/sources/source2/concepts/concept3/"}
+{"retired": false, "from_concept_url": "/orgs/org2/sources/source2/concepts/concept3/", "to_source_url": "/orgs/org2/sources/source2/", "map_type": "NARROWER-THAN", "external_id": "79180ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", "to_concept_code": "267669008"}
+{"retired": false, "from_concept_url": "/orgs/org2/sources/source2/concepts/concept3/", "to_source_url": "/orgs/org2/sources/source2/", "map_type": "NARROWER-THAN", "external_id": "95901ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", "to_concept_code": "H66.9"}
+{"map_type": "SAME-AS", "retired": true, "from_concept_url": "/orgs/org2/sources/source2/concepts/concept3/", "to_concept_url": "/users/user1/sources/source1/concepts/concept1/", "to_concept_code":"7895008"}
+{"map_type": "Q-AND-A", "retired": false, "external_id": "1033CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", "to_concept_url": "/orgs/org2/sources/source2/concepts/concept3/", "from_concept_url": "/orgs/org2/sources/source2/concepts/concept4/"}
