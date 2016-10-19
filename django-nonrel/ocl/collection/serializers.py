@@ -44,9 +44,8 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return collection
 
     def get_active_concepts(self, obj):
-        return Concept.objects.filter(
-            is_active=True, retired=False, parent_id=obj.id
-        ).count()
+        return Concept.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
+                                                                                                   versioned_object_id=obj.id).concepts).count()
 
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
@@ -269,7 +268,9 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
-        obj.collection_snapshot = CollectionDetailSerializer(kwargs['versioned_object']).data
+        snap_serializer = CollectionDetailSerializer(kwargs['versioned_object'])
+        obj.collection_snapshot = snap_serializer.data
+        obj.active_concepts = snap_serializer.data.get('active_concepts')
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)

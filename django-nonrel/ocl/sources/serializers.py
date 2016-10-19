@@ -273,10 +273,11 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
     def save_object(self, obj, **kwargs):
         with transaction.commit_on_success():
             request_user = self.context['request'].user
-            obj.source_snapshot = SourceDetailSerializer(kwargs['versioned_object']).data
+            snap_serializer = SourceDetailSerializer(kwargs['versioned_object'])
+            obj.source_snapshot = snap_serializer.data
+            obj.active_concepts = snap_serializer.data.get('active_concepts')
             errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
             if errors:
                 self._errors.update(errors)
             else:
                 update_children_for_resource_version.delay(obj.id, 'source')
-

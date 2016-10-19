@@ -280,7 +280,6 @@ class CollectionVersion(ConceptContainerVersionModel):
             self.supported_locales = obj.supported_locales
             self.default_locale = obj.default_locale
             self.external_id = obj.external_id
-            self.active_concepts = len(self.concepts)
             self.active_mappings = len(self.mappings)
 
     @classmethod
