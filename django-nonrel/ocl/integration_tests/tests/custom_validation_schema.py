@@ -173,7 +173,7 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
-        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_concept_without_description_negative(self):
         user = create_user()
