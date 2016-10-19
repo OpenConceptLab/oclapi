@@ -53,7 +53,7 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
 
     def clean(self):
         # Concept requires at least one fully specified name
-        fully_specified_name_count = len(filter(lambda n: n.type == "FULLY_SPECIFIED", self.names))
+        fully_specified_name_count = len(filter(lambda n: n.type == "FULLY_SPECIFIED" or n.type == "Fully Specified", self.names))
 
         if fully_specified_name_count < 1:
             raise ValidationError({'names': ['Concept requires at least one fully specified name']})
