@@ -51,6 +51,11 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
             is_active=True, retired=False, parent_id=obj.id
         ).count()
 
+    def get_active_mappings(self, obj):
+        return Mapping.objects.filter(
+            is_active=True, retired=False, parent_id=obj.id
+        ).count()
+
 
 class SourceCreateSerializer(SourceCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -105,6 +110,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     versions_url = serializers.CharField(read_only=True)
     concepts_url = serializers.CharField(read_only=True)
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
+    active_mappings = serializers.SerializerMethodField(method_name='get_active_mappings')
     owner = serializers.CharField(source='parent_resource', read_only=True)
     owner_type = serializers.CharField(source='parent_resource_type', read_only=True)
     owner_url = serializers.CharField(source='parent_url', read_only=True)
@@ -276,6 +282,7 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
             snap_serializer = SourceDetailSerializer(kwargs['versioned_object'])
             obj.source_snapshot = snap_serializer.data
             obj.active_concepts = snap_serializer.data.get('active_concepts')
+            obj.active_mappings = snap_serializer.data.get('active_mappings')
             errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
             if errors:
                 self._errors.update(errors)

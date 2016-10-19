@@ -128,7 +128,6 @@ class SourceVersion(ConceptContainerVersionModel):
             self.custom_validation_schema = obj.custom_validation_schema
             self.default_locale = obj.default_locale
             self.external_id = obj.external_id
-            self.active_mappings = len(self.mappings)
 
 
     def get_export_key(self):

@@ -1,5 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+
+from mappings.models import Mapping
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -47,6 +49,10 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return Concept.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
                                                                                                    versioned_object_id=obj.id).concepts).count()
 
+    def get_active_mappings(self, obj):
+        return Mapping.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
+                                                                                                   versioned_object_id=obj.id).mappings).count()
+
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -76,6 +82,7 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
+    active_mappings = serializers.SerializerMethodField(method_name='get_active_mappings')
 
 
     def save_object(self, obj, **kwargs):
@@ -121,6 +128,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     extras = serializers.WritableField(required=False)
     references = CollectionReferenceSerializer(many=True)
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
+    active_mappings = serializers.SerializerMethodField(method_name='get_active_mappings')
 
     def save_object(self, obj, **kwargs):
         request_user = kwargs.pop('user', None) or self.context['request'].user
@@ -271,6 +279,7 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
         snap_serializer = CollectionDetailSerializer(kwargs['versioned_object'])
         obj.collection_snapshot = snap_serializer.data
         obj.active_concepts = snap_serializer.data.get('active_concepts')
+        obj.active_mappings = snap_serializer.data.get('active_mappings')
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)
