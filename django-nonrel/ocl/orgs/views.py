@@ -111,7 +111,7 @@ class OrganizationMemberView(generics.GenericAPIView):
             self.userprofile = UserProfile.objects.get(mnemonic=userprofile_id)
         except UserProfile.DoesNotExist: pass
         try:
-            self.user_in_org = request.user.is_authenticated and request.user.get_profile().id in self.organization.members
+            self.user_in_org = request.user.is_staff or (request.user.is_authenticated and request.user.get_profile().id in self.organization.members)
         except UserProfile.DoesNotExist: pass
         super(OrganizationMemberView, self).initial(request, *args, **kwargs)
 
@@ -119,7 +119,7 @@ class OrganizationMemberView(generics.GenericAPIView):
         self.initial(request, *args, **kwargs)
         if not self.user_in_org and not request.user.is_staff:
             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
-        if self.userprofile and self.userprofile.id in self.organization.members:
+        if request.user.is_staff or (self.userprofile and self.userprofile.id in self.organization.members):
             return HttpResponse(status=status.HTTP_204_NO_CONTENT)
         else:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
