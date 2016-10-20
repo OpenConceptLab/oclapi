@@ -52,21 +52,19 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
     objects = MongoDBManager()
 
     def clean(self):
-        # Concept requires at least one fully specified name
-        fully_specified_name_count = len(filter(lambda n: n.type == "FULLY_SPECIFIED" or n.type == "Fully Specified", self.names))
-
-        if fully_specified_name_count < 1:
-            raise ValidationError({'names': ['Concept requires at least one fully specified name']})
+        self._requires_at_least_one_fully_specified_name()
+        self._preferred_name_should_be_unique_for_source_and_locale()
 
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
+    # basic validation rule
+    def _preferred_name_should_be_unique_for_source_and_locale(self):
         # Concept preferred_name should be unique for same source and locale.
         validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
         preferred_names_in_concept = dict()
         name_id = lambda n: n.locale + n.name
-
         for name in self.names:
             if not name.locale_preferred:
                 continue
@@ -78,9 +76,17 @@ class Concept(SubResourceBaseModel, DictionaryItemMixin):
             preferred_names_in_concept[name_id(name)] = True
 
             # querying the preferred names in source for the same rule
-            raw_query = {'parent_id': self.parent_id, 'names.name': name.name, 'names.locale': name.locale, 'names.locale_preferred': True}
+            raw_query = {'parent_id': self.parent_id, 'names.name': name.name, 'names.locale': name.locale,
+                         'names.locale_preferred': True}
             if Concept.objects.raw_query(raw_query).count() > 0:
                 raise ValidationError(validation_error)
+
+    def _requires_at_least_one_fully_specified_name(self):
+        # Concept requires at least one fully specified name
+        fully_specified_name_count = len(
+            filter(lambda n: n.type == "FULLY_SPECIFIED" or n.type == "Fully Specified", self.names))
+        if fully_specified_name_count < 1:
+            raise ValidationError({'names': ['Concept requires at least one fully specified name']})
 
     @property
     def display_name(self):
