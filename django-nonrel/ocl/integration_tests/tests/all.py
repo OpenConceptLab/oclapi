@@ -1676,8 +1676,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['lastUpdated'], SourceVersion.get_latest_version_of(source).last_child_update.isoformat())
-        self.assertEquals(response['lastUpdatedTimezone'], 'America/New_York')
+        self.assertEquals(response['Last-Updated'], SourceVersion.get_latest_version_of(source).last_child_update.isoformat())
+        self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
 
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_source(self):
@@ -1902,8 +1902,8 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['lastUpdated'], CollectionVersion.get_latest_version_of(collection).last_child_update.isoformat())
-        self.assertEquals(response['lastUpdatedTimezone'], 'America/New_York')
+        self.assertEquals(response['Last-Updated'], CollectionVersion.get_latest_version_of(collection).last_child_update.isoformat())
+        self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
 
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_collection(self):
