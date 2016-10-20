@@ -374,8 +374,8 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
-        response['lastUpdated'] = version.last_child_update.isoformat()
-        response['lastUpdatedTimezone'] = settings.TIME_ZONE
+        response['Last-Updated'] = version.last_child_update.isoformat()
+        response['Last-Updated-Timezone'] = settings.TIME_ZONE
         return response
 
     def get_queryset(self):
