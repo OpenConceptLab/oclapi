@@ -449,7 +449,6 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def to_source_name(self):
-        print 'mapping version : ', self.id
         return self.get_to_source() and self.get_to_source().mnemonic
 
     @property
