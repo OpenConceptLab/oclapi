@@ -158,7 +158,7 @@ class Mapping(BaseModel):
 
     @property
     def to_concept_shorthand(self):
-        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
+        return "%s:%s" % (self.to_source_shorthand, self.get_to_concept_code)
 
     @property
     def public_can_view(self):
@@ -454,8 +454,7 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def to_concept_shorthand(self):
-        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (
-        self.to_source_shorthand, self.to_concept_code)
+        return "%s:%s" % (self.to_source_shorthand, self.get_to_concept_code())
 
     @property
     def public_can_view(self):
