@@ -1312,13 +1312,13 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
     def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
         user = create_user()
 
-        name_en1 = create_localized_text('PreferredName')
+        name_en1 = create_localized_text('PreferredName1')
         name_en1.locale_preferred = True
 
-        name_en2 = create_localized_text('PreferredName')
+        name_en2 = create_localized_text('PreferredName2')
         name_en2.locale_preferred = True
 
-        name_tr = create_localized_text('PreferredName', locale="tr")
+        name_tr = create_localized_text('PreferredName3', locale="tr")
         name_tr.locale_preferred = True
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
