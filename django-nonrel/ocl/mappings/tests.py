@@ -1099,10 +1099,12 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertFalse(mapping.retired)
 
-        retired = Mapping.retire(mapping, self.user1)
-        self.assertTrue(retired)
+        Mapping.retire(mapping, self.user1)
+        self.assertTrue(mapping.retired)
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertTrue(mapping.retired)
+        mappingVersion=MappingVersion.objects.get(versioned_object_id=mapping.mnemonic, mnemonic=2)
+        self.assertTrue(mappingVersion.retired)
 
     def test_retire_negative(self):
         mapping = Mapping(
@@ -1119,8 +1121,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertTrue(mapping.retired)
 
-        retired = Mapping.retire(mapping, self.user1)
-        self.assertFalse(retired)
+        result=Mapping.retire(mapping, self.user1)
+        self.assertFalse(result)
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertTrue(mapping.retired)
 
