@@ -96,8 +96,18 @@ class MappingDetailView(MappingBaseView, RetrieveAPIView, UpdateAPIView, Destroy
 
     def destroy(self, request, *args, **kwargs):
         self.permission_classes = (CanEditParentDictionary,)
-        obj = self.get_object()
-        Mapping.retire(obj, self.user)
+        mapping = self.get_object_or_none()
+        if mapping is None:
+            return Response(
+                {'non_field_errors': 'Could not find mapping to retire'},
+                status=status.HTTP_404_NOT_FOUND)
+        update_comment = None
+        if 'update_comment' in request.DATA:
+            update_comment = request.DATA.get('update_comment')
+
+        errors = Mapping.retire(mapping, request.user, update_comment=update_comment)
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):

@@ -1,5 +1,6 @@
 """ Concepts importer module """
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.management import CommandError
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSerializer
@@ -37,13 +38,7 @@ class ConceptsImporter(object):
     logger.info('Import concepts to source...')
     if new_version:
       try:
-        new_source_version = SourceVersion.for_base_object(
-            self.source, new_version, previous_version=self.source_version)
-        new_source_version.seed_concepts()
-        new_source_version.seed_mappings()
-        new_source_version.full_clean()
-        new_source_version.save()
-        self.source_version = new_source_version
+        self.create_new_source_version(new_version)
       except Exception as exc:
         raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
@@ -74,15 +69,17 @@ class ConceptsImporter(object):
                 update_action = self.handle_concept(self.source, data)
                 self.count_action(update_action)
             except IllegalInputException as exc:
-                str_log = '%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
-                self.stderr.write(str_log)
-                logger.warning(str_log)
-                self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+                exc_message = '%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
+                self.handle_exception(exc_message)
             except InvalidStateException as exc:
-                str_log = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
-                self.stderr.write(str_log)
-                logger.warning(str_log)
-                self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+                exc_message = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+                self.handle_exception(exc_message)
+            except ValidationError as exc:
+                exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (exc.messages[0], data)
+                self.handle_exception(exc_message)
+            except Exception as exc:
+                exc_message = '%s\nUnexpected something occured: %s. Skipping it...\n' % (exc.value, data)
+                self.handle_exception(exc_message)
 
         # Simple progress bar
         if (cnt % 10) == 0:                
@@ -144,6 +141,20 @@ class ConceptsImporter(object):
         'concepts', cnt, total, self.action_count)
     self.stdout.write(str_log, ending='\r')
     logger.info(str_log)
+
+  def handle_exception(self, exception_message):
+      self.stderr.write(exception_message)
+      logger.warning(exception_message)
+      self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+
+  def create_new_source_version(self, new_version):
+      new_source_version = SourceVersion.for_base_object(
+          self.source, new_version, previous_version=self.source_version)
+      new_source_version.seed_concepts()
+      new_source_version.seed_mappings()
+      new_source_version.full_clean()
+      new_source_version.save()
+      self.source_version = new_source_version
 
   def handle_concept(self, source, data):
       """ Adds, updates, retires/unretires a single concept, or skips if no diff """
@@ -217,7 +228,7 @@ class ConceptsImporter(object):
       if not self.test_mode:
           serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
           if not serializer.is_valid():
-              raise IllegalInputException('Could not persist new concept %s' % data['id'])
+              raise ValidationError(serializer.errors)
       return ImportActionHelper.IMPORT_ACTION_ADD
 
   def update_concept_version(self, concept_version, data):
@@ -243,8 +254,7 @@ class ConceptsImporter(object):
           if not self.test_mode:
               serializer.save()
               if not serializer.is_valid():
-                  raise IllegalInputException(
-                      'Could not persist update to concept: %s' % concept_version.mnemonic)
+                  raise ValidationError(serializer.errors)
           return ImportActionHelper.IMPORT_ACTION_UPDATE
 
       # No diff, so do nothing

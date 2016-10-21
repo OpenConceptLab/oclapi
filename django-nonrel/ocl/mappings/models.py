@@ -158,7 +158,7 @@ class Mapping(BaseModel):
 
     @property
     def to_concept_shorthand(self):
-        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (self.to_source_shorthand, self.to_concept_code)
+        return "%s:%s" % (self.to_source_shorthand, self.get_to_concept_code)
 
     @property
     def public_can_view(self):
@@ -177,13 +177,27 @@ class Mapping(BaseModel):
         return MappingVersion.objects.filter(versioned_object_id=self.id).order_by('-created_at')[:1][0]
 
     @classmethod
-    def retire(cls, obj, updated_by, **kwargs):
-        if obj.retired:
+    def retire(cls, mapping, user, update_comment=None):
+        if mapping.retired:
             return False
-        obj.retired = True
-        obj.updated_by = updated_by
-        obj.save(**kwargs)
-        return True
+        latest_version= MappingVersion.get_latest_version_of(mapping)
+        prev_latest_version = MappingVersion.objects.get(id=latest_version.id, is_latest_version=True);
+        retired_version=latest_version.clone()
+        retired_version.retired = True
+        if update_comment:
+            retired_version.update_comment = update_comment
+        else:
+            retired_version.update_comment = 'Mapping was retired'
+        errors = MappingVersion.persist_clone(retired_version, user,prev_latest_version)
+        if not errors:
+            mapping.retired = True
+            mapping.save()
+        return errors
+
+
+    @staticmethod
+    def get_version_model():
+        return MappingVersion
 
     @classmethod
     def persist_changes(cls, obj, updated_by, update_comment=None, **kwargs):
@@ -351,6 +365,26 @@ class MappingVersion(ResourceVersionModel):
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
 
+    def clone(self):
+        return MappingVersion(
+            mnemonic='--TEMP--',
+            parent= self.parent,
+            map_type=self.map_type,
+            from_concept=self.from_concept,
+            to_concept=self.to_concept,
+            to_source=self.to_source,
+            to_concept_code=self.to_concept_code,
+            to_concept_name=self.to_concept_name,
+            retired=self.retired,
+            versioned_object_id=self.versioned_object_id,
+            versioned_object_type=self.versioned_object_type,
+            released=self.released,
+            previous_version=self,
+            parent_version=self.parent_version,
+            is_latest_version=self.is_latest_version,
+            extras=self.extras
+        )
+
     class Meta:
         pass
 
@@ -454,8 +488,7 @@ class MappingVersion(ResourceVersionModel):
 
     @property
     def to_concept_shorthand(self):
-        return self.to_source_shorthand and self.to_concept_code and "%s:%s" % (
-        self.to_source_shorthand, self.to_concept_code)
+        return "%s:%s" % (self.to_source_shorthand, self.get_to_concept_code())
 
     @property
     def public_can_view(self):
@@ -500,6 +533,48 @@ class MappingVersion(ResourceVersionModel):
     def get_latest_version_by_id(cls, id):
         versions = MappingVersion.objects.filter(versioned_object_id=id, is_latest_version=True).order_by('-created_at')
         return versions[0] if versions else None
+
+    @classmethod
+    def persist_clone(cls, obj, user=None, prev_latest_version=None, **kwargs):
+        errors = dict()
+        if not user:
+            errors['version_created_by'] = 'Must specify which user is attempting to create a new concept version.'
+            return errors
+        obj.version_created_by = user.username
+        previous_version = obj.previous_version
+        previous_was_latest = previous_version.is_latest_version and obj.is_latest_version
+        source_version = SourceVersion.get_head_of(obj.versioned_object.parent)
+
+        persisted = False
+        errored_action = 'saving new mapping version'
+        try:
+            obj.save(**kwargs)
+            obj.mnemonic = int(prev_latest_version.mnemonic) + 1
+            obj.save()
+
+            errored_action = "updating 'is_latest_version' attribute on previous version"
+            if previous_was_latest:
+                previous_version.is_latest_version = False
+                previous_version.save()
+
+            errored_action = 'replacing previous version in latest version of source'
+            source_version.update_concept_version(obj)
+
+            # Mark versioned object as updated
+            mapping = obj.versioned_object
+            mapping.save()
+
+            persisted = True
+        finally:
+            if not persisted:
+                source_version.update_concept_version(obj.previous_version)
+                if previous_was_latest:
+                    previous_version.is_latest_version = True
+                    previous_version.save()
+                if obj.id:
+                    obj.delete()
+                errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
+        return errors
 
 
 @receiver(post_save, sender=Source)

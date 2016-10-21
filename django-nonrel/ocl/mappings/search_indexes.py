@@ -41,7 +41,7 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
     def prepare(self, obj):
         self.prepared_data = super(MappingVersionIndex, self).prepare(obj)
         self.prepared_data['fromConcept'] = [obj.from_concept_url, obj.from_concept_code, obj.from_concept_name]
-        self.prepared_data['toConcept'] = [obj.to_concept_url] if obj.to_concept_url else [obj.to_concept_code, obj.to_concept_name]
+        self.prepared_data['toConcept'] = [obj.get_to_concept_code(), obj.get_to_concept_name()]
         self.prepared_data['concept'] = self.prepared_data['fromConcept'] + self.prepared_data['toConcept']
         self.prepared_data['fromConceptSource'] = obj.from_source_name
         self.prepared_data['toConceptSource'] = obj.to_source_name

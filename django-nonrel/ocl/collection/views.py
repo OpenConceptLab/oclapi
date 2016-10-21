@@ -360,11 +360,11 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
 
         if key:
             logger.debug('   Key retreived for collection version %s - Generating URL' % version)
-            url, status = key.generate_url(60), 200
+            url, status = key.generate_url(60), 303
             logger.debug('   URL retreived for collection version %s - Responding to client' % version)
         else:
             logger.debug('   Key does not exist for collection version %s' % version)
-            status = self.handle_export_collection_version()
+            return HttpResponse(status=204)
 
 
         response = HttpResponse(status=status)
@@ -374,8 +374,8 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response['Pragma'] = 'no-cache'
         response['Expires'] = '0'
-        response['lastUpdated'] = version.last_child_update.isoformat()
-        response['lastUpdatedTimezone'] = settings.TIME_ZONE
+        response['Last-Updated'] = version.last_child_update.isoformat()
+        response['Last-Updated-Timezone'] = settings.TIME_ZONE
         return response
 
     def get_queryset(self):
@@ -402,9 +402,13 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             return HttpResponse(status=405)  # export of head version is not allowed
 
         logger.debug('Collection Export requested for version %s (post)' % version)
-        status = 204
+        status = 303
         if not version.has_export():
             status = self.handle_export_collection_version()
+        else:
+            response = HttpResponse(status=status)
+            response['URL']=self.resource_version_path_info+'export/'
+            return response
         return HttpResponse(status=status)
 
     def delete(self, request, *args, **kwargs):
@@ -413,14 +417,17 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         version = self.get_object()
         if version.has_export():
             key = version.get_export_key()
-            key.delete()
+            if key:
+                key.delete()
+                return HttpResponse(status=200)
+
         return HttpResponse(status=204)
 
     def handle_export_collection_version(self):
         version = self.get_object()
         try:
             export_collection.delay(version.id)
-            return 200
+            return 202
         except AlreadyQueued:
-            return 204
+            return 409
 
