@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# env=local browser=phantomjs OCL_WEB=~/workspace/ocl_web run_ui_tests.sh
+#env=local browser=phantomjs OCL_WEB=~/workspace/ocl_web run_ui_tests.sh
 
 if [ -z $OCL_WEB ]; then OCL_WEB=~/ocl_web; fi
 
