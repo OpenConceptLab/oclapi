@@ -433,7 +433,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         version = self.get_object()
         if version.has_export():
             key = version.get_export_key()
-            key.delete()
+            if key:
+                key.delete()
+                return HttpResponse(status=200)
+
         return HttpResponse(status=204)
 
     def handle_export_source_version(self):

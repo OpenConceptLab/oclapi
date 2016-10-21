@@ -1726,6 +1726,94 @@ class SourceVersionExportViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 201)
         self.assertEquals(source_version.active_concepts, 2)
 
+    @mock_s3
+    def test_post_invalid_version_404_received(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version.full_clean()
+        source_version.save()
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'versionnotexist'
+        }
+        response = c.post(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 404)
+
+    @mock_s3
+    def test_get_invalid_version_404_received(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        source_version.full_clean()
+        source_version.save()
+        kwargs = {'parent_resource': source}
+        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
+                           names=[self.name])
+        Concept.persist_new(concept1, self.user1, **kwargs)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'versionnotexist'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 404)
+
     @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post(self):
@@ -1962,6 +2050,78 @@ class SourceVersionExportViewTest(SourceBaseTest):
 
 
 class CollectionVersionExportViewTest(CollectionBaseTest):
+    @mock_s3
+    def test_get_invalid_version_404_received(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'versiondontexist'
+        }
+        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 404)
+
+    @mock_s3
+    def test_post_invalid_version_404_received(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'versiondontexist'
+        }
+        response = c.post(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 404)
+
     @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post(self):
