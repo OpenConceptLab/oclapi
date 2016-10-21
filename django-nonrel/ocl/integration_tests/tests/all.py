@@ -212,7 +212,6 @@ class MappingImporterTest(MappingBaseTest):
         invalid_json_file = open('./integration_tests/fixtures/one_internal_invalid_mapping.json', 'rb')
         importer = MappingsImporter(self.source1, invalid_json_file, TestStream(), stderr_stub, 'test')
         importer.import_mappings(total=1)
-        print stderr_stub.getvalue()
         self.assertTrue("Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both." in stderr_stub.getvalue())
 
     def test_import_valid_invalid_mappings(self):
