@@ -558,7 +558,7 @@ class MappingVersion(ResourceVersionModel):
                 previous_version.save()
 
             errored_action = 'replacing previous version in latest version of source'
-            source_version.update_concept_version(obj)
+            source_version.update_mapping_version(obj)
 
             # Mark versioned object as updated
             mapping = obj.versioned_object
@@ -567,7 +567,7 @@ class MappingVersion(ResourceVersionModel):
             persisted = True
         finally:
             if not persisted:
-                source_version.update_concept_version(obj.previous_version)
+                source_version.update_mapping_version(obj.previous_version)
                 if previous_was_latest:
                     previous_version.is_latest_version = True
                     previous_version.save()
