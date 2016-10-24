@@ -86,16 +86,8 @@ class ConceptValidationMixin:
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
 
-        #TODO this should be improved
-        parent = None
-
-        if hasattr(self, 'source'):
-            parent = self.source
-
-        if hasattr(self, 'parent'):
-            parent = self.parent
-
-        if parent is not None and parent.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+        if hasattr(self, "parent") \
+                and self.parent.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
@@ -115,20 +107,8 @@ class ConceptValidationMixin:
 
             preferred_names_in_concept[name_id(name)] = True
 
-            # TODO this should be improved
-            parent_id = None
-
-            if hasattr(self, 'source'):
-                parent_id = self.source.id
-
-            if hasattr(self, 'parent'):
-                parent_id = self.parent.id
-
-            if parent_id is None:
-                return
-
             # querying the preferred names in source for the same rule
-            raw_query = {'parent_id': parent_id, 'names.name': name.name, 'names.locale': name.locale,
+            raw_query = {'parent_id': self.parent.id, 'names.name': name.name, 'names.locale': name.locale,
                          'names.locale_preferred': True}
 
             #TODO find a better solution for circular dependency

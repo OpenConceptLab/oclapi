@@ -108,7 +108,6 @@ class BulkConceptImporterTest(ConceptBaseTest):
         self.assertEquals(5, Concept.objects.count())
         self.assertEquals(5, ConceptVersion.objects.count())
 
-    @skip('should be tested after #277')
     def test_update_concept_with_invalid_record(self):
         concept = Concept(
             mnemonic='1',
@@ -384,7 +383,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("not yet")
     def test_update_concept_without_fully_specified_name(self):
         self.client.login(username='user1', password='user1')
 

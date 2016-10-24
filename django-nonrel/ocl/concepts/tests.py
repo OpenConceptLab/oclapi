@@ -4,7 +4,6 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-from unittest import skip
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -117,18 +116,6 @@ class ConceptTest(ConceptBaseTest):
             concept = Concept(
                 mnemonic='concept1',
                 parent=self.source1,
-                updated_by=self.user1,
-                concept_class='First',
-                names=[self.name],
-            )
-            concept.full_clean()
-            concept.save()
-
-    def test_create_concept_negative__no_parent(self):
-        with self.assertRaises(ValidationError):
-            concept = Concept(
-                mnemonic='concept1',
-                created_by=self.user1,
                 updated_by=self.user1,
                 concept_class='First',
                 names=[self.name],
