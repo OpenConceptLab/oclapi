@@ -86,7 +86,16 @@ class ConceptValidationMixin:
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
 
-        if self.source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+        #TODO this should be improved
+        parent = None
+
+        if hasattr(self, 'source'):
+            parent = self.source
+
+        if hasattr(self, 'parent'):
+            parent = self.parent
+
+        if parent is not None and parent.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
@@ -106,11 +115,17 @@ class ConceptValidationMixin:
 
             preferred_names_in_concept[name_id(name)] = True
 
-            if hasattr(self, 'source') and self.source is not None:
+            # TODO this should be improved
+            parent_id = None
+
+            if hasattr(self, 'source'):
                 parent_id = self.source.id
 
-            if hasattr(self, 'parent_id') and self.parent_id is not None:
-                parent_id = self.parent_id
+            if hasattr(self, 'parent'):
+                parent_id = self.parent.id
+
+            if parent_id is None:
+                return
 
             # querying the preferred names in source for the same rule
             raw_query = {'parent_id': parent_id, 'names.name': name.name, 'names.locale': name.locale,
