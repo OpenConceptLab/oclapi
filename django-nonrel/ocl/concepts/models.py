@@ -448,6 +448,7 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
         persisted = False
         errored_action = 'saving new concept version'
         try:
+            obj.parent = obj.source # FIXME I don't know why there are two fields for same thing.
             obj.clean()
             obj.save(**kwargs)
             obj.mnemonic = obj.id

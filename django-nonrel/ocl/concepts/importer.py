@@ -75,10 +75,10 @@ class ConceptsImporter(object):
                 exc_message = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
                 self.handle_exception(exc_message)
             except ValidationError as exc:
-                exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (exc.messages[0], data)
+                exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data)
                 self.handle_exception(exc_message)
             except Exception as exc:
-                exc_message = '%s\nUnexpected something occured: %s. Skipping it...\n' % (exc.value, data)
+                exc_message = '%s\nUnexpected something occured: %s. Skipping it...\n' % (exc.message, data)
                 self.handle_exception(exc_message)
 
         # Simple progress bar
