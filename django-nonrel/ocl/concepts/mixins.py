@@ -86,8 +86,14 @@ class ConceptValidationMixin:
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
 
-        if hasattr(self, "parent") \
-                and self.parent.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+        source = None
+
+        if hasattr(self, "parent") and hasattr(self.parent, "custom_validation_schema"):
+            source = self.parent
+        elif hasattr(self, "source"):
+            source = self.source
+
+        if source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
