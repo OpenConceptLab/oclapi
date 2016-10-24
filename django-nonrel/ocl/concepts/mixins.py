@@ -90,10 +90,10 @@ class ConceptValidationMixin:
 
         if hasattr(self, "parent") and hasattr(self.parent, "custom_validation_schema"):
             source = self.parent
-        elif hasattr(self, "source"):
+        elif hasattr(self, "source") and hasattr(self.source, "custom_validation_schema"):
             source = self.source
 
-        if source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+        if source is not None and source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
