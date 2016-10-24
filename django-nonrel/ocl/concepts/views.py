@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
 from django.http import Http404
@@ -79,7 +80,6 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
                                          files=request.FILES, partial=partial)
 
         if serializer.is_valid():
-            self.pre_save(serializer.object)
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():
                 self.post_save(self.object, created=True)
@@ -529,86 +529,3 @@ class ConceptDescriptionRetrieveUpdateDestroyView(ConceptLabelRetrieveUpdateDest
     parent_list_attribute = 'descriptions'
     serializer_class = ConceptDescriptionSerializer
 
-
-# class ConceptReferenceBaseView(VersionedResourceChildMixin):
-#     lookup_field = 'concept'
-#     pk_field = 'mnemonic'
-#     model = ConceptReference
-#     child_list_attribute = 'concept_references'
-#     updated_since = None
-#     reference_only = False
-#
-#     def initialize(self, request, path_info_segment, **kwargs):
-#         self.reference_only = request.QUERY_PARAMS.get('reference', False)
-#         super(ConceptReferenceBaseView, self).initialize(request, path_info_segment, **kwargs)
-
-
-# class ConceptReferenceListCreateView(ConceptReferenceBaseView, CreateAPIView, ListWithHeadersMixin):
-#     permission_classes = (CanEditParentDictionary,)
-#     serializer_class = ConceptReferenceCreateSerializer
-#
-#     def get(self, request, *args, **kwargs):
-#         self.updated_since = parse_updated_since_param(request)
-#         self.permission_classes = (CanViewParentDictionary,)
-#         self.serializer_class = ConceptReferenceDetailSerializer if self.reference_only else ReferencesToVersionsSerializer
-#         return self.list(request, *args, **kwargs)
-#
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-#         if serializer.is_valid():
-#             self.pre_save(serializer.object)
-#             save_kwargs = {
-#                 'force_insert': True,
-#                 'parent_resource': self.parent_resource,
-#                 'child_list_attribute': self.child_list_attribute
-#             }
-#             self.object = serializer.save(**save_kwargs)
-#             if serializer.is_valid():
-#                 self.post_save(self.object, created=True)
-#                 serializer = ConceptReferenceDetailSerializer(self.object, context={'request': request})
-#                 headers = self.get_success_headers(serializer.data)
-#                 return Response(serializer.data, status=status.HTTP_201_CREATED,
-#                                 headers=headers)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#     def get_queryset(self):
-#         queryset = super(ConceptReferenceListCreateView, self).get_queryset()
-#         if self.updated_since:
-#             queryset = queryset.filter(updated_at__gte=self.updated_since)
-#         return queryset
-
-
-# class ConceptReferenceRetrieveUpdateDestroyView(ConceptReferenceBaseView,
-#                                                 RetrieveUpdateDestroyAPIView):
-#     permission_classes = (CanEditParentDictionary,)
-#     serializer_class = ConceptReferenceDetailSerializer
-#
-#     def initialize(self, request, path_info_segment, **kwargs):
-#         self.reference_only = request.QUERY_PARAMS.get('reference', False)
-#         self.parent_path_info = self.get_parent_in_path(path_info_segment, levels=2)
-#         self.parent_resource = None
-#         if self.parent_path_info and '/' != self.parent_path_info:
-#             self.parent_resource = self.get_object_for_path(self.parent_path_info, self.request)
-#         if hasattr(self.parent_resource, 'versioned_object'):
-#             self.parent_resource_version = self.parent_resource
-#             self.parent_resource = self.parent_resource_version.versioned_object
-#         else:
-#             self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
-#
-#     def get(self, request, *args, **kwargs):
-#         self.permission_classes = (CanViewParentDictionary,)
-#         self.serializer_class = ConceptReferenceDetailSerializer if self.reference_only else ConceptVersionDetailSerializer
-#         return super(ConceptReferenceRetrieveUpdateDestroyView, self).get(request, *args, **kwargs)
-#
-#     def get_object(self, queryset=None):
-#         obj = super(ConceptReferenceRetrieveUpdateDestroyView, self).get_object(queryset)
-#         return obj if self.reference_only else self.resolve_reference(obj)
-#
-#     def resolve_reference(self, concept_reference):
-#         if concept_reference.concept_version:
-#             return concept_reference.concept_version
-#         elif concept_reference.source_version:
-#             concept_versions = ConceptVersion.objects.filter(id__in=concept_reference.source_version.concepts)
-#             return concept_versions.get(versioned_object_id=concept_reference.concept.id)
-#         return ConceptVersion.get_latest_version_of(concept_reference.concept)
