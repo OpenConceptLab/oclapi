@@ -142,9 +142,10 @@ class ResourceVersionModel(BaseModel):
     def __unicode__(self):
         return self.mnemonic
 
-    def clean(self):
-        if self == self.parent_version:
-            raise ValidationError('version cannot be its own parent')
+    # TODO This prevents ValidationMixin from functioning correctly, we should reconsider necessity of this check
+    # def clean(self):
+    #     if self == self.parent_version:
+    #         raise ValidationError('version cannot be its own parent')
 
     @property
     def url(self):

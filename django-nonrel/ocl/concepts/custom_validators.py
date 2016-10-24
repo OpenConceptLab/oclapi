@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
 
+from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 
-class OpenMRSConceptValidator():
+class OpenMRSConceptValidator:
     def __init__(self, concept):
         self.concept = concept
 
