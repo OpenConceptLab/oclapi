@@ -5,7 +5,14 @@ LATEST = 'latest'
 __author__ = 'misternando'
 
 
-class PublicMappingsSearchFilter(HaystackSearchFilter):
+class MappingSearchFilter(HaystackSearchFilter):
+    def get_filters(self, request, view):
+        filters = super(MappingSearchFilter, self).get_filters(request, view)
+        if not view.include_retired:
+            filters.update({'retired': False})
+        return filters
+
+class PublicMappingsSearchFilter(MappingSearchFilter):
 
     def get_filters(self, request, view):
         filters = super(PublicMappingsSearchFilter, self).get_filters(request, view)
@@ -13,7 +20,7 @@ class PublicMappingsSearchFilter(HaystackSearchFilter):
         return filters
 
 
-class SourceRestrictedMappingsFilter(HaystackSearchFilter):
+class SourceRestrictedMappingsFilter(MappingSearchFilter):
 
     def get_filters(self, request, view):
         filters = super(SourceRestrictedMappingsFilter, self).get_filters(request, view)
