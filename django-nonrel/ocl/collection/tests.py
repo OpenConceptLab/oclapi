@@ -25,13 +25,14 @@ class CollectionBaseTest(OclApiBaseTestCase):
             email='user1@test.com',
             last_name='One',
             first_name='User',
-            password='password'
+            password='user1'
         )
         self.user2 = User.objects.create(
             username='user2',
             email='user2@test.com',
             last_name='Two',
-            first_name='User'
+            first_name='User',
+            password='user2'
         )
 
         self.userprofile1 = UserProfile.objects.create(user=self.user1, mnemonic='user1')

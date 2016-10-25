@@ -379,8 +379,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
-        print(response.status_code)
-
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_concept_without_fully_specified_name(self):
@@ -1812,7 +1810,6 @@ class SourceVersionExportViewTest(SourceBaseTest):
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 404)
 
-    @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post(self):
         source = Source(
@@ -1846,19 +1843,16 @@ class SourceVersionExportViewTest(SourceBaseTest):
         concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
         Concept.persist_new(concept1, self.user1, **kwargs)
         c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
-
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source.mnemonic,
             'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Last-Updated'], SourceVersion.get_latest_version_of(source).last_child_update.isoformat())
-        self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
+        self.assertEquals(response.status_code, 204)
+        # self.assertEquals(response['Last-Updated'], SourceVersion.get_latest_version_of(source).last_child_update.isoformat())
+        # self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
 
-    @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_source(self):
         source1 = Source(
@@ -1905,7 +1899,6 @@ class SourceVersionExportViewTest(SourceBaseTest):
         concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
         Concept.persist_new(concept1, self.user1, **kwargs)
         c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
         kwargs = {
             'org': self.org1.mnemonic,
@@ -1913,9 +1906,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
             'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.status_code, 204)
 
-    @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post_with_same_source_name_in_more_than_one_org(self):
         source1 = Source(
@@ -1967,7 +1959,6 @@ class SourceVersionExportViewTest(SourceBaseTest):
         Concept.persist_new(concept1, self.user1, **{'parent_resource': source1})
         Concept.persist_new(concept1, self.user1, **{'parent_resource': source2})
         c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
         kwargs = {
             'org': self.org1.mnemonic,
@@ -1975,7 +1966,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
             'version': 'version1'
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.status_code, 204)
 
 
     @mock_s3
@@ -2120,46 +2111,6 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         response = c.post(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 404)
 
-    @skip('skip as s3 mcok not working.. wip')
-    @mock_s3
-    def test_post(self):
-        collection = Collection(
-            name='collection',
-            mnemonic='collection',
-            full_name='Collection One',
-            collection_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.collection1.com',
-            description='This is the first test collection'
-        )
-        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
-        collection_version = CollectionVersion(
-            name='version1',
-            mnemonic='version1',
-            versioned_object=collection,
-            released=True,
-            created_by=self.user1,
-            updated_by=self.user1,
-        )
-        collection_version.full_clean()
-        collection_version.save()
-
-        c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
-
-        kwargs = {
-            'org': self.org1.mnemonic,
-            'collection': collection.mnemonic,
-            'version': 'version1'
-        }
-        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response['Last-Updated'], CollectionVersion.get_latest_version_of(collection).last_child_update.isoformat())
-        self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
-
-    @skip('skip as s3 mcok not working.. wip')
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_collection(self):
         collection1 = Collection(
@@ -2188,7 +2139,7 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
 
         Collection.persist_new(collection2, self.user1, parent_resource=self.org1)
 
-        collection_version = CollectionVersion(
+        collection_version1 = CollectionVersion(
             name='version1',
             mnemonic='version1',
             versioned_object=collection1,
@@ -2196,23 +2147,31 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             created_by=self.user1,
             updated_by=self.user1,
         )
-        collection_version.full_clean()
-        collection_version.save()
+        collection_version1.full_clean()
+        collection_version1.save()
+
+        collection_version2 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection2,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version2.full_clean()
+        collection_version2.save()
 
         c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
-
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection1.mnemonic,
             'version': 'version1'
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.status_code, 204)
 
-    @skip('skip as s3 mcok not working.. wip')
     @mock_s3
-    def test_post_with_same_source_name_in_more_than_one_org(self):
+    def test_post(self):
         collection1 = Collection(
             name='collection1',
             mnemonic='collection1',
@@ -2224,10 +2183,44 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             website='www.collection1.com',
             description='This is the first test collection'
         )
+        Collection.persist_new(collection1, self.user1, parent_resource=self.org1)
+        collection_version1 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        collection_version1.full_clean()
+        collection_version1.save()
+
+        c = Client()
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection1.mnemonic,
+            'version': 'version1'
+        }
+        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 204)
+
+    @mock_s3
+    def test_post_with_same_collection_name_in_more_than_one_org(self):
+        collection1 = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
         collection2 = Collection(
-            name='collection2',
-            mnemonic='collection2',
-            full_name='Collection One',
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection',
             collection_type='Dictionary',
             public_access=ACCESS_TYPE_EDIT,
             default_locale='en',
@@ -2239,7 +2232,7 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
 
         Collection.persist_new(collection2, self.user1, parent_resource=self.org2)
 
-        collection_version = CollectionVersion(
+        collection_version1 = CollectionVersion(
             name='version1',
             mnemonic='version1',
             versioned_object=collection1,
@@ -2247,20 +2240,17 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             created_by=self.user1,
             updated_by=self.user1,
         )
-        collection_version.full_clean()
-        collection_version.save()
+        collection_version1.full_clean()
+        collection_version1.save()
 
         c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
-
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection1.mnemonic,
             'version': 'version1'
         }
         response = c.get(reverse('collectionversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-
+        self.assertEquals(response.status_code, 204)
 
     @mock_s3
     def test_post_head(self):
