@@ -111,15 +111,17 @@ class CollectionReferencesView(CollectionBaseView,
         data = request.DATA.get('data')
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
+        host_url = request.META['wsgi.url_scheme'] + '://' + request.get_host()
 
         errors = False
+
         if mapping_expressions == '*' or concept_expressions == '*':
             add_multiple_references.delay(
-                self.serializer_class, self.request.user, data, self.parent_resource
+                self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
         else:
             errors = add_multiple_references(
-                self.serializer_class, self.request.user, data, self.parent_resource
+                self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
 
         if errors:

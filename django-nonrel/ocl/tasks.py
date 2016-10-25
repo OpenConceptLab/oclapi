@@ -17,6 +17,11 @@ from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 from collection.models import CollectionVersion, CollectionReference
+from concepts.views import ConceptVersionListAllView
+from mappings.views import MappingListAllView
+
+import json
+from rest_framework.test import APIRequestFactory
 
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
@@ -110,31 +115,38 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
 
 
 @celery.task
-def add_multiple_references(SerializerClass, user, data, parent_resource):
+def add_multiple_references(SerializerClass, user, data, parent_resource, host_url):
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])
     uri = data.get('uri')
+    search_term = data.get('search_term', '')
 
     if '*' in [concept_expressions, mapping_expressions]:
         ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
 
     if concept_expressions == '*':
-        concepts = []
-        resource_container = ResourceContainer.objects.get(uri=uri)
-        concepts.extend(
-            Concept.objects.filter(parent_id=resource_container.versioned_object_id)
-        )
+        url = host_url + uri + 'concepts?q=*' + search_term + '*'
+        view = ConceptVersionListAllView.as_view()
+        request = APIRequestFactory().get(url)
+        response = view(request)
+        response.render()
+        concepts_dict = json.loads(response.content)
+        concept_uris = [c['url'] for c in concepts_dict]
+        concepts = Concept.objects.filter(uri__in=concept_uris)
         expressions.extend(map(lambda c: c.uri, concepts))
     else:
         expressions.extend(concept_expressions)
 
     if mapping_expressions == '*':
-        mappings = []
-        resource_container = ResourceContainer.objects.get(uri=uri)
-        mappings.extend(
-            Mapping.objects.filter(parent_id=resource_container.versioned_object_id)
-        )
+        url = host_url + uri + 'mappings?q=*' + search_term + '*'
+        view = MappingListAllView.as_view()
+        request = APIRequestFactory().get(url)
+        response = view(request)
+        response.render()
+        mappings_dict = json.loads(response.content)
+        mapping_uris = [c['url'] for c in mappings_dict]
+        mappings = Mapping.objects.filter(uri__in=mapping_uris)
         expressions.extend(map(lambda m: m.uri, mappings))
     else:
         expressions.extend(mapping_expressions)
