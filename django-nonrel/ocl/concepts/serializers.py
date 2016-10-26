@@ -121,11 +121,6 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
             mappings_field.source = 'get_empty_mappings'
 
 
-    def get_locale(self, obj):
-        names = filter(lambda n: n.type == 'ISO 639-1', obj.names)
-        if names:
-            return names[0].name
-
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     type = serializers.CharField(source='versioned_resource_type')
@@ -153,6 +148,7 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     extras = serializers.WritableField()
     mappings = MappingListField(read_only=True)
     is_latest_version = serializers.CharField()
+    locale = serializers.SerializerMethodField(method_name='get_locale')
 
     class Meta:
         model = ConceptVersion
