@@ -8,7 +8,8 @@ from mappings.importer import MappingsImporter
 from mappings.models import Mapping
 from mappings.models import MappingVersion
 from mappings.tests import MappingBaseTest
-from sources.models import SourceVersion
+from sources.models import SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from test_helper.base import create_source, create_user
 
 
 class BulkConceptImporterTest(ConceptBaseTest):
@@ -58,6 +59,24 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
         self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
+        self.assertEquals(1, Concept.objects.count())
+        self.assertEquals(1, ConceptVersion.objects.count())
+
+    def test_import_concepts_into_openmrs_validated_source_with_valid_records(self):
+        test_file = open('./integration_tests/fixtures/concepts_for_openmrs_validation.json', 'rb')
+        stderr_stub = TestStream()
+        user = create_user()
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        importer = ConceptsImporter(source, test_file, 'test', TestStream(), stderr_stub)
+        importer.import_concepts(total=5)
+
+        self.assertTrue("Custom validation rules require a concept to have exactly one preferred name" in stderr_stub.getvalue())
+        self.assertTrue("Custom validation rules require a preferred name to be different than a short name" in stderr_stub.getvalue())
+        self.assertTrue("Custom validation rules require a preferred name not to be an index/search term" in stderr_stub.getvalue())
+        self.assertTrue("Custom validation rules require all names except type=SHORT to be unique" in stderr_stub.getvalue())
+        self.assertTrue("Custom validation rules require at least one description" in stderr_stub.getvalue())
+
         self.assertEquals(1, Concept.objects.count())
         self.assertEquals(1, ConceptVersion.objects.count())
 
