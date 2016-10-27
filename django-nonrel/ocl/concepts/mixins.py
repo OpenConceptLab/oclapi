@@ -125,6 +125,6 @@ class ConceptValidationMixin:
     def _requires_at_least_one_fully_specified_name(self):
         # Concept requires at least one fully specified name
         fully_specified_name_count = len(
-            filter(lambda n: n.type == "FULLY_SPECIFIED" or n.type == "Fully Specified", self.names))
+            filter(lambda n: n.is_fully_specified, self.names))
         if fully_specified_name_count < 1:
             raise ValidationError({'names': ['Concept requires at least one fully specified name']})
