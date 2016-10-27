@@ -50,6 +50,12 @@ class ListWithHeadersMixin(ListModelMixin):
     def list(self, request, *args, **kwargs):
         is_csv = request.QUERY_PARAMS.get('csv', False)
         search_string = request.QUERY_PARAMS.get('type', None)
+        exact_match = request.QUERY_PARAMS.get('exact_match', None)
+        if not exact_match and is_csv:
+            pattern = request.QUERY_PARAMS.get('q', None)
+            if pattern:
+                request.QUERY_PARAMS._mutable = True
+                request.QUERY_PARAMS['q'] = "*" + request.QUERY_PARAMS['q'] + "*"
 
         if is_csv and not search_string:
             return self.get_csv(request)
