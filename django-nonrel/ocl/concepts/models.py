@@ -216,6 +216,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     version_created_by = models.TextField()
     update_comment = models.TextField(null=True, blank=True)
 
+    objects = MongoDBManager()
+
     def clone(self):
         return ConceptVersion(
             mnemonic='--TEMP--',
