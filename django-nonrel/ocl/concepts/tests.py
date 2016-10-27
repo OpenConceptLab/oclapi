@@ -1326,7 +1326,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         self.assertEquals(errors['names'][0],
                           'Custom validation rules require a concept to have exactly one preferred name')
 
-    def test_concept_should_have_exactly_one_fully_specified_name_per_locale(self):
+    def test_concepts_should_have_unique_fully_specified_name_per_locale(self):
         user = create_user()
 
         name_fully_specified1 = create_localized_text('FullySpecifiedName1')
@@ -1359,7 +1359,8 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         errors = Concept.persist_new(concept2, user, **kwargs)
         self.assertEquals(errors['names'][0],
-                          'Custom validation rules require a concept to have exactly one fully specified name for same source and locale')
+                          'Custom validation rules require fully specified name should be unique for same locale and source')
+
 
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()

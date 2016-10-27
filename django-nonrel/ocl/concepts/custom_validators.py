@@ -6,7 +6,7 @@ class OpenMRSConceptValidator:
 
     def validate(self):
         self.must_have_exactly_one_preferred_name()
-        self.must_have_exactly_one_fully_specified_name()
+        self.must_have_unique_fully_specified_name_for_same_source_and_locale()
         self.preferred_name_should_be_different_than_index_term()
         self.all_non_short_names_must_be_unique()
         self.should_have_at_least_one_description()
@@ -25,9 +25,9 @@ class OpenMRSConceptValidator:
 
             preferred_name_locales_in_concept[name.locale] = True
 
-    def must_have_exactly_one_fully_specified_name(self):
+    def must_have_unique_fully_specified_name_for_same_source_and_locale(self):
         for name in self.concept.names:
-            if name.type != 'FULLY_SPECIFIED':
+            if not name.is_fully_specified:
                 continue
 
             raw_query = {'parent_id': self.concept.parent.id, 'names.name': name.name, 'names.locale': name.locale,
@@ -37,7 +37,7 @@ class OpenMRSConceptValidator:
             from concepts.models import Concept
             if Concept.objects.raw_query(raw_query).count() > 0:
                 raise ValidationError({
-                    'names': ['Custom validation rules require a concept to have exactly one fully specified name for same source and locale']
+                    'names': ['Custom validation rules require fully specified name should be unique for same locale and source']
                 })
 
     def preferred_name_should_be_different_than_index_term(self):

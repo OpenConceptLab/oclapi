@@ -71,7 +71,7 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_concept_should_have_exactly_one_fully_specified_name_per_locale_positive(self):
+    def test_concepts_should_have_unique_fully_specified_name_per_locale_positive(self):
         user = create_user()
         source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
                                              organization=self.org1)
@@ -83,7 +83,7 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
-    def test_concept_should_have_exactly_one_fully_specified_name_per_locale_negative(self):
+    def test_concepts_should_have_unique_fully_specified_name_per_locale_negative(self):
         user = create_user()
         source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
                                              organization=self.org1)
