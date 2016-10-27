@@ -470,6 +470,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             # Mark versioned object as updated
             concept = obj.versioned_object
             concept.extras = obj.extras
+            concept.names= obj.names
+            concept.descriptions= obj.descriptions
             concept.save()
 
             persisted = True
