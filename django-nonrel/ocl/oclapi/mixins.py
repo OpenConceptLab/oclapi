@@ -121,7 +121,7 @@ class ListWithHeadersMixin(ListModelMixin):
 
         try:
             path = request.__dict__.get('_request').path
-            filename = '_'.join(compact(path.split('/')))
+            filename = '_'.join(compact(path.split('/'))).replace('.', '_')
             kwargs = {
                 'filename': filename,
             }
