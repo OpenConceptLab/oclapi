@@ -270,6 +270,72 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
+    def test_same_source_validation_rule_for_different_source_versions(self):
+        user = create_user()
+        org = create_organization(user)
+        source = create_source(user, organization=org)
+
+        self.client.login(username='user1', password='user1')
+
+        kwargs = {
+            'org': org.mnemonic,
+            'source': source.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399001",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "a",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+                "locale_preferred": "True"
+            }]
+        })
+
+        self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        kwargs = {
+            'org': org.mnemonic,
+            'source': source.mnemonic,
+            'concept': '12399001',
+        }
+
+        data = json.dumps({
+            "id": "12399001",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "b",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+                "locale_preferred": "True"
+            }]
+        })
+
+        self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
+
+        kwargs = {
+            'org': org.mnemonic,
+            'source': source.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399002",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "a",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+                "locale_preferred": "True"
+            }]
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+
+
     def test_dispatch_with_head_and_versions(self):
         source_version = SourceVersion(
             name='version1',

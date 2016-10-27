@@ -120,13 +120,21 @@ class ConceptValidationMixin:
             elif hasattr(self, "parent_id"):
                 parent_id = self.parent_id
 
-            # querying the preferred names in source for the same rule
-            raw_query = {'parent_id': parent_id, 'names.name': name.name, 'names.locale': name.locale,
-                         'names.locale_preferred': True}
+            raw_query = {'parent_id': parent_id, 'is_active': True, 'retired': False}
 
-            #TODO find a better solution for circular dependency
             from concepts.models import Concept
-            if Concept.objects.raw_query(raw_query).count() > 0:
+            concepts = Concept.objects.raw_query(raw_query).filter()
+
+            # querying the preferred names in source for the same rule
+            concept_id_list = []
+            for rec in concepts:
+                concept_id_list.append(rec.id)
+
+            raw_query = {'versioned_object_id': { '$in': concept_id_list}, 'names.name': name.name, 'names.locale': name.locale,
+                         'names.locale_preferred': True, 'is_latest_version': True}
+
+            from concepts.models import ConceptVersion
+            if ConceptVersion.objects.raw_query(raw_query).count() > 0:
                 raise ValidationError(validation_error)
 
     def _requires_at_least_one_fully_specified_name(self):
