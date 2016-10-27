@@ -36,6 +36,10 @@ class LocalizedText(models.Model):
             locale_preferred=self.locale_preferred
         )
 
+    @property
+    def is_fully_specified(self):
+        return self.type == "FULLY_SPECIFIED" or self.type == "Fully Specified"
+
 
 CONCEPT_TYPE = 'Concept'
 
