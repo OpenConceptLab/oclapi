@@ -20,7 +20,7 @@ from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
 from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
-from test_helper.base import create_user, create_source
+from test_helper.base import create_user, create_source, create_organization
 
 
 class ConceptCreateViewTest(ConceptBaseTest):
@@ -218,6 +218,57 @@ class ConceptCreateViewTest(ConceptBaseTest):
         responseUpdate = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(responseUpdate.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_concept_without_changing_names(self):
+        user = create_user()
+        org = create_organization(user)
+        source = create_source(user, organization=org)
+
+        self.client.login(username='user1', password='user1')
+
+        kwargs = {
+            'org': org.mnemonic,
+            'source': source.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399001",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "Grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+                "locale_preferred": "True"
+            }]
+        })
+
+        self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        kwargs = {
+            'org': org.mnemonic,
+            'source': source.mnemonic,
+            'concept': '12399001',
+        }
+
+        data = json.dumps({
+            "id": "12399001",
+            "concept_class": "conceptclass",
+            "names": [{
+                "name": "Grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+                "locale_preferred": "True"
+            }],
+            "descriptions": [{
+                "description": "Gribal Enfeksiyon",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED",
+            }]
+        })
+
+        response = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
 
     def test_dispatch_with_head_and_versions(self):
         source_version = SourceVersion(
