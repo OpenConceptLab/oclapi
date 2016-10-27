@@ -113,8 +113,15 @@ class ConceptValidationMixin:
 
             preferred_names_in_concept[name_id(name)] = True
 
+            parent_id = None
+
+            if hasattr(self, "parent") and hasattr(self.parent, "id"):
+                parent_id = self.parent.id
+            elif hasattr(self, "parent_id"):
+                parent_id = self.parent_id
+
             # querying the preferred names in source for the same rule
-            raw_query = {'parent_id': self.parent.id, 'names.name': name.name, 'names.locale': name.locale,
+            raw_query = {'parent_id': parent_id, 'names.name': name.name, 'names.locale': name.locale,
                          'names.locale_preferred': True}
 
             #TODO find a better solution for circular dependency
