@@ -28,7 +28,7 @@ class SourceRestrictedMappingsFilter(MappingSearchFilter):
         return filters
 
 
-class CollectionRestrictedMappingFilter(SimpleHaystackSearchFilter):
+class CollectionRestrictedMappingFilter(MappingSearchFilter):
     def get_filters(self, request, view):
         filters = super(CollectionRestrictedMappingFilter, self).get_filters(request, view)
         if 'collection' in view.kwargs:
