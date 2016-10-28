@@ -235,6 +235,7 @@ The dropdowns that require preloaded data are Concept Class, Datatype, Name/Desc
 1. Create a new org `OCL`. 
 2. Create a new user source `Classes` under org `OCL`. This will be be used for Concept Class dropdown.
 3. Import the data as concepts in `Classes` from https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_Classes/classes.json .
+
 Follow https://github.com/OpenConceptLab/oclapi/wiki/Bulk-Importing#how-to-import to know how to import concepts in a source.
 
 Proceed in same fashion for rest of the dropdown fields. Create sources `Datatypes`, `NameTypes`, `DescriptionTypes`, `Locales` under org `OCL`. 
