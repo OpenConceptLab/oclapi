@@ -17,8 +17,8 @@ from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
 from collection.models import CollectionVersion, CollectionReference
-from concepts.views import ConceptVersionListAllView
-from mappings.views import MappingListAllView
+from concepts.views import ConceptVersionListView
+from mappings.views import MappingListView
 
 import json
 from rest_framework.test import APIRequestFactory
@@ -126,8 +126,8 @@ def add_multiple_references(SerializerClass, user, data, parent_resource, host_u
         ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
 
     if concept_expressions == '*':
-        url = host_url + uri + 'concepts?q=*' + search_term + '*'
-        view = ConceptVersionListAllView.as_view()
+        url = host_url + uri + 'concepts?q=' + search_term
+        view = ConceptVersionListView.as_view()
         request = APIRequestFactory().get(url)
         response = view(request)
         response.render()
@@ -139,8 +139,8 @@ def add_multiple_references(SerializerClass, user, data, parent_resource, host_u
         expressions.extend(concept_expressions)
 
     if mapping_expressions == '*':
-        url = host_url + uri + 'mappings?q=*' + search_term + '*'
-        view = MappingListAllView.as_view()
+        url = host_url + uri + 'mappings?q=' + search_term
+        view = MappingListView.as_view()
         request = APIRequestFactory().get(url)
         response = view(request)
         response.render()
