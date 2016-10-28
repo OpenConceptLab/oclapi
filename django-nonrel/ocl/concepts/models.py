@@ -472,6 +472,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             concept.extras = obj.extras
             concept.names= obj.names
             concept.descriptions= obj.descriptions
+            concept.concept_class=obj.concept_class
+            concept.datatype=obj.datatype
             concept.save()
 
             persisted = True
