@@ -54,7 +54,7 @@ class Command(BaseCommand):
 
         if Source.objects.filter(parent_id=org.id, mnemonic='Locales').count() < 1:
             source = Source(name='Locales', mnemonic='Locales', full_name='Locales', parent=org,
-                            created_by=user, updated_by=user)
+                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
             Source.persist_new(source, user, **kwargs)
 
         else:
@@ -63,7 +63,7 @@ class Command(BaseCommand):
 
         if Source.objects.filter(parent_id=org.id, mnemonic='Classes').count() < 1:
             source = Source(name='Classes', mnemonic='Classes', full_name='Classes', parent=org,
-                            created_by=user, updated_by=user)
+                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
             Source.persist_new(source, user, **kwargs)
 
         else:
@@ -72,7 +72,7 @@ class Command(BaseCommand):
 
         if Source.objects.filter(parent_id=org.id, mnemonic='Datatypes').count() < 1:
             source = Source(name='Datatypes', mnemonic='Datatypes', full_name='Datatypes', parent=org,
-                            created_by=user, updated_by=user)
+                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
             Source.persist_new(source, user, **kwargs)
 
         else:
@@ -82,7 +82,7 @@ class Command(BaseCommand):
         if Source.objects.filter(parent_id=org.id, mnemonic='DescriptionTypes').count() < 1:
             source = Source(name='DescriptionTypes', mnemonic='DescriptionTypes', full_name='DescriptionTypes',
                             parent=org,
-                            created_by=user, updated_by=user)
+                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
             Source.persist_new(source, user, **kwargs)
 
         else:
@@ -91,7 +91,7 @@ class Command(BaseCommand):
 
         if Source.objects.filter(parent_id=org.id, mnemonic='NameTypes').count() < 1:
             source = Source(name='NameTypes', mnemonic='NameTypes', full_name='NameTypes', parent=org,
-                            created_by=user, updated_by=user)
+                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
             Source.persist_new(source, user, **kwargs)
 
         else:

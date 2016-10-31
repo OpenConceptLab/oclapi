@@ -78,7 +78,7 @@ class ConceptsImporter(object):
                 exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data)
                 self.handle_exception(exc_message)
             except Exception as exc:
-                exc_message = '%s\nUnexpected something occured: %s. Skipping it...\n' % (exc.message, data)
+                exc_message = '%s\nSomething unexpected occured: %s. Skipping it...\n' % (exc.message, data)
                 self.handle_exception(exc_message)
 
         # Simple progress bar
