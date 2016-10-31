@@ -5,7 +5,6 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 import json
-import unittest
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType

@@ -54,7 +54,7 @@ def create_user_profile(user):
     return UserProfile.objects.create(user=user, mnemonic='user{0}'.format(suffix))
 
 
-def create_organization(user):
+def create_organization():
     suffix = generate_random_string()
 
     return Organization.objects.create(name='org{0}'.format(suffix), mnemonic='org{0}'.format(suffix))

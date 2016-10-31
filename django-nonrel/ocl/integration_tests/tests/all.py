@@ -221,7 +221,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_update_concept_without_changing_names(self):
         user = create_user()
-        org = create_organization(user)
+        org = create_organization()
         source = create_source(user, organization=org)
 
         self.client.login(username='user1', password='user1')
@@ -272,7 +272,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_same_source_validation_rule_for_different_source_versions(self):
         user = create_user()
-        org = create_organization(user)
+        org = create_organization()
         source = create_source(user, organization=org)
 
         self.client.login(username='user1', password='user1')
