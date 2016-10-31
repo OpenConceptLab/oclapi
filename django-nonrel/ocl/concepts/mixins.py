@@ -120,22 +120,17 @@ class ConceptValidationMixin:
             elif hasattr(self, "parent_id"):
                 parent_id = self.parent_id
 
-            raw_query = {'parent_id': parent_id, 'is_active': True, 'retired': False}
-
             from concepts.models import Concept
-            concepts = Concept.objects.raw_query(raw_query).filter()
+            concept_id_list = list(Concept.objects.filter(parent_id=parent_id, is_active=True, retired=False).values('id'))
+            concept_ids = map(lambda x: x["id"], concept_id_list)
 
-            # querying the preferred names in source for the same rule
-            concept_id_list = []
-            for rec in concepts:
-                concept_id_list.append(rec.id)
+            if concept_id_list:
+                raw_query = {'versioned_object_id': { '$in': concept_ids}, 'names.name': name.name, 'names.locale': name.locale,
+                             'names.locale_preferred': True, 'is_latest_version': True}
 
-            raw_query = {'versioned_object_id': { '$in': concept_id_list}, 'names.name': name.name, 'names.locale': name.locale,
-                         'names.locale_preferred': True, 'is_latest_version': True}
-
-            from concepts.models import ConceptVersion
-            if ConceptVersion.objects.raw_query(raw_query).count() > 0:
-                raise ValidationError(validation_error)
+                from concepts.models import ConceptVersion
+                if ConceptVersion.objects.raw_query(raw_query).count() > 0:
+                    raise ValidationError(validation_error)
 
     def _requires_at_least_one_fully_specified_name(self):
         # Concept requires at least one fully specified name
