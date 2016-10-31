@@ -46,57 +46,21 @@ class Command(BaseCommand):
 
     def create_sources(self, org, user):
         sources = dict()
-        source = None
 
         kwargs = {
             'parent_resource': org
         }
 
-        if Source.objects.filter(parent_id=org.id, mnemonic='Locales').count() < 1:
-            source = Source(name='Locales', mnemonic='Locales', full_name='Locales', parent=org,
-                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
-            Source.persist_new(source, user, **kwargs)
+        for source_name in ['Locales', 'Classes', 'Datatypes', 'DescriptionTypes', 'NameTypes']:
+            source = None
 
-        else:
-            source = Source.objects.get(parent_id=org.id, mnemonic='Locales')
-        sources['Locales'] = source
-
-        if Source.objects.filter(parent_id=org.id, mnemonic='Classes').count() < 1:
-            source = Source(name='Classes', mnemonic='Classes', full_name='Classes', parent=org,
-                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
-            Source.persist_new(source, user, **kwargs)
-
-        else:
-            source = Source.objects.get(parent_id=org.id, mnemonic='Classes')
-        sources['Classes'] = source
-
-        if Source.objects.filter(parent_id=org.id, mnemonic='Datatypes').count() < 1:
-            source = Source(name='Datatypes', mnemonic='Datatypes', full_name='Datatypes', parent=org,
-                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
-            Source.persist_new(source, user, **kwargs)
-
-        else:
-            source = Source.objects.get(parent_id=org.id, mnemonic='Datatypes')
-        sources['Datatypes'] = source
-
-        if Source.objects.filter(parent_id=org.id, mnemonic='DescriptionTypes').count() < 1:
-            source = Source(name='DescriptionTypes', mnemonic='DescriptionTypes', full_name='DescriptionTypes',
-                            parent=org,
-                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
-            Source.persist_new(source, user, **kwargs)
-
-        else:
-            source = Source.objects.get(parent_id=org.id, mnemonic='DescriptionTypes')
-        sources['DescriptionTypes'] = source
-
-        if Source.objects.filter(parent_id=org.id, mnemonic='NameTypes').count() < 1:
-            source = Source(name='NameTypes', mnemonic='NameTypes', full_name='NameTypes', parent=org,
-                            created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
-            Source.persist_new(source, user, **kwargs)
-
-        else:
-            source = Source.objects.get(parent_id=org.id, mnemonic='NameTypes')
-        sources['NameTypes'] = source
+            if Source.objects.filter(parent_id=org.id, mnemonic=source_name).count() < 1:
+                source = Source(name=source_name, mnemonic=source_name, full_name=source_name, parent=org,
+                                created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
+                Source.persist_new(source, user, **kwargs)
+            else:
+                source = Source.objects.get(parent_id=org.id, mnemonic='Locales')
+            sources[source_name] = source
 
         print sources
 
