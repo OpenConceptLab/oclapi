@@ -164,6 +164,7 @@ class CollectionVersion(ConceptContainerVersionModel):
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
     collection_snapshot = DictField(null=True, blank=True)
+    custom_validation_schema = models.TextField(blank=True, null=True)
 
     def fill_data_for_reference(self, a_reference):
         if a_reference.concepts:

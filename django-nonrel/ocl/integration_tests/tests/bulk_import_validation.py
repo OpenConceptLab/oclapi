@@ -8,7 +8,8 @@ from mappings.importer import MappingsImporter
 from mappings.models import Mapping
 from mappings.models import MappingVersion
 from mappings.tests import MappingBaseTest
-from sources.models import SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from sources.models import SourceVersion
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user
 
 

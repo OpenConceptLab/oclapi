@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 
 from concepts.views import ConceptVersionListView
 from oclapi.models import ACCESS_TYPE_VIEW
-from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
 
 

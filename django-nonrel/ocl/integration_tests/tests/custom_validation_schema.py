@@ -1,6 +1,6 @@
 from concepts.tests import ConceptBaseTest
 from test_helper.base import create_user, create_source
-from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from rest_framework import status
 from django.core.urlresolvers import reverse
 import json

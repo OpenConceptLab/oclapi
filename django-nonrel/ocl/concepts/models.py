@@ -12,7 +12,8 @@ from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
-from sources.models import SourceVersion, Source, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from sources.models import SourceVersion, Source
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from django.db.models import get_model
 from django.core.exceptions import ValidationError
 from django_mongodb_engine.contrib import MongoDBManager

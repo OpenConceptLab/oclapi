@@ -11,13 +11,11 @@ from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, A
 from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
-CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
 
 HEAD = 'HEAD'
 
 class Source(ConceptContainerModel):
     source_type = models.TextField(blank=True)
-    custom_validation_schema = models.TextField(blank=True, null=True)
 
     @property
     def concepts_url(self):
