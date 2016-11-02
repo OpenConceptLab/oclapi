@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 
 from concepts.custom_validators import OpenMRSConceptValidator
-from sources.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 
 __author__ = 'misternando'
 

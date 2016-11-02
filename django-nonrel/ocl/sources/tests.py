@@ -14,7 +14,8 @@ from django.core.urlresolvers import reverse
 from concepts.models import Concept, LocalizedText
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
-from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from sources.models import Source, SourceVersion
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import OclApiBaseTestCase
 from users.models import UserProfile
 

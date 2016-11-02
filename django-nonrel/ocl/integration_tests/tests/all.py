@@ -17,7 +17,8 @@ from concepts.tests import ConceptBaseTest
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
-from sources.models import Source, SourceVersion, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from sources.models import Source, SourceVersion
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
 from test_helper.base import create_user, create_source, create_organization

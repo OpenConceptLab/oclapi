@@ -30,6 +30,8 @@ class OpenMRSConceptValidator:
             if not name.is_fully_specified:
                 continue
 
+            # FIXME we MUST check if this is a ConceptVersion or a Concept
+
             raw_query = {'parent_id': self.concept.parent.id, 'names.name': name.name, 'names.locale': name.locale,
                          'names.type': name.type}
 

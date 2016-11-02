@@ -213,6 +213,8 @@ class ResourceVersionModel(BaseModel):
             return None
 
 
+CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
+
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
@@ -221,6 +223,7 @@ class ConceptContainerModel(SubResourceBaseModel):
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
+    custom_validation_schema = models.TextField(blank=True, null=True)
 
     class Meta(SubResourceBaseModel.Meta):
         abstract = True

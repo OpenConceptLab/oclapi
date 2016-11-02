@@ -4,19 +4,15 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-from django.contrib.auth.models import User
+from unittest import skip
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from collection.models import Collection, CollectionVersion, CollectionReference
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from orgs.models import Organization
-from users.models import UserProfile
-from concepts.models import Concept, ConceptVersion, LocalizedText
-from sources.models import Source, SourceVersion
-from mappings.models import Mapping, MappingVersion
-from unittest import skip
-from test_helper.base import OclApiBaseTestCase
+from collection.models import CollectionReference
+from oclapi.models import ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from test_helper.base import *
+
 
 class CollectionBaseTest(OclApiBaseTestCase):
     def setUp(self):
@@ -526,6 +522,23 @@ class CollectionTest(CollectionBaseTest):
         collection.save()
 
         self.assertEquals(collection.mappings_url, '/orgs/org1/sources/org1/concepts/collection1/mappings/')
+
+    def test_create_collection_with_openmrs_validation(self):
+        user = create_user()
+        org = create_organization()
+
+        collection = Collection(
+            name='collection1',
+            mnemonic='collection1',
+            created_by=user,
+            parent=org,
+            updated_by=user,
+            custom_validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS
+        )
+
+        collection.full_clean()
+        collection.save()
+        self.assertEquals("OpenMRS", collection.custom_validation_schema)
 
 
 class CollectionClassMethodTest(CollectionBaseTest):
