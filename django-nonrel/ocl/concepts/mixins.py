@@ -103,6 +103,17 @@ class ConceptValidationMixin:
         validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
         preferred_names_in_concept = dict()
         name_id = lambda n: n.locale + n.name
+
+        parent_id = self.get_parent_id()
+
+        if parent_id is None:
+            return
+
+        self_id = None
+
+        if hasattr(self, "versioned_object_id"):
+            self_id = self.versioned_object_id
+
         for name in self.names:
             if not name.locale_preferred:
                 continue
@@ -113,24 +124,25 @@ class ConceptValidationMixin:
 
             preferred_names_in_concept[name_id(name)] = True
 
-            parent_id = None
-
-            if hasattr(self, "parent") and hasattr(self.parent, "id"):
-                parent_id = self.parent.id
-            elif hasattr(self, "parent_id"):
-                parent_id = self.parent_id
-
             from concepts.models import Concept
             concept_id_list = list(Concept.objects.filter(parent_id=parent_id, is_active=True, retired=False).values('id'))
             concept_ids = map(lambda x: x["id"], concept_id_list)
 
             if concept_id_list:
-                raw_query = {'versioned_object_id': { '$in': concept_ids}, 'names.name': name.name, 'names.locale': name.locale,
+                raw_query = {'versioned_object_id': { '$in': filter(lambda id: id != self_id, concept_ids)}, 'names.name': name.name, 'names.locale': name.locale,
                              'names.locale_preferred': True, 'is_latest_version': True}
 
                 from concepts.models import ConceptVersion
                 if ConceptVersion.objects.raw_query(raw_query).count() > 0:
                     raise ValidationError(validation_error)
+
+    def get_parent_id(self):
+        parent_id = None
+        if hasattr(self, "parent"):
+            parent_id = self.parent.id
+        elif hasattr(self, "source"):
+            parent_id = self.source.id
+        return parent_id
 
     def _requires_at_least_one_fully_specified_name(self):
         # Concept requires at least one fully specified name
