@@ -1366,7 +1366,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         user = create_user()
 
         short_name = create_localized_text("ShortName")
-        short_name.type = "SHORT"
+        short_name.type = "Short"
 
         name = create_localized_text('ShortName')
         name.locale_preferred = True

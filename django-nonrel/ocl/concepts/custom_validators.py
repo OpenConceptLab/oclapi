@@ -45,12 +45,12 @@ class OpenMRSConceptValidator:
     def preferred_name_should_be_different_than_index_term(self):
         preferred_names_in_concept = map(lambda no: no.name, filter(lambda n: n.locale_preferred, self.concept.names))
 
-        if len(filter(lambda n: n.type == "INDEX_TERM" and n.locale_preferred == True, self.concept.names)) > 0:
+        if len(filter(lambda n: n.is_search_index_term and n.locale_preferred == True, self.concept.names)) > 0:
             raise ValidationError({
                 'names': ['Custom validation rules require a preferred name not to be an index/search term']
             })
 
-        short_names_in_concept = map(lambda no: no.name, filter(lambda n: n.type == "SHORT", self.concept.names))
+        short_names_in_concept = map(lambda no: no.name, filter(lambda n: n.is_short, self.concept.names))
 
         if set(preferred_names_in_concept).intersection(short_names_in_concept):
             raise ValidationError({
@@ -60,7 +60,7 @@ class OpenMRSConceptValidator:
     def all_non_short_names_must_be_unique(self):
         name_id = lambda n: n.locale + n.name
 
-        non_short_names_in_concept = map(name_id, filter(lambda n: n.type != "SHORT", self.concept.names))
+        non_short_names_in_concept = map(name_id, filter(lambda n: n.is_short == False, self.concept.names))
         name_set = set(non_short_names_in_concept)
 
         if len(name_set) != len(non_short_names_in_concept):
