@@ -1,11 +1,14 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
+from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django_mongodb_engine.contrib import MongoDBManager
 from djangotoolbox.fields import ListField, EmbeddedModelField
 from uuidfield import UUIDField
 
@@ -13,10 +16,6 @@ from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
-from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
-from django.db.models import get_model
-from django.core.exceptions import ValidationError
-from django_mongodb_engine.contrib import MongoDBManager
 
 
 class LocalizedText(models.Model):
@@ -41,6 +40,13 @@ class LocalizedText(models.Model):
     def is_fully_specified(self):
         return self.type == "FULLY_SPECIFIED" or self.type == "Fully Specified"
 
+    @property
+    def is_short(self):
+        return self.type == "SHORT" or self.type == "Short"
+
+    @property
+    def is_search_index_term(self):
+        return self.type == "INDEX_TERM" or self.type == "Index Term"
 
 CONCEPT_TYPE = 'Concept'
 
