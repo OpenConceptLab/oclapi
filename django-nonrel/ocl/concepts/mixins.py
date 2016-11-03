@@ -93,7 +93,7 @@ class ConceptValidationMixin:
     # basic validation rule
     def _preferred_name_should_be_unique_for_source_and_locale(self):
         # Concept preferred_name should be unique for same source and locale.
-        validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
+        validation_error = {'names': ['Concept preferred name must be unique for same source and locale']}
         preferred_names_in_concept = dict()
         name_id = lambda n: n.locale + n.name
 

@@ -311,7 +311,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], 'Concept preferred name should be unique for same source and locale')
+        self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
 
     def test_duplicate_preferred_name_per_source_should_pass_if_not_preferred(self):
         concept1 = Concept(
@@ -414,7 +414,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], 'Concept preferred name should be unique for same source and locale')
+        self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
 
     def test_at_least_one_fully_specified_name_per_concept_negative(self):
         concept = Concept(

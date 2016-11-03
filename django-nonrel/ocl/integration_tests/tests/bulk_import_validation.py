@@ -38,7 +38,7 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=7)
         self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
-        self.assertTrue('Concept preferred name should be unique for same source and locale' in stderr_stub.getvalue())
+        self.assertTrue('Concept preferred name must be unique for same source and locale' in stderr_stub.getvalue())
         self.assertEquals(5, Concept.objects.count())
         self.assertEquals(5, ConceptVersion.objects.count())
 
