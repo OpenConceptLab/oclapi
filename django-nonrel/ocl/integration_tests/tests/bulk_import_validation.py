@@ -76,10 +76,9 @@ class BulkConceptImporterTest(ConceptBaseTest):
         self.assertTrue("Custom validation rules require a preferred name to be different than a short name" in stderr_stub.getvalue())
         self.assertTrue("Custom validation rules require a preferred name not to be an index/search term" in stderr_stub.getvalue())
         self.assertTrue("Custom validation rules require all names except type=SHORT to be unique" in stderr_stub.getvalue())
-        self.assertTrue("Custom validation rules require at least one description" in stderr_stub.getvalue())
 
-        self.assertEquals(1, Concept.objects.count())
-        self.assertEquals(1, ConceptVersion.objects.count())
+        self.assertEquals(2, Concept.objects.count())
+        self.assertEquals(2, ConceptVersion.objects.count())
 
 
 class ConceptImporterTest(ConceptBaseTest):

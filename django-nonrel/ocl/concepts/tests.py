@@ -1456,26 +1456,3 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0], 'Custom validation rules require all names except type=SHORT to be unique')
-
-
-    def test_must_have_at_least_one_description(self):
-        user = create_user()
-
-        name = create_localized_text("Name")
-
-        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-
-        concept = Concept(
-            mnemonic='TCPT',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[name],
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['descriptions'][0], 'Custom validation rules require at least one description')
