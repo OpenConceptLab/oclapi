@@ -117,6 +117,10 @@ class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin)
 
         return self.parent.custom_validation_schema
 
+    @property
+    def parent_source(self):
+        return self.parent
+
     def get_bidirectional_mappings(self):
         module = __import__('mappings.models', fromlist=['models'])
         class_ = getattr(module, 'Mapping')
@@ -276,6 +280,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     @property
     def source(self):
         return self.versioned_object.parent
+
+    @property
+    def parent_source(self):
+        return self.source
 
     @property
     def collection_versions(self):

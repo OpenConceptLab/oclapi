@@ -801,16 +801,6 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version.full_clean()
             concept_version.save()
 
-    def test_create_concept_version_negative__no_versioned_object(self):
-        with self.assertRaises(ValidationError):
-            concept_version = ConceptVersion(
-                mnemonic='version1',
-                concept_class='First',
-                names=[self.name],
-            )
-            concept_version.full_clean()
-            concept_version.save()
-
     def test_create_concept_version_negative__no_concept_class(self):
         with self.assertRaises(ValidationError):
             concept_version = ConceptVersion(

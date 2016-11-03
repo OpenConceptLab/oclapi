@@ -86,14 +86,7 @@ class ConceptValidationMixin:
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
 
-        source = None
-
-        if hasattr(self, "parent") and hasattr(self.parent, "custom_validation_schema"):
-            source = self.parent
-        elif hasattr(self, "source") and hasattr(self.source, "custom_validation_schema"):
-            source = self.source
-
-        if source is not None and source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+        if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
@@ -103,11 +96,6 @@ class ConceptValidationMixin:
         validation_error = {'names': ['Concept preferred name should be unique for same source and locale']}
         preferred_names_in_concept = dict()
         name_id = lambda n: n.locale + n.name
-
-        parent_id = self.get_parent_id()
-
-        if parent_id is None:
-            return
 
         self_id = None
 
@@ -125,7 +113,7 @@ class ConceptValidationMixin:
             preferred_names_in_concept[name_id(name)] = True
 
             from concepts.models import Concept
-            concept_id_list = list(Concept.objects.filter(parent_id=parent_id, is_active=True, retired=False).values('id'))
+            concept_id_list = list(Concept.objects.filter(parent_id=self.parent_source.id, is_active=True, retired=False).values('id'))
             concept_ids = map(lambda x: x["id"], concept_id_list)
 
             if concept_id_list:
@@ -135,14 +123,6 @@ class ConceptValidationMixin:
                 from concepts.models import ConceptVersion
                 if ConceptVersion.objects.raw_query(raw_query).count() > 0:
                     raise ValidationError(validation_error)
-
-    def get_parent_id(self):
-        parent_id = None
-        if hasattr(self, "parent"):
-            parent_id = self.parent.id
-        elif hasattr(self, "source"):
-            parent_id = self.source.id
-        return parent_id
 
     def _requires_at_least_one_fully_specified_name(self):
         # Concept requires at least one fully specified name
