@@ -88,3 +88,27 @@ def create_source(user, validation_schema=None, organization=None):
     Source.persist_new(source, user, **kwargs)
 
     return Source.objects.get(id=source.id)
+
+
+def create_concept(user, source, names=None):
+    suffix = generate_random_string()
+
+    if names is None:
+        names = [create_localized_text("name{0}".format(suffix))]
+
+    concept = Concept(
+        mnemonic='concept{0}'.format(suffix),
+        updated_by=user,
+        parent=source,
+        concept_class='First',
+        names=names,
+        descriptions=[create_localized_text("desc{0}".format(suffix))]
+    )
+
+    kwargs = {
+        'parent_resource': source,
+    }
+
+    Concept.persist_new(concept, user, **kwargs)
+
+    return Concept.objects.get(id=concept.id)

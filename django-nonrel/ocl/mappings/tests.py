@@ -6,24 +6,24 @@ Replace this with more appropriate tests for your application.
 """
 from urlparse import urlparse
 
-from django.contrib.contenttypes.models import ContentType
-
-from concepts.models import Concept, ConceptVersion, LocalizedText
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
+
+from collection.models import Collection, CollectionVersion
+from concepts.models import Concept, LocalizedText
 from mappings.models import Mapping, MappingVersion
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
+from test_helper.base import *
 from users.models import UserProfile
-from collection.models import Collection, CollectionVersion, CollectionReference
-from test_helper.base import OclApiBaseTestCase
-from unittest import skip
+
 
 class OCLClient(Client):
 
@@ -1156,4 +1156,41 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertTrue(new_version.is_latest_version)
         self.assertEquals(new_version.map_type,'BROADER_THAN')
         self.assertEquals(old_version.map_type,'Same As')
+
+
+class OpenMRSMappingValidationTest(MappingBaseTest):
+
+    def test_same_source_target_with_same_type_should_throw_validation_error(self):
+
+        user = create_user()
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        concept1 = create_concept(user, source)
+        concept2 = create_concept(user, source)
+
+        mapping1 = Mapping(
+            created_by=user,
+            updated_by=user,
+            parent=source,
+            map_type='Same As',
+            from_concept=concept1,
+            to_concept=concept2,
+            public_access=ACCESS_TYPE_VIEW,
+        )
+
+        mapping1.full_clean()
+        mapping1.save()
+
+        mapping2 = Mapping(
+            created_by=user,
+            updated_by=user,
+            parent=source,
+            map_type='Same As',
+            from_concept=concept1,
+            to_concept=concept2,
+            public_access=ACCESS_TYPE_VIEW,
+        )
+
+        with self.assertRaisesMessage(ValidationError, "Can not BLAH BLAH"):
+            mapping2.full_clean()
+            mapping2.save()
 

@@ -1,18 +1,19 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from concepts.models import Concept
+from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source, SourceVersion
-from django.db.models import get_model
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
 
-class Mapping(BaseModel):
+class Mapping(MappingValidationMixin, BaseModel):
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')
@@ -27,20 +28,6 @@ class Mapping(BaseModel):
         unique_together = (
             ("parent", "map_type", "from_concept", "to_concept", "to_source", "to_concept_code"),
         )
-
-    def clean(self, exclude=None):
-        messages = []
-        try:
-            if self.from_concept == self.to_concept:
-                messages.append("Cannot map concept to itself.")
-        except Concept.DoesNotExist:
-            messages.append("Must specify a 'from_concept'.")
-        if not (self.to_concept or (self.to_source and self.to_concept_code)):
-            messages.append("Must specify either 'to_concept' or 'to_source' & 'to_concept_code")
-        if self.to_concept and (self.to_source or self.to_concept_code):
-            messages.append("Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both.")
-        if messages:
-            raise ValidationError(' '.join(messages))
 
     def clone(self, user):
         return Mapping(
@@ -352,7 +339,7 @@ class Mapping(BaseModel):
         return diffs
 
 
-class MappingVersion(ResourceVersionModel):
+class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     parent = models.ForeignKey(Source, related_name='mappings_version_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_version_from')
