@@ -4,7 +4,7 @@ import string
 
 from collection.models import CollectionVersion, Collection
 from concepts.models import Concept, ConceptVersion, LocalizedText
-from oclapi.models import ACCESS_TYPE_EDIT
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
@@ -40,13 +40,17 @@ def create_localized_text(name, locale='en', type='FULLY_SPECIFIED'):
 def create_user():
     suffix = generate_random_string()
 
-    return User.objects.create(
+    user = User.objects.create(
         username="test{0}".format(suffix),
         password="test{0}".format(suffix),
         email='user{0}@test.com'.format(suffix),
         first_name='Test',
         last_name='User'
     )
+
+    UserProfile.objects.create(user=user, mnemonic='user{0}'.format(suffix))
+
+    return user
 
 
 def create_user_profile(user):
@@ -82,7 +86,7 @@ def create_source(user, validation_schema=None, organization=None):
         }
     else:
         kwargs = {
-            'parent_resource': create_user_profile(user)
+            'parent_resource': UserProfile.objects.get(user=user)
         }
 
     Source.persist_new(source, user, **kwargs)
@@ -112,3 +116,23 @@ def create_concept(user, source, names=None):
     Concept.persist_new(concept, user, **kwargs)
 
     return Concept.objects.get(id=concept.id)
+
+
+def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
+    mapping = Mapping(
+        created_by=user,
+        updated_by=user,
+        parent=source,
+        map_type=map_type,
+        from_concept=from_concept,
+        to_concept=to_concept,
+        public_access=ACCESS_TYPE_VIEW,
+    )
+
+    kwargs = {
+        'parent_resource': source,
+    }
+
+    Mapping.persist_new(mapping, user, **kwargs)
+
+    return Mapping.objects.get(id=mapping.id)

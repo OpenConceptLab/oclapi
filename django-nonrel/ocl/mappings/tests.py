@@ -238,17 +238,17 @@ class MappingTest(MappingBaseTest):
             mapping.save()
 
     def test_create_mapping_negative__no_parent(self):
-        with self.assertRaises(ValidationError):
-            mapping = Mapping(
-                created_by=self.user1,
-                updated_by=self.user1,
-                map_type='Same As',
-                from_concept=self.concept1,
-                to_concept=self.concept2,
-                external_id='mapping1',
-            )
-            mapping.full_clean()
-            mapping.save()
+        mapping = Mapping(
+            created_by=self.user1,
+            updated_by=self.user1,
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='mapping1',
+        )
+
+        errors = Mapping.persist_new(mapping, self.user1)
+        self.assertTrue(errors)
 
     def test_create_mapping_negative__no_map_type(self):
         with self.assertRaises(ValidationError):
@@ -1160,37 +1160,51 @@ class MappingClassMethodsTest(MappingBaseTest):
 
 class OpenMRSMappingValidationTest(MappingBaseTest):
 
-    def test_same_source_target_with_same_type_should_throw_validation_error(self):
-
+    def test_create_same_from_and_to_pair_with_different_map_types_should_throw_validation_error(self):
         user = create_user()
+
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
         concept1 = create_concept(user, source)
         concept2 = create_concept(user, source)
 
-        mapping1 = Mapping(
+        create_mapping(user, source, concept1, concept2, "Same As")
+
+        mapping = Mapping(
             created_by=user,
             updated_by=user,
             parent=source,
-            map_type='Same As',
+            map_type='Is Subset of',
             from_concept=concept1,
             to_concept=concept2,
             public_access=ACCESS_TYPE_VIEW,
         )
 
-        mapping1.full_clean()
-        mapping1.save()
+        kwargs = {
+            'parent_resource': source,
+        }
 
-        mapping2 = Mapping(
-            created_by=user,
-            updated_by=user,
-            parent=source,
-            map_type='Same As',
-            from_concept=concept1,
-            to_concept=concept2,
-            public_access=ACCESS_TYPE_VIEW,
-        )
+        errors = Mapping.persist_new(mapping, user, **kwargs)
+        self.assertTrue("Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
 
-        with self.assertRaisesMessage(ValidationError, "Can not BLAH BLAH"):
-            mapping2.full_clean()
-            mapping2.save()
 
+    def test_update_different_from_and_to_pairs_to_same_from_and_to_pairs_should_throw_validation_error(self):
+        user = create_user()
+
+        source1 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source2 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept1 = create_concept(user, source1)
+        concept2 = create_concept(user, source2)
+        concept3 = create_concept(user, source2)
+
+        create_mapping(user, source1, concept1, concept2, "Same As")
+        mapping = create_mapping(user, source2, concept2, concept3, "Same As")
+
+        mapping.from_concept = concept1
+        mapping.to_concept = concept2
+        mapping.map_type = "Different"
+
+        errors = Mapping.persist_changes(mapping, user)
+
+        self.assertTrue(
+            "Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])

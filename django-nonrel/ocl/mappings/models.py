@@ -54,6 +54,10 @@ class Mapping(MappingValidationMixin, BaseModel):
         return self.parent.mnemonic
 
     @property
+    def parent_source(self):
+        return self.parent
+
+    @property
     def owner(self):
         return self.parent.owner_name
 
@@ -378,6 +382,10 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     @property
     def source(self):
         return self.parent.mnemonic
+
+    @property
+    def parent_source(self):
+        return self.parent
 
     @property
     def owner(self):
