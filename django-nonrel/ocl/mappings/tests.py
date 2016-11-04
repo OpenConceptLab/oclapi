@@ -6,24 +6,24 @@ Replace this with more appropriate tests for your application.
 """
 from urlparse import urlparse
 
-from django.contrib.contenttypes.models import ContentType
-
-from concepts.models import Concept, ConceptVersion, LocalizedText
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
+
+from collection.models import Collection, CollectionVersion
+from concepts.models import Concept, LocalizedText
 from mappings.models import Mapping, MappingVersion
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
+from test_helper.base import *
 from users.models import UserProfile
-from collection.models import Collection, CollectionVersion, CollectionReference
-from test_helper.base import OclApiBaseTestCase
-from unittest import skip
+
 
 class OCLClient(Client):
 
@@ -238,17 +238,17 @@ class MappingTest(MappingBaseTest):
             mapping.save()
 
     def test_create_mapping_negative__no_parent(self):
-        with self.assertRaises(ValidationError):
-            mapping = Mapping(
-                created_by=self.user1,
-                updated_by=self.user1,
-                map_type='Same As',
-                from_concept=self.concept1,
-                to_concept=self.concept2,
-                external_id='mapping1',
-            )
-            mapping.full_clean()
-            mapping.save()
+        mapping = Mapping(
+            created_by=self.user1,
+            updated_by=self.user1,
+            map_type='Same As',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='mapping1',
+        )
+
+        errors = Mapping.persist_new(mapping, self.user1)
+        self.assertTrue(errors)
 
     def test_create_mapping_negative__no_map_type(self):
         with self.assertRaises(ValidationError):
@@ -1157,3 +1157,54 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(new_version.map_type,'BROADER_THAN')
         self.assertEquals(old_version.map_type,'Same As')
 
+
+class OpenMRSMappingValidationTest(MappingBaseTest):
+
+    def test_create_same_from_and_to_pair_with_different_map_types_should_throw_validation_error(self):
+        user = create_user()
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        concept1 = create_concept(user, source)
+        concept2 = create_concept(user, source)
+
+        create_mapping(user, source, concept1, concept2, "Same As")
+
+        mapping = Mapping(
+            created_by=user,
+            updated_by=user,
+            parent=source,
+            map_type='Is Subset of',
+            from_concept=concept1,
+            to_concept=concept2,
+            public_access=ACCESS_TYPE_VIEW,
+        )
+
+        kwargs = {
+            'parent_resource': source,
+        }
+
+        errors = Mapping.persist_new(mapping, user, **kwargs)
+        self.assertTrue("Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
+
+
+    def test_update_different_from_and_to_pairs_to_same_from_and_to_pairs_should_throw_validation_error(self):
+        user = create_user()
+
+        source1 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source2 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        concept1 = create_concept(user, source1)
+        concept2 = create_concept(user, source2)
+        concept3 = create_concept(user, source2)
+
+        create_mapping(user, source1, concept1, concept2, "Same As")
+        mapping = create_mapping(user, source2, concept2, concept3, "Same As")
+
+        mapping.from_concept = concept1
+        mapping.to_concept = concept2
+        mapping.map_type = "Different"
+
+        errors = Mapping.persist_changes(mapping, user)
+
+        self.assertTrue(
+            "Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
