@@ -14,6 +14,19 @@ from django.test import TestCase
 
 
 class OclApiBaseTestCase(TestCase):
+    def setUp(self):
+        user = create_user()
+        org_ocl = create_organization("OCL")
+        classes_source = create_source(user, organization=org_ocl, name="Classes")
+
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("First")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Second")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Third")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Fourth")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Diagnosis")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Drug")])
+        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("not First")])
+
     def tearDown(self):
         LocalizedText.objects.filter().delete()
         ConceptVersion.objects.filter().delete()
@@ -58,19 +71,20 @@ def create_user_profile(user):
     return UserProfile.objects.create(user=user, mnemonic='user{0}'.format(suffix))
 
 
-def create_organization():
+def create_organization(name=None, mnemonic=None):
     suffix = generate_random_string()
+    name = name if name else 'org{0}'.format(suffix)
+    mnemonic = mnemonic if mnemonic else name
+    return Organization.objects.create(name=name, mnemonic=mnemonic)
 
-    return Organization.objects.create(name='org{0}'.format(suffix), mnemonic='org{0}'.format(suffix))
 
-
-def create_source(user, validation_schema=None, organization=None):
+def create_source(user, validation_schema=None, organization=None, name=None):
     suffix = generate_random_string()
 
     source = Source(
-        name="source{0}".format(suffix),
-        mnemonic="source{0}".format(suffix),
-        full_name="Source {0}".format(suffix),
+        name=name if name else "source{0}".format(suffix),
+        mnemonic=name if name else "source{0}".format(suffix),
+        full_name=name if name else "Source {0}".format(suffix),
         source_type='Dictionary',
         public_access=ACCESS_TYPE_EDIT,
         default_locale='en',
@@ -94,7 +108,7 @@ def create_source(user, validation_schema=None, organization=None):
     return Source.objects.get(id=source.id)
 
 
-def create_concept(user, source, names=None):
+def create_concept(user, source, names=None, concept_class=None):
     suffix = generate_random_string()
 
     if names is None:
@@ -104,7 +118,7 @@ def create_concept(user, source, names=None):
         mnemonic='concept{0}'.format(suffix),
         updated_by=user,
         parent=source,
-        concept_class='First',
+        concept_class=concept_class if concept_class else 'First',
         names=names,
         descriptions=[create_localized_text("desc{0}".format(suffix))]
     )

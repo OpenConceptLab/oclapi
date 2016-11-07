@@ -71,7 +71,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -97,7 +97,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -124,7 +124,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps([{
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -138,7 +138,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }]
         }, {
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -165,7 +165,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -183,7 +183,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -209,7 +209,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "Grip",
                 "locale": 'en',
@@ -228,7 +228,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "Grip",
                 "locale": 'en',
@@ -260,7 +260,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -279,7 +279,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "b",
                 "locale": 'en',
@@ -297,7 +297,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -324,7 +324,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -342,7 +342,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "b",
                 "locale": 'en',
@@ -361,7 +361,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "conceptclass",
+            "concept_class": "First",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -497,7 +497,7 @@ class ConceptVersionAllView(ConceptBaseTest):
         self.assertEquals(response_for_page_1.status_code, 200)
         self.assertEquals(len(result), 10)
         self.assertEquals(response_for_page_1._headers.get('num_found')[1], '11')
-        self.assertEquals(ConceptVersion.objects.count(), 12)
+        self.assertEquals(ConceptVersion.objects.exclude(concept_class='Concept Class').count(), 12)
         versioned_object_ids = map(lambda v: v.get('id'), result)
 
         response_for_page_2 = self.client.get(url + '?page=2')
@@ -2307,7 +2307,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
         Concept.persist_new(concept1, self.user1, **kwargs)
 
-        reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
+        reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [reference]
         collection.full_clean()
         collection.save()
@@ -2474,8 +2474,8 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         Concept.persist_new(concept2, self.user1, **kwargs)
 
         references = [
-            '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/',
-            '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[1].mnemonic + '/'
+            '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/',
+            '/orgs/org1/sources/source/concepts/' + concept2.mnemonic + '/'
         ]
         collection.expressions = references
         collection.full_clean()

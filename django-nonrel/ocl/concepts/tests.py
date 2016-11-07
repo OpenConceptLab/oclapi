@@ -17,6 +17,7 @@ from test_helper.base import *
 class ConceptBaseTest(OclApiBaseTestCase):
 
     def setUp(self):
+        super(ConceptBaseTest, self).setUp()
         self.user1 = User.objects.create(
             username='user1',
             password='user1',
@@ -250,6 +251,63 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
 
 class ConceptBasicValidationTest(ConceptBaseTest):
+    def test_concept_class_is_valid_attribute_negative(self):
+        classes_source = Source.objects.get(name="Classes")
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Test")])
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Procedure")])
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Drug")])
+
+        concept = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            parent=self.source1,
+            concept_class='XYZQWERT',
+            names=[
+                LocalizedText.objects.create(name='Grip', locale='es',
+                                             locale_preferred=True, type='FULLY_SPECIFIED'),
+            ]
+        )
+
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+
+        errors = Concept.persist_new(concept, self.user1, **kwargs)
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Concept class should be valid attribute')
+
+    def test_concept_class_is_valid_attribute_positive(self):
+        classes_source = Source.objects.get(name="Classes")
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Test")])
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Procedure")])
+        create_concept(self.user1, classes_source, concept_class="Concept Class",
+                       names=[create_localized_text("Drug")])
+
+        concept = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            parent=self.source1,
+            concept_class='Drug',
+            names=[
+                LocalizedText.objects.create(name='Grip', locale='es',
+                                             locale_preferred=True, type='FULLY_SPECIFIED'),
+            ]
+        )
+
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+
+        errors = Concept.persist_new(concept, self.user1, **kwargs)
+
+        self.assertEquals(0, len(errors))
+
     def test_unique_preferred_name_per_source_positive(self):
         concept1 = Concept(
             mnemonic='concept1',

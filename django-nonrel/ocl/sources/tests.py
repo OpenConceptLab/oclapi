@@ -21,6 +21,7 @@ from users.models import UserProfile
 
 class SourceBaseTest(OclApiBaseTestCase):
     def setUp(self):
+        super(SourceBaseTest, self).setUp()
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -293,7 +294,7 @@ class SourceClassMethodTest(SourceBaseTest):
         )
         errors = Source.persist_new(source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
-        self.assertEquals(2, Source.objects.all().count())
+        self.assertEquals(2, Source.objects.exclude(mnemonic='Classes').count())
 
         self.new_source = Source.objects.get(mnemonic='source2')
         id = self.new_source.id

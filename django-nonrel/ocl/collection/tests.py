@@ -16,6 +16,7 @@ from test_helper.base import *
 
 class CollectionBaseTest(OclApiBaseTestCase):
     def setUp(self):
+        super(CollectionBaseTest, self).setUp()
         self.user1 = User.objects.create(
             username='user1',
             email='user1@test.com',
@@ -157,7 +158,7 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(0, collection.num_versions)
 
     def test_add_concept_reference(self):
-        
+
         kwargs = {
             'parent_resource': self.userprofile1
         }
@@ -174,7 +175,7 @@ class CollectionTest(CollectionBaseTest):
             description='This is the second test collection'
         )
         Collection.persist_new(collection, self.user1, **kwargs)
-        
+
         source = Source(
             name='source',
             mnemonic='source',
@@ -352,7 +353,7 @@ class CollectionTest(CollectionBaseTest):
         }
         Concept.persist_new(concept1, self.user1, **kwargs)
 
-        expression = '/orgs/org1/sources/source/concepts/' + Concept.objects.filter()[0].mnemonic + '/'
+        expression = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [expression]
         collection.full_clean()
         collection.save()
