@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 
 from concepts.custom_validators import OpenMRSConceptValidator
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from sources.models import Source
 
 __author__ = 'misternando'
 
@@ -85,6 +86,8 @@ class ConceptValidationMixin:
     def clean(self):
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
+        if not self.concept_class == 'Concept Class':
+            self._concept_class_should_be_valid_attribute()
 
         if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
@@ -130,3 +133,27 @@ class ConceptValidationMixin:
             filter(lambda n: n.is_fully_specified, self.names))
         if fully_specified_name_count < 1:
             raise ValidationError({'names': ['Concept requires at least one fully specified name']})
+
+    def _concept_class_should_be_valid_attribute(self):
+        from orgs.models import Organization
+        ocl_org_filter = Organization.objects.filter(mnemonic = 'OCL')
+
+        if ocl_org_filter.count() < 1 :
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        org = ocl_org_filter.get()
+        source_classes_filter = Source.objects.filter(parent_id=org.id, mnemonic='Classes')
+
+        if source_classes_filter.count() < 1 :
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        source_classes = source_classes_filter.values_list('id').get()
+
+        from concepts.models import Concept
+        concept_class_list = Concept.objects.filter(parent_id=source_classes[0], is_active=True, retired=False, concept_class='Concept Class')
+
+        concept_class_count = len(
+            filter(lambda n: n.display_name == self.concept_class, concept_class_list))
+
+        if concept_class_count < 1:
+            raise ValidationError({'names': ['Concept class should be valid attribute']})

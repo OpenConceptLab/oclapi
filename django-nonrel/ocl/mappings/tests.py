@@ -58,6 +58,7 @@ class OCLClient(Client):
 class MappingBaseTest(OclApiBaseTestCase):
 
     def setUp(self):
+        super(MappingBaseTest, self).setUp()
         self.user1 = User.objects.create_user(
             username='user1',
             email='user1@test.com',

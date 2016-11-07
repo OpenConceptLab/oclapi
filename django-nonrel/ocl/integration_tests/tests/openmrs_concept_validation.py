@@ -9,7 +9,7 @@ import json
 def open_mrs_concept_template(update=None):
     template = {
         "id": "12399000",
-        "concept_class": "conceptclass",
+        "concept_class": "First",
         "names": [{
             "name": "grip",
             "locale": 'en',
