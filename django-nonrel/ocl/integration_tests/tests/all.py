@@ -21,32 +21,20 @@ from sources.models import Source, SourceVersion
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
-from test_helper.base import create_user, create_source, create_organization
+from test_helper.base import create_user, create_source, create_organization, create_localized_text, create_concept
 
 
 class ConceptCreateViewTest(ConceptBaseTest):
     def setUp(self):
         super(ConceptCreateViewTest, self).setUp()
-        self.concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            external_id='EXTID',
-            names=[self.name],
-        )
+
         display_name = LocalizedText(
             name='concept1',
             locale='en',
-            type = 'FULLY_SPECIFIED'
+            type='FULLY_SPECIFIED'
         )
-        self.concept1.names.append(display_name)
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept1, self.user1, **kwargs)
 
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[display_name])
 
     def test_dispatch_with_head(self):
         self.client.login(username='user1', password='user1')
@@ -80,13 +68,17 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "name": "gribal enfeksiyon",
                 "locale": 'en',
                 "name_type": "special"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-
 
     def test_create_concept_with_more_than_one_preferred_name_in_concept(self):
         self.client.login(username='user1', password='user1')
@@ -108,7 +100,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "locale_preferred": "true",
                 "name_type": "special"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -135,10 +132,19 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "locale_preferred": "true",
                 "name_type": "special"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         }, {
             "id": "12399000",
             "concept_class": "First",
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -149,7 +155,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "locale_preferred": "true",
                 "name_type": "special"
-            }]}])
+            }],
+            "datatype": "None"}])
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
@@ -170,10 +177,16 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "name": "grip",
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
-        responseCreate = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+        responseCreate = self.client.post(reverse('concept-create', kwargs=kwargs), data,
+                                          content_type='application/json')
 
         kwargs = {
             'org': self.org1.mnemonic,
@@ -188,10 +201,16 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "name": "grip",
                 "locale": 'en',
                 "name_type": "ordinary"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
-        responseUpdate = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
+        responseUpdate = self.client.put(reverse('concept-detail', kwargs=kwargs), data,
+                                         content_type='application/json')
 
         self.assertEquals(responseUpdate.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -215,7 +234,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -239,7 +263,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "description": "Gribal Enfeksiyon",
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
-            }]
+            }],
+            "datatype": "None"
         })
 
         response = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
@@ -266,7 +291,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -285,7 +315,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
@@ -303,7 +338,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -330,7 +370,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -348,7 +393,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
@@ -367,12 +417,18 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED",
                 "locale_preferred": "True"
-            }]
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en"
+            }],
+            "datatype": "None"
         })
 
         response = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
     def test_dispatch_with_head_and_versions(self):
         source_version = SourceVersion(
@@ -386,25 +442,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         source_version.full_clean()
         source_version.save()
 
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='not First',
-            external_id='EXTID',
-            names=[self.name],
-        )
-        display_name = LocalizedText(
-            name='concept2',
-            locale='en', type='FULLY_SPECIFIED'
-        )
-        concept2.names.append(display_name)
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(concept2, self.user1, **kwargs)
-
+        (concept2, _) = create_concept(mnemonic='concept2', user=self.user1, source=self.source1)
 
         self.client.login(username='user1', password='user1')
 
@@ -423,7 +461,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
 
 class ConceptVersionAllView(ConceptBaseTest):
-
     def test_collection_concept_version_list(self):
         kwargs = {
             'parent_resource': self.userprofile1
@@ -461,18 +498,8 @@ class ConceptVersionAllView(ConceptBaseTest):
         expressions = []
         for i in range(11):
             mnemonic = 'concept' + str(i)
-            concept = Concept(
-                mnemonic=mnemonic,
-                created_by=self.user1,
-                updated_by=self.user1,
-                parent=source,
-                concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            )
-            kwargs = {
-                'parent_resource': source,
-            }
-            Concept.persist_new(concept, self.user1, **kwargs)
+            create_concept(mnemonic=mnemonic, user=self.user1, source=source)
+
             reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
             expressions += [reference]
             concept = Concept.objects.get(mnemonic=mnemonic)
@@ -509,7 +536,6 @@ class ConceptVersionAllView(ConceptBaseTest):
 
 
 class OCLClient(Client):
-
     def put(self, path, data={}, content_type=MULTIPART_CONTENT,
             follow=False, **extra):
         """
@@ -528,17 +554,17 @@ class OCLClient(Client):
         parsed = urlparse(path)
         r = {
             'CONTENT_LENGTH': len(post_data),
-            'CONTENT_TYPE':   content_type,
-            'PATH_INFO':      self._get_path(parsed),
-            'QUERY_STRING':   force_str(parsed[4]),
+            'CONTENT_TYPE': content_type,
+            'PATH_INFO': self._get_path(parsed),
+            'QUERY_STRING': force_str(parsed[4]),
             'REQUEST_METHOD': str('PUT'),
-            'wsgi.input':     FakePayload(post_data),
+            'wsgi.input': FakePayload(post_data),
         }
         r.update(extra)
         return self.request(**r)
 
-class MappingCreateViewTest(MappingBaseTest):
 
+class MappingCreateViewTest(MappingBaseTest):
     def test_mappings_create_negative__no_params(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -754,6 +780,7 @@ class MappingCreateViewTest(MappingBaseTest):
         self.assertEquals(response.status_code, 201)
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
 
+
 class MappingViewsTest(MappingBaseTest):
     client_class = OCLClient
 
@@ -893,6 +920,7 @@ class MappingViewsTest(MappingBaseTest):
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
 
+
     def test_mappings_list_positive(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -902,6 +930,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
+
 
     def test_mappings_list_positive__latest_version(self):
         mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping4.id)
@@ -921,7 +950,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping_version.get_to_concept_code(), content['to_concept_code'])
         self.assertEquals(mapping_version.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping_version.to_concept_url, content['to_concept_url'])
-        self.assertEquals(self.mapping4.url, content['url'])# in case of HEAD, main will be fetched
+        self.assertEquals(self.mapping4.url, content['url'])  # in case of HEAD, main will be fetched
 
     @skip("need to adapt for mapping versions")
     def test_mappings_list_positive__explicit_version(self):
@@ -946,6 +975,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
+
     def test_mappings_list_positive__contains_head_length(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -956,6 +986,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
+
 
     def test_mappings_list_positive__user_owner(self):
         self.client.login(username='user1', password='user1')
@@ -991,6 +1022,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
+
     def test_mappings_list_positive__contains_head_with_user(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -1002,6 +1034,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
+
 
     def test_mappings_list_positive__org_owner(self):
         mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping3.id)
@@ -1047,6 +1080,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
+
     def test_mappings_list_positive__contains_head(self):
         self.client.login(username='user2', password='user2')
         kwargs = {
@@ -1060,6 +1094,7 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(1, len(content))
         self.assertEquals(1, int(content[0].get('version')))
         self.assertTrue(content[0].get('is_latest_version'))
+
 
     def test_mappings_get_positive(self):
         self.client.login(username='user1', password='user1')
@@ -1185,7 +1220,7 @@ class MappingViewsTest(MappingBaseTest):
         }
         data = {
             'map_type': 'Something Else',
-            'update_comment':'test update'
+            'update_comment': 'test update'
         }
         response = self.client.put(
             reverse('mapping-detail', kwargs=kwargs), data, content_type=MULTIPART_CONTENT)
@@ -1458,9 +1493,9 @@ class MappingViewsTest(MappingBaseTest):
         content = json.loads(response.content)
         self.assertEquals(5, len(content))
 
+
 class SourceViewTest(SourceBaseTest):
     def test_update_source_head(self):
-
         source = Source(
             name='source',
             mnemonic='source12',
@@ -1493,16 +1528,16 @@ class SourceViewTest(SourceBaseTest):
                          content_type="application/json")
         self.assertEquals(response.status_code, 200)
 
-        head=source.get_head()
-        self.assertEquals(head.mnemonic,'HEAD')
+        head = source.get_head()
+        self.assertEquals(head.mnemonic, 'HEAD')
         self.assertEquals(head.website, 'https://www.uno.com/')
         self.assertEquals(head.description, 'test desc')
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
-        self.assertEquals(head.full_name,'test_updated_name')
+        self.assertEquals(head.full_name, 'test_updated_name')
+
 
 class CollectionViewTest(CollectionBaseTest):
     def test_update_source_head(self):
-
         collection = Collection(
             name='col1',
             mnemonic='col1',
@@ -1535,12 +1570,12 @@ class CollectionViewTest(CollectionBaseTest):
                          content_type="application/json")
         self.assertEquals(response.status_code, 200)
 
-        head=collection.get_head()
-        self.assertEquals(head.mnemonic,'HEAD')
+        head = collection.get_head()
+        self.assertEquals(head.mnemonic, 'HEAD')
         self.assertEquals(head.website, 'https://www.uno.com/')
         self.assertEquals(head.description, 'test desc')
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
-        self.assertEquals(head.full_name,'test_updated_name')
+        self.assertEquals(head.full_name, 'test_updated_name')
 
 
 class SourceVersionViewTest(SourceBaseTest):
@@ -1576,12 +1611,12 @@ class SourceVersionViewTest(SourceBaseTest):
 
         self.client.login(username='user1', password='user1')
 
-        response = self.client.get(reverse('sourceversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}))
+        response = self.client.get(
+            reverse('sourceversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}))
         self.assertEquals(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEquals(result['id'], 'version2')
         self.assertEquals(result['released'], True)
-
 
     def test_new_version_with_duplicate_id_409_received(self):
         source = Source(
@@ -1614,9 +1649,9 @@ class SourceVersionViewTest(SourceBaseTest):
 
         self.client.login(username='user1', password='user1')
         data = {
-            'id':'version1',
-            'description':'desc',
-            'previous_version':'HEAD'
+            'id': 'version1',
+            'description': 'desc',
+            'previous_version': 'HEAD'
         }
         response = self.client.post(
             reverse('sourceversion-list', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}), data)
@@ -1624,7 +1659,6 @@ class SourceVersionViewTest(SourceBaseTest):
 
 
 class SourceVersionExportViewTest(SourceBaseTest):
-
     @mock_s3
     def test_source_version_concept_seeding(self):
         c = Client()
@@ -1648,11 +1682,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         Source.persist_new(source, self.user1, **kwargs)
 
         kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
-
-        concept2 = Concept(mnemonic='concept2', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
-        Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+        (concept2, _) = create_concept(mnemonic='concept2', user=self.user1, source=source)
 
         mapping = Mapping(
             parent=source,
@@ -1668,8 +1699,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         response = c.post('/orgs/' + self.org1.name + '/sources/' + source.mnemonic + '/versions/',
-            {'id': 'v1', 'description': 'v1' }
-        )
+                          {'id': 'v1', 'description': 'v1'}
+                          )
         source_version = SourceVersion.objects.get(mnemonic='v1')
 
         self.assertEquals(response.status_code, 201)
@@ -1705,9 +1736,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         source_version.full_clean()
         source_version.save()
         kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
@@ -1749,9 +1779,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         source_version.full_clean()
         source_version.save()
         kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
@@ -1792,9 +1820,9 @@ class SourceVersionExportViewTest(SourceBaseTest):
         )
         source_version.full_clean()
         source_version.save()
-        kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
         c = Client()
         kwargs = {
             'org': self.org1.mnemonic,
@@ -1848,9 +1876,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         )
         source_version1.full_clean()
         source_version1.save()
-        kwargs = {'parent_resource': source1}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source1)
         c = Client()
 
         kwargs = {
@@ -1908,9 +1935,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         )
         source_version1.full_clean()
         source_version1.save()
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source1, concept_class='First', names=[self.name])
-        Concept.persist_new(concept1, self.user1, **{'parent_resource': source1})
-        Concept.persist_new(concept1, self.user1, **{'parent_resource': source2})
+        create_concept(mnemonic='concept1', user=self.user1, source=source1)
+        create_concept(mnemonic='concept1', user=self.user1, source=source2)
         c = Client()
 
         kwargs = {
@@ -1920,7 +1946,6 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         response = c.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 204)
-
 
     @mock_s3
     def test_post_with_head(self):
@@ -1941,10 +1966,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
@@ -1975,10 +1998,8 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        kwargs = {'parent_resource': source}
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
         c = Client()
         c.post('/login/', {'username': 'user1', 'password': 'user1'})
 
@@ -2231,7 +2252,6 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         response = c.post(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 405)
 
-
     @mock_s3
     def test_get_head(self):
         collection = Collection(
@@ -2294,18 +2314,11 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
+        (concept1, _) = create_concept(
             mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            user=self.user1,
+            source=source,
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
 
         reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [reference]
@@ -2373,18 +2386,8 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         expressions = []
         for i in range(11):
             mnemonic = 'concept1' + str(i)
-            concept1 = Concept(
-                mnemonic=mnemonic,
-                created_by=self.user1,
-                updated_by=self.user1,
-                parent=source,
-                concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            )
-            kwargs = {
-                'parent_resource': source,
-            }
-            Concept.persist_new(concept1, self.user1, **kwargs)
+
+            (concept1, _) = create_concept(mnemonic=mnemonic, user=self.user1, source=source)
             reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
             expressions += [reference]
             expected_references += [{'reference_type': 'concepts', 'expression': reference}]
@@ -2411,7 +2414,6 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         response = c.get(path + '?page=2')
         self.assertEquals(response.status_code, 200)
         self.assertJSONEqual(response.content, [expected_references[10]])
-
 
     def test_reference_sorting(self):
         kwargs = {
@@ -2447,31 +2449,17 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
+        (concept1, _) = create_concept(
             mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            user=self.user1,
+            source=source,
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
 
-        concept2 = Concept(
+        (concept2, _) = create_concept(
             mnemonic='concept2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='Second',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            user=self.user1,
+            source=source,
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept2, self.user1, **kwargs)
 
         references = [
             '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/',
@@ -2553,28 +2541,18 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         for i in range(11):
             mnemonic = 'concept1' + str(i)
-            concept1 = Concept(
-                mnemonic=mnemonic,
-                created_by=self.user1,
-                updated_by=self.user1,
-                parent=source,
-                concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            )
-            kwargs = {
-                'parent_resource': source,
-            }
-            Concept.persist_new(concept1, self.user1, **kwargs)
+
+            create_concept(mnemonic=mnemonic, user=self.user1, source=source)
 
         c = Client()
         response = c.put(
             reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic}),
             json.dumps({
                 'data': {
-                'concepts': '*',
-                'mappings': [],
-                'uri': '/orgs/org1/sources/source/HEAD/'
-            }}),
+                    'concepts': '*',
+                    'mappings': [],
+                    'uri': '/orgs/org1/sources/source/HEAD/'
+                }}),
             'application/json'
         )
         collection = Collection.objects.get(id=collection.id)
@@ -2617,44 +2595,9 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='c1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
-
-        concept2 = Concept(
-            mnemonic='c2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept2, self.user1, **kwargs)
-
-        concept3 = Concept(
-            mnemonic='c3',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept3, self.user1, **kwargs)
+        (concept1, _) = create_concept(mnemonic='c1', user=self.user1, source=source)
+        (concept2, _) = create_concept(mnemonic='c2', user=self.user1, source=source)
+        (concept3, _) = create_concept(mnemonic='c3', user=self.user1, source=source)
 
         mapping1 = Mapping(
             parent=source,
@@ -2685,10 +2628,10 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic}),
             json.dumps({
                 'data': {
-                'concepts': [concept1.uri],
-                'mappings': '*',
-                'uri': '/orgs/org1/sources/source/HEAD/'
-            }}),
+                    'concepts': [concept1.uri],
+                    'mappings': '*',
+                    'uri': '/orgs/org1/sources/source/HEAD/'
+                }}),
             'application/json'
         )
         collection = Collection.objects.get(id=collection.id)
@@ -2726,12 +2669,12 @@ class CollectionVersionViewTest(SourceBaseTest):
 
         self.client.login(username='user1', password='user1')
 
-        response = self.client.get(reverse('collectionversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}))
+        response = self.client.get(reverse('collectionversion-latest-detail',
+                                           kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}))
         self.assertEquals(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEquals(result['id'], 'version2')
         self.assertEquals(result['released'], True)
-
 
     def test_new_version_with_duplicate_id_409_received(self):
         collection = Collection(
@@ -2765,8 +2708,10 @@ class CollectionVersionViewTest(SourceBaseTest):
             'previous_version': 'HEAD'
         }
         response = self.client.post(reverse('collectionversion-list',
-                                           kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}), data)
+                                            kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}),
+                                    data)
         self.assertEquals(response.status_code, 409)
+
 
 class SourceDeleteViewTest(SourceBaseTest):
     def setUp(self):
@@ -2782,39 +2727,14 @@ class SourceDeleteViewTest(SourceBaseTest):
             supported_locales=['en'],
             website='www.source1.com',
             description='This is the first test source',
-            )
+        )
         kwargs = {
             'parent_resource': self.org1,
         }
         Source.persist_new(self.source1, self.org1, **kwargs)
 
-        self.concept1 = Concept(
-            mnemonic='1',
-            created_by=self.org1,
-            updated_by=self.org1,
-            parent=self.source1,
-            concept_class='Diagnosis',
-            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept1, self.org1, **kwargs)
-
-        self.concept2 = Concept(
-            mnemonic='2',
-            created_by=self.org1,
-            updated_by=self.org1,
-            parent=self.source1,
-            concept_class='Diagnosis',
-            external_id='2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept2, self.org1, **kwargs)
+        (self.concept1, _) = create_concept(mnemonic='1', user=self.org1, source=self.source1)
+        (self.concept2, _) = create_concept(mnemonic='2', user=self.org1, source=self.source1)
 
         self.mapping = Mapping(
             parent=self.source1,
@@ -2851,6 +2771,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         )
         CollectionVersion.persist_new(self.collection_version)
 
+
     def test_delete_source_with_referenced_mapping_in_collection(self):
         self.collection.expressions = [self.mapping.uri]
         self.collection.full_clean()
@@ -2861,7 +2782,9 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('This source cannot be deleted because others have created mapping or references that point to it.' in message)
+        self.assertTrue(
+            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+
 
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
@@ -2873,7 +2796,9 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('This source cannot be deleted because others have created mapping or references that point to it.' in message)
+        self.assertTrue(
+            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(
@@ -2886,25 +2811,13 @@ class SourceDeleteViewTest(SourceBaseTest):
             supported_locales=['en'],
             website='www.source1.com',
             description='This is the first test source',
-            )
+        )
         kwargs = {
             'parent_resource': self.org1,
         }
         Source.persist_new(self.source2, self.org1, **kwargs)
 
-        self.concept3 = Concept(
-            mnemonic='3',
-            created_by=self.org1,
-            updated_by=self.org1,
-            parent=self.source2,
-            concept_class='Diagnosis',
-            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': self.source2,
-        }
-        Concept.persist_new(self.concept3, self.org1, **kwargs)
+        (self.concept3, _) = create_concept(mnemonic='3', user=self.org1, source=self.source2)
 
         self.mapping2 = Mapping(
             parent=self.source2,

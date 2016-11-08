@@ -23,7 +23,8 @@ def open_mrs_concept_template(update=None):
         }],
         "descriptions": [
             {"description": "description", "locale": "en"}
-        ]}
+        ],
+        "datatype": "None"}
 
     if update:
         template.update(update)
