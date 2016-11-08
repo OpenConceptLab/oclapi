@@ -720,10 +720,7 @@ class SourceVersionTest(SourceBaseTest):
         )
         Source.persist_new(source, self.user1, parent_resource=self.org1)
 
-        (concept1, errors) = create_concept(mnemonic='concept1', user=self.user1, source=source)
-
-        # concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name], datatype="None", descriptions=[self.name])
-        # Concept.persist_new(concept1, self.user1, parent_resource = source)
+        create_concept(mnemonic='concept1', user=self.user1, source=source)
 
         source_version = SourceVersion.get_latest_version_of(source)
         self.assertEquals(source_version.last_child_update, source_version.last_concept_update)

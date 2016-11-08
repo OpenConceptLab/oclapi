@@ -240,20 +240,9 @@ class ConceptTest(ConceptBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            descriptions=[self.name],
-            datatype="None"
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
+
+
         concept = Concept.objects.get(mnemonic=concept1.mnemonic)
         concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
@@ -269,24 +258,11 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, classes_source, concept_class="Concept Class",
                        names=[create_localized_text("Drug")])
 
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='XYZQWERT',
-            datatype="None",
-            descriptions=[self.name],
-            names=[
-                LocalizedText.objects.create(name='Grip', locale='es',
-                                             locale_preferred=True, type='FULLY_SPECIFIED'),
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='XYZQWERT',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0], 'Concept class should be valid attribute')
@@ -300,24 +276,9 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, classes_source, concept_class="Concept Class",
                        names=[create_localized_text("Drug")])
 
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='Drug',
-            datatype="None",
-            descriptions=[self.name],
-            names=[
-                LocalizedText.objects.create(name='Grip', locale='es',
-                                             locale_preferred=True, type='FULLY_SPECIFIED'),
-            ]
-        )
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Drug', source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es', locale_preferred=True, type='FULLY_SPECIFIED')])
 
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
 
         self.assertEquals(0, len(errors))
 
@@ -544,21 +505,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         version2.save()
         self.assertEquals(0, len(version2.concepts))
 
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-            descriptions=[self.name],
-            datatype="None"
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-            'parent_resource_version': version1
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
+
         self.assertEquals(0, len(errors))
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
@@ -583,20 +531,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
     def test_retire_positive(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-            descriptions=[self.name],
-            datatype="None"
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
+
         self.assertEquals(0, len(errors))
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
