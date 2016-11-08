@@ -7,10 +7,9 @@ from test_helper.base import create_user, create_source, create_concept
 
 class OpenMRSMappingCreateTest(MappingBaseTest):
     def test_create_mapping_duplicate_mapping_between_two_concepts(self):
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-        concept1 = create_concept(self.user1, source)
-        concept2 = create_concept(self.user1, source)
+        (concept1, _) = create_concept(user=self.user1, source=source)
+        (concept2, _) = create_concept(user=self.user1, source=source)
 
         self.client.login(username='user1', password='user1')
 

@@ -84,6 +84,7 @@ class DictionaryItemMixin(object):
 
 class ConceptValidationMixin:
     def clean(self):
+        self._requires_at_least_one_description()
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
         if not self.concept_class == 'Concept Class':
@@ -157,3 +158,8 @@ class ConceptValidationMixin:
 
         if concept_class_count < 1:
             raise ValidationError({'names': ['Concept class should be valid attribute']})
+
+    def _requires_at_least_one_description(self):
+        if (not self.descriptions) or len(self.descriptions) < 1:
+            raise ValidationError({'names': ['Concept requires at least one description']})
+

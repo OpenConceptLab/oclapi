@@ -98,7 +98,7 @@ class SourceVersion(ConceptContainerVersionModel):
             self.concepts = list(seed_concepts_from.concepts)
 
     def head_sibling(self):
-        try :
+        try:
             return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
         except Exception as e:
             return None

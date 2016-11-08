@@ -10,7 +10,7 @@ from mappings.models import MappingVersion
 from mappings.tests import MappingBaseTest
 from sources.models import SourceVersion
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
-from test_helper.base import create_source, create_user
+from test_helper.base import create_source, create_user, create_concept
 
 
 class BulkConceptImporterTest(ConceptBaseTest):
@@ -43,18 +43,8 @@ class BulkConceptImporterTest(ConceptBaseTest):
         self.assertEquals(5, ConceptVersion.objects.exclude(concept_class='Concept Class').count())
 
     def test_update_concept_with_invalid_record(self):
-        concept = Concept(
-            mnemonic='1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='Diagnosis',
-            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[self.name])
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, _) = create_concept(mnemonic='1', user=self.user1, source=self.source1, names=[self.name])
+
         self.testfile = open('./integration_tests/fixtures/concept_without_fully_specified_name.json', 'rb')
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
@@ -109,18 +99,7 @@ class ConceptImporterTest(ConceptBaseTest):
 
     def test_import_job_for_change_in_data(self):
         stdout_stub = TestStream()
-        concept = Concept(
-            mnemonic='1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='Diagnosis',
-            external_id='1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-            names=[self.name])
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        create_concept(mnemonic='1', user=self.user1, source=self.source1)
 
         importer = ConceptsImporter(self.source1, self.testfile, 'test', stdout_stub, TestStream())
         importer.import_concepts(total=1)
@@ -130,8 +109,7 @@ class ConceptImporterTest(ConceptBaseTest):
         latest_concept_version = [version for version in all_concept_versions if version.previous_version][0]
 
         self.assertEquals(len(latest_concept_version.names), 4)
-        self.assertTrue((
-                        'Updated concept, replacing version ID ' + latest_concept_version.previous_version.id) in stdout_stub.getvalue())
+        self.assertTrue(('Updated concept, replacing version ID ' + latest_concept_version.previous_version.id) in stdout_stub.getvalue())
         self.assertTrue('concepts of 1 1 - 1 updated' in stdout_stub.getvalue())
 
 

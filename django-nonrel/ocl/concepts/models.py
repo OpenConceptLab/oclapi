@@ -53,8 +53,8 @@ CONCEPT_TYPE = 'Concept'
 
 class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin):
     external_id = models.TextField(null=True, blank=True)
-    concept_class = models.TextField()
-    datatype = models.TextField(null=True, blank=True)
+    concept_class = models.TextField(null=False, blank=False)
+    datatype = models.TextField(null=False, blank=False)
     names = ListField(EmbeddedModelField(LocalizedText))
     descriptions = ListField(EmbeddedModelField(LocalizedText))
     retired = models.BooleanField(default=False)

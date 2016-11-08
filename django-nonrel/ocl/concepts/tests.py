@@ -9,13 +9,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from concepts.views import ConceptVersionListView
-from oclapi.models import ACCESS_TYPE_VIEW
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
 
 
 class ConceptBaseTest(OclApiBaseTestCase):
-
     def setUp(self):
         super(ConceptBaseTest, self).setUp()
         self.user1 = User.objects.create(
@@ -78,19 +76,15 @@ class ConceptBaseTest(OclApiBaseTestCase):
         self.name = LocalizedText.objects.create(name='Fred', locale='es', type='FULLY_SPECIFIED')
         self.description = LocalizedText.objects.create(name='guapo', locale='es')
 
-class ConceptTest(ConceptBaseTest):
 
+class ConceptTest(ConceptBaseTest):
     def test_create_concept_positive(self):
-        concept = Concept(
+        (concept, errors) = create_concept(
             mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
+            user=self.user1,
+            source=self.source1,
+            names=[self.name]
         )
-        concept.full_clean()
-        concept.save()
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertFalse(concept.retired)
@@ -98,7 +92,7 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.name.locale, concept.display_locale)
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
-        self.assertEquals(0, concept.num_versions)
+        self.assertEquals(1, concept.num_versions)
 
     def test_create_concept_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
@@ -108,6 +102,8 @@ class ConceptTest(ConceptBaseTest):
                 parent=self.source1,
                 concept_class='First',
                 names=[self.name],
+                descriptions=[self.name],
+                datatype="None"
             )
             concept.full_clean()
             concept.save()
@@ -120,6 +116,8 @@ class ConceptTest(ConceptBaseTest):
                 updated_by=self.user1,
                 concept_class='First',
                 names=[self.name],
+                descriptions=[self.name],
+                datatype="None"
             )
             concept.full_clean()
             concept.save()
@@ -132,6 +130,8 @@ class ConceptTest(ConceptBaseTest):
                 updated_by=self.user1,
                 parent=self.source1,
                 names=[self.name],
+                descriptions=[self.name],
+                datatype="None"
             )
             concept.full_clean()
             concept.save()
@@ -144,6 +144,8 @@ class ConceptTest(ConceptBaseTest):
             parent=self.source1,
             concept_class='First',
             names=[self.name],
+            descriptions=[self.name],
+            datatype="None"
         )
         display_name = LocalizedText(
             name='concept1',
@@ -170,18 +172,20 @@ class ConceptTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             concept_class='First',
+            descriptions=[self.name],
+            datatype="None"
         )
         display_name1 = LocalizedText(
             name='concept1',
             locale='en',
             locale_preferred=True,
-            type = 'FULLY_SPECIFIED'
+            type='FULLY_SPECIFIED'
         )
         concept.names.append(display_name1)
         display_name2 = LocalizedText(
             name='le concept1',
             locale='fr',
-            type = 'FULLY_SPECIFIED'
+            type='FULLY_SPECIFIED'
         )
         concept.names.append(display_name2)
         concept.full_clean()
@@ -205,6 +209,8 @@ class ConceptTest(ConceptBaseTest):
             public_access=public_access,
             concept_class='First',
             names=[self.name],
+            descriptions=[self.name],
+            datatype="None"
         )
         concept.full_clean()
         concept.save()
@@ -240,7 +246,9 @@ class ConceptTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=source,
             concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type = 'FULLY_SPECIFIED')],
+            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            descriptions=[self.name],
+            datatype="None"
         )
         kwargs = {
             'parent_resource': source,
@@ -249,6 +257,7 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept.objects.get(mnemonic=concept1.mnemonic)
         concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
+
 
 class ConceptBasicValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_negative(self):
@@ -265,6 +274,8 @@ class ConceptBasicValidationTest(ConceptBaseTest):
             created_by=self.user1,
             parent=self.source1,
             concept_class='XYZQWERT',
+            datatype="None",
+            descriptions=[self.name],
             names=[
                 LocalizedText.objects.create(name='Grip', locale='es',
                                              locale_preferred=True, type='FULLY_SPECIFIED'),
@@ -294,6 +305,8 @@ class ConceptBasicValidationTest(ConceptBaseTest):
             created_by=self.user1,
             parent=self.source1,
             concept_class='Drug',
+            datatype="None",
+            descriptions=[self.name],
             names=[
                 LocalizedText.objects.create(name='Grip', locale='es',
                                              locale_preferred=True, type='FULLY_SPECIFIED'),
@@ -309,208 +322,95 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_unique_preferred_name_per_source_positive(self):
-        concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText(name='Concept Unique Preferred Name 1', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText(name='Concept Unique Preferred Name 2', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors1 = Concept.persist_new(concept1, self.user1, **kwargs)
-        errors2 = Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText(name='Concept Unique Preferred Name 1', locale_preferred=True, type='FULLY_SPECIFIED')
+        ])
+        (concept2, errors2) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText(name='Concept Unique Preferred Name 2', locale_preferred=True, type='FULLY_SPECIFIED')
+        ])
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(0, len(errors2))
 
     def test_duplicate_preferred_name_per_source_should_fail(self):
-        concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors1 = Concept.persist_new(concept1, self.user1, **kwargs)
-        errors2 = Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=True,
+                                         type='FULLY_SPECIFIED')
+        ])
+        (concept2, errors2) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=True,
+                                         type='FULLY_SPECIFIED')
+        ])
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
         self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
 
     def test_duplicate_preferred_name_per_source_should_pass_if_not_preferred(self):
-        concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='en', locale_preferred=False, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors1 = Concept.persist_new(concept1, self.user1, **kwargs)
-        errors2 = Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=True,
+                                         type='FULLY_SPECIFIED')
+        ])
+        (concept2, errors2) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale_preferred=False,
+                                         type='FULLY_SPECIFIED')
+        ])
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(0, len(errors2))
 
     def test_unique_preferred_name_per_locale_within_concept_negative(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED'),
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED'),
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es',
+                                         locale_preferred=True, type='FULLY_SPECIFIED'),
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es',
+                                         locale_preferred=True, type='FULLY_SPECIFIED'),
+        ])
 
         self.assertEquals(1, len(errors))
 
     def test_unique_preferred_name_per_locale_within_concept_positive(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='en', locale_preferred=True, type='FULLY_SPECIFIED'),
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED'),
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='en',
+                                         locale_preferred=True, type='FULLY_SPECIFIED'),
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es',
+                                         locale_preferred=True, type='FULLY_SPECIFIED'),
+        ])
 
         self.assertEquals(0, len(errors))
 
     def test_unique_preferred_name_per_locale_within_source_negative(self):
-        concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
+        (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name',
+                                         locale='es', locale_preferred=True,
+                                         type='FULLY_SPECIFIED')
+        ])
 
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es', locale_preferred=True, type='FULLY_SPECIFIED')
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors1 = Concept.persist_new(concept1, self.user1, **kwargs)
-        errors2 = Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept2, errors2) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Concept Non Unique Preferred Name', locale='es',
+                                         locale_preferred=True, type='FULLY_SPECIFIED')
+        ])
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
         self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
 
     def test_at_least_one_fully_specified_name_per_concept_negative(self):
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[
-                LocalizedText.objects.create(name='Fully Specified Name 1', type='SYNONYM'),
-                LocalizedText.objects.create(name='Fully Specified Name 2', type='SYNONYM')
-            ]
-        )
-
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Fully Specified Name 1', type='Short'),
+            LocalizedText.objects.create(name='Fully Specified Name 2', type='Short')
+        ])
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0], 'Concept requires at least one fully specified name')
 
-class ConceptClassMethodsTest(ConceptBaseTest):
 
+class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_positive(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
+
         self.assertEquals(0, len(errors))
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
@@ -530,20 +430,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(concept_version.mnemonic, concept_version.id)
 
     def test_persist_new_negative__no_owner(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, None, **kwargs)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=None, source=self.source1)
+
         self.assertEquals(1, len(errors))
         self.assertTrue('created_by' in errors)
 
@@ -554,17 +445,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(0, len(source_version.concepts))
 
     def test_persist_new_negative__no_parent(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        errors = Concept.persist_new(concept, self.user1)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=None)
+
         self.assertEquals(1, len(errors))
         self.assertTrue('parent' in errors)
 
@@ -574,21 +459,12 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(0, len(source_version.concepts))
 
-    def test_persist_new_negative__repeated_mnemonic(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
+    def test_persist_new_negative_repeated_mnemonic(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
+
         self.assertEquals(0, len(errors))
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
@@ -606,18 +482,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertTrue(concept_version.id in source_version.concepts)
 
         # Repeat with same mnemonic
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
+
         self.assertEquals(1, len(errors))
         self.assertTrue('__all__' in errors)
         self.assertEquals(0, concept.num_versions)
@@ -626,20 +492,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(1, len(source_version.concepts))
 
     def test_persist_new_positive__repeated_mnemonic(self):
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.concepts))
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
+
         self.assertEquals(0, len(errors))
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
@@ -658,20 +515,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertTrue(concept_version.id in source_version.concepts)
 
         # Repeat with same mnemonic, different parent
-        concept = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source2,
-            concept_class='First',
-            names=[self.name],
-        )
         source_version = SourceVersion.get_latest_version_of(self.source2)
         self.assertEquals(0, len(source_version.concepts))
-        kwargs = {
-            'parent_resource': self.source2,
-        }
-        errors = Concept.persist_new(concept, self.user1, **kwargs)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source2, names=[self.name])
+
         self.assertEquals(0, len(errors))
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
@@ -703,6 +551,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             parent=self.source1,
             concept_class='First',
             names=[self.name],
+            descriptions=[self.name],
+            datatype="None"
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -740,6 +590,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
             parent=self.source1,
             concept_class='First',
             names=[self.name],
+            descriptions=[self.name],
+            datatype="None"
         )
         kwargs = {
             'parent_resource': self.source1,
@@ -787,40 +639,25 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
 
 class ConceptVersionTest(ConceptBaseTest):
-
     def setUp(self):
         super(ConceptVersionTest, self).setUp()
-        self.concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            external_id='EXTID',
-            names=[self.name],
-        )
+
         display_name = LocalizedText(
             name='concept1',
             locale='en',
         )
-        self.concept1.names.append(display_name)
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept1, self.user1, **kwargs)
-
-        self.concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='Second',
-            names=[self.name],
+        (self.concept1, errors) = create_concept(
+            mnemonic='concept1',
+            user=self.user1,
+            source=self.source1,
+            names=[self.name, display_name]
         )
-        kwargs = {
-            'parent_resource': self.source2,
-        }
-        Concept.persist_new(self.concept2, self.user1, **kwargs)
+        (self.concept2, errors) = create_concept(
+            mnemonic='concept1',
+            user=self.user1,
+            source=self.source1,
+            names=[self.name]
+        )
 
     def test_create_concept_version_positive(self):
         self.assertEquals(1, self.concept1.num_versions)
@@ -832,6 +669,7 @@ class ConceptVersionTest(ConceptBaseTest):
             created_by=self.user1.username,
             updated_by=self.user1.username,
             version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")]
         )
         concept_version.full_clean()
         concept_version.save()
@@ -855,6 +693,7 @@ class ConceptVersionTest(ConceptBaseTest):
                 versioned_object=self.concept1,
                 concept_class='First',
                 names=[self.name],
+                descriptions=[self.name]
             )
             concept_version.full_clean()
             concept_version.save()
@@ -865,6 +704,7 @@ class ConceptVersionTest(ConceptBaseTest):
                 mnemonic='version1',
                 versioned_object=self.concept1,
                 names=[self.name],
+                descriptions=[self.name]
             )
             concept_version.full_clean()
             concept_version.save()
@@ -876,6 +716,7 @@ class ConceptVersionTest(ConceptBaseTest):
             versioned_object=self.concept1,
             concept_class='First',
             names=self.concept1.names,
+            descriptions=[self.name],
             created_by=self.user1.username,
             updated_by=self.user1.username,
             version_created_by=self.user1.username,
@@ -928,6 +769,7 @@ class ConceptVersionTest(ConceptBaseTest):
             created_by=self.user1.username,
             updated_by=self.user1.username,
             version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")]
         )
         concept_version.full_clean()
         concept_version.save()
@@ -979,34 +821,10 @@ class ConceptVersionTest(ConceptBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic="concept12", user=self.user1, source=source)
+        (another_concept, errors) = create_concept(mnemonic="anotherConcept", user=self.user1, source=source)
 
-        anotherConcept = Concept(
-            mnemonic='anotherConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(anotherConcept, self.user1, **kwargs)
-
-        another_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
-            mnemonic=anotherConcept.mnemonic).mnemonic + '/'
+        another_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=another_concept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
             mnemonic=concept1.mnemonic).mnemonic + '/'
 
@@ -1016,7 +834,8 @@ class ConceptVersionTest(ConceptBaseTest):
         collection.full_clean()
         collection.save()
 
-        concept_version = ConceptVersion.objects.get(versioned_object_id=Concept.objects.get(mnemonic=concept1.mnemonic).id)
+        concept_version = ConceptVersion.objects.get(
+            versioned_object_id=Concept.objects.get(mnemonic=concept1.mnemonic).id)
 
         self.assertEquals(concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
@@ -1054,18 +873,8 @@ class ConceptVersionTest(ConceptBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
+
         initial_concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
         references = [concept1.uri, initial_concept_version.uri]
 
@@ -1113,18 +922,8 @@ class ConceptVersionTest(ConceptBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
+
         initial_concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
         ConceptVersion.persist_clone(initial_concept_version.clone(), self.user1)
         new_concept_version = ConceptVersion.objects.filter(versioned_object_id=concept1.id).order_by('-created_at')[0]
@@ -1170,31 +969,9 @@ class ConceptVersionTest(ConceptBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
 
-        another_concept = Concept(
-            mnemonic='anotherConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(another_concept, self.user1, **kwargs)
+        (another_concept, errors) = create_concept(mnemonic='anotherConcept', user=self.user1, source=source)
 
         another_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
             mnemonic=another_concept.mnemonic).mnemonic + '/'
@@ -1213,22 +990,26 @@ class ConceptVersionTest(ConceptBaseTest):
         version = CollectionVersion.for_base_object(collection, 'version1')
         kwargs = {}
         CollectionVersion.persist_new(version, **kwargs)
-        self.assertEquals(concept_version.collection_version_ids, [CollectionVersion.objects.get(mnemonic='version1').id])
+        self.assertEquals(concept_version.collection_version_ids,
+                          [CollectionVersion.objects.get(mnemonic='version1').id])
+
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
-
     def setUp(self):
         super(ConceptVersionStaticMethodsTest, self).setUp()
-        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
-        display_name = LocalizedText(name='concept1', locale='en', type = 'FULLY_SPECIFIED')
+        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT, datatype="None",
+                                descriptions=[create_localized_text("aDescription")])
+        display_name = LocalizedText(name='concept1', locale='en', type='FULLY_SPECIFIED')
+
         self.concept1.names.append(display_name)
         kwargs = {
             'parent_resource': self.source1,
         }
-        Concept.persist_new(self.concept1, self.user1, **kwargs)
+        errors = Concept.persist_new(self.concept1, self.user1, **kwargs)
+
         initial_version = ConceptVersion.get_latest_version_of(self.concept1)
 
-        self.concept2 = Concept(mnemonic='concept2', concept_class='Second', names=[self.name])
+        self.concept2 = Concept(mnemonic='concept2', concept_class='Second', names=[self.name], descriptions=[create_localized_text("aDescription")])
         kwargs = {
             'parent_resource': self.source2,
         }
@@ -1243,6 +1024,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
             created_by=self.user1.username,
             updated_by=self.user1.username,
             version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")], datatype="None"
         )
         self.concept_version.full_clean()
         self.concept_version.save()
@@ -1315,13 +1097,16 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
 class ConceptVersionListViewTest(ConceptBaseTest):
     def test_get_csv_rows(self):
-        concept = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT)
         display_name = LocalizedText(name='concept1', locale='en', type='FULLY_SPECIFIED')
-        concept.names.append(display_name)
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+
+        (concept, _) = create_concept(
+            mnemonic='concept1',
+            source=self.source1,
+            user=self.user1,
+            names=[display_name],
+            descriptions=[display_name]
+        )
+
         concept_version = concept.get_latest_version
 
         view = ConceptVersionListView()
@@ -1331,19 +1116,14 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         csv_rows = view.get_csv_rows()
         self.assertEquals(len(csv_rows), 1)
         self.assertEquals(csv_rows[0].get('Retired'), False)
-        self.assertEquals(csv_rows[0].get('Datatype'), None)
+        self.assertEquals(csv_rows[0].get('Datatype'), "None")
         self.assertEquals(csv_rows[0].get('Concept ID'), concept.mnemonic)
         self.assertEquals(csv_rows[0].get('External ID'), None)
         self.assertEquals(csv_rows[0].get('URI'), concept_version.uri)
         self.assertEquals(csv_rows[0].get('Synonyms'), 'concept1 [FULLY_SPECIFIED] [en]')
 
-        # self.assertDictEqual(csv_rows[0], {'Retired': False, 'Datatype': None, 'Concept ID': concept.mnemonic, 'External ID': None, 'Description': '',
-        #                                    'URI': concept_version.uri, 'Source': 'source1',
-        #                                    'Synonyms': 'concept1 [FULLY_SPECIFIED] [en]', 'Last Updated': concept.created_at, 'Owner': 'org1',
-        #                                    'Concept Class': concept_version.concept_class,'Preferred Name': '', 'Updated By': concept_version.created_by, 'Preferred Name Locale': ''})
 
 class OpenMRSConceptValidationTest(ConceptBaseTest):
-
     def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
         user = create_user()
 
@@ -1358,17 +1138,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[name_en1, name_en2, name_tr],
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
+        (concept, errors) = create_concept(user=user, source=source, names=[name_en1, name_en2, name_tr])
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
@@ -1378,37 +1148,16 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         user = create_user()
 
         name_fully_specified1 = create_localized_text('FullySpecifiedName1')
-        description = create_localized_text("Description1")
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept1 = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[name_fully_specified1],
-            descriptions=[description]
-        )
+        (concept1, errors1) = create_concept(user=user, source=source, names=[name_fully_specified1])
+        (concept2, errors2) = create_concept(user=user, source=source, names=[name_fully_specified1])
 
-        concept2 = Concept(
-            mnemonic='EOCV',
-            created_by=user,
-            parent=source,
-            concept_class='Second',
-            names=[name_fully_specified1],
-            descriptions=[description]
-        )
+        self.assertEquals(0, len(errors1))
 
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept1, user, **kwargs)
-        self.assertEquals(0, len(errors))
-
-        errors = Concept.persist_new(concept2, user, **kwargs)
-        self.assertEquals(errors['names'][0],
+        self.assertEquals(errors2['names'][0],
                           'Custom validation rules require fully specified name should be unique for same locale and source')
-
 
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()
@@ -1421,17 +1170,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[short_name, name],
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
+        (_, errors) = create_concept(mnemonic='EOPN', source=source, user=user, names=[short_name, name])
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
@@ -1448,17 +1187,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[name, index_name],
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
+        (_, errors) = create_concept(mnemonic='EOPN', source=source, user=user, names=[name, index_name])
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
@@ -1472,22 +1201,9 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         short_name = create_localized_text("aName")
         short_name.type = "SHORT"
 
-        description = create_localized_text("aDescription")
-
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[short_name, name],
-            descriptions=[description]
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
+        (concept, errors) = create_concept(user=user, source=source, names=[short_name, name])
 
         self.assertEquals(0, len(errors))
 
@@ -1500,17 +1216,8 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept = Concept(
-            mnemonic='EOPN',
-            created_by=user,
-            parent=source,
-            concept_class='First',
-            names=[name, another_name],
-        )
-
-        kwargs = {'parent_resource': source, }
-
-        errors = Concept.persist_new(concept, user, **kwargs)
+        (concept, errors) = create_concept(user=user, source=source, names=[name, another_name])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Custom validation rules require all names except type=SHORT to be unique')
+        self.assertEquals(errors['names'][0],
+                          'Custom validation rules require all names except type=SHORT to be unique')

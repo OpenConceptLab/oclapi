@@ -16,7 +16,7 @@ from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
-from test_helper.base import OclApiBaseTestCase
+from test_helper.base import OclApiBaseTestCase, create_localized_text, create_concept
 from users.models import UserProfile
 
 class SourceBaseTest(OclApiBaseTestCase):
@@ -654,21 +654,17 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(3, self.source1.num_versions)
 
     def test_seed_concepts(self):
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=self.source1, concept_class='First', names=[self.name])
-        concept2 = Concept(mnemonic='concept2', created_by=self.user1, parent=self.source1, concept_class='Second', names=[self.name])
-
-        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
+                             created_by=self.user1, updated_by=self.user1)
         head.full_clean()
         head.save()
 
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
 
-        kwargs = {'parent_resource': self.source1}
-
-        Concept.persist_new(concept1, self.user1, **kwargs)
         version1 = SourceVersion(name='version1', mnemonic='v1', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
         SourceVersion.persist_new(version1)
 
-        Concept.persist_new(concept2, self.user1, **kwargs)
+        create_concept(mnemonic='concept2', user=self.user1, source=self.source1)
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertTrue(Concept.objects.filter(mnemonic='concept2').exists())
@@ -676,10 +672,12 @@ class SourceVersionTest(SourceBaseTest):
         self.assertEquals(len(SourceVersion.objects.get(mnemonic=version1.mnemonic).concepts), 1)
 
         source_version2 = SourceVersion(name='version2', mnemonic='version2', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
+        SourceVersion.persist_new(source_version2)
 
-        source_version2.seed_concepts
+        source_version2.seed_concepts()
 
-        self.assertEquals(source_version2.concepts, head.concepts)
+
+        self.assertEquals(source_version2.concepts, self.source1.get_head().concepts)
 
     def test_head_sibling(self):
         source_version1 = SourceVersion(
@@ -722,8 +720,10 @@ class SourceVersionTest(SourceBaseTest):
         )
         Source.persist_new(source, self.user1, parent_resource=self.org1)
 
-        concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name])
-        Concept.persist_new(concept1, self.user1, parent_resource = source)
+        (concept1, errors) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
+        # concept1 = Concept(mnemonic='concept1', created_by=self.user1, parent=source, concept_class='First', names=[self.name], datatype="None", descriptions=[self.name])
+        # Concept.persist_new(concept1, self.user1, parent_resource = source)
 
         source_version = SourceVersion.get_latest_version_of(source)
         self.assertEquals(source_version.last_child_update, source_version.last_concept_update)
@@ -1250,15 +1250,8 @@ class SourceVersionListViewTest(SourceBaseTest):
             source_version.full_clean()
             source_version.save()
 
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='not First',
-            external_id='EXTID',
-            names=[self.name],
-        )
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
         display_name = LocalizedText(
             name='concept',
             locale='en',

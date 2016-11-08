@@ -41,24 +41,25 @@ class CollectionBaseTest(OclApiBaseTestCase):
 
 
 class CollectionTest(CollectionBaseTest):
-
     def test_create_collection_positive(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
             mnemonic='collection1',
             parent_type=ContentType.objects.get_for_model(Organization),
             parent_id=self.org1.id)
-        .exists())
+                        .exists())
         self.assertEquals(collection.mnemonic, collection.__unicode__())
         self.assertEquals(self.org1.mnemonic, collection.parent_resource)
         self.assertEquals(self.org1.resource_type, collection.parent_resource_type)
         self.assertEquals(0, collection.num_versions)
 
     def test_create_collection_positive__valid_attributes(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                parent=self.userprofile1,
+                                collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
@@ -73,21 +74,23 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_negative__invalid_access_type(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.userprofile1,
-                            collection_type='Dictionary', public_access='INVALID', updated_by=self.user1)
+            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                    parent=self.userprofile1,
+                                    collection_type='Dictionary', public_access='INVALID', updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_positive__valid_attributes(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.userprofile1,
-                        collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                parent=self.userprofile1,
+                                collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertTrue(Collection.objects.filter(
             mnemonic='collection1',
             parent_type=ContentType.objects.get_for_model(UserProfile),
             parent_id=self.userprofile1.id)
-        .exists())
+                        .exists())
         self.assertEquals(collection.mnemonic, collection.__unicode__())
         self.assertEquals(self.userprofile1.mnemonic, collection.parent_resource)
         self.assertEquals(self.userprofile1.resource_type, collection.parent_resource_type)
@@ -95,7 +98,8 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_negative__no_name(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+            collection = Collection(mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                    updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
@@ -119,22 +123,26 @@ class CollectionTest(CollectionBaseTest):
 
     def test_create_collection_negative__no_parent(self):
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, updated_by=self.user1)
+            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                    updated_by=self.user1)
             collection.full_clean()
             collection.save()
 
     def test_create_collection_negative__mnemonic_exists(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(0, collection.num_versions)
         with self.assertRaises(ValidationError):
-            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user2, parent=self.org1, updated_by=self.user2)
+            collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user2, parent=self.org1,
+                                    updated_by=self.user2)
             collection.full_clean()
             collection.save()
 
     def test_create_positive__mnemonic_exists(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(1, Collection.objects.filter(
@@ -144,7 +152,8 @@ class CollectionTest(CollectionBaseTest):
         ).count())
         self.assertEquals(0, collection.num_versions)
 
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.userprofile1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                parent=self.userprofile1, updated_by=self.user1)
         collection.full_clean()
         collection.save()
         self.assertEquals(1, Collection.objects.filter(
@@ -192,18 +201,7 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
+        (concept1, errors) = create_concept(user=self.user1, source=source, names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [reference]
@@ -213,7 +211,7 @@ class CollectionTest(CollectionBaseTest):
         head = CollectionVersion.get_head(collection.id)
 
         self.assertEquals(len(head.mappings), 0)
-        self.assertEquals(len(head.concepts),1)
+        self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.references), 1)
 
     def test_delete_single_mapping_reference(self):
@@ -250,31 +248,11 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
+        (fromConcept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source, names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
 
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (toConcept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source, names=[
+            LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
+
 
         mapping = Mapping(
             map_type='Same As',
@@ -340,18 +318,12 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
+        (concept1, error) = create_concept(
             mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
+            user=self.user1,
+            source=source,
             names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
 
         expression = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [expression]
@@ -406,49 +378,33 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
+
+        (concept1, errors) = create_concept(
             mnemonic='concept1',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
+            user=self.user1,
+            source=source,
             names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
 
-        fromConcept = Concept(
+
+        (from_concept, error) = create_concept(
             mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
+            user=self.user1,
+            source=source,
             names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
 
-        toConcept = Concept(
+        (to_concept, error) = create_concept(
             mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
+            user=self.user1,
+            source=source,
             names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
         )
         kwargs = {
@@ -457,8 +413,10 @@ class CollectionTest(CollectionBaseTest):
 
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
-        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
-        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
+        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=from_concept.mnemonic).mnemonic + '/'
+        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=concept1.mnemonic).mnemonic + '/'
         mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
 
         references = [concept1_reference, from_concept_reference, mapping_reference]
@@ -466,8 +424,6 @@ class CollectionTest(CollectionBaseTest):
         collection.expressions = references
         collection.full_clean()
         collection.save()
-
-
 
         head = CollectionVersion.get_head(collection.id)
 
@@ -488,7 +444,7 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.mappings), 0)
         self.assertEquals(head.references[0].expression, from_concept_reference)
-        self.assertEquals(head.concepts[0], fromConcept.id)
+        self.assertEquals(head.concepts[0], from_concept.id)
 
     def test_delete_reference_when_no_reference_given(self):
         kwargs = {
@@ -508,17 +464,19 @@ class CollectionTest(CollectionBaseTest):
         )
         Collection.persist_new(collection, self.user1, **kwargs)
 
-        self.assertEquals(collection.delete_references([]), [[],[]])
+        self.assertEquals(collection.delete_references([]), [[], []])
 
     def test_concepts_url(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1)
         collection.full_clean()
         collection.save()
 
         self.assertEquals(collection.concepts_url, '/orgs/org1/sources/collection1/concepts/')
 
     def test_mappings_url(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1, updated_by=self.user1)
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1)
         collection.full_clean()
         collection.save()
 
@@ -543,7 +501,6 @@ class CollectionTest(CollectionBaseTest):
 
 
 class CollectionClassMethodTest(CollectionBaseTest):
-
     def setUp(self):
         super(CollectionClassMethodTest, self).setUp()
         self.new_collection = Collection(
@@ -770,11 +727,12 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
 
 class CollectionVersionTest(CollectionBaseTest):
-
     def setUp(self):
         super(CollectionVersionTest, self).setUp()
-        self.collection1 = Collection.objects.create(name='collection1', mnemonic='collection1', created_by=self.user1, updated_by=self.user1, parent=self.org1, external_id='EXTID1')
-        self.collection2 = Collection.objects.create(name='collection2', mnemonic='collection2', created_by=self.user1, updated_by=self.user1, parent=self.userprofile1)
+        self.collection1 = Collection.objects.create(name='collection1', mnemonic='collection1', created_by=self.user1,
+                                                     updated_by=self.user1, parent=self.org1, external_id='EXTID1')
+        self.collection2 = Collection.objects.create(name='collection2', mnemonic='collection2', created_by=self.user1,
+                                                     updated_by=self.user1, parent=self.userprofile1)
 
     def test_collection_version_create_positive(self):
         collection_version = CollectionVersion(
@@ -1109,9 +1067,7 @@ class CollectionVersionTest(CollectionBaseTest):
         collection = Collection.objects.get(mnemonic=collection.mnemonic)
         Source.persist_new(source, self.user1, parent_resource=self.org1)
 
-        concept = Concept(mnemonic='concept', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept, self.user1, parent_resource=source)
+        (concept, _) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
         collection.expression = '/orgs/org1/sources/source/concepts/concept/'
         collection.full_clean()
@@ -1122,7 +1078,9 @@ class CollectionVersionTest(CollectionBaseTest):
         CollectionVersion.persist_new(version, **kwargs)
 
         collection_version = CollectionVersion.get_latest_version_of(collection)
-        self.assertEquals(collection_version.export_path, "user1/collection_version1." + collection_version.last_child_update.strftime('%Y%m%d%H%M%S') + ".tgz")
+        self.assertEquals(collection_version.export_path,
+                          "user1/collection_version1." + collection_version.last_child_update.strftime(
+                              '%Y%m%d%H%M%S') + ".tgz")
 
     def test_last_child_update(self):
         source = Source(
@@ -1154,9 +1112,7 @@ class CollectionVersionTest(CollectionBaseTest):
         collection = Collection.objects.get(mnemonic=collection.mnemonic)
         Source.persist_new(source, self.user1, parent_resource=self.org1)
 
-        concept = Concept(mnemonic='concept', created_by=self.user1, parent=source, concept_class='First',
-                           names=[self.name])
-        Concept.persist_new(concept, self.user1, parent_resource=source)
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
         collection.expressions = ['/orgs/org1/sources/source/concepts/concept/']
         collection.full_clean()
@@ -1204,31 +1160,9 @@ class CollectionVersionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
-        concept2 = Concept(
-            mnemonic='concept2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='not First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept2, self.user1, **kwargs)
+        (concept2, errors) = create_concept(mnemonic="concept2", user=self.user1, source=source)
 
         concept1_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
         concept2_latest_version = concept2.get_latest_version
@@ -1278,49 +1212,16 @@ class CollectionVersionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        fromConcept1 = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept1, self.user1, **kwargs)
+        (from_concept1, errors) = create_concept(mnemonic="fromConcept1", user=self.user1, source=source)
 
-        fromConcept2 = Concept(
-            mnemonic='fromConcept2',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept2, self.user1, **kwargs)
+        (from_concept2, errors) = create_concept(mnemonic="fromConcept2", user=self.user1, source=source)
 
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept1,
-            to_concept=toConcept,
+            from_concept=from_concept1,
+            to_concept=to_concept,
             external_id='mapping',
             retired=True,
         )
@@ -1331,8 +1232,8 @@ class CollectionVersionTest(CollectionBaseTest):
 
         mapping2 = Mapping(
             map_type='Same As',
-            from_concept=fromConcept2,
-            to_concept=toConcept,
+            from_concept=from_concept2,
+            to_concept=to_concept,
             external_id='mapping',
             retired=True,
         )
@@ -1373,7 +1274,6 @@ class CollectionVersionTest(CollectionBaseTest):
 
 
 class CollectionVersionClassMethodTest(CollectionBaseTest):
-
     def setUp(self):
         super(CollectionVersionClassMethodTest, self).setUp()
         self.collection1 = Collection.objects.create(
@@ -1391,6 +1291,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             updated_by=self.user1,
             external_id='EXTID1',
         )
+
         self.collection2 = Collection.objects.create(
             name='collection2',
             mnemonic='collection2',
@@ -1447,7 +1348,8 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
 
     def test_for_base_object_negative__bad_previous_version(self):
         with self.assertRaises(ValueError):
-            version1 = CollectionVersion.for_base_object(self.collection1, 'version1', previous_version=self.collection1)
+            version1 = CollectionVersion.for_base_object(self.collection1, 'version1',
+                                                         previous_version=self.collection1)
             version1.full_clean()
             version1.save()
         self.assertEquals(0, self.collection1.num_versions)
@@ -1835,29 +1737,9 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             }
             Source.persist_new(source, self.user1, **kwargs)
 
-            concept = Concept(
-                mnemonic='concept',
-                created_by=self.user1,
-                updated_by=self.user1,
-                parent=source,
-                concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            )
+            (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
+            (concept1, errors) = create_concept(mnemonic="concept1", user=self.user1, source=source)
 
-            concept1 = Concept(
-                mnemonic='concept1',
-                created_by=self.user1,
-                updated_by=self.user1,
-                parent=source,
-                concept_class='First',
-                names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            )
-
-            kwargs = {
-                'parent_resource': source,
-            }
-            Concept.persist_new(concept, self.user1, **kwargs)
-            Concept.persist_new(concept1, self.user1, **kwargs)
 
             self.collection1.expressions = [
                 '/orgs/org1/sources/source/concepts/concept/',
@@ -1932,23 +1814,12 @@ class CollectionReferenceTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
         concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
 
-        expression = '/orgs/' + self.org1.mnemonic + '/sources/' +\
-            source.mnemonic + '/concepts/' + concept.mnemonic + '/' + concept_version.id + '/'
+        expression = '/orgs/' + self.org1.mnemonic + '/sources/' + \
+                     source.mnemonic + '/concepts/' + concept.mnemonic + '/' + concept_version.id + '/'
 
         reference = CollectionReference(expression=expression)
         reference.full_clean()
@@ -1974,36 +1845,13 @@ class CollectionReferenceTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
-
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (from_concept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source)
+        (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
             retired=True,
         )
@@ -2038,22 +1886,10 @@ class CollectionReferenceTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-            retired=True,
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
-        expression = '/orgs/' + self.org1.mnemonic + '/sources/' +\
-            source.mnemonic + '/concepts/' + concept.mnemonic + '/'
+        expression = '/orgs/' + self.org1.mnemonic + '/sources/' + \
+                     source.mnemonic + '/concepts/' + concept.mnemonic + '/'
 
         reference = CollectionReference(expression=expression)
         try:
@@ -2078,36 +1914,13 @@ class CollectionReferenceTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
-
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (from_concept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source)
+        (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
             retired=True,
         )
@@ -2116,7 +1929,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         }
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
-        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+        reference = CollectionReference(
+            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
         try:
             reference.full_clean()
         except ValidationError as e:
@@ -2130,7 +1944,6 @@ class CollectionReferenceTest(CollectionBaseTest):
 
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
-
     def test_add_valid_concept_expression_to_collection_positive(self):
         source = Source(
             name='source',
@@ -2148,18 +1961,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept = Concept(
-            mnemonic='concept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept, self.user1, **kwargs)
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
 
         version = CollectionVersion.for_base_object(self.collection1, 'version1')
         reference = CollectionReference(expression='/orgs/org1/sources/source/concepts/concept/')
@@ -2185,36 +1987,13 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
-
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (from_concept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source)
+        (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
         )
         kwargs = {
@@ -2223,7 +2002,8 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         version = CollectionVersion.for_base_object(self.collection1, 'version1')
-        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+        reference = CollectionReference(
+            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
         reference.full_clean()
         CollectionVersion.persist_changes(version, col_reference=reference)
         self.assertEquals(len(version.mappings), 1)

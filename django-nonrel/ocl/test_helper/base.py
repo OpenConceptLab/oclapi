@@ -108,29 +108,36 @@ def create_source(user, validation_schema=None, organization=None, name=None):
     return Source.objects.get(id=source.id)
 
 
-def create_concept(user, source, names=None, concept_class=None):
+def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None):
     suffix = generate_random_string()
 
-    if names is None:
+    if not names:
         names = [create_localized_text("name{0}".format(suffix))]
 
+    if not mnemonic:
+        mnemonic = 'concept{0}'.format(suffix)
+
+    if not descriptions:
+        descriptions = [create_localized_text("desc{0}".format(suffix))]
+
     concept = Concept(
-        mnemonic='concept{0}'.format(suffix),
+        mnemonic=mnemonic,
         updated_by=user,
-        parent=source,
-        concept_class=concept_class if concept_class else 'First',
+        datatype="None",
+        concept_class = concept_class if concept_class else 'First',
         names=names,
-        descriptions=[create_localized_text("desc{0}".format(suffix))]
+        descriptions=descriptions,
     )
 
-    kwargs = {
-        'parent_resource': source,
-    }
+    if source is not None:
+        kwargs = {
+            'parent_resource': source,
+        }
+        errors = Concept.persist_new(concept, user, **kwargs)
+    else:
+        errors = Concept.persist_new(concept, user)
 
-    Concept.persist_new(concept, user, **kwargs)
-
-    return Concept.objects.get(id=concept.id)
-
+    return (concept, errors)
 
 def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
     mapping = Mapping(

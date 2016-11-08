@@ -117,53 +117,11 @@ class MappingBaseTest(OclApiBaseTestCase):
 
         self.name = LocalizedText.objects.create(name='Fred', locale='en', type='FULLY_SPECIFIED')
 
-        self.concept1 = Concept(
-            mnemonic='concept1',
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='First',
-            names=[self.name],
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept1, self.user1, **kwargs)
+        (self.concept1, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name], descriptions=[self.name])
+        (self.concept2, errors) = create_concept(mnemonic='concept2', user=self.user1, source=self.source1, names=[self.name], descriptions=[self.name])
+        (self.concept3, errors) = create_concept(mnemonic='concept3', user=self.user1, source=self.source2, names=[self.name], descriptions=[self.name])
+        (self.concept4, errors) = create_concept(mnemonic='concept4', user=self.user1, source=self.source2, names=[self.name], descriptions=[self.name])
 
-        self.concept2 = Concept(
-            mnemonic='concept2',
-            updated_by=self.user1,
-            parent=self.source1,
-            concept_class='Second',
-            names=[self.name],
-        )
-        kwargs = {
-            'parent_resource': self.source1,
-        }
-        Concept.persist_new(self.concept2, self.user1, **kwargs)
-
-        self.concept3 = Concept(
-            mnemonic='concept3',
-            updated_by=self.user1,
-            parent=self.source2,
-            concept_class='Third',
-            names=[self.name],
-        )
-        kwargs = {
-            'parent_resource': self.source2,
-        }
-        Concept.persist_new(self.concept3, self.user1, **kwargs)
-
-        self.concept4 = Concept(
-            mnemonic='concept4',
-            updated_by=self.user2,
-            parent=self.source2,
-            concept_class='Fourth',
-            names=[self.name],
-        )
-        kwargs = {
-            'parent_resource': self.source2,
-        }
-        Concept.persist_new(self.concept4, self.user1, **kwargs)
 
 class MappingVersionBaseTest(MappingBaseTest):
     def setUp(self):
@@ -607,49 +565,14 @@ class MappingVersionTest(MappingVersionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
-
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
-
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
+        (from_concept, errors) = create_concept(mnemonic='fromConcept', user=self.user1, source=source)
+        (to_concept, errors) = create_concept(mnemonic='toConcept', user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='foobar',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
         )
         kwargs = {
@@ -662,7 +585,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         new_mapping_version.mnemonic = 98
         new_mapping_version.save()
 
-        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=fromConcept.mnemonic).mnemonic + '/'
+        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=from_concept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(mnemonic=concept1.mnemonic).mnemonic + '/'
         mapping = Mapping.objects.filter()[1]
         references = [concept1_reference, from_concept_reference, mapping.uri, initial_mapping_version.uri]
@@ -707,49 +630,14 @@ class MappingVersionTest(MappingVersionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        concept1 = Concept(
-            mnemonic='concept12',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(concept1, self.user1, **kwargs)
-
-        fromConcept = Concept(
-            mnemonic='fromConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(fromConcept, self.user1, **kwargs)
-
-        toConcept = Concept(
-            mnemonic='toConcept',
-            created_by=self.user1,
-            updated_by=self.user1,
-            parent=source,
-            concept_class='First',
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
-        )
-        kwargs = {
-            'parent_resource': source,
-        }
-        Concept.persist_new(toConcept, self.user1, **kwargs)
+        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
+        (from_concept, errors) = create_concept(mnemonic='fromConcept', user=self.user1, source=source)
+        (to_concept, errors) = create_concept(mnemonic='toConcept', user=self.user1, source=source)
 
         mapping = Mapping(
             map_type='Same As',
-            from_concept=fromConcept,
-            to_concept=toConcept,
+            from_concept=from_concept,
+            to_concept=to_concept,
             external_id='mapping',
         )
         kwargs = {
@@ -1165,8 +1053,8 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         user = create_user()
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-        concept1 = create_concept(user, source)
-        concept2 = create_concept(user, source)
+        (concept1, _) = create_concept(user, source)
+        (concept2, _) = create_concept(user, source)
 
         create_mapping(user, source, concept1, concept2, "Same As")
 
@@ -1194,9 +1082,9 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         source1 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
         source2 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        concept1 = create_concept(user, source1)
-        concept2 = create_concept(user, source2)
-        concept3 = create_concept(user, source2)
+        (concept1, _) = create_concept(user, source1)
+        (concept2, _) = create_concept(user, source2)
+        (concept3, _) = create_concept(user, source2)
 
         create_mapping(user, source1, concept1, concept2, "Same As")
         mapping = create_mapping(user, source2, concept2, concept3, "Same As")
