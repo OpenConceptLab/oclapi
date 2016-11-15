@@ -368,7 +368,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
     def test_preferred_name_uniqueness_when_name_exists_in_source_for_different_locale(self):
         (_, _) = create_concept(user=self.user1, source=self.source1, names=[
             LocalizedText.objects.create(name='Name 1', type='Fully Specified', locale_preferred=False, locale='fr'),
-            LocalizedText.objects.create(name='Name 2', type='Short')
+            LocalizedText.objects.create(name='Name 2', type='Short', locale='en')
         ])
 
         (_, errors) = create_concept(user=self.user1, source=self.source1, names=[
