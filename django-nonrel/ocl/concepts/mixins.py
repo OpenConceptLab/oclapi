@@ -8,7 +8,6 @@ __author__ = 'misternando'
 
 
 class DictionaryItemMixin(object):
-
     @classmethod
     def create_initial_version(cls, obj, **kwargs):
         return None
@@ -94,39 +93,36 @@ class ConceptValidationMixin:
             custom_validator = OpenMRSConceptValidator(self)
             custom_validator.validate()
 
-    # basic validation rule
     def _preferred_name_should_be_unique_for_source_and_locale(self):
+        from concepts.models import Concept, ConceptVersion
+
         # Concept preferred_name should be unique for same source and locale.
         validation_error = {'names': ['Concept preferred name must be unique for same source and locale']}
         preferred_names_in_concept = dict()
-        name_id = lambda n: n.locale + n.name
+        self_id = getattr(self, "versioned_object_id", None)
 
-        self_id = None
-
-        if hasattr(self, "versioned_object_id"):
-            self_id = self.versioned_object_id
-
-        for name in self.names:
-            if not name.locale_preferred:
-                continue
-
+        for name in [n for n in self.names if n.locale_preferred]:
             # making sure names in the submitted concept meet the same rule
-            if preferred_names_in_concept.has_key(name_id(name)):
+            name_key = name.locale + name.name
+            if preferred_names_in_concept.has_key(name_key):
                 raise ValidationError(validation_error)
 
-            preferred_names_in_concept[name_id(name)] = True
+            preferred_names_in_concept[name_key] = True
 
-            from concepts.models import Concept
-            concept_id_list = list(Concept.objects.filter(parent_id=self.parent_source.id, is_active=True, retired=False).values('id'))
-            concept_ids = map(lambda x: x["id"], concept_id_list)
+            other_concepts_in_source = list(Concept.objects\
+                .filter(parent_id=self.parent_source.id, is_active=True,retired=False)\
+                .exclude(id=self_id)\
+                .values_list('id', flat=True))
 
-            if concept_id_list:
-                raw_query = {'versioned_object_id': { '$in': filter(lambda id: id != self_id, concept_ids)}, 'names.name': name.name, 'names.locale': name.locale,
-                             'names.locale_preferred': True, 'is_latest_version': True}
+            if len(other_concepts_in_source) < 1:
+                continue
 
-                from concepts.models import ConceptVersion
-                if ConceptVersion.objects.raw_query(raw_query).count() > 0:
-                    raise ValidationError(validation_error)
+            same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
+                         'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}},
+                         'is_latest_version': True}
+
+            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
+                raise ValidationError(validation_error)
 
     def _requires_at_least_one_fully_specified_name(self):
         # Concept requires at least one fully specified name
@@ -137,21 +133,22 @@ class ConceptValidationMixin:
 
     def _concept_class_should_be_valid_attribute(self):
         from orgs.models import Organization
-        ocl_org_filter = Organization.objects.filter(mnemonic = 'OCL')
+        ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
 
-        if ocl_org_filter.count() < 1 :
+        if ocl_org_filter.count() < 1:
             raise ValidationError({'names': ['Lookup attributes must be imported']})
 
         org = ocl_org_filter.get()
         source_classes_filter = Source.objects.filter(parent_id=org.id, mnemonic='Classes')
 
-        if source_classes_filter.count() < 1 :
+        if source_classes_filter.count() < 1:
             raise ValidationError({'names': ['Lookup attributes must be imported']})
 
         source_classes = source_classes_filter.values_list('id').get()
 
         from concepts.models import Concept
-        concept_class_list = Concept.objects.filter(parent_id=source_classes[0], is_active=True, retired=False, concept_class='Concept Class')
+        concept_class_list = Concept.objects.filter(parent_id=source_classes[0], is_active=True, retired=False,
+                                                    concept_class='Concept Class')
 
         concept_class_count = len(
             filter(lambda n: n.display_name == self.concept_class, concept_class_list))
@@ -162,4 +159,3 @@ class ConceptValidationMixin:
     def _requires_at_least_one_description(self):
         if (not self.descriptions) or len(self.descriptions) < 1:
             raise ValidationError({'names': ['Concept requires at least one description']})
-
