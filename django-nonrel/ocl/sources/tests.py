@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
 from concepts.models import Concept, LocalizedText
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, LOOKUP_SOURCES
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
@@ -294,7 +294,7 @@ class SourceClassMethodTest(SourceBaseTest):
         )
         errors = Source.persist_new(source, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
-        self.assertEquals(2, Source.objects.exclude(mnemonic='Classes').count())
+        self.assertEquals(2, Source.objects.exclude(mnemonic__in=LOOKUP_SOURCES).count())
 
         self.new_source = Source.objects.get(mnemonic='source2')
         id = self.new_source.id

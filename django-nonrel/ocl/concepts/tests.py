@@ -282,6 +282,120 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors))
 
+    def test_data_type_is_valid_attribute_negative(self):
+        datatypes_source = Source.objects.get(name="Datatypes")
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Numeric")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Coded")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Text")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')], datatype='XYZWERRTR')
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Data type should be valid attribute')
+
+    def test_data_type_is_valid_attribute_positive(self):
+        datatypes_source = Source.objects.get(name="Datatypes")
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Numeric")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Coded")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Text")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')], datatype='Text')
+
+        self.assertEquals(0, len(errors))
+
+    def test_name_type_is_valid_attribute_negative(self):
+        nametypes_source = Source.objects.get(name="NameTypes")
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("None")])
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("Fully-Specified")])
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("Short")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='XYZWERRTR'),
+                                                  LocalizedText.objects.create(name='Nezle', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Name type should be valid attribute')
+
+    def test_name_type_is_valid_attribute_positive(self):
+        nametypes_source = Source.objects.get(name="NameTypes")
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("None")])
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("Fully-Specified")])
+        create_concept(self.user1, nametypes_source, concept_class="NameType",
+                       names=[create_localized_text("Short")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='Short'),
+                                                  LocalizedText.objects.create(name='Nezle', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')])
+
+        self.assertEquals(0, len(errors))
+
+    def test_description_type_is_valid_attribute_negative(self):
+        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("None")])
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("Definition")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')],
+                                           descriptions=[LocalizedText.objects.create(name='Grip Description', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='XYZWERRTR')])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Description type should be valid attribute')
+
+    def test_description_type_is_valid_attribute_positive(self):
+        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("None")])
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("Definition")])
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+                                           source=self.source1,
+                                           names=[LocalizedText.objects.create(name='Grip', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='FULLY_SPECIFIED')],
+                                           descriptions=[
+                                               LocalizedText.objects.create(name='Grip Description', locale='es',
+                                                                            locale_preferred=True,
+                                                                            type='Definition')])
+
+        self.assertEquals(0, len(errors))
+
     def test_unique_preferred_name_per_source_positive(self):
         (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
             LocalizedText(name='Concept Unique Preferred Name 1', locale_preferred=True, type='FULLY_SPECIFIED')
@@ -594,6 +708,7 @@ class ConceptVersionTest(ConceptBaseTest):
         display_name = LocalizedText(
             name='concept1',
             locale='en',
+            type='FULLY_SPECIFIED'
         )
         (self.concept1, errors) = create_concept(
             mnemonic='concept1',
@@ -614,6 +729,7 @@ class ConceptVersionTest(ConceptBaseTest):
             mnemonic='version1',
             versioned_object=self.concept1,
             concept_class='First',
+            datatype=self.concept1.datatype,
             names=self.concept1.names,
             created_by=self.user1.username,
             updated_by=self.user1.username,
@@ -641,6 +757,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version = ConceptVersion(
                 versioned_object=self.concept1,
                 concept_class='First',
+                datatype=self.concept1.datatype,
                 names=[self.name],
                 descriptions=[self.name]
             )
@@ -652,6 +769,7 @@ class ConceptVersionTest(ConceptBaseTest):
             concept_version = ConceptVersion(
                 mnemonic='version1',
                 versioned_object=self.concept1,
+                datatype=self.concept1.datatype,
                 names=[self.name],
                 descriptions=[self.name]
             )
@@ -664,6 +782,7 @@ class ConceptVersionTest(ConceptBaseTest):
             mnemonic='version1',
             versioned_object=self.concept1,
             concept_class='First',
+            datatype=self.concept1.datatype,
             names=self.concept1.names,
             descriptions=[self.name],
             created_by=self.user1.username,
@@ -713,6 +832,7 @@ class ConceptVersionTest(ConceptBaseTest):
             mnemonic='version1',
             versioned_object=self.concept1,
             concept_class='First',
+            datatype=self.concept1.datatype,
             public_access=public_access,
             names=self.concept1.names,
             created_by=self.user1.username,
@@ -968,12 +1088,13 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
             mnemonic='version1',
             versioned_object=self.concept1,
             concept_class='First',
+            datatype=self.concept1.datatype,
             names=self.concept1.names,
             previous_version=initial_version,
             created_by=self.user1.username,
             updated_by=self.user1.username,
             version_created_by=self.user1.username,
-            descriptions=[create_localized_text("aDescription")], datatype="None"
+            descriptions=[create_localized_text("aDescription")]
         )
         self.concept_version.full_clean()
         self.concept_version.save()

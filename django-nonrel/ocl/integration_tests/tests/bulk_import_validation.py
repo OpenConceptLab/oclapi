@@ -9,7 +9,7 @@ from mappings.models import Mapping
 from mappings.models import MappingVersion
 from mappings.tests import MappingBaseTest
 from sources.models import SourceVersion
-from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS, LOOKUP_CONCEPT_CLASSES
 from test_helper.base import create_source, create_user, create_concept
 
 
@@ -39,8 +39,8 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer.import_concepts(total=7)
         self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
         self.assertTrue('Concept preferred name must be unique for same source and locale' in stderr_stub.getvalue())
-        self.assertEquals(5, Concept.objects.exclude(concept_class='Concept Class').count())
-        self.assertEquals(5, ConceptVersion.objects.exclude(concept_class='Concept Class').count())
+        self.assertEquals(5, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
+        self.assertEquals(5, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
     def test_update_concept_with_invalid_record(self):
         (concept, _) = create_concept(mnemonic='1', user=self.user1, source=self.source1, names=[self.name])
@@ -50,8 +50,8 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
         self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
-        self.assertEquals(1, Concept.objects.exclude(concept_class='Concept Class').count())
-        self.assertEquals(1, ConceptVersion.objects.exclude(concept_class='Concept Class').count())
+        self.assertEquals(1, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
+        self.assertEquals(1, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
     def test_import_concepts_into_openmrs_validated_source_with_valid_records(self):
         test_file = open('./integration_tests/fixtures/concepts_for_openmrs_validation.json', 'rb')
@@ -67,8 +67,8 @@ class BulkConceptImporterTest(ConceptBaseTest):
         self.assertTrue("Custom validation rules require a preferred name not to be an index/search term" in stderr_stub.getvalue())
         self.assertTrue("Custom validation rules require all names except type=SHORT to be unique" in stderr_stub.getvalue())
 
-        self.assertEquals(2, Concept.objects.exclude(concept_class='Concept Class').count())
-        self.assertEquals(2, ConceptVersion.objects.exclude(concept_class='Concept Class').count())
+        self.assertEquals(2, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
+        self.assertEquals(2, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
 
 class ConceptImporterTest(ConceptBaseTest):
@@ -103,7 +103,7 @@ class ConceptImporterTest(ConceptBaseTest):
 
         importer = ConceptsImporter(self.source1, self.testfile, 'test', stdout_stub, TestStream())
         importer.import_concepts(total=1)
-        all_concept_versions = ConceptVersion.objects.exclude(concept_class='Concept Class')
+        all_concept_versions = ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES)
         self.assertEquals(len(all_concept_versions), 2)
 
         latest_concept_version = [version for version in all_concept_versions if version.previous_version][0]

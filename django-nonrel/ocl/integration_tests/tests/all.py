@@ -16,9 +16,8 @@ from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
 from sources.models import Source, SourceVersion
-from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
 from test_helper.base import create_user, create_source, create_organization, create_localized_text, create_concept
@@ -71,7 +70,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -103,7 +103,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -135,7 +136,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         }, {
@@ -143,7 +145,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "concept_class": "First",
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "names": [{
                 "name": "grip",
@@ -180,7 +183,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -200,11 +204,12 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "names": [{
                 "name": "grip",
                 "locale": 'en',
-                "name_type": "ordinary"
+                "name_type": "None"
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -237,7 +242,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -262,7 +268,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "descriptions": [{
                 "description": "Gribal Enfeksiyon",
                 "locale": 'en',
-                "name_type": "FULLY_SPECIFIED",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -294,7 +300,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -318,7 +325,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -341,7 +349,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -373,7 +382,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -396,7 +406,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -420,7 +431,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             }],
             "descriptions": [{
                 "description": "description",
-                "locale": "en"
+                "locale": "en",
+                "description_type": "None"
             }],
             "datatype": "None"
         })
@@ -524,7 +536,7 @@ class ConceptVersionAllView(ConceptBaseTest):
         self.assertEquals(response_for_page_1.status_code, 200)
         self.assertEquals(len(result), 10)
         self.assertEquals(response_for_page_1._headers.get('num_found')[1], '11')
-        self.assertEquals(ConceptVersion.objects.exclude(concept_class='Concept Class').count(), 12)
+        self.assertEquals(ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count(), 12)
         versioned_object_ids = map(lambda v: v.get('id'), result)
 
         response_for_page_2 = self.client.get(url + '?page=2')
