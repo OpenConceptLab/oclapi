@@ -365,6 +365,19 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0], 'Concept requires at least one fully specified name')
 
+    def test_preferred_name_uniqueness_when_name_exists_in_source_for_different_locale(self):
+        (_, _) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Name 1', type='Fully Specified', locale_preferred=False, locale='fr'),
+            LocalizedText.objects.create(name='Name 2', type='Short')
+        ])
+
+        (_, errors) = create_concept(user=self.user1, source=self.source1, names=[
+            LocalizedText.objects.create(name='Name 1', type='Fully Specified', locale_preferred=True, locale='en')
+        ])
+
+        self.assertEquals(0, len(errors))
+
+
 
 class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_positive(self):
