@@ -6,9 +6,9 @@ class OpenMRSConceptValidator:
 
     def validate(self):
         self.must_have_exactly_one_preferred_name()
-        self.must_have_unique_fully_specified_name_for_same_source_and_locale()
-        self.preferred_name_should_be_different_than_index_term()
         self.all_non_short_names_must_be_unique()
+        self.preferred_name_should_be_different_than_index_term()
+        self.must_have_unique_fully_specified_name_for_same_source_and_locale()
 
     def must_have_exactly_one_preferred_name(self):
         preferred_name_locales_in_concept = dict()

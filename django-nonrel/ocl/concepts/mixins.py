@@ -83,11 +83,12 @@ class DictionaryItemMixin(object):
 
 class ConceptValidationMixin:
     def clean(self):
+        if not self.concept_class in LOOKUP_CONCEPT_CLASSES:
+            self._lookup_attributes_should_be_valid()
+
         self._requires_at_least_one_description()
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
-        if not self.concept_class in LOOKUP_CONCEPT_CLASSES:
-            self._lookup_attributes_should_be_valid()
 
         if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
