@@ -22,7 +22,7 @@ def open_mrs_concept_template(update=None):
 
         }],
         "descriptions": [
-            {"description": "description", "locale": "en"}
+            {"description": "description", "locale": "en", "description_type": "None"}
         ],
         "datatype": "None"}
 

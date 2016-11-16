@@ -18,6 +18,9 @@ class OclApiBaseTestCase(TestCase):
         user = create_user()
         org_ocl = create_organization("OCL")
         classes_source = create_source(user, organization=org_ocl, name="Classes")
+        datatypes_source = create_source(user, organization=org_ocl, name="Datatypes")
+        nametypes_source = create_source(user, organization=org_ocl, name="NameTypes")
+        descriptiontypes_source = create_source(user, organization=org_ocl, name="DescriptionTypes")
 
         create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("First")])
         create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Second")])
@@ -26,6 +29,18 @@ class OclApiBaseTestCase(TestCase):
         create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Diagnosis")])
         create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Drug")])
         create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("not First")])
+
+        create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("None"), create_localized_text("N/A")])
+
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("FULLY_SPECIFIED"), create_localized_text("Fully Specified")])
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Short"), create_localized_text("SHORT")])
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("INDEX_TERM"), create_localized_text("Index Term")])
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("None")])
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Technical")])
+        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Academic")])
+
+        create_concept(user, descriptiontypes_source, concept_class="DescriptionType", names=[create_localized_text("None")])
+        create_concept(user, descriptiontypes_source, concept_class="DescriptionType",names=[create_localized_text("FULLY_SPECIFIED")])
 
     def tearDown(self):
         LocalizedText.objects.filter().delete()
@@ -108,7 +123,7 @@ def create_source(user, validation_schema=None, organization=None, name=None):
     return Source.objects.get(id=source.id)
 
 
-def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None):
+def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None):
     suffix = generate_random_string()
 
     if not names:
@@ -123,7 +138,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
     concept = Concept(
         mnemonic=mnemonic,
         updated_by=user,
-        datatype="None",
+        datatype=datatype if datatype else "None",
         concept_class = concept_class if concept_class else 'First',
         names=names,
         descriptions=descriptions,

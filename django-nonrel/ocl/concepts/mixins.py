@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 
 from concepts.custom_validators import OpenMRSConceptValidator
-from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS, LOOKUP_CONCEPT_CLASSES
 from sources.models import Source
 
 __author__ = 'misternando'
@@ -86,8 +86,8 @@ class ConceptValidationMixin:
         self._requires_at_least_one_description()
         self._requires_at_least_one_fully_specified_name()
         self._preferred_name_should_be_unique_for_source_and_locale()
-        if not self.concept_class == 'Concept Class':
-            self._concept_class_should_be_valid_attribute()
+        if not self.concept_class in LOOKUP_CONCEPT_CLASSES:
+            self._lookup_attributes_should_be_valid()
 
         if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
             custom_validator = OpenMRSConceptValidator(self)
@@ -131,7 +131,11 @@ class ConceptValidationMixin:
         if fully_specified_name_count < 1:
             raise ValidationError({'names': ['Concept requires at least one fully specified name']})
 
-    def _concept_class_should_be_valid_attribute(self):
+    def _requires_at_least_one_description(self):
+        if (not self.descriptions) or len(self.descriptions) < 1:
+            raise ValidationError({'names': ['Concept requires at least one description']})
+
+    def _lookup_attributes_should_be_valid(self):
         from orgs.models import Organization
         ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
 
@@ -139,6 +143,13 @@ class ConceptValidationMixin:
             raise ValidationError({'names': ['Lookup attributes must be imported']})
 
         org = ocl_org_filter.get()
+
+        self._concept_class_should_be_valid_attribute(org)
+        self._data_type_should_be_valid_attribute(org)
+        self._name_type_should_be_valid_attribute(org)
+        self._description_type_should_be_valid_attribute(org)
+
+    def _concept_class_should_be_valid_attribute(self, org):
         source_classes_filter = Source.objects.filter(parent_id=org.id, mnemonic='Classes')
 
         if source_classes_filter.count() < 1:
@@ -147,15 +158,53 @@ class ConceptValidationMixin:
         source_classes = source_classes_filter.values_list('id').get()
 
         from concepts.models import Concept
-        concept_class_list = Concept.objects.filter(parent_id=source_classes[0], is_active=True, retired=False,
-                                                    concept_class='Concept Class')
+        matching_concept_classes = {'retired': False, 'is_active': True, 'concept_class': 'Concept Class',
+                                    'parent_id': source_classes[0], 'names.name': self.concept_class}
 
-        concept_class_count = len(
-            filter(lambda n: n.display_name == self.concept_class, concept_class_list))
-
-        if concept_class_count < 1:
+        if Concept.objects.raw_query(matching_concept_classes).count() < 1:
             raise ValidationError({'names': ['Concept class should be valid attribute']})
 
-    def _requires_at_least_one_description(self):
-        if (not self.descriptions) or len(self.descriptions) < 1:
-            raise ValidationError({'names': ['Concept requires at least one description']})
+    def _data_type_should_be_valid_attribute(self, org):
+        datatypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic='Datatypes')
+
+        if datatypes_source_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        source_datatypes = datatypes_source_filter.values_list('id').get()
+
+        from concepts.models import Concept
+        matching_datatypes = {'retired': False, 'is_active': True, 'concept_class': 'Datatype',
+                              'parent_id': source_datatypes[0], 'names.name': self.datatype}
+
+        if Concept.objects.raw_query(matching_datatypes).count() < 1:
+            raise ValidationError({'names': ['Data type should be valid attribute']})
+
+    def _name_type_should_be_valid_attribute(self, org):
+        name_type_count = len(
+            filter(lambda n: self._is_list_field_attribute_type_valid(n, org, 'NameTypes', 'NameType'), self.names))
+
+        if name_type_count < len(self.names):
+            raise ValidationError({'names': ['Name type should be valid attribute']})
+
+    def _description_type_should_be_valid_attribute(self, org):
+        description_type_count = len(
+            filter(lambda d: self._is_list_field_attribute_type_valid(d, org, 'DescriptionTypes', 'DescriptionType'),
+                   self.descriptions))
+
+        if description_type_count < len(self.descriptions):
+            raise ValidationError({'names': ['Description type should be valid attribute']})
+
+    def _is_list_field_attribute_type_valid(self, attribute, org, source_mnemonic, concept_class):
+        attributetypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic=source_mnemonic)
+
+        if attributetypes_source_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        source_attributetypes = attributetypes_source_filter.values_list('id').get()
+
+        from concepts.models import Concept
+        matching_attribute_types = {'retired': False, 'is_active': True, 'concept_class': concept_class,
+                                    'parent_id': source_attributetypes[0], 'names.name': attribute.type}
+
+        if Concept.objects.raw_query(matching_attribute_types).count() > 0:
+            return True
