@@ -23,7 +23,8 @@ class Command(BaseCommand):
             {'source': sources['Locales'], 'file': "./locales.json"},
             {'source': sources['Datatypes'], 'file': "./datatypes_fixed.json"},
             {'source': sources['NameTypes'], 'file': "./nametypes_fixed.json"},
-            {'source': sources['DescriptionTypes'], 'file': "./description_types.json"}
+            {'source': sources['DescriptionTypes'], 'file': "./description_types.json"},
+            {'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
         ]
 
         for conf in importer_confs:
@@ -51,7 +52,7 @@ class Command(BaseCommand):
             'parent_resource': org
         }
 
-        for source_name in ['Locales', 'Classes', 'Datatypes', 'DescriptionTypes', 'NameTypes']:
+        for source_name in ['Locales', 'Classes', 'Datatypes', 'DescriptionTypes', 'NameTypes', 'MapTypes']:
             source = None
 
             if Source.objects.filter(parent_id=org.id, mnemonic=source_name).count() < 1:
