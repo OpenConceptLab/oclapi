@@ -100,7 +100,7 @@ class ConceptTest(ConceptBaseTest):
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
-                concept_class='First',
+                concept_class='Diagnosis',
                 names=[self.name],
                 descriptions=[self.name],
                 datatype="None"
@@ -114,7 +114,7 @@ class ConceptTest(ConceptBaseTest):
                 mnemonic='concept1',
                 parent=self.source1,
                 updated_by=self.user1,
-                concept_class='First',
+                concept_class='Diagnosis',
                 names=[self.name],
                 descriptions=[self.name],
                 datatype="None"
@@ -142,7 +142,7 @@ class ConceptTest(ConceptBaseTest):
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
-            concept_class='First',
+            concept_class='Diagnosis',
             names=[self.name],
             descriptions=[self.name],
             datatype="None"
@@ -171,7 +171,7 @@ class ConceptTest(ConceptBaseTest):
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
-            concept_class='First',
+            concept_class='Diagnosis',
             descriptions=[self.name],
             datatype="None"
         )
@@ -207,7 +207,7 @@ class ConceptTest(ConceptBaseTest):
             updated_by=self.user1,
             parent=self.source1,
             public_access=public_access,
-            concept_class='First',
+            concept_class='Diagnosis',
             names=[self.name],
             descriptions=[self.name],
             datatype="None"
@@ -291,7 +291,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, datatypes_source, concept_class="Datatype",
                        names=[create_localized_text("Text")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -309,7 +309,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, datatypes_source, concept_class="Datatype",
                        names=[create_localized_text("Text")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -326,7 +326,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, nametypes_source, concept_class="NameType",
                        names=[create_localized_text("Short")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -347,7 +347,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, nametypes_source, concept_class="NameType",
                        names=[create_localized_text("Short")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -365,7 +365,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
                        names=[create_localized_text("Definition")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -384,7 +384,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
                        names=[create_localized_text("Definition")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                                locale_preferred=True,
@@ -403,7 +403,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
                        names=[create_localized_text("English", "en")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='XWERTY',
                                                                                locale_preferred=True,
@@ -423,7 +423,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
                        names=[create_localized_text("English", "en")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='English',
                                                                                locale_preferred=True,
@@ -443,7 +443,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
                        names=[create_localized_text("English", "en")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='Abkhazian',
                                                                                locale_preferred=True,
@@ -462,7 +462,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
                        names=[create_localized_text("English", "en")])
 
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='First',
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='English',
                                                                                locale_preferred=True,
@@ -806,7 +806,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion(
             mnemonic='version1',
             versioned_object=self.concept1,
-            concept_class='First',
+            concept_class='Diagnosis',
             datatype=self.concept1.datatype,
             names=self.concept1.names,
             created_by=self.user1.username,
@@ -834,7 +834,7 @@ class ConceptVersionTest(ConceptBaseTest):
         with self.assertRaises(ValidationError):
             concept_version = ConceptVersion(
                 versioned_object=self.concept1,
-                concept_class='First',
+                concept_class='Diagnosis',
                 datatype=self.concept1.datatype,
                 names=[self.name],
                 descriptions=[self.name]
@@ -859,7 +859,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion(
             mnemonic='version1',
             versioned_object=self.concept1,
-            concept_class='First',
+            concept_class='Diagnosis',
             datatype=self.concept1.datatype,
             names=self.concept1.names,
             descriptions=[self.name],
@@ -909,7 +909,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion(
             mnemonic='version1',
             versioned_object=self.concept1,
-            concept_class='First',
+            concept_class='Diagnosis',
             datatype=self.concept1.datatype,
             public_access=public_access,
             names=self.concept1.names,
@@ -1144,7 +1144,7 @@ class ConceptVersionTest(ConceptBaseTest):
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
     def setUp(self):
         super(ConceptVersionStaticMethodsTest, self).setUp()
-        self.concept1 = Concept(mnemonic='concept1', concept_class='First', public_access=ACCESS_TYPE_EDIT, datatype="None",
+        self.concept1 = Concept(mnemonic='concept1', concept_class='Diagnosis', public_access=ACCESS_TYPE_EDIT, datatype="None",
                                 descriptions=[create_localized_text("aDescription")])
         display_name = LocalizedText(name='concept1', locale='en', type='FULLY_SPECIFIED')
 
@@ -1156,7 +1156,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
 
         initial_version = ConceptVersion.get_latest_version_of(self.concept1)
 
-        self.concept2 = Concept(mnemonic='concept2', concept_class='Second', names=[self.name], descriptions=[create_localized_text("aDescription")])
+        self.concept2 = Concept(mnemonic='concept2', concept_class='Drug', names=[self.name], descriptions=[create_localized_text("aDescription")])
         kwargs = {
             'parent_resource': self.source2,
         }
@@ -1165,7 +1165,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.concept_version = ConceptVersion(
             mnemonic='version1',
             versioned_object=self.concept1,
-            concept_class='First',
+            concept_class='Diagnosis',
             datatype=self.concept1.datatype,
             names=self.concept1.names,
             previous_version=initial_version,

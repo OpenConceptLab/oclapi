@@ -58,7 +58,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -89,7 +89,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -122,7 +122,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps([{
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -142,7 +142,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "datatype": "None"
         }, {
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "descriptions": [{
                 "description": "description",
                 "locale": "en",
@@ -175,7 +175,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -200,7 +200,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399000",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "grip",
                 "locale": 'en',
@@ -233,7 +233,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "Grip",
                 "locale": 'en',
@@ -258,7 +258,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "Grip",
                 "locale": 'en',
@@ -291,7 +291,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -316,7 +316,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "b",
                 "locale": 'en',
@@ -340,7 +340,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -373,7 +373,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399001",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "a",
                 "locale": 'en',
@@ -397,7 +397,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "b",
                 "locale": 'en',
@@ -422,7 +422,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         data = json.dumps({
             "id": "12399002",
-            "concept_class": "First",
+            "concept_class": "Diagnosis",
             "names": [{
                 "name": "a",
                 "locale": 'en',
