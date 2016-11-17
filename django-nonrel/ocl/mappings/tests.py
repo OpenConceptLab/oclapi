@@ -378,6 +378,64 @@ class MappingTest(MappingBaseTest):
         self.assertNotEquals(public_access, self.source1.public_access)
         self.assertEquals(self.source1.public_access, mapping.public_access)
 
+    def test_create_mapping_negative__invalid_mapping_type(self):
+        maptypes_source = Source.objects.get(name="MapTypes")
+        create_concept(self.user1, maptypes_source, concept_class="MapType",names=[create_localized_text("SAME-AS")])
+        create_concept(self.user1, maptypes_source, concept_class="MapType",names=[create_localized_text("NARROWER-THAN")])
+
+        user = create_user()
+
+        source = create_source(user)
+        (concept1, _) = create_concept(user, source)
+        (concept2, _) = create_concept(user, source)
+
+        mapping = Mapping(
+            created_by=user,
+            updated_by=user,
+            parent=source,
+            map_type='XYZQWERT',
+            from_concept=concept1,
+            to_concept=concept2,
+            public_access=ACCESS_TYPE_VIEW,
+        )
+
+        kwargs = {
+            'parent_resource': source,
+        }
+
+        errors = Mapping.persist_new(mapping, user, **kwargs)
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], 'Mapping type should be valid attribute')
+
+    def test_create_mapping_positive__valid_mapping_type(self):
+        maptypes_source = Source.objects.get(name="MapTypes")
+        create_concept(self.user1, maptypes_source, concept_class="MapType", names=[create_localized_text("SAME-AS")])
+        create_concept(self.user1, maptypes_source, concept_class="MapType", names=[create_localized_text("NARROWER-THAN")])
+
+        user = create_user()
+
+        source = create_source(user)
+        (concept1, _) = create_concept(user, source)
+        (concept2, _) = create_concept(user, source)
+
+        mapping = Mapping(
+            created_by=user,
+            updated_by=user,
+            parent=source,
+            map_type='SAME-AS',
+            from_concept=concept1,
+            to_concept=concept2,
+            public_access=ACCESS_TYPE_VIEW,
+        )
+
+        kwargs = {
+            'parent_resource': source,
+        }
+
+        errors = Mapping.persist_new(mapping, user, **kwargs)
+        self.assertEquals(0, len(errors))
+
+
 class MappingVersionTest(MappingVersionBaseTest):
 
     def test_create_mapping_positive(self):
@@ -570,7 +628,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         (to_concept, errors) = create_concept(mnemonic='toConcept', user=self.user1, source=source)
 
         mapping = Mapping(
-            map_type='foobar',
+            map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
             external_id='mapping',

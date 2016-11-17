@@ -17,30 +17,7 @@ class OclApiBaseTestCase(TestCase):
     def setUp(self):
         user = create_user()
         org_ocl = create_organization("OCL")
-        classes_source = create_source(user, organization=org_ocl, name="Classes")
-        datatypes_source = create_source(user, organization=org_ocl, name="Datatypes")
-        nametypes_source = create_source(user, organization=org_ocl, name="NameTypes")
-        descriptiontypes_source = create_source(user, organization=org_ocl, name="DescriptionTypes")
-
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("First")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Second")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Third")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Fourth")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Diagnosis")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Drug")])
-        create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("not First")])
-
-        create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("None"), create_localized_text("N/A")])
-
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("FULLY_SPECIFIED"), create_localized_text("Fully Specified")])
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Short"), create_localized_text("SHORT")])
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("INDEX_TERM"), create_localized_text("Index Term")])
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("None")])
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Technical")])
-        create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Academic")])
-
-        create_concept(user, descriptiontypes_source, concept_class="DescriptionType", names=[create_localized_text("None")])
-        create_concept(user, descriptiontypes_source, concept_class="DescriptionType",names=[create_localized_text("FULLY_SPECIFIED")])
+        create_lookup_concept_classes(user, org_ocl)
 
     def tearDown(self):
         LocalizedText.objects.filter().delete()
@@ -172,3 +149,51 @@ def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
     Mapping.persist_new(mapping, user, **kwargs)
 
     return Mapping.objects.get(id=mapping.id)
+
+def create_lookup_concept_classes(user, org_ocl):
+    classes_source = create_source(user, organization=org_ocl, name="Classes")
+    datatypes_source = create_source(user, organization=org_ocl, name="Datatypes")
+    nametypes_source = create_source(user, organization=org_ocl, name="NameTypes")
+    descriptiontypes_source = create_source(user, organization=org_ocl, name="DescriptionTypes")
+    maptypes_source = create_source(user, organization=org_ocl, name="MapTypes")
+
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("First")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Second")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Third")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Fourth")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Diagnosis")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Drug")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("not First")])
+
+    create_concept(user, datatypes_source, concept_class="Datatype",
+                   names=[create_localized_text("None"), create_localized_text("N/A")])
+
+    create_concept(user, nametypes_source, concept_class="NameType",
+                   names=[create_localized_text("FULLY_SPECIFIED"), create_localized_text("Fully Specified")])
+    create_concept(user, nametypes_source, concept_class="NameType",
+                   names=[create_localized_text("Short"), create_localized_text("SHORT")])
+    create_concept(user, nametypes_source, concept_class="NameType",
+                   names=[create_localized_text("INDEX_TERM"), create_localized_text("Index Term")])
+    create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("None")])
+    create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Technical")])
+    create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("Academic")])
+
+    create_concept(user, descriptiontypes_source, concept_class="DescriptionType",
+                   names=[create_localized_text("None")])
+    create_concept(user, descriptiontypes_source, concept_class="DescriptionType",
+                   names=[create_localized_text("FULLY_SPECIFIED")])
+
+    create_concept(user, maptypes_source, concept_class="MapType",
+                   names=[create_localized_text("SAME-AS"), create_localized_text("Same As")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Is Subset of")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Different")])
+    create_concept(user, maptypes_source, concept_class="MapType",
+                   names=[create_localized_text("BROADER-THAN"), create_localized_text("Broader Than"),
+                          create_localized_text("BROADER_THAN")])
+    create_concept(user, maptypes_source, concept_class="MapType",
+                   names=[create_localized_text("NARROWER-THAN"), create_localized_text("Narrower Than"),
+                          create_localized_text("NARROWER_THAN")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Q-AND-A")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("More specific than")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Less specific than")])
+    create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Something Else")])

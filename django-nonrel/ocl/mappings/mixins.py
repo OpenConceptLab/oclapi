@@ -23,6 +23,8 @@ class MappingValidationMixin:
             basic_errors.append(
                 "Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both.")
 
+        self._mapping_type_should_be_valid_attribute()
+
         if basic_errors:
             raise ValidationError(' '.join(basic_errors))
 
@@ -32,6 +34,30 @@ class MappingValidationMixin:
                 custom_validator.validate()
         except Source.DoesNotExist as err:
             raise ValidationError("There's no Source")
+
+
+    def _mapping_type_should_be_valid_attribute(self):
+        from orgs.models import Organization
+        ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
+
+        if ocl_org_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        org = ocl_org_filter.get()
+
+        maptypes_filter = Source.objects.filter(parent_id=org.id, mnemonic='MapTypes')
+
+        if maptypes_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        source_maptypes = maptypes_filter.values_list('id').get()
+
+        from concepts.models import Concept
+        matching_maptypes = {'retired': False, 'is_active': True, 'concept_class': 'MapType',
+                                    'parent_id': source_maptypes[0], 'names.name': self.map_type}
+
+        if Concept.objects.raw_query(matching_maptypes).count() < 1:
+            raise ValidationError({'names': ['Mapping type should be valid attribute']})
 
 
 
