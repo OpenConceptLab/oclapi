@@ -4,7 +4,8 @@ keys=($redis_keys)
 len=${#keys[@]}
 if [ $len -gt 1 ]
 then
-echo 'ok!'
+    logger ok
 else
-`cd ~/oclapi/django-nonrel/ocl && docker-compose -f docker-compose.yml restart ocl_worker`
+    logger restarting
+    cd /root/oclapi/django-nonrel/ocl && echo $(/usr/local/bin/docker-compose -f docker-compose.yml restart ocl_worker) && logger end
 fi
