@@ -149,53 +149,51 @@ class ConceptValidationMixin:
         self._data_type_should_be_valid_attribute(org)
         self._name_type_should_be_valid_attribute(org)
         self._description_type_should_be_valid_attribute(org)
+        self._locale_should_be_valid_attribute(org)
 
     def _concept_class_should_be_valid_attribute(self, org):
-        source_classes_filter = Source.objects.filter(parent_id=org.id, mnemonic='Classes')
+        is_concept_class_valid = self._is_attribute_valid(self.concept_class, org, 'Classes', 'Concept Class')
 
-        if source_classes_filter.count() < 1:
-            raise ValidationError({'names': ['Lookup attributes must be imported']})
-
-        source_classes = source_classes_filter.values_list('id').get()
-
-        from concepts.models import Concept
-        matching_concept_classes = {'retired': False, 'is_active': True, 'concept_class': 'Concept Class',
-                                    'parent_id': source_classes[0], 'names.name': self.concept_class}
-
-        if Concept.objects.raw_query(matching_concept_classes).count() < 1:
+        if not is_concept_class_valid:
             raise ValidationError({'names': ['Concept class should be valid attribute']})
 
     def _data_type_should_be_valid_attribute(self, org):
-        datatypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic='Datatypes')
+        is_data_type_valid = self._is_attribute_valid(self.datatype, org, 'Datatypes', 'Datatype')
 
-        if datatypes_source_filter.count() < 1:
-            raise ValidationError({'names': ['Lookup attributes must be imported']})
-
-        source_datatypes = datatypes_source_filter.values_list('id').get()
-
-        from concepts.models import Concept
-        matching_datatypes = {'retired': False, 'is_active': True, 'concept_class': 'Datatype',
-                              'parent_id': source_datatypes[0], 'names.name': self.datatype}
-
-        if Concept.objects.raw_query(matching_datatypes).count() < 1:
+        if not is_data_type_valid:
             raise ValidationError({'names': ['Data type should be valid attribute']})
 
     def _name_type_should_be_valid_attribute(self, org):
         name_type_count = len(
-            filter(lambda n: self._is_list_field_attribute_type_valid(n, org, 'NameTypes', 'NameType'), self.names))
+            filter(lambda n: self._is_attribute_valid(n.type, org, 'NameTypes', 'NameType'), self.names))
 
         if name_type_count < len(self.names):
             raise ValidationError({'names': ['Name type should be valid attribute']})
 
     def _description_type_should_be_valid_attribute(self, org):
         description_type_count = len(
-            filter(lambda d: self._is_list_field_attribute_type_valid(d, org, 'DescriptionTypes', 'DescriptionType'),
+            filter(lambda d: self._is_attribute_valid(d.type, org, 'DescriptionTypes', 'DescriptionType'),
                    self.descriptions))
 
         if description_type_count < len(self.descriptions):
             raise ValidationError({'names': ['Description type should be valid attribute']})
 
-    def _is_list_field_attribute_type_valid(self, attribute, org, source_mnemonic, concept_class):
+    def _locale_should_be_valid_attribute(self, org):
+        name_locale_count = len(
+            filter(lambda n: self._is_attribute_valid(n.locale, org, 'Locales', 'Locale'),
+                   self.names))
+
+        if name_locale_count < len(self.names):
+            raise ValidationError({'names': ['Name locale should be valid attribute']})
+
+        description_locale_count = len(
+            filter(lambda d: self._is_attribute_valid(d.locale, org, 'Locales', 'Locale'),
+                   self.descriptions))
+
+        if description_locale_count < len(self.descriptions):
+            raise ValidationError({'names': ['Description locale should be valid attribute']})
+
+    def _is_attribute_valid(self, attribute_property, org, source_mnemonic, concept_class):
         attributetypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic=source_mnemonic)
 
         if attributetypes_source_filter.count() < 1:
@@ -205,7 +203,7 @@ class ConceptValidationMixin:
 
         from concepts.models import Concept
         matching_attribute_types = {'retired': False, 'is_active': True, 'concept_class': concept_class,
-                                    'parent_id': source_attributetypes[0], 'names.name': attribute.type}
+                                    'parent_id': source_attributetypes[0], 'names.name': attribute_property}
 
         if Concept.objects.raw_query(matching_attribute_types).count() > 0:
             return True

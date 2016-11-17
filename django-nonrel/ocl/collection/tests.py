@@ -37,7 +37,7 @@ class CollectionBaseTest(OclApiBaseTestCase):
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
-        self.name = LocalizedText.objects.create(name='Fred', locale='es', type='FULLY_SPECIFIED')
+        self.name = create_localized_text(name='Fred', locale='es', type='FULLY_SPECIFIED')
 
 
 class CollectionTest(CollectionBaseTest):
@@ -201,7 +201,7 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        (concept1, errors) = create_concept(user=self.user1, source=source, names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
+        (concept1, errors) = create_concept(user=self.user1, source=source, names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [reference]
@@ -248,10 +248,10 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        (fromConcept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source, names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
+        (fromConcept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source, names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         (toConcept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source, names=[
-            LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')])
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
 
         mapping = Mapping(
@@ -322,7 +322,7 @@ class CollectionTest(CollectionBaseTest):
             mnemonic='concept1',
             user=self.user1,
             source=source,
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
 
         expression = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
@@ -383,7 +383,7 @@ class CollectionTest(CollectionBaseTest):
             mnemonic='concept1',
             user=self.user1,
             source=source,
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
 
 
@@ -391,14 +391,14 @@ class CollectionTest(CollectionBaseTest):
             mnemonic='fromConcept',
             user=self.user1,
             source=source,
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
 
         (to_concept, error) = create_concept(
             mnemonic='toConcept',
             user=self.user1,
             source=source,
-            names=[LocalizedText.objects.create(name='User', locale='es', type='FULLY_SPECIFIED')],
+            names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
 
         mapping = Mapping(
