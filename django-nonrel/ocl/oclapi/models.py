@@ -214,8 +214,8 @@ class ResourceVersionModel(BaseModel):
 
 
 CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
-LOOKUP_CONCEPT_CLASSES = ['Concept Class', 'Datatype', 'NameType', 'DescriptionType', 'MapType']
-LOOKUP_SOURCES = ['Classes', 'Datatypes', 'NameTypes', 'DescriptionTypes', 'MapTypes']
+LOOKUP_CONCEPT_CLASSES = ['Concept Class', 'Datatype', 'NameType', 'DescriptionType', 'MapType', 'Locale']
+LOOKUP_SOURCES = ['Classes', 'Datatypes', 'NameTypes', 'DescriptionTypes', 'MapTypes', 'Locales']
 
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()

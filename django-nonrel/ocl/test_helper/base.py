@@ -38,8 +38,8 @@ def generate_random_string(length=5):
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
-def create_localized_text(name, locale='en', type='FULLY_SPECIFIED'):
-    return LocalizedText.objects.create(name=name, locale=locale, type=type)
+def create_localized_text(name, locale='en', type='FULLY_SPECIFIED', locale_preferred=False):
+    return LocalizedText.objects.create(name=name, locale=locale, type=type, locale_preferred=locale_preferred)
 
 
 def create_user():
@@ -156,6 +156,7 @@ def create_lookup_concept_classes(user, org_ocl):
     nametypes_source = create_source(user, organization=org_ocl, name="NameTypes")
     descriptiontypes_source = create_source(user, organization=org_ocl, name="DescriptionTypes")
     maptypes_source = create_source(user, organization=org_ocl, name="MapTypes")
+    locales_source = create_source(user, organization=org_ocl, name="Locales")
 
     create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("First")])
     create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Second")])
@@ -197,3 +198,9 @@ def create_lookup_concept_classes(user, org_ocl):
     create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("More specific than")])
     create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Less specific than")])
     create_concept(user, maptypes_source, concept_class="MapType", names=[create_localized_text("Something Else")])
+
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("en")])
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("es")])
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("fr")])
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("tr")])
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("nl")])
