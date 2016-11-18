@@ -1,5 +1,5 @@
 #!/bin/bash
-export redis_keys=`redis-cli keys "*celery*"`
+export redis_keys=`/usr/local/bin/docker-compose exec redis redis-cli keys "*celery*"`
 keys=($redis_keys)
 len=${#keys[@]}
 if [ $len -gt 1 ]
