@@ -1133,7 +1133,6 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         errors = Mapping.persist_new(mapping, user, **kwargs)
         self.assertTrue("Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
 
-
     def test_update_different_from_and_to_pairs_to_same_from_and_to_pairs_should_throw_validation_error(self):
         user = create_user()
 
@@ -1145,7 +1144,7 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept3, _) = create_concept(user, source2)
 
         create_mapping(user, source1, concept1, concept2, "Same As")
-        mapping = create_mapping(user, source2, concept2, concept3, "Same As")
+        mapping = create_mapping(user, source1, concept2, concept3, "Same As")
 
         mapping.from_concept = concept1
         mapping.to_concept = concept2
