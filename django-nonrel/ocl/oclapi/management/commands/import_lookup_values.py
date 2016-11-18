@@ -24,7 +24,7 @@ class Command(BaseCommand):
             {'source': sources['Datatypes'], 'file': "./datatypes_fixed.json"},
             {'source': sources['NameTypes'], 'file': "./nametypes_fixed.json"},
             {'source': sources['DescriptionTypes'], 'file': "./description_types.json"},
-            {'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
+            #{'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
         ]
 
         for conf in importer_confs:

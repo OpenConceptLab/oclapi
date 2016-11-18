@@ -23,7 +23,7 @@ class MappingValidationMixin:
             basic_errors.append(
                 "Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both.")
 
-        self._mapping_type_should_be_valid_attribute()
+        #self._mapping_type_should_be_valid_attribute()
 
         if basic_errors:
             raise ValidationError(' '.join(basic_errors))
