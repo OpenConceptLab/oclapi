@@ -188,8 +188,12 @@ class ResourceVersionModel(BaseModel):
             return self._collection_ids_for_version()
 
     def _collection_ids_for_versioned_object(self):
-        return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(
-            references={'expression': self.versioned_object.uri}))
+        if self.versioned_object:
+            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(
+                references={'expression': self.versioned_object.uri}))
+        else:
+            print self.versioned_object_id
+            return []
 
     def _collection_ids_for_version(self):
         return map(lambda c: c.id,
