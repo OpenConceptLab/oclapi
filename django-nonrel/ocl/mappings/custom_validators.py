@@ -11,7 +11,7 @@ class OpenMRSMappingValidator:
     def pair_must_be_unique(self):
         from mappings.models import Mapping
 
-        intersection = Mapping.objects.filter(from_concept=self.mapping.from_concept,
+        intersection = Mapping.objects.filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept,
                                               to_concept=self.mapping.to_concept, is_active=True, retired=False).count()
 
         if intersection:
