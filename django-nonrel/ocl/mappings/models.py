@@ -417,7 +417,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
 
     @property
     def from_source_url(self):
-        self.from_source.url
+        return self.from_source.url
 
     @property
     def from_source_shorthand(self):
