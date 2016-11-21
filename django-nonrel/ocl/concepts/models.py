@@ -56,7 +56,7 @@ class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin)
     concept_class = models.TextField(null=False, blank=False)
     datatype = models.TextField(null=False, blank=False)
     names = ListField(EmbeddedModelField(LocalizedText))
-    descriptions = ListField(EmbeddedModelField(LocalizedText))
+    descriptions = ListField(EmbeddedModelField(LocalizedText), null=True, blank=True)
     retired = models.BooleanField(default=False)
 
     objects = MongoDBManager()
@@ -220,7 +220,7 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     concept_class = models.TextField()
     datatype = models.TextField(null=True, blank=True)
     names = ListField(EmbeddedModelField('LocalizedText'))
-    descriptions = ListField(EmbeddedModelField('LocalizedText'))
+    descriptions = ListField(EmbeddedModelField('LocalizedText'), null=True)
     retired = models.BooleanField(default=False)
     root_version = models.ForeignKey('self', null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
@@ -230,14 +230,13 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     objects = MongoDBManager()
 
     def clone(self):
-        return ConceptVersion(
+        concept_version = ConceptVersion(
             mnemonic='--TEMP--',
             public_access=self.public_access,
             external_id=self.external_id,
             concept_class=self.concept_class,
             datatype=self.datatype,
             names=map(lambda n: n.clone(), self.names),
-            descriptions=map(lambda d: d.clone(), self.descriptions),
             retired=self.retired,
             versioned_object_id=self.versioned_object_id,
             versioned_object_type=self.versioned_object_type,
@@ -248,6 +247,11 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             is_latest_version=self.is_latest_version,
             extras=self.extras
         )
+
+        if self.descriptions:
+            concept_version.descriptions = map(lambda d: d.clone(), self.descriptions)
+
+        return concept_version
 
     @property
     def name(self):
