@@ -63,6 +63,5 @@ class Command(BaseCommand):
                 source = Source.objects.get(parent_id=org.id, mnemonic='Locales')
             sources[source_name] = source
 
-        print sources
 
         return sources

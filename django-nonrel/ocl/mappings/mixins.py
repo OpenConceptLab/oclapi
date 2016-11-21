@@ -5,6 +5,8 @@ from mappings.custom_validators import OpenMRSMappingValidator
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from sources.models import Source
 
+import os
+
 
 class MappingValidationMixin:
     def clean(self):
@@ -27,6 +29,9 @@ class MappingValidationMixin:
 
         if basic_errors:
             raise ValidationError(' '.join(basic_errors))
+
+        if os.environ.get('DISABLE_VALIDATION'):
+            return
 
         try:
             if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:

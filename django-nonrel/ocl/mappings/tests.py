@@ -4,6 +4,7 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import os
 from unittest import skip
 from urlparse import urlparse
 
