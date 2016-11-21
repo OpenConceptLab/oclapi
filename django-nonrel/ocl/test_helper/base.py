@@ -39,7 +39,7 @@ def generate_random_string(length=5):
 
 
 def create_localized_text(name, locale='en', type='FULLY_SPECIFIED', locale_preferred=False):
-    return LocalizedText.objects.create(name=name, locale=locale, type=type, locale_preferred=locale_preferred)
+    return LocalizedText(name=name, locale=locale, type=type, locale_preferred=locale_preferred)
 
 
 def create_user():
@@ -100,16 +100,16 @@ def create_source(user, validation_schema=None, organization=None, name=None):
     return Source.objects.get(id=source.id)
 
 
-def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None):
+def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None, force=False):
     suffix = generate_random_string()
 
-    if not names:
+    if not names and not force:
         names = [create_localized_text("name{0}".format(suffix))]
 
-    if not mnemonic:
+    if not mnemonic and not force:
         mnemonic = 'concept{0}'.format(suffix)
 
-    if not descriptions:
+    if not descriptions and not force:
         descriptions = [create_localized_text("desc{0}".format(suffix))]
 
     concept = Concept(
@@ -129,7 +129,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
     else:
         errors = Concept.persist_new(concept, user)
 
-    return (concept, errors)
+    return concept, errors
 
 def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
     mapping = Mapping(
