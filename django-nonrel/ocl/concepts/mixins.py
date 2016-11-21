@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from concepts.custom_validators import OpenMRSConceptValidator
 from concepts.validators import BasicConceptValidator
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+import os
 
 __author__ = 'misternando'
 
@@ -83,6 +84,9 @@ class DictionaryItemMixin(object):
 
 class ConceptValidationMixin:
     def clean(self):
+        if os.environ.get('DISABLE_VALIDATION'):
+            return
+
         validators = [BasicConceptValidator(self)]
 
         if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
