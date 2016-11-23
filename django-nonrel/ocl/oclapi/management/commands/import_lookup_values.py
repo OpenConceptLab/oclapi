@@ -60,7 +60,7 @@ class Command(BaseCommand):
                                 created_by=user, default_locale='en', supported_locales=['en'], updated_by=user)
                 Source.persist_new(source, user, **kwargs)
             else:
-                source = Source.objects.get(parent_id=org.id, mnemonic='Locales')
+                source = Source.objects.get(parent_id=org.id, mnemonic=source_name)
             sources[source_name] = source
 
 
