@@ -13,7 +13,7 @@ def open_mrs_concept_template(update=None):
         "names": [{
             "name": "grip",
             "locale": 'en',
-            "name_type": "FULLY_SPECIFIED"
+            "name_type": "Short"
         }, {
             "name": "grip2",
             "locale": 'en',
@@ -169,10 +169,6 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
         data = json.dumps(open_mrs_concept_template(
             {"names":
                 [{
-                    "name": "grip",
-                    "locale": 'en',
-                    "name_type": "SHORT"
-                }, {
                     "name": "grip",
                     "locale": 'en',
                     "name_type": "SHORT"

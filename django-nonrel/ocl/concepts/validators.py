@@ -43,18 +43,18 @@ class BasicConceptValidator:
                 continue
 
             same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
-                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale, 'type': {'$nin': ['Short', 'SHORT']}}},
                                     'is_latest_version': True}
 
             if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
                 raise ValidationError(validation_error)
 
     def requires_at_least_one_fully_specified_name(self):
-        # Concept requires at least one fully specified name
+        # A concept must have at least one fully specified name (across all locales)
         fully_specified_name_count = len(
             filter(lambda n: n.is_fully_specified, self.concept.names))
         if fully_specified_name_count < 1:
-            raise ValidationError({'names': ['Concept requires at least one fully specified name']})
+            raise ValidationError({'names': ['A concept must have at least one fully specified name (across all locales)']})
 
     def description_cannot_be_null(self):
         if not self.concept.descriptions:

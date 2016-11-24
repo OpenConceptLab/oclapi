@@ -30,14 +30,14 @@ class BulkConceptImporterTest(ConceptBaseTest):
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
-        self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
+        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
 
     def test_import_concepts_with_invalid_records(self):
         self.testfile = open('./integration_tests/fixtures/valid_invalid_concepts.json', 'rb')
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=7)
-        self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
+        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
         self.assertTrue('Concept preferred name must be unique for same source and locale' in stderr_stub.getvalue())
         self.assertEquals(5, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(5, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
@@ -49,7 +49,7 @@ class BulkConceptImporterTest(ConceptBaseTest):
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
-        self.assertTrue('Concept requires at least one fully specified name' in stderr_stub.getvalue())
+        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
         self.assertEquals(1, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(1, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
@@ -62,10 +62,10 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(source, test_file, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=5)
 
-        self.assertTrue("Custom validation rules require a concept to have exactly one preferred name" in stderr_stub.getvalue())
-        self.assertTrue("Custom validation rules require a preferred name to be different than a short name" in stderr_stub.getvalue())
-        self.assertTrue("Custom validation rules require a preferred name not to be an index/search term" in stderr_stub.getvalue())
-        self.assertTrue("Custom validation rules require all names except type=SHORT to be unique" in stderr_stub.getvalue())
+        self.assertTrue("A concept may not have more than one preferred name (per locale)" in stderr_stub.getvalue())
+        self.assertTrue("A short name cannot be marked as locale preferred" in stderr_stub.getvalue())
+        self.assertTrue("A short name cannot be marked as locale preferred" in stderr_stub.getvalue())
+        self.assertTrue("All names except short names must unique for a concept and locale" in stderr_stub.getvalue())
 
         self.assertEquals(2, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(2, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
