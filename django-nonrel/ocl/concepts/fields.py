@@ -36,7 +36,8 @@ class ListField(WritableField):
         return element
 
     def to_native(self, value):
-        return map(lambda e: self.element_to_native(e), value)
+        if value:
+            return map(lambda e: self.element_to_native(e), value)
 
     def element_to_native(self, element):
         return element

@@ -555,7 +555,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         ])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Concept requires at least one fully specified name')
+        self.assertEquals(errors['names'][0], 'A concept must have at least one fully specified name (across all locales)')
 
     def test_preferred_name_uniqueness_when_name_exists_in_source_for_different_locale(self):
         (_, _) = create_concept(user=self.user1, source=self.source1, names=[
@@ -1313,7 +1313,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'Custom validation rules require a concept to have exactly one preferred name')
+                          'A concept may not have more than one preferred name (per locale)')
 
     def test_concepts_should_have_unique_fully_specified_name_per_locale(self):
         user = create_user()
@@ -1333,11 +1333,9 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()
 
-        short_name = create_localized_text("ShortName")
-        short_name.type = "Short"
+        short_name = create_localized_text("ShortName", locale_preferred=True, type="Short", locale='fr')
 
-        name = create_localized_text('ShortName')
-        name.locale_preferred = True
+        name = create_localized_text('Fully Sepcified Name')
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
@@ -1345,16 +1343,14 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'Custom validation rules require a preferred name to be different than a short name')
+                          'A short name cannot be marked as locale preferred')
 
     def test_a_preferred_name_can_not_be_an_index_search_term(self):
         user = create_user()
 
         name = create_localized_text("FullySpecifiedName")
 
-        index_name = create_localized_text("IndexTermName")
-        index_name.type = "INDEX_TERM"
-        index_name.locale_preferred = True
+        index_name = create_localized_text("IndexTermName", type="INDEX_TERM", locale_preferred=True, locale='tr')
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
@@ -1362,7 +1358,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'Custom validation rules require a preferred name not to be an index/search term')
+                          'A short name cannot be marked as locale preferred')
 
     def test_a_name_can_be_equal_to_a_short_name(self):
         user = create_user()
@@ -1391,4 +1387,46 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'Custom validation rules require all names except type=SHORT to be unique')
+                          'All names except short names must unique for a concept and locale')
+
+    def test_only_one_fully_specified_name_per_locale(self):
+        user = create_user()
+        name1 = create_localized_text('fully specified 1')
+        name1.locale = 'en'
+        name2 = create_localized_text('fully specified 2')
+        name2.locale = 'en'
+        name3 = create_localized_text('fully specified 3')
+        name3.locale = 'fr'
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        _, errors = create_concept(user=user, source=source, names=[name1, name2, name3])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'A concept may not have more than one fully specified name in any locale')
+
+    def test_no_more_than_one_short_name_per_locale(self):
+        user = create_user()
+        name1 = create_localized_text('fully specified 1', locale='en', type='Short')
+        name2 = create_localized_text('fully specified 2', locale='en', type='Short')
+        name3 = create_localized_text('fully specified 3', locale='fr')
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        _, errors = create_concept(user=user, source=source, names=[name1, name2, name3])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0],
+                          'A concept cannot have more than one short name in a locale')
+
+    def test_locale_preferred_name_uniqueness_doesnt_apply_to_shorts(self):
+        user = create_user()
+        name_fully_specified_mg = create_localized_text('mg', locale='en', locale_preferred=True)
+        name_short_mg = create_localized_text('mg', locale='en', type='Short')
+
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        _, errors = create_concept(user, source, names=[name_fully_specified_mg, name_short_mg])
+
+        self.assertEquals(0, len(errors))

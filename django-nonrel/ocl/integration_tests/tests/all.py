@@ -1,12 +1,12 @@
 import json
 from urlparse import urlparse
 
-import mock
 from django.core.urlresolvers import reverse
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 from django.utils.unittest.case import skip
+from haystack.management.commands import update_index
 from moto import mock_s3
 from rest_framework import status
 
@@ -20,8 +20,11 @@ from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLA
 from sources.models import Source, SourceVersion
 from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
-from test_helper.base import create_user, create_source, create_organization, create_localized_text, create_concept
+from test_helper.base import create_user, create_source, create_organization, create_concept
 
+
+def update_haystack_index():
+    update_index.Command().handle()
 
 class ConceptCreateViewTest(ConceptBaseTest):
     def setUp(self):
@@ -34,6 +37,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
         )
 
         (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[display_name])
+        update_haystack_index()
+
 
     def test_dispatch_with_head(self):
         self.client.login(username='user1', password='user1')
@@ -41,6 +46,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
             'org': self.org1.mnemonic,
             'source': self.source1.mnemonic
         }
+
         response = self.client.get(reverse('concept-create', kwargs=kwargs))
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
@@ -308,6 +314,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
+
         kwargs = {
             'org': org.mnemonic,
             'source': source.mnemonic,
@@ -455,6 +462,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         source_version.save()
 
         (concept2, _) = create_concept(mnemonic='concept2', user=self.user1, source=self.source1)
+        update_haystack_index()
 
         self.client.login(username='user1', password='user1')
 
@@ -932,6 +940,8 @@ class MappingViewsTest(MappingBaseTest):
         self.source4_version2 = SourceVersion.get_latest_version_of(self.source4)
         self.assertNotEquals(self.source4_version1.id, self.source4_version2.id)
 
+        update_haystack_index()
+
 
     def test_mappings_list_positive(self):
         self.client.login(username='user1', password='user1')
@@ -998,7 +1008,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
-
 
     def test_mappings_list_positive__user_owner(self):
         self.client.login(username='user1', password='user1')
