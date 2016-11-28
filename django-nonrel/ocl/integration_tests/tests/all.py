@@ -86,6 +86,196 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_concept_class_is_valid_attribute_negative(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "XYZQWERT",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Concept class should be valid attribute", response.content)
+
+    def test_concept_class_is_valid_attribute_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_data_type_is_valid_attribute_negative(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "XYZQWERT"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Data type should be valid attribute", response.content)
+
+    def test_data_type_is_valid_attribute_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_name_type_is_valid_attribute_negative(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "XYZQWERT"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Name type should be valid attribute", response.content)
+
+    def test_name_type_is_valid_attribute_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_description_type_is_valid_attribute_negative(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en",
+                "description_type": "XYZQWERT"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Description type should be valid attribute", response.content)
+
+    def test_desription_type_is_valid_attribute_positive(self):
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en",
+                "description_type": "FULLY_SPECIFIED"
+            }],
+            "datatype": "None"
+        })
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
     def test_create_concept_with_more_than_one_preferred_name_in_concept(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
