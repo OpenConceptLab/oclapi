@@ -30,21 +30,37 @@ class OpenMRSConceptValidator:
             preferred_name_locales_in_concept[name.locale] = True
 
     def must_have_unique_fully_specified_name_for_same_source_and_locale(self):
-        for name in self.concept.names:
-            if not name.is_fully_specified:
+        from concepts.models import Concept, ConceptVersion
+
+        # Concept preferred_name should be unique for same source and locale.
+        validation_error = {'names': [
+            'Custom validation rules require fully specified name should be unique for same locale and source']}
+        fully_specified_names_in_concept = dict()
+        self_id = getattr(self.concept, "versioned_object_id", None)
+
+        for name in [n for n in self.concept.names if n.is_fully_specified]:
+            # making sure names in the submitted concept meet the same rule
+            name_key = name.locale + name.name
+            if fully_specified_names_in_concept.has_key(name_key):
+                raise ValidationError(validation_error)
+
+            fully_specified_names_in_concept[name_key] = True
+
+            other_concepts_in_source = list(Concept.objects \
+                                            .filter(parent_id=self.concept.parent_source.id, is_active=True,
+                                                    retired=False) \
+                                            .exclude(id=self_id) \
+                                            .values_list('id', flat=True))
+
+            if len(other_concepts_in_source) < 1:
                 continue
 
-            raw_query = {'parent_id': self.concept.parent_source.id, 'names.name': name.name,
-                         'names.locale': name.locale,
-                         'names.type': name.type}
+            same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}},
+                                    'is_latest_version': True}
 
-            # TODO find a better solution for circular dependency
-            from concepts.models import Concept
-            if Concept.objects.raw_query(raw_query).count() > 0:
-                raise ValidationError({
-                    'names': [
-                        'Custom validation rules require fully specified name should be unique for same locale and source']
-                })
+            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
+                raise ValidationError(validation_error)
 
     def short_name_cannot_be_marked_as_locale_preferred(self):
         short_preferred_names_in_concept = filter(

@@ -108,6 +108,40 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_concepts_should_have_unique_fully_specified_name_per_source_locale_negative(self):
+        user = create_user()
+        source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
+                                             organization=self.org1)
+        self.client.login(username=user.username, password=user.password)
+        kwargs = {'org': self.org1.mnemonic, 'source': source_with_open_mrs.mnemonic}
+        data_valid = json.dumps(open_mrs_concept_template(
+            {"names":
+                [{
+                    "name": "grip",
+                    "locale": 'en',
+                    "name_type": "FULLY_SPECIFIED"
+                }]
+            }
+        ))
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data_valid, content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+        data_invalid = json.dumps(open_mrs_concept_template(
+            {"names":
+                [{
+                    "name": "grip",
+                    "locale": 'en',
+                    "name_type": "FULLY_SPECIFIED"
+                }]
+            }
+        ))
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data_valid,
+                                    content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
     def test_preferred_name_cannot_be_short_negative(self):
         user = create_user()
         source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
