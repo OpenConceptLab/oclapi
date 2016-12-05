@@ -543,7 +543,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
     def test_persist_new_negative__no_parent(self):
         errors = Collection.persist_new(self.new_collection, self.user1)
-        self.assertTrue(errors.has_key('parent'))
+        self.assertTrue('parent' in errors)
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
     def test_persist_new_negative__no_owner(self):
@@ -551,7 +551,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
             'parent_resource': self.userprofile1
         }
         errors = Collection.persist_new(self.new_collection, None, **kwargs)
-        self.assertTrue(errors.has_key('created_by'))
+        self.assertTrue('created_by' in errors)
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
     def test_persist_new_negative__no_name(self):
@@ -560,7 +560,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
         }
         self.new_collection.name = None
         errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
-        self.assertTrue(errors.has_key('name'))
+        self.assertTrue('name' in errors)
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
 
     def test_persist_changes_positive(self):
@@ -702,7 +702,7 @@ class CollectionClassMethodTest(CollectionBaseTest):
 
         errors = Collection.persist_changes(self.new_collection, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertTrue(errors.has_key('__all__'))
+        self.assertTrue('__all__' in errors)
         self.assertTrue(Collection.objects.filter(id=id).exists())
         self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
         collection_version = CollectionVersion.objects.get(versioned_object_id=id)

@@ -14,6 +14,7 @@ from collection.models import Collection, CollectionVersion
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
+from concepts.validation_messages import BASIC_DESCRIPTION_TYPE, BASIC_NAME_TYPE, BASIC_DATATYPE, BASIC_CONCEPT_CLASS
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
@@ -37,10 +38,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
         )
 
         (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[display_name])
-        update_haystack_index()
 
 
     def test_dispatch_with_head(self):
+        update_haystack_index()
         self.client.login(username='user1', password='user1')
         kwargs = {
             'org': self.org1.mnemonic,
@@ -107,7 +108,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Concept class should be valid attribute", response.content)
+        self.assertIn(BASIC_CONCEPT_CLASS, response.content)
 
     def test_concept_class_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -152,7 +153,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Data type should be valid attribute", response.content)
+        self.assertIn(BASIC_DATATYPE, response.content)
 
     def test_data_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -197,7 +198,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Name type should be valid attribute", response.content)
+        self.assertIn(BASIC_NAME_TYPE, response.content)
 
     def test_name_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -247,7 +248,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Description type should be valid attribute", response.content)
+        self.assertIn(BASIC_DESCRIPTION_TYPE, response.content)
 
     def test_desription_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')

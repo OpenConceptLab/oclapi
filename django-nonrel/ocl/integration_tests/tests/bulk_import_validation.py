@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 
 from concepts.importer import ConceptsImporter
+from concepts.validation_messages import OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, \
+    BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME
 from concepts.models import Concept, ConceptVersion
 from concepts.tests import ConceptBaseTest
 from integration_tests.models import TestStream
@@ -30,15 +33,15 @@ class BulkConceptImporterTest(ConceptBaseTest):
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
-        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
+        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
 
     def test_import_concepts_with_invalid_records(self):
         self.testfile = open('./integration_tests/fixtures/valid_invalid_concepts.json', 'rb')
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=7)
-        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
-        self.assertTrue('Concept preferred name must be unique for same source and locale' in stderr_stub.getvalue())
+        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
+        self.assertTrue(BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE in stderr_stub.getvalue())
         self.assertEquals(5, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(5, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
@@ -49,7 +52,7 @@ class BulkConceptImporterTest(ConceptBaseTest):
         stderr_stub = TestStream()
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=1)
-        self.assertTrue('A concept must have at least one fully specified name (across all locales)' in stderr_stub.getvalue())
+        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
         self.assertEquals(1, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(1, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
@@ -62,10 +65,10 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(source, test_file, 'test', TestStream(), stderr_stub)
         importer.import_concepts(total=5)
 
-        self.assertTrue("A concept may not have more than one preferred name (per locale)" in stderr_stub.getvalue())
-        self.assertTrue("A short name cannot be marked as locale preferred" in stderr_stub.getvalue())
-        self.assertTrue("A short name cannot be marked as locale preferred" in stderr_stub.getvalue())
-        self.assertTrue("All names except short names must unique for a concept and locale" in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE in stderr_stub.getvalue())
 
         self.assertEquals(2, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(2, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
@@ -109,8 +112,9 @@ class ConceptImporterTest(ConceptBaseTest):
         latest_concept_version = [version for version in all_concept_versions if version.previous_version][0]
 
         self.assertEquals(len(latest_concept_version.names), 4)
+
         self.assertTrue(('Updated concept, replacing version ID ' + latest_concept_version.previous_version.id) in stdout_stub.getvalue())
-        self.assertTrue('concepts of 1 1 - 1 updated' in stdout_stub.getvalue())
+        self.assertTrue('**** Processed 1 out of 1 concepts - 1 updated, ****' in stdout_stub.getvalue())
 
 
 class MappingImporterTest(MappingBaseTest):
@@ -169,7 +173,9 @@ class MappingImporterTest(MappingBaseTest):
 
         importer = MappingsImporter(self.source1, self.testfile, stdout_stub, stderr_stub, 'test')
         importer.import_mappings(total=1)
-        self.assertTrue('mappings of 1 1 - 1 updated' in stdout_stub.getvalue())
+
+        print stdout_stub.getvalue()
+        self.assertTrue('**** Processed 1 out of 1 mappings - 1 updated, ****' in stdout_stub.getvalue())
         self.assertTrue(('Updated mapping with ID ' + mapping.id) in stdout_stub.getvalue())
         updated_mapping = Mapping.objects.get(to_concept_code='413532003')
         self.assertTrue(updated_mapping.retired)

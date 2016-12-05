@@ -118,6 +118,11 @@ class ImportCommand(BaseCommand):
                     dest='keep_haystack',
                     default=False,
                     help='Keep the inline indexing logic, so that we dont run reindex at the end.'),
+        make_option('--error-output-file',
+                    action='store',
+                    dest='error_output_file',
+                    default=None,
+                    help="Name of the csv file to redirect validation errors to")
     )
 
 

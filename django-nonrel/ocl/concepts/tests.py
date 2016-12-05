@@ -8,6 +8,12 @@ Replace this with more appropriate tests for your application.
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
+from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE, \
+    OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, \
+    OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, BASIC_DESCRIPTION_LOCALE, BASIC_NAME_LOCALE, BASIC_DESCRIPTION_TYPE, \
+    BASIC_NAME_TYPE, BASIC_DATATYPE, BASIC_CONCEPT_CLASS, BASIC_DESCRIPTION_CANNOT_BE_EMPTY, \
+    BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME
 from concepts.views import ConceptVersionListView
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
@@ -264,7 +270,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Concept class should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_CONCEPT_CLASS)
 
     def test_concept_class_is_valid_attribute_positive(self):
         classes_source = Source.objects.get(name="Classes")
@@ -298,7 +304,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')], datatype='XYZWERRTR')
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Data type should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_DATATYPE)
 
     def test_data_type_is_valid_attribute_positive(self):
         datatypes_source = Source.objects.get(name="Datatypes")
@@ -336,7 +342,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Name type should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_NAME_TYPE)
 
     def test_name_type_is_valid_attribute_positive(self):
         nametypes_source = Source.objects.get(name="NameTypes")
@@ -375,7 +381,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                                type='XYZWERRTR')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Description type should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_DESCRIPTION_TYPE)
 
     def test_description_type_is_valid_attribute_positive(self):
         descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
@@ -414,7 +420,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                      type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Name locale should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_NAME_LOCALE)
 
     def test_description_locale_is_valid_attribute_negative(self):
         descriptiontypes_source = Source.objects.get(name="Locales")
@@ -434,7 +440,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                      type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Description locale should be valid attribute')
+        self.assertEquals(errors['names'][0], BASIC_DESCRIPTION_LOCALE)
 
     def test_name_locale_is_valid_attribute_positive(self):
         descriptiontypes_source = Source.objects.get(name="Locales")
@@ -497,7 +503,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
+        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
     def test_duplicate_preferred_name_per_source_should_pass_if_not_preferred(self):
         (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
@@ -546,7 +552,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], 'Concept preferred name must be unique for same source and locale')
+        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
     def test_at_least_one_fully_specified_name_per_concept_negative(self):
         (concept, errors) = create_concept(user=self.user1, source=self.source1, names=[
@@ -555,7 +561,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         ])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'A concept must have at least one fully specified name (across all locales)')
+        self.assertEquals(errors['names'][0], BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME)
 
     def test_preferred_name_uniqueness_when_name_exists_in_source_for_different_locale(self):
         (_, _) = create_concept(user=self.user1, source=self.source1, names=[
@@ -588,7 +594,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         ])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['descriptions'][0], 'Concept requires at least one description')
+        self.assertEquals(errors['descriptions'][0], BASIC_DESCRIPTION_CANNOT_BE_EMPTY)
 
 
 class ConceptClassMethodsTest(ConceptBaseTest):
@@ -1313,7 +1319,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'A concept may not have more than one preferred name (per locale)')
+                          OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME)
 
     def test_concepts_should_have_unique_fully_specified_name_per_locale(self):
         user = create_user()
@@ -1328,7 +1334,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors1))
 
         self.assertEquals(errors2['names'][0],
-                          'Custom validation rules require fully specified name should be unique for same locale and source')
+                          OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()
@@ -1343,7 +1349,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'A short name cannot be marked as locale preferred')
+                          OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED)
 
     def test_a_preferred_name_can_not_be_an_index_search_term(self):
         user = create_user()
@@ -1358,7 +1364,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'A short name cannot be marked as locale preferred')
+                          OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED)
 
     def test_a_name_can_be_equal_to_a_short_name(self):
         user = create_user()
@@ -1387,7 +1393,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'All names except short names must unique for a concept and locale')
+                          OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE)
 
     def test_only_one_fully_specified_name_per_locale(self):
         user = create_user()
@@ -1404,7 +1410,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'A concept may not have more than one fully specified name in any locale')
+                          OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE)
 
     def test_no_more_than_one_short_name_per_locale(self):
         user = create_user()
@@ -1418,7 +1424,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['names'][0],
-                          'A concept cannot have more than one short name in a locale')
+                          OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE)
 
     def test_locale_preferred_name_uniqueness_doesnt_apply_to_shorts(self):
         user = create_user()

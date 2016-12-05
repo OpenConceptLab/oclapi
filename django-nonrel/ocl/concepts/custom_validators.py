@@ -1,5 +1,10 @@
 from django.core.exceptions import ValidationError
 
+from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE, \
+    OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, \
+    OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED
+
 
 class OpenMRSConceptValidator:
     def __init__(self, concept):
@@ -22,9 +27,9 @@ class OpenMRSConceptValidator:
             if not name.locale_preferred:
                 continue
 
-            if preferred_name_locales_in_concept.has_key(name.locale):
+            if name.locale in preferred_name_locales_in_concept:
                 raise ValidationError({
-                    'names': ['A concept may not have more than one preferred name (per locale)']
+                    'names': [OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME]
                 })
 
             preferred_name_locales_in_concept[name.locale] = True
@@ -34,14 +39,14 @@ class OpenMRSConceptValidator:
 
         # Concept preferred_name should be unique for same source and locale.
         validation_error = {'names': [
-            'Custom validation rules require fully specified name should be unique for same locale and source']}
+            OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE]}
         fully_specified_names_in_concept = dict()
         self_id = getattr(self.concept, "versioned_object_id", None)
 
         for name in [n for n in self.concept.names if n.is_fully_specified]:
             # making sure names in the submitted concept meet the same rule
             name_key = name.locale + name.name
-            if fully_specified_names_in_concept.has_key(name_key):
+            if name_key in fully_specified_names_in_concept:
                 raise ValidationError(validation_error)
 
             fully_specified_names_in_concept[name_key] = True
@@ -68,7 +73,7 @@ class OpenMRSConceptValidator:
 
         if len(short_preferred_names_in_concept) > 0:
             raise ValidationError({
-                'names': ['A short name cannot be marked as locale preferred']
+                'names': [OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED]
             })
 
     def all_non_short_names_must_be_unique(self):
@@ -79,7 +84,7 @@ class OpenMRSConceptValidator:
 
         if len(name_set) != len(non_short_names_in_concept):
             raise ValidationError(
-                {'names': ['All names except short names must unique for a concept and locale']})
+                {'names': [OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE]})
 
     def only_one_fully_specified_name_per_locale(self):
         fully_specified_names_per_locale = dict()
@@ -88,9 +93,9 @@ class OpenMRSConceptValidator:
             if not name.is_fully_specified:
                 continue
 
-            if fully_specified_names_per_locale.has_key(name.locale):
+            if name.locale in fully_specified_names_per_locale:
                 raise ValidationError(
-                    {'names': ['A concept may not have more than one fully specified name in any locale']})
+                    {'names': [OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE]})
 
             fully_specified_names_per_locale[name.locale] = True
 
@@ -101,8 +106,8 @@ class OpenMRSConceptValidator:
             if not name.is_short:
                 continue
 
-            if short_names_per_locale.has_key(name.locale):
+            if name.locale in short_names_per_locale:
                 raise ValidationError(
-                    {'names': ['A concept cannot have more than one short name in a locale']})
+                    {'names': [OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE]})
 
             short_names_per_locale[name.locale] = True
