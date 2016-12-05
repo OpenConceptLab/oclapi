@@ -19,6 +19,7 @@ from django.utils.encoding import force_str
 from collection.models import Collection, CollectionVersion
 from concepts.models import Concept, LocalizedText
 from mappings.models import Mapping, MappingVersion
+from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import add_user_to_org
 from orgs.models import Organization
@@ -1135,7 +1136,7 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         }
 
         errors = Mapping.persist_new(mapping, user, **kwargs)
-        self.assertTrue("Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
+        self.assertTrue(OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS in errors["__all__"])
 
     def test_update_different_from_and_to_pairs_to_same_from_and_to_pairs_should_throw_validation_error(self):
         user = create_user()
@@ -1157,4 +1158,4 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         errors = Mapping.persist_changes(mapping, user)
 
         self.assertTrue(
-            "Custom validation rules require only one Mapping to exist between two Concepts" in errors["__all__"])
+            OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS in errors["__all__"])

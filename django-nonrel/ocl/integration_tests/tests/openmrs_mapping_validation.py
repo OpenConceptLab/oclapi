@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
 
 from mappings.tests import MappingBaseTest
+from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_user, create_source, create_concept
 
@@ -33,4 +34,4 @@ class OpenMRSMappingCreateTest(MappingBaseTest):
         response = self.client.post(reverse('mapping-list', kwargs=kwargs), mapping2)
 
         self.assertEquals(response.status_code, 400)
-        self.assertEquals(response.data, {"errors": "Custom validation rules require only one Mapping to exist between two Concepts"})
+        self.assertEquals(response.data, {"errors": OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS})
