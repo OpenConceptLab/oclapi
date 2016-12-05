@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 
+from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS
 
 class OpenMRSMappingValidator:
     def __init__(self, mapping):
@@ -15,4 +16,4 @@ class OpenMRSMappingValidator:
                                               to_concept=self.mapping.to_concept, is_active=True, retired=False).count()
 
         if intersection:
-            raise ValidationError("Custom validation rules require only one Mapping to exist between two Concepts")
+            raise ValidationError(OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS)
