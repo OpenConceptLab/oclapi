@@ -207,7 +207,7 @@ class SourceClassMethodTest(SourceBaseTest):
 
     def test_persist_new_negative__no_parent(self):
         errors = Source.persist_new(self.new_source, self.user1)
-        self.assertTrue(errors.has_key('parent'))
+        self.assertTrue('parent' in errors)
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
     def test_persist_new_negative__no_owner(self):
@@ -215,7 +215,7 @@ class SourceClassMethodTest(SourceBaseTest):
             'parent_resource': self.userprofile1
         }
         errors = Source.persist_new(self.new_source, None, **kwargs)
-        self.assertTrue(errors.has_key('created_by'))
+        self.assertTrue('created_by' in errors)
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
     def test_persist_new_negative__no_name(self):
@@ -224,7 +224,7 @@ class SourceClassMethodTest(SourceBaseTest):
         }
         self.new_source.name = None
         errors = Source.persist_new(self.new_source, self.user1, **kwargs)
-        self.assertTrue(errors.has_key('name'))
+        self.assertTrue('name' in errors)
         self.assertFalse(Source.objects.filter(name='source1').exists())
 
     def test_persist_changes_positive(self):
@@ -320,7 +320,7 @@ class SourceClassMethodTest(SourceBaseTest):
 
         errors = Source.persist_changes(self.new_source, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertTrue(errors.has_key('__all__'))
+        self.assertTrue('__all__' in errors)
         self.assertTrue(Source.objects.filter(id=id).exists())
         self.assertTrue(SourceVersion.objects.filter(versioned_object_id=id))
         source_version = SourceVersion.objects.get(versioned_object_id=id)

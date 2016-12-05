@@ -1,5 +1,8 @@
 from django.core.exceptions import ValidationError
 
+from concepts.validation_messages import BASIC_DESCRIPTION_LOCALE, BASIC_NAME_LOCALE, BASIC_DESCRIPTION_TYPE, \
+    BASIC_NAME_TYPE, BASIC_DATATYPE, BASIC_CONCEPT_CLASS, BASIC_DESCRIPTION_CANNOT_BE_EMPTY, \
+    BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE
 from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 
@@ -21,14 +24,14 @@ class BasicConceptValidator:
         from concepts.models import Concept, ConceptVersion
 
         # Concept preferred_name should be unique for same source and locale.
-        validation_error = {'names': ['Concept preferred name must be unique for same source and locale']}
+        validation_error = {'names': [BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE]}
         preferred_names_in_concept = dict()
         self_id = getattr(self.concept, "versioned_object_id", None)
 
         for name in [n for n in self.concept.names if n.locale_preferred]:
             # making sure names in the submitted concept meet the same rule
             name_key = name.locale + name.name
-            if preferred_names_in_concept.has_key(name_key):
+            if name_key in preferred_names_in_concept:
                 raise ValidationError(validation_error)
 
             preferred_names_in_concept[name_key] = True
@@ -54,7 +57,7 @@ class BasicConceptValidator:
         fully_specified_name_count = len(
             filter(lambda n: n.is_fully_specified, self.concept.names))
         if fully_specified_name_count < 1:
-            raise ValidationError({'names': ['A concept must have at least one fully specified name (across all locales)']})
+            raise ValidationError({'names': [BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME]})
 
     def description_cannot_be_null(self):
         if not self.concept.descriptions:
@@ -66,7 +69,7 @@ class BasicConceptValidator:
         empty_descriptions = filter((lambda description: (not description.name) or (description.name == "")), self.concept.descriptions)
 
         if len(empty_descriptions):
-            raise ValidationError({'descriptions': ['Concept requires at least one description']})
+            raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
 
     def lookup_attributes_should_be_valid(self):
         from orgs.models import Organization
@@ -87,13 +90,13 @@ class BasicConceptValidator:
         is_concept_class_valid = self.is_attribute_valid(self.concept.concept_class, org, 'Classes', 'Concept Class')
 
         if not is_concept_class_valid:
-            raise ValidationError({'names': ['Concept class should be valid attribute']})
+            raise ValidationError({'names': [BASIC_CONCEPT_CLASS]})
 
     def data_type_should_be_valid_attribute(self, org):
         is_data_type_valid = self.is_attribute_valid(self.concept.datatype, org, 'Datatypes', 'Datatype')
 
         if not is_data_type_valid:
-            raise ValidationError({'names': ['Data type should be valid attribute']})
+            raise ValidationError({'names': [BASIC_DATATYPE]})
 
     def name_type_should_be_valid_attribute(self, org):
         if not self.concept.names:
@@ -103,7 +106,7 @@ class BasicConceptValidator:
             filter(lambda n: self.is_attribute_valid(n.type, org, 'NameTypes', 'NameType'), self.concept.names))
 
         if name_type_count < len(self.concept.names):
-            raise ValidationError({'names': ['Name type should be valid attribute']})
+            raise ValidationError({'names': [BASIC_NAME_TYPE]})
 
     def description_type_should_be_valid_attribute(self, org):
         if not self.concept.descriptions:
@@ -114,7 +117,7 @@ class BasicConceptValidator:
                    self.concept.descriptions))
 
         if description_type_count < len(self.concept.descriptions):
-            raise ValidationError({'names': ['Description type should be valid attribute']})
+            raise ValidationError({'names': [BASIC_DESCRIPTION_TYPE]})
 
     def locale_should_be_valid_attribute(self, org):
         if not self.concept.names or not self.concept.descriptions:
@@ -125,14 +128,14 @@ class BasicConceptValidator:
                    self.concept.names))
 
         if name_locale_count < len(self.concept.names):
-            raise ValidationError({'names': ['Name locale should be valid attribute']})
+            raise ValidationError({'names': [BASIC_NAME_LOCALE]})
 
         description_locale_count = len(
             filter(lambda d: self.is_attribute_valid(d.locale, org, 'Locales', 'Locale'),
                    self.concept.descriptions))
 
         if description_locale_count < len(self.concept.descriptions):
-            raise ValidationError({'names': ['Description locale should be valid attribute']})
+            raise ValidationError({'names': [BASIC_DESCRIPTION_LOCALE]})
 
     def is_attribute_valid(self, attribute_property, org, source_mnemonic, concept_class):
         from sources.models import Source
