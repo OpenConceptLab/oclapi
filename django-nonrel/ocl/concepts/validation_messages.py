@@ -4,7 +4,7 @@ BASIC_DESCRIPTION_TYPE = 'Description type should be valid attribute'
 BASIC_NAME_TYPE = 'Name type should be valid attribute'
 BASIC_DATATYPE = 'Data type should be valid attribute'
 BASIC_CONCEPT_CLASS = 'Concept class should be valid attribute'
-BASIC_DESCRIPTION_CANNOT_BE_EMPTY = 'Concept requires at least one description'
+BASIC_DESCRIPTION_CANNOT_BE_EMPTY = 'Concept description cannot be empty'
 BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME = 'A concept must have at least one fully specified name (across all locales)'
 BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE = 'Concept preferred name must be unique for same source and locale'
 
