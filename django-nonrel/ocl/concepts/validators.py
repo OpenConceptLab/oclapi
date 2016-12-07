@@ -5,15 +5,22 @@ from concepts.validation_messages import BASIC_DESCRIPTION_LOCALE, BASIC_NAME_LO
     BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE
 from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
+def message_with_name_details(message, name):
+    if name is None:
+        return message
+
+    name_str = name.name or 'n/a'
+    locale = name.locale or 'n/a'
+    preferred = 'yes' if name.locale_preferred else 'no'
+    return str.format('{}: {} (locale: {}, preferred: {})', message, name_str, locale, preferred)
+
 
 class BasicConceptValidator:
     def __init__(self, concept):
         self.concept = concept
 
     def validate_concept_based(self):
-        if not self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
-            self.lookup_attributes_should_be_valid()
-
+        self.lookup_attributes_should_be_valid()
         self.description_cannot_be_null()
         self.requires_at_least_one_fully_specified_name()
 
@@ -24,11 +31,12 @@ class BasicConceptValidator:
         from concepts.models import Concept, ConceptVersion
 
         # Concept preferred_name should be unique for same source and locale.
-        validation_error = {'names': [BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE]}
         preferred_names_in_concept = dict()
         self_id = getattr(self.concept, "versioned_object_id", None)
 
         for name in [n for n in self.concept.names if n.locale_preferred]:
+            validation_error = {'names': [message_with_name_details(BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
+
             # making sure names in the submitted concept meet the same rule
             name_key = name.locale + name.name
             if name_key in preferred_names_in_concept:
@@ -72,6 +80,9 @@ class BasicConceptValidator:
             raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
 
     def lookup_attributes_should_be_valid(self):
+        if self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
+            return
+
         from orgs.models import Organization
         ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
 

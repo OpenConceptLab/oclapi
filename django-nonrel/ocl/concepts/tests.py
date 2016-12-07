@@ -503,7 +503,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
+        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE + ': Concept Non Unique Preferred Name (locale: en, preferred: yes)')
 
     def test_duplicate_preferred_name_per_source_should_pass_if_not_preferred(self):
         (concept1, errors1) = create_concept(user=self.user1, source=self.source1, names=[
@@ -552,7 +552,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors1))
         self.assertEquals(1, len(errors2))
-        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
+        self.assertEquals(errors2['names'][0], BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE + ': Concept Non Unique Preferred Name (locale: es, preferred: yes)')
 
     def test_at_least_one_fully_specified_name_per_concept_negative(self):
         (concept, errors) = create_concept(user=self.user1, source=self.source1, names=[
@@ -1304,22 +1304,16 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
     def test_concept_should_have_exactly_one_preferred_name_per_locale(self):
         user = create_user()
 
-        name_en1 = create_localized_text('PreferredName1')
-        name_en1.locale_preferred = True
-
-        name_en2 = create_localized_text('PreferredName2')
-        name_en2.locale_preferred = True
-
-        name_tr = create_localized_text('PreferredName3', locale="tr")
-        name_tr.locale_preferred = True
+        name_en1 = create_localized_text('PreferredName1', locale_preferred=True)
+        name_en2 = create_localized_text('PreferredName2', locale_preferred=True)
+        name_tr = create_localized_text('PreferredName3', locale="tr", locale_preferred=True)
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept, errors) = create_concept(user=user, source=source, names=[name_en1, name_en2, name_tr])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0],
-                          OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME)
+        self.assertEquals(errors['names'][0], OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME + ': PreferredName2 (locale: en, preferred: yes)')
 
     def test_concepts_should_have_unique_fully_specified_name_per_locale(self):
         user = create_user()
@@ -1334,7 +1328,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors1))
 
         self.assertEquals(errors2['names'][0],
-                          OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE)
+                          OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE + ': FullySpecifiedName1 (locale: en, preferred: no)')
 
     def test_a_preferred_name_can_not_be_a_short_name(self):
         user = create_user()
@@ -1348,8 +1342,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         (_, errors) = create_concept(mnemonic='EOPN', source=source, user=user, names=[short_name, name])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0],
-                          OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED)
+        self.assertEquals(errors['names'][0], OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED + ': ShortName (locale: fr, preferred: yes)')
 
     def test_a_preferred_name_can_not_be_an_index_search_term(self):
         user = create_user()
@@ -1363,8 +1356,7 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         (_, errors) = create_concept(mnemonic='EOPN', source=source, user=user, names=[name, index_name])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0],
-                          OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED)
+        self.assertEquals(errors['names'][0], OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED + ': IndexTermName (locale: tr, preferred: yes)')
 
     def test_a_name_can_be_equal_to_a_short_name(self):
         user = create_user()
@@ -1397,20 +1389,16 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
     def test_only_one_fully_specified_name_per_locale(self):
         user = create_user()
-        name1 = create_localized_text('fully specified 1')
-        name1.locale = 'en'
-        name2 = create_localized_text('fully specified 2')
-        name2.locale = 'en'
-        name3 = create_localized_text('fully specified 3')
-        name3.locale = 'fr'
+        name1 = create_localized_text('fully specified 1', locale='en')
+        name2 = create_localized_text('fully specified 2', locale='en')
+        name3 = create_localized_text('fully specified 3', locale='fr')
 
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         _, errors = create_concept(user=user, source=source, names=[name1, name2, name3])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0],
-                          OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE)
+        self.assertEquals(errors['names'][0], OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE + ': fully specified 2 (locale: en, preferred: no)')
 
     def test_no_more_than_one_short_name_per_locale(self):
         user = create_user()
@@ -1423,8 +1411,8 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         _, errors = create_concept(user=user, source=source, names=[name1, name2, name3])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0],
-                          OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE)
+        self.assertEquals(errors['names'][0], OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE + ': fully specified 2 (locale: en, preferred: no)')
+
 
     def test_locale_preferred_name_uniqueness_doesnt_apply_to_shorts(self):
         user = create_user()
