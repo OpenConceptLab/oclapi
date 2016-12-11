@@ -7,3 +7,5 @@ class TestStream(object):
         return self.value
     def flush(self):
         return self.value
+    def close(self):
+        return self.value
