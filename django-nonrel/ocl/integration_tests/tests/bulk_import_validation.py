@@ -83,9 +83,9 @@ class BulkConceptImporterTest(ConceptBaseTest):
         importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub, validation_logger=logger)
         importer.import_concepts(total=7)
 
-        self.assertTrue('MNEMONIC,ERROR,JSON' in logger.output.getvalue())
-        self.assertTrue('4,%s' % BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME  in logger.output.getvalue())
-        self.assertTrue('7,%s' % BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE  in logger.output.getvalue())
+        self.assertTrue('MNEMONIC;ERROR;JSON' in logger.output.getvalue())
+        self.assertTrue('4;%s' % BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME  in logger.output.getvalue())
+        self.assertTrue('7;%s' % BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE  in logger.output.getvalue())
 
     def test_validation_error_file_exists(self):
         self.testfile = open('./integration_tests/fixtures/valid_invalid_concepts.json', 'rb')

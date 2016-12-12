@@ -33,13 +33,13 @@ class ValidationLogger:
     def append_concept(self, data, errors):
         if self.count is 0:
             self.init_output()
-            self.output.write("MNEMONIC,ERROR,JSON\n")
+            self.output.write(u'MNEMONIC;ERROR;JSON')
 
         self.count += 1
 
         for error in errors:
-            csv_line = "%s,%s,%s\n" % (data['id'], error, data)
-            self.output.write(csv_line)
+            csv_line = u'\n{};{};{}'.format(data['id'], error, json.dumps(data))
+            self.output.write(csv_line.encode('utf-8'))
 
     def init_output(self):
         if self.output is None:
@@ -66,14 +66,14 @@ class ConceptsImporter(object):
         if self.save_validation_errors and self.validation_logger is None:
             self.validation_logger = ValidationLogger()
 
-    def info(self, message, ending='', flush=False):
-        self.stdout.write(message, ending)
+    def info(self, message, ending=None, flush=False):
+        self.stdout.write(message, ending=ending)
         logger.info(message)
         if flush:
             self.stdout.flush()
 
-    def error(self, error, ending='', flush=False):
-        self.stderr.write(error, ending)
+    def error(self, error, ending=None, flush=False):
+        self.stderr.write(error, ending=ending)
         logger.warning(error)
         if flush:
             self.stderr.flush()
@@ -89,7 +89,6 @@ class ConceptsImporter(object):
         self.concept_version_ids = set(self.source_version.concepts)
 
         self.create_concept_versions_map()
-
         lines_handled = self.handle_lines_in_input_file(total)
         self.output_unhandled_concept_version_ids()
         self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
@@ -170,25 +169,26 @@ class ConceptsImporter(object):
             update_action = self.handle_concept(self.source, data)
             self.count_action(update_action)
         except IllegalInputException as exc:
-            exc_message = '%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
+            exc_message = unicode('%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data))
             self.handle_exception(exc_message)
         except InvalidStateException as exc:
-            exc_message = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+            exc_message = unicode('Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data))
             self.handle_exception(exc_message)
         except ValidationError as exc:
             if self.save_validation_errors:
                 self.validation_logger.append_concept(data, exc.messages)
 
-            exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data)
+            exc_message = unicode('%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data))
             self.handle_exception(exc_message)
         except Exception as exc:
-            exc_message = '%s\nSomething unexpected occured: %s. Skipping it...\n' % (exc.message, data)
+            exc_message = unicode('%s\nSomething unexpected occured: %s. Skipping it...\n' % (exc, data))
             self.handle_exception(exc_message)
 
     def json_to_concept(self, line):
         data = None
         try:
             data = json.loads(line)
+
         except ValueError as exc:
             self.error('Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line))
             self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
@@ -221,7 +221,6 @@ class ConceptsImporter(object):
         try:
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
             concept_version = ConceptVersion.objects.get(id=self.concepts_versions_map[concept.id])
-
             update_action = self.update_concept_version(concept_version, data)
 
             # Remove ID from the concept version list so that we know concept has been handled
@@ -273,6 +272,7 @@ class ConceptsImporter(object):
             raise IllegalInputException('Could not parse new concept %s' % data['id'])
         if not self.test_mode:
             serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
+
             if not serializer.is_valid():
                 raise ValidationError(serializer.errors)
         return ImportActionHelper.IMPORT_ACTION_ADD

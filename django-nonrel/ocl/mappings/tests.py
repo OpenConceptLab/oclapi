@@ -4,11 +4,9 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
-import os
 from unittest import skip
 from urlparse import urlparse
 
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
@@ -16,14 +14,9 @@ from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 
-from collection.models import Collection, CollectionVersion
-from concepts.models import Concept, LocalizedText
-from mappings.models import Mapping, MappingVersion
 from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import add_user_to_org
-from orgs.models import Organization
-from sources.models import Source, SourceVersion
 from test_helper.base import *
 from users.models import UserProfile
 

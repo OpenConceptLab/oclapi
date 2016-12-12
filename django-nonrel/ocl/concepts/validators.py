@@ -12,7 +12,7 @@ def message_with_name_details(message, name):
     name_str = name.name or 'n/a'
     locale = name.locale or 'n/a'
     preferred = 'yes' if name.locale_preferred else 'no'
-    return str.format('{}: {} (locale: {}, preferred: {})', message, name_str, locale, preferred)
+    return unicode(u'{}: {} (locale: {}, preferred: {})'.format(message, unicode(name_str), locale, preferred))
 
 
 class BasicConceptValidator:
@@ -113,11 +113,14 @@ class BasicConceptValidator:
         if not self.concept.names:
             return
 
-        name_type_count = len(
-            filter(lambda n: self.is_attribute_valid(n.type, org, 'NameTypes', 'NameType'), self.concept.names))
+        for name in self.concept.names:
+            if name.type in ['FULLY_SPECIFIED', 'SHORT']:
+                continue
 
-        if name_type_count < len(self.concept.names):
-            raise ValidationError({'names': [BASIC_NAME_TYPE]})
+            if self.is_attribute_valid(name.type, org, 'NameTypes', 'NameType'):
+                continue
+
+            raise ValidationError({'names': [message_with_name_details(BASIC_NAME_TYPE, name)]})
 
     def description_type_should_be_valid_attribute(self, org):
         if not self.concept.descriptions:
@@ -160,6 +163,6 @@ class BasicConceptValidator:
         source_attributetypes = attributetypes_source_filter.values_list('id').get()
 
         matching_attribute_types = {'retired': False, 'is_active': True, 'concept_class': concept_class,
-                                    'parent_id': source_attributetypes[0], 'names.name': attribute_property}
+                                    'parent_id': source_attributetypes[0], 'names.name': attribute_property or 'None'}
 
         return Concept.objects.raw_query(matching_attribute_types).count() > 0
