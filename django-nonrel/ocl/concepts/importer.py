@@ -1,4 +1,5 @@
 """ Concepts importer module """
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.management import CommandError
@@ -23,8 +24,34 @@ class InvalidStateException(Exception):
     pass
 
 
+class ValidationLogger:
+    def __init__(self, output_file_name='bulk_import_validation_errors_%s.csv' % datetime.now().strftime('%Y%m%d%H%M%S'), output=None):
+        self.count = 0
+        self.output = output
+        self.output_file_name = output_file_name
+
+    def append_concept(self, data, errors):
+        if self.count is 0:
+            self.init_output()
+            self.output.write(u'MNEMONIC;ERROR;JSON')
+
+        self.count += 1
+
+        for error in errors:
+            csv_line = u'\n{};{};{}'.format(data['id'], error, json.dumps(data))
+            self.output.write(csv_line.encode('utf-8'))
+
+    def init_output(self):
+        if self.output is None:
+            self.output = open(self.output_file_name, 'w+')
+
+    def close(self):
+        self.output.flush()
+        self.output.close()
+
+
 class ConceptsImporter(object):
-    def __init__(self, source, concepts_file, user, output_stream, error_stream):
+    def __init__(self, source, concepts_file, user, output_stream, error_stream, save_validation_errors=True, validation_logger=None):
         """ Initialize mapping importer """
         self.source = source
         self.concepts_file = concepts_file
@@ -33,12 +60,28 @@ class ConceptsImporter(object):
         self.user = user
         # Retrieve latest source version and, if specified, create a new one
         self.source_version = SourceVersion.get_latest_version_of(self.source)
+        self.validation_logger = validation_logger
+        self.save_validation_errors = save_validation_errors
 
-    def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False,
-                        error_output_file=None, **kwargs):
+        if self.save_validation_errors and self.validation_logger is None:
+            self.validation_logger = ValidationLogger()
+
+    def info(self, message, ending=None, flush=False):
+        self.stdout.write(message, ending=ending)
+        logger.info(message)
+        if flush:
+            self.stdout.flush()
+
+    def error(self, error, ending=None, flush=False):
+        self.stderr.write(error, ending=ending)
+        logger.warning(error)
+        if flush:
+            self.stderr.flush()
+
+    def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
         self.action_count = {}
         self.test_mode = test_mode
-        logger.info('Import concepts to source...')
+        self.info('Import concepts to source...')
         self.handle_new_source_version(new_version)
 
         # Load the JSON file line by line and import each line
@@ -53,54 +96,44 @@ class ConceptsImporter(object):
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
-        str_log = 'Remaining unhandled concept versions:\n'
-        self.stdout.write(str_log, ending='\r')
-        logger.info(str_log)
-        str_log = ','.join(str(el) for el in self.concept_version_ids)
-        self.stdout.write(str_log, ending='\r')
-        self.stdout.flush()
-        logger.info(str_log)
+        self.info('Remaining unhandled concept versions:\n', ending='\r')
+
+        log = ','.join(str(el) for el in self.concept_version_ids)
+        self.info(log, ending='\r', flush=True)
 
     def handle_new_source_version(self, new_version):
-        if new_version:
-            try:
-                self.create_new_source_version(new_version)
-            except Exception as exc:
-                raise CommandError('Failed to create new source version due to %s' % exc.args[0])
+        if not new_version:
+            return
+        try:
+            self.create_new_source_version(new_version)
+        except Exception as exc:
+            raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
     def output_summary(self, lines_handled, total='Unknown'):
-        str_log = 'Finished importing concepts!\n'
-        self.stdout.write(str_log)
-        logger.info(str_log)
-        str_log = ImportActionHelper.get_progress_descriptor(
+        self.info('Finished importing concepts!\n')
+
+        log = ImportActionHelper.get_progress_descriptor(
             'concepts', lines_handled, total, self.action_count)
-        self.stdout.write(str_log, ending='\r')
-        logger.info(str_log)
+        self.info(log)
 
     def handle_deactivation__of_old_records(self, deactivate_old_records):
         # Deactivate old records
-        if deactivate_old_records:
-            str_log = 'Deactivating old concepts...\n'
-            self.stdout.write(str_log)
-            logger.info(str_log)
-            for version_id in self.concept_version_ids:
-                try:
-                    if self.remove_concept_version(version_id):
-                        self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+        if not deactivate_old_records:
+            self.info('Skipping deactivation loop...\n')
+            return
 
-                        # Log the mapping deactivation
-                        str_log = 'Deactivated concept version: %s\n' % version_id
-                        self.stdout.write(str_log)
-                        logger.info(str_log)
+        self.info('Deactivating old concepts...\n')
 
-                except InvalidStateException as exc:
-                    str_log = 'Failed to inactivate concept version on ID %s! %s\n' % (version_id, exc.args[0])
-                    self.stderr.write(str_log)
-                    logger.warning(str_log)
-        else:
-            str_log = 'Skipping deactivation loop...\n'
-            self.stdout.write(str_log)
-            logger.info(str_log)
+        for version_id in self.concept_version_ids:
+            try:
+                self.remove_concept_version(version_id)
+                self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
+
+                # Log the mapping deactivation
+                self.info('Deactivated concept version: %s\n' % version_id)
+
+            except InvalidStateException as exc:
+                self.error('Failed to inactivate concept version on ID %s! %s\n' % (version_id, exc.args[0]))
 
     def handle_lines_in_input_file(self, total):
         lines_handled = 0
@@ -112,21 +145,21 @@ class ConceptsImporter(object):
 
             # Simple progress bar
             if (lines_handled % 10) == 0:
-                str_log = ImportActionHelper.get_progress_descriptor(
+                log = ImportActionHelper.get_progress_descriptor(
                     'concepts', lines_handled, total, self.action_count)
-                self.stdout.write(str_log, ending='\r')
+                self.stdout.write(log, ending='\r')
                 self.stdout.flush()
                 if (lines_handled % 1000) == 0:
-                    logger.info(str_log)
+                    logger.info(log)
 
         # Done with the input file, so close it
         self.concepts_file.close()
+        if self.validation_logger:
+            self.validation_logger.close()
         # Import complete - display final progress bar
-        str_log = ImportActionHelper.get_progress_descriptor(
+        log = ImportActionHelper.get_progress_descriptor(
             'concepts', lines_handled, total, self.action_count)
-        self.stdout.write(str_log, ending='\r')
-        self.stdout.flush()
-        logger.info(str_log)
+        self.info(log, ending='\r', flush=True)
         return lines_handled
 
     def try_import_concept(self, data):
@@ -136,33 +169,34 @@ class ConceptsImporter(object):
             update_action = self.handle_concept(self.source, data)
             self.count_action(update_action)
         except IllegalInputException as exc:
-            exc_message = '%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data)
+            exc_message = unicode('%s\nFailed to parse line: %s. Skipping it...\n' % (exc.args[0], data))
             self.handle_exception(exc_message)
         except InvalidStateException as exc:
-            exc_message = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+            exc_message = unicode('Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data))
             self.handle_exception(exc_message)
         except ValidationError as exc:
-            exc_message = '%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data)
+            if self.save_validation_errors:
+                self.validation_logger.append_concept(data, exc.messages)
+
+            exc_message = unicode('%s\nValidation failed: %s. Skipping it...\n' % (''.join(exc.messages), data))
             self.handle_exception(exc_message)
         except Exception as exc:
-            exc_message = '%s\nSomething unexpected occured: %s. Skipping it...\n' % (exc.message, data)
+            exc_message = unicode('%s\nSomething unexpected occured: %s. Skipping it...\n' % (exc, data))
             self.handle_exception(exc_message)
 
     def json_to_concept(self, line):
         data = None
         try:
             data = json.loads(line)
+
         except ValueError as exc:
-            str_log = 'Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line)
-            self.stderr.write(str_log)
-            logger.warning(str_log)
+            self.error('Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line))
             self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
         return data
 
     def handle_exception(self, exception_message):
-        self.stderr.write(exception_message)
-        logger.warning(exception_message)
+        self.error(exception_message)
         self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
     def create_new_source_version(self, new_version):
@@ -187,23 +221,17 @@ class ConceptsImporter(object):
         try:
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
             concept_version = ConceptVersion.objects.get(id=self.concepts_versions_map[concept.id])
-
             update_action = self.update_concept_version(concept_version, data)
 
             # Remove ID from the concept version list so that we know concept has been handled
-            try:
+            if concept_version.id not in self.concept_version_ids:
+                self.error('Key not found. Could not remove key %s from list of concept version IDs: %s\n' % (concept_version.id, data))
+            else:
                 self.concept_version_ids.remove(concept_version.id)
-            except KeyError:
-                str_log = 'Key not found. Could not remove key %s from list of concept version IDs: %s\n' % (
-                concept_version.id, data)
-                self.stderr.write(str_log)
-                logger.warning(str_log)
 
             # Log the update
             if update_action:
-                str_log = 'Updated concept, replacing version ID %s: %s\n' % (concept_version.id, data)
-                self.stdout.write(str_log)
-                logger.info(str_log)
+                self.info('Updated concept, replacing version ID %s: %s\n' % (concept_version.id, data))
 
         # Concept does not exist in OCL, so create new one
         except Concept.DoesNotExist:
@@ -211,9 +239,7 @@ class ConceptsImporter(object):
 
             # Log the insert
             if update_action:
-                str_log = 'Created new concept: %s = %s\n' % (mnemonic, concept_name)
-                self.stdout.write(str_log)
-                logger.info(str_log)
+                self.info('Created new concept: %s = %s\n' % (mnemonic, concept_name))
 
             # Reload the concept so that the retire/unretire step will work
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
@@ -246,6 +272,7 @@ class ConceptsImporter(object):
             raise IllegalInputException('Could not parse new concept %s' % data['id'])
         if not self.test_mode:
             serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
+
             if not serializer.is_valid():
                 raise ValidationError(serializer.errors)
         return ImportActionHelper.IMPORT_ACTION_ADD
@@ -303,25 +330,28 @@ class ConceptsImporter(object):
 
     def remove_concept_version(self, version_id):
         """ Deactivates a concept """
-        try:
-            version = ConceptVersion.objects.get(id=version_id)
-            if version.is_active:
-                if not self.test_mode:
-                    version.is_active = False
-                    version.save()
-                return ImportActionHelper.IMPORT_ACTION_DEACTIVATE
-            else:
-                return ImportActionHelper.IMPORT_ACTION_NONE
-        except:
+        version_query = ConceptVersion.objects.filter(id=version_id)
+
+        if version_query.count() is 0:
             raise InvalidStateException(
                 "Cannot deactivate concept version %s because it doesn't exist!" % version_id)
 
+        version = version_query.get()
+        if not version.is_active:
+            return ImportActionHelper.IMPORT_ACTION_NONE
+
+        if not self.test_mode:
+            version.is_active = False
+            version.save()
+
+        return ImportActionHelper.IMPORT_ACTION_DEACTIVATE
+
     def count_action(self, update_action):
         """ Increments the counter for the specified action """
-        if update_action in self.action_count:
-            self.action_count[update_action] += 1
-        else:
-            self.action_count[update_action] = 1
+        if update_action not in self.action_count:
+            self.action_count[update_action] = 0
+
+        self.action_count[update_action] += 1
 
     def create_concept_versions_map(self):
         # Create map for all concept ids to concept versions
@@ -330,5 +360,4 @@ class ConceptsImporter(object):
                 id__in=self.concept_version_ids)
             self.concepts_versions_map = dict((x['versioned_object_id'], x['id']) for x in versions_list)
         except KeyError:
-            str_log = "Map couldn't be created, possible corruption of data"
-            raise InvalidStateException(str_log)
+            raise InvalidStateException("Map couldn't be created, possible corruption of data")

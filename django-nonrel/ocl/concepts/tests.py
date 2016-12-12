@@ -342,7 +342,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_NAME_TYPE)
+        self.assertEquals(errors['names'][0], BASIC_NAME_TYPE + ': Grip (locale: es, preferred: yes)')
 
     def test_name_type_is_valid_attribute_positive(self):
         nametypes_source = Source.objects.get(name="NameTypes")
