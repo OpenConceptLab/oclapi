@@ -154,12 +154,19 @@ class ConceptsImporter(object):
 
         # Done with the input file, so close it
         self.concepts_file.close()
-        if self.validation_logger:
-            self.validation_logger.close()
         # Import complete - display final progress bar
         log = ImportActionHelper.get_progress_descriptor(
             'concepts', lines_handled, total, self.action_count)
-        self.info(log, ending='\r', flush=True)
+        self.info(log, ending='\r')
+
+        if self.validation_logger:
+            self.validation_logger.close()
+            self.info(u'--------------------------------------------------------------------------------------------')
+            self.info(u'Validation output was directed to {}'.format(self.validation_logger.output_file_name or ''))
+            self.info(u'--------------------------------------------------------------------------------------------')
+
+        self.info('', flush=True)
+
         return lines_handled
 
     def try_import_concept(self, data):
