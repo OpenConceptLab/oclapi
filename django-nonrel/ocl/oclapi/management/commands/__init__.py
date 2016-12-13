@@ -112,7 +112,7 @@ class ImportCommand(BaseCommand):
                     action='store_true',
                     dest='profile',
                     default=False,
-                    help='Compute and dislpay cProfile statistics'),
+                    help='Compute and display cProfile statistics'),
         make_option('--inline-indexing',
                     action='store',
                     dest='keep_haystack',
@@ -122,9 +122,8 @@ class ImportCommand(BaseCommand):
                     action='store',
                     dest='error_output_file',
                     default=None,
-                    help="Name of the csv file to redirect validation errors to")
+                    help="Name of the csv file to redirect validation errors to (default value: bulk_import_validation_errors_20160102030405.csv)")
     )
-
 
     def handle(self, *args, **options):
         """ Handles the command line arguments - initiates profiling if set to true """
