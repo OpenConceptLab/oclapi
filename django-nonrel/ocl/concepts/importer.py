@@ -161,9 +161,9 @@ class ConceptsImporter(object):
 
         if self.validation_logger:
             self.validation_logger.close()
-            self.info(u'--------------------------------------------------------------------------------------------')
+            self.info(u'---------------------------------------------------------------------------------------------')
             self.info(u'Validation output was directed to {}'.format(self.validation_logger.output_file_name or ''))
-            self.info(u'--------------------------------------------------------------------------------------------')
+            self.info(u'---------------------------------------------------------------------------------------------')
 
         self.info('', flush=True)
 
