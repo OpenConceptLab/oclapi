@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 
 from concepts.importer import ConceptsImporter, ValidationLogger
 from concepts.validation_messages import OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
-    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, \
-    BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, \
+    OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE
 from concepts.models import Concept, ConceptVersion
 from concepts.tests import ConceptBaseTest
 from integration_tests.models import TestStream
@@ -32,17 +32,19 @@ class BulkConceptImporterTest(ConceptBaseTest):
     def test_import_single_concept_without_fully_specified_name(self):
         self.testfile = open('./integration_tests/fixtures/concept_without_fully_specified_name.json', 'rb')
         stderr_stub = TestStream()
-        importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        importer = ConceptsImporter(source, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
         importer.import_concepts(total=1)
-        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
 
     def test_import_concepts_with_invalid_records(self):
         self.testfile = open('./integration_tests/fixtures/valid_invalid_concepts.json', 'rb')
         stderr_stub = TestStream()
-        importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        importer = ConceptsImporter(source, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
         importer.import_concepts(total=7)
-        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
-        self.assertTrue(BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE in stderr_stub.getvalue())
         self.assertEquals(5, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(5, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
@@ -51,9 +53,10 @@ class BulkConceptImporterTest(ConceptBaseTest):
 
         self.testfile = open('./integration_tests/fixtures/concept_without_fully_specified_name.json', 'rb')
         stderr_stub = TestStream()
-        importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        importer = ConceptsImporter(source, self.testfile, 'test', TestStream(), stderr_stub, save_validation_errors=False)
         importer.import_concepts(total=1)
-        self.assertTrue(BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
+        self.assertTrue(OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME in stderr_stub.getvalue())
         self.assertEquals(1, Concept.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
         self.assertEquals(1, ConceptVersion.objects.exclude(concept_class__in=LOOKUP_CONCEPT_CLASSES).count())
 
@@ -79,13 +82,14 @@ class BulkConceptImporterTest(ConceptBaseTest):
         stderr_stub = TestStream()
 
         logger = ValidationLogger(output=TestStream())
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
-        importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub, validation_logger=logger)
+        importer = ConceptsImporter(source, self.testfile, 'test', TestStream(), stderr_stub, validation_logger=logger)
         importer.import_concepts(total=7)
 
         self.assertTrue('MNEMONIC;ERROR;JSON' in logger.output.getvalue())
-        self.assertTrue('4;%s' % BASIC_AT_LEAST_ONE_FULLY_SPECIFIED_NAME  in logger.output.getvalue())
-        self.assertTrue('7;%s' % BASIC_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE  in logger.output.getvalue())
+        self.assertTrue('4;%s' % OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME  in logger.output.getvalue())
+        self.assertTrue('7;%s' % OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE  in logger.output.getvalue())
 
     def test_validation_error_file_exists(self):
         self.testfile = open('./integration_tests/fixtures/valid_invalid_concepts.json', 'rb')
@@ -94,7 +98,7 @@ class BulkConceptImporterTest(ConceptBaseTest):
         output_file_name = 'test_file.csv'
         logger = ValidationLogger(output_file_name=output_file_name)
 
-        importer = ConceptsImporter(self.source1, self.testfile, 'test', TestStream(), stderr_stub,
+        importer = ConceptsImporter(create_source(user=self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS), self.testfile, 'test', TestStream(), stderr_stub,
                                     validation_logger=logger)
         importer.import_concepts(total=7)
         from os import path, remove
