@@ -3,7 +3,8 @@ from django.core.exceptions import ValidationError
 from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE, \
     OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, \
     OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
-    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, \
+    OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE
 from concepts.validators import message_with_name_details
 
 
@@ -17,9 +18,11 @@ class OpenMRSConceptValidator:
         self.no_more_than_one_short_name_per_locale()
         self.short_name_cannot_be_marked_as_locale_preferred()
         self.only_one_fully_specified_name_per_locale()
+        self.requires_at_least_one_fully_specified_name()
 
     def validate_source_based(self):
         self.must_have_unique_fully_specified_name_for_same_source_and_locale()
+        self.preferred_name_should_be_unique_for_source_and_locale()
 
     def must_have_exactly_one_preferred_name(self):
         preferred_name_locales_in_concept = dict()
@@ -34,6 +37,46 @@ class OpenMRSConceptValidator:
                 })
 
             preferred_name_locales_in_concept[name.locale] = True
+
+    def requires_at_least_one_fully_specified_name(self):
+        # A concept must have at least one fully specified name (across all locales)
+        fully_specified_name_count = len(
+            filter(lambda n: n.is_fully_specified, self.concept.names))
+        if fully_specified_name_count < 1:
+            raise ValidationError({'names': [OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME]})
+
+    def preferred_name_should_be_unique_for_source_and_locale(self):
+        from concepts.models import Concept, ConceptVersion
+
+        # Concept preferred_name should be unique for same source and locale.
+        preferred_names_in_concept = dict()
+        self_id = getattr(self.concept, "versioned_object_id", None)
+
+        for name in [n for n in self.concept.names if n.locale_preferred]:
+            validation_error = {'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
+
+            # making sure names in the submitted concept meet the same rule
+            name_key = name.locale + name.name
+            if name_key in preferred_names_in_concept:
+                raise ValidationError(validation_error)
+
+            preferred_names_in_concept[name_key] = True
+
+            other_concepts_in_source = list(Concept.objects \
+                                            .filter(parent_id=self.concept.parent_source.id, is_active=True,
+                                                    retired=False) \
+                                            .exclude(id=self_id) \
+                                            .values_list('id', flat=True))
+
+            if len(other_concepts_in_source) < 1:
+                continue
+
+            same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale, 'type': {'$nin': ['Short', 'SHORT']}}},
+                                    'is_latest_version': True}
+
+            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
+                raise ValidationError(validation_error)
 
     def must_have_unique_fully_specified_name_for_same_source_and_locale(self):
         from concepts.models import Concept, ConceptVersion
@@ -73,7 +116,8 @@ class OpenMRSConceptValidator:
 
         if len(short_preferred_names_in_concept) > 0:
             raise ValidationError({
-                'names': [message_with_name_details(OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, short_preferred_names_in_concept[0])]
+                'names': [message_with_name_details(OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED,
+                                                    short_preferred_names_in_concept[0])]
             })
 
     def all_non_short_names_must_be_unique(self):
