@@ -2,7 +2,9 @@ version: '2'
 services:
   mongo:
     container_name: ocl_mongo
-    image: mongo
+    image: mongo:3.2.11
+    volumes:
+      - ./data:/data/db
     ports:
       - "27017:27017"
   redis:
