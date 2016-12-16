@@ -46,6 +46,8 @@ class ValidationLogger:
             self.output = open(self.output_file_name, 'w+')
 
     def close(self):
+        if not self.output:
+            return
         self.output.flush()
         self.output.close()
 

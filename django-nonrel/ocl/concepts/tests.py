@@ -73,11 +73,17 @@ class ConceptBaseTest(OclApiBaseTestCase):
             description='This is the second test source',
             custom_validation_schema=None
         )
+
+        self.source_for_openmrs = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS, organization=self.org1)
+
         kwargs = {
             'parent_resource': self.org2,
         }
+
         Source.persist_new(self.source2, self.user2, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
+
+
 
         self.name = create_localized_text(name='Fred', locale='es', type='FULLY_SPECIFIED')
         self.description = create_localized_text(name='guapo', locale='es')

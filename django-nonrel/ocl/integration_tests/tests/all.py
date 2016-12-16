@@ -367,7 +367,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -391,7 +391,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
             'concept': '12399000'
         }
 
@@ -558,15 +558,11 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(response.status_code, status.HTTP_201_CREATED)
 
     def test_same_source_validation_rule_for_different_source_versions_on_concept_edit(self):
-        user = create_user()
-        org = create_organization()
-        source = create_source(user, organization=org)
-
         self.client.login(username='user1', password='user1')
 
         kwargs = {
-            'org': org.mnemonic,
-            'source': source.mnemonic,
+            'org': self.org1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -589,8 +585,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         kwargs = {
-            'org': org.mnemonic,
-            'source': source.mnemonic,
+            'org': self.org1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -613,8 +609,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         kwargs = {
-            'org': org.mnemonic,
-            'source': source.mnemonic,
+            'org': self.org1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
             'concept': '12399002',
         }
 
