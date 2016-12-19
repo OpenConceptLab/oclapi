@@ -52,15 +52,15 @@ def create_user():
         first_name='Test',
         last_name='User'
     )
-
-    UserProfile.objects.create(user=user, mnemonic='user{0}'.format(suffix))
+    create_user_profile(user)
 
     return user
 
 
 def create_user_profile(user):
     suffix = generate_random_string()
-    return UserProfile.objects.create(user=user, mnemonic='user{0}'.format(suffix))
+    mnemonic = user.username if user else 'user{0}'.format(suffix)
+    return UserProfile.objects.create(user=user, mnemonic=mnemonic)
 
 
 def create_organization(name=None, mnemonic=None):
