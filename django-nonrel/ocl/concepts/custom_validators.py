@@ -4,8 +4,10 @@ from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LO
     OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, \
     OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
     OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, \
-    OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE
+    OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_CONCEPT_CLASS, OPENMRS_DATATYPE, OPENMRS_NAME_TYPE, \
+    OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_LOCALE, OPENMRS_DESCRIPTION_LOCALE
 from concepts.validators import message_with_name_details
+from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 
 class OpenMRSConceptValidator:
@@ -19,6 +21,7 @@ class OpenMRSConceptValidator:
         self.short_name_cannot_be_marked_as_locale_preferred()
         self.only_one_fully_specified_name_per_locale()
         self.requires_at_least_one_fully_specified_name()
+        self.lookup_attributes_should_be_valid()
 
     def validate_source_based(self):
         self.must_have_unique_fully_specified_name_for_same_source_and_locale()
@@ -155,3 +158,92 @@ class OpenMRSConceptValidator:
                     {'names': [message_with_name_details(OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, name)]})
 
             short_names_per_locale[name.locale] = True
+
+    def is_attribute_valid(self, attribute_property, org, source_mnemonic, concept_class):
+        from sources.models import Source
+        from concepts.models import Concept
+
+        attributetypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic=source_mnemonic)
+
+        if attributetypes_source_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        source_attributetypes = attributetypes_source_filter.values_list('id').get()
+
+        matching_attribute_types = {'retired': False, 'is_active': True, 'concept_class': concept_class,
+                                    'parent_id': source_attributetypes[0], 'names.name': attribute_property or 'None'}
+
+        return Concept.objects.raw_query(matching_attribute_types).count() > 0
+
+    def concept_class_should_be_valid_attribute(self, org):
+        is_concept_class_valid = self.is_attribute_valid(self.concept.concept_class, org, 'Classes', 'Concept Class')
+
+        if not is_concept_class_valid:
+            raise ValidationError({'names': [OPENMRS_CONCEPT_CLASS]})
+
+    def data_type_should_be_valid_attribute(self, org):
+        is_data_type_valid = self.is_attribute_valid(self.concept.datatype, org, 'Datatypes', 'Datatype')
+
+        if not is_data_type_valid:
+            raise ValidationError({'names': [OPENMRS_DATATYPE]})
+
+    def name_type_should_be_valid_attribute(self, org):
+        if not self.concept.names:
+            return
+
+        for name in self.concept.names:
+            if name.type in ['FULLY_SPECIFIED', 'SHORT']:
+                continue
+
+            if self.is_attribute_valid(name.type, org, 'NameTypes', 'NameType'):
+                continue
+
+            raise ValidationError({'names': [message_with_name_details(OPENMRS_NAME_TYPE, name)]})
+
+    def description_type_should_be_valid_attribute(self, org):
+        if not self.concept.descriptions:
+            return
+
+        description_type_count = len(
+            filter(lambda d: self.is_attribute_valid(d.type, org, 'DescriptionTypes', 'DescriptionType'),
+                   self.concept.descriptions))
+
+        if description_type_count < len(self.concept.descriptions):
+            raise ValidationError({'names': [OPENMRS_DESCRIPTION_TYPE]})
+
+    def locale_should_be_valid_attribute(self, org):
+        if not self.concept.names or not self.concept.descriptions:
+            return
+
+        name_locale_count = len(
+            filter(lambda n: self.is_attribute_valid(n.locale, org, 'Locales', 'Locale'),
+                   self.concept.names))
+
+        if name_locale_count < len(self.concept.names):
+            raise ValidationError({'names': [OPENMRS_NAME_LOCALE]})
+
+        description_locale_count = len(
+            filter(lambda d: self.is_attribute_valid(d.locale, org, 'Locales', 'Locale'),
+                   self.concept.descriptions))
+
+        if description_locale_count < len(self.concept.descriptions):
+            raise ValidationError({'names': [OPENMRS_DESCRIPTION_LOCALE]})
+
+    def lookup_attributes_should_be_valid(self):
+        if self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
+            return
+
+        from orgs.models import Organization
+        ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
+
+        if ocl_org_filter.count() < 1:
+            raise ValidationError({'names': ['Lookup attributes must be imported']})
+
+        org = ocl_org_filter.get()
+
+        self.concept_class_should_be_valid_attribute(org)
+        self.data_type_should_be_valid_attribute(org)
+        self.name_type_should_be_valid_attribute(org)
+        self.description_type_should_be_valid_attribute(org)
+        self.locale_should_be_valid_attribute(org)
+

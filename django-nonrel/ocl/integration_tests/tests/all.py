@@ -14,7 +14,7 @@ from collection.models import Collection, CollectionVersion
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
-from concepts.validation_messages import BASIC_DESCRIPTION_TYPE, BASIC_NAME_TYPE, BASIC_DATATYPE, BASIC_CONCEPT_CLASS
+from concepts.validation_messages import OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
@@ -58,9 +58,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_create_concept_without_fully_specified_name(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -89,9 +90,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_concept_class_is_valid_attribute_negative(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -108,7 +110,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(BASIC_CONCEPT_CLASS, response.content)
+        self.assertIn(OPENMRS_CONCEPT_CLASS, response.content)
 
     def test_concept_class_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -134,9 +136,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_data_type_is_valid_attribute_negative(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -153,7 +156,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(BASIC_DATATYPE, response.content)
+        self.assertIn(OPENMRS_DATATYPE, response.content)
 
     def test_data_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -179,9 +182,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_name_type_is_valid_attribute_negative(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -190,7 +194,11 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "names": [{
                 "name": "grip",
                 "locale": 'en',
-                "name_type": "XYZQWERT"
+                "name_type": "FULLY_SPECIFIED"
+            },{
+                "name": "test",
+                "locale": 'en',
+                "name_type": "QWERTY"
             }],
             "datatype": "None"
         })
@@ -198,7 +206,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(BASIC_NAME_TYPE, response.content)
+        self.assertIn(OPENMRS_NAME_TYPE, response.content)
 
     def test_name_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -224,9 +232,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_description_type_is_valid_attribute_negative(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
@@ -248,7 +257,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(BASIC_DESCRIPTION_TYPE, response.content)
+        self.assertIn(OPENMRS_DESCRIPTION_TYPE, response.content)
 
     def test_desription_type_is_valid_attribute_positive(self):
         self.client.login(username='user1', password='user1')
@@ -279,9 +288,10 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
     def test_create_concept_with_more_than_one_preferred_name_in_concept(self):
         self.client.login(username='user1', password='user1')
+
         kwargs = {
             'org': self.org1.mnemonic,
-            'source': self.source1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
         }
 
         data = json.dumps({
