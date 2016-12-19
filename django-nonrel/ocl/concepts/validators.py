@@ -93,7 +93,7 @@ class BasicConceptValidator:
             raise ValidationError({'names': [BASIC_DESCRIPTION_TYPE]})
 
     def locale_should_be_valid_attribute(self, org):
-        if not self.concept.names or not self.concept.descriptions:
+        if not self.concept.names:
             return
 
         name_locale_count = len(
@@ -102,6 +102,9 @@ class BasicConceptValidator:
 
         if name_locale_count < len(self.concept.names):
             raise ValidationError({'names': [BASIC_NAME_LOCALE]})
+
+        if not self.concept.descriptions:
+            return
 
         description_locale_count = len(
             filter(lambda d: self.is_attribute_valid(d.locale, org, 'Locales', 'Locale'),

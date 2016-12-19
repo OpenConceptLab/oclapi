@@ -392,56 +392,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             diffs['datatype'] = {'was': v1.datatype, 'is': v2.datatype}
 
         # Diff names
-        names1 = v1.names
-        names2 = v2.names
-        diff = len(names1) != len(names2)
-        if not diff:
-            n1 = sorted(names1, key=lambda n: n.name)
-            n2 = sorted(names2, key=lambda n: n.name)
-            for i, n in enumerate(n1):
-                if n.external_id != n2[i].external_id:
-                    diff = True
-                    break
-                if n.name != n2[i].name:
-                    diff = True
-                    break
-                if n.type != n2[i].type:
-                    diff = True
-                    break
-                if n.locale != n2[i].locale:
-                    diff = True
-                    break
-                if n.locale_preferred != n2[i].locale_preferred:
-                    diff = True
-                    break
-        if diff:
-            diffs['names'] = True
+        diffs['names'] = cls.diff_in_localized_text_list(v1.names, v2.names)
 
         # Diff descriptions
-        names1 = v1.descriptions
-        names2 = v2.descriptions
-        diff = len(names1) != len(names2)
-        if not diff:
-            n1 = sorted(names1, key=lambda n: n.name)
-            n2 = sorted(names2, key=lambda n: n.name)
-            for i, n in enumerate(n1):
-                if n.external_id != n2[i].external_id:
-                    diff = True
-                    break
-                if n.name != n2[i].name:
-                    diff = True
-                    break
-                if n.type != n2[i].type:
-                    diff = True
-                    break
-                if n.locale != n2[i].locale:
-                    diff = True
-                    break
-                if n.locale_preferred != n2[i].locale_preferred:
-                    diff = True
-                    break
-        if diff:
-            diffs['descriptions'] = True
+        diffs['descriptions'] = cls.diff_in_localized_text_list(v1.descriptions, v2.descriptions)
 
         # Diff extras
         extras1 = v1.extras if v1.extras else {}
@@ -459,6 +413,29 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             diffs['extras'] = {'was': extras1, 'is': extras2}
 
         return diffs
+
+    @classmethod
+    def diff_in_localized_text_list(cls, names1, names2):
+        if names1 is None or names2 is None:
+            return None
+        if len(names1) != len(names2):
+            return True
+
+        n1 = sorted(names1, key=lambda n: n.name)
+        n2 = sorted(names2, key=lambda n: n.name)
+        for i, n in enumerate(n1):
+            if n.external_id != n2[i].external_id:
+                return True
+            if n.name != n2[i].name:
+                return True
+            if n.type != n2[i].type:
+                return True
+            if n.locale != n2[i].locale:
+                return True
+            if n.locale_preferred != n2[i].locale_preferred:
+                return True
+
+        return False
 
     @classmethod
     def persist_clone(cls, obj, user=None, **kwargs):
