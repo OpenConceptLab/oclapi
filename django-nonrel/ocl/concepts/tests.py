@@ -11,8 +11,8 @@ from django.core.exceptions import ValidationError
 from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE, \
     OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE, OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE, \
     OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_MUST_HAVE_EXACTLY_ONE_PREFERRED_NAME, \
-    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, BASIC_DESCRIPTION_LOCALE, BASIC_NAME_LOCALE, BASIC_DESCRIPTION_TYPE, \
-    BASIC_NAME_TYPE, BASIC_DATATYPE, BASIC_CONCEPT_CLASS, BASIC_DESCRIPTION_CANNOT_BE_EMPTY, \
+    OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_DESCRIPTION_LOCALE, OPENMRS_NAME_LOCALE, OPENMRS_DESCRIPTION_TYPE, \
+    OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS, BASIC_DESCRIPTION_CANNOT_BE_EMPTY, \
     OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME
 from concepts.views import ConceptVersionListView
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
@@ -258,8 +258,7 @@ class ConceptTest(ConceptBaseTest):
         concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
 
-
-class ConceptBasicValidationTest(ConceptBaseTest):
+class OpenMrsLookupValueValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_negative(self):
         classes_source = Source.objects.get(name="Classes")
         create_concept(self.user1, classes_source, concept_class="Concept Class",
@@ -269,14 +268,104 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         create_concept(self.user1, classes_source, concept_class="Concept Class",
                        names=[create_localized_text("Drug")])
 
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='XYZQWERT',
-                                           source=self.source1,
+                                           source=source,
                                            names=[create_localized_text(name='Grip', locale='es',
                                                                         locale_preferred=True,
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_CONCEPT_CLASS)
+        self.assertEquals(errors['names'][0], OPENMRS_CONCEPT_CLASS)
+
+    def test_data_type_is_valid_attribute_negative(self):
+        datatypes_source = Source.objects.get(name="Datatypes")
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Numeric")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Coded")])
+        create_concept(self.user1, datatypes_source, concept_class="Datatype",
+                       names=[create_localized_text("Text")])
+
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
+                                           source=source,
+                                           names=[create_localized_text(name='Grip', locale='es',
+                                                                        locale_preferred=True,
+                                                                        type='FULLY_SPECIFIED')], datatype='XYZWERRTR')
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], OPENMRS_DATATYPE)
+
+    def test_description_type_is_valid_attribute_negative(self):
+        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("None")])
+        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
+                       names=[create_localized_text("Definition")])
+
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
+                                           source=source,
+                                           names=[create_localized_text(name='Grip', locale='es',
+                                                                        locale_preferred=True,
+                                                                        type='FULLY_SPECIFIED')],
+                                           descriptions=[create_localized_text(name='Grip Description', locale='es',
+                                                                               locale_preferred=True,
+                                                                               type='XYZWERRTR')])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], OPENMRS_DESCRIPTION_TYPE)
+
+    def test_name_locale_is_valid_attribute_negative(self):
+        descriptiontypes_source = Source.objects.get(name="Locales")
+        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
+                       names=[create_localized_text("Abkhazian", "en")])
+        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
+                       names=[create_localized_text("English", "en")])
+
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
+                                           source=source,
+                                           names=[create_localized_text(name='Grip', locale='XWERTY',
+                                                                        locale_preferred=True,
+                                                                        type='FULLY_SPECIFIED')],
+                                           descriptions=[
+                                               create_localized_text(name='Grip Description', locale='English',
+                                                                     locale_preferred=True,
+                                                                     type='FULLY_SPECIFIED')])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], OPENMRS_NAME_LOCALE)
+
+    def test_description_locale_is_valid_attribute_negative(self):
+        descriptiontypes_source = Source.objects.get(name="Locales")
+        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
+                       names=[create_localized_text("Abkhazian", "en")])
+        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
+                       names=[create_localized_text("English", "en")])
+
+        source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
+                                           source=source,
+                                           names=[create_localized_text(name='Grip', locale='English',
+                                                                        locale_preferred=True,
+                                                                        type='FULLY_SPECIFIED')],
+                                           descriptions=[
+                                               create_localized_text(name='Grip Description', locale='XWERTY',
+                                                                     locale_preferred=True,
+                                                                     type='FULLY_SPECIFIED')])
+
+        self.assertEquals(1, len(errors))
+        self.assertEquals(errors['names'][0], OPENMRS_DESCRIPTION_LOCALE)
+
+class ConceptBasicValidationTest(ConceptBaseTest):
 
     def test_concept_class_is_valid_attribute_positive(self):
         classes_source = Source.objects.get(name="Classes")
@@ -293,24 +382,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(0, len(errors))
-
-    def test_data_type_is_valid_attribute_negative(self):
-        datatypes_source = Source.objects.get(name="Datatypes")
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Numeric")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Coded")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Text")])
-
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
-                                           source=self.source1,
-                                           names=[create_localized_text(name='Grip', locale='es',
-                                                                        locale_preferred=True,
-                                                                        type='FULLY_SPECIFIED')], datatype='XYZWERRTR')
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_DATATYPE)
 
     def test_data_type_is_valid_attribute_positive(self):
         datatypes_source = Source.objects.get(name="Datatypes")
@@ -329,26 +400,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors))
 
-    def test_name_type_is_valid_attribute_negative(self):
-        nametypes_source = Source.objects.get(name="NameTypes")
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("None")])
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("Fully-Specified")])
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("Short")])
-
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
-                                           source=self.source1,
-                                           names=[create_localized_text(name='Grip', locale='es',
-                                                                        locale_preferred=True,
-                                                                        type='XYZWERRTR'),
-                                                  create_localized_text(name='Nezle', locale='es',
-                                                                        locale_preferred=True,
-                                                                        type='FULLY_SPECIFIED')])
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_NAME_TYPE + ': Grip (locale: es, preferred: yes)')
 
     def test_name_type_is_valid_attribute_positive(self):
         nametypes_source = Source.objects.get(name="NameTypes")
@@ -370,25 +421,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 
         self.assertEquals(0, len(errors))
 
-    def test_description_type_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("None")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("Definition")])
-
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
-                                           source=self.source1,
-                                           names=[create_localized_text(name='Grip', locale='es',
-                                                                        locale_preferred=True,
-                                                                        type='FULLY_SPECIFIED')],
-                                           descriptions=[create_localized_text(name='Grip Description', locale='es',
-                                                                               locale_preferred=True,
-                                                                               type='XYZWERRTR')])
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_DESCRIPTION_TYPE)
-
     def test_description_type_is_valid_attribute_positive(self):
         descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
         create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
@@ -407,46 +439,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                      type='Definition')])
 
         self.assertEquals(0, len(errors))
-
-    def test_name_locale_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
-                                           source=self.source1,
-                                           names=[create_localized_text(name='Grip', locale='XWERTY',
-                                                                        locale_preferred=True,
-                                                                        type='FULLY_SPECIFIED')],
-                                           descriptions=[
-                                               create_localized_text(name='Grip Description', locale='English',
-                                                                     locale_preferred=True,
-                                                                     type='FULLY_SPECIFIED')])
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_NAME_LOCALE)
-
-    def test_description_locale_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
-        (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
-                                           source=self.source1,
-                                           names=[create_localized_text(name='Grip', locale='English',
-                                                                        locale_preferred=True,
-                                                                        type='FULLY_SPECIFIED')],
-                                           descriptions=[
-                                               create_localized_text(name='Grip Description', locale='XWERTY',
-                                                                     locale_preferred=True,
-                                                                     type='FULLY_SPECIFIED')])
-
-        self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], BASIC_DESCRIPTION_LOCALE)
 
     def test_name_locale_is_valid_attribute_positive(self):
         descriptiontypes_source = Source.objects.get(name="Locales")
