@@ -56,7 +56,8 @@ class OpenMRSConceptValidator:
         self_id = getattr(self.concept, "versioned_object_id", None)
 
         for name in [n for n in self.concept.names if n.locale_preferred]:
-            validation_error = {'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
+            validation_error = {
+                'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
 
             # making sure names in the submitted concept meet the same rule
             name_key = name.locale + name.name
@@ -75,7 +76,8 @@ class OpenMRSConceptValidator:
                 continue
 
             same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
-                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale, 'type': {'$nin': ['Short', 'SHORT']}}},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale,
+                                                             'type': {'$nin': ['Short', 'SHORT']}}},
                                     'is_latest_version': True}
 
             if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
@@ -246,4 +248,3 @@ class OpenMRSConceptValidator:
         self.name_type_should_be_valid_attribute(org)
         self.description_type_should_be_valid_attribute(org)
         self.locale_should_be_valid_attribute(org)
-
