@@ -1,14 +1,16 @@
 """ Concepts importer module """
+import json
+import logging
 from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.management import CommandError
+
 from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSerializer
 from oclapi.management.commands import MockRequest, ImportActionHelper
 from sources.models import SourceVersion
-import json
-import logging
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')

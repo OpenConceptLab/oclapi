@@ -206,7 +206,6 @@ class MappingImporterTest(MappingBaseTest):
         importer = MappingsImporter(self.source1, self.testfile, stdout_stub, stderr_stub, 'test')
         importer.import_mappings(total=1)
 
-        print stdout_stub.getvalue()
         self.assertTrue('**** Processed 1 out of 1 mappings - 1 updated, ****' in stdout_stub.getvalue())
         self.assertTrue(('Updated mapping with ID ' + mapping.id) in stdout_stub.getvalue())
         updated_mapping = Mapping.objects.get(to_concept_code='413532003')

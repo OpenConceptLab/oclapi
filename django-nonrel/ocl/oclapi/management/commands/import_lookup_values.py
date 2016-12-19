@@ -31,7 +31,7 @@ class Command(BaseCommand):
             file = open(conf['file'], 'rb')
             source = conf['source']
 
-            importer = ConceptsImporter(source, file, user, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr))
+            importer = ConceptsImporter(source, file, user, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), save_validation_errors=False)
             importer.import_concepts(**options)
 
     def create_organization(self, user):
