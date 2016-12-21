@@ -40,6 +40,8 @@ class Common(Configuration):
     # to load the internationalization machinery.
     USE_I18N = True
 
+    USE_ETAGS = True
+
     # If you set this to False, Django will not format dates, numbers and
     # calendars according to the current locale
     USE_L10N = True

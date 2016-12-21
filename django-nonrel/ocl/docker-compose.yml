@@ -5,6 +5,8 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+    volumes:
+      - .:/code
   redis:
     container_name: ocl_redis
     image: redis
