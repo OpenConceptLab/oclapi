@@ -100,7 +100,33 @@ def create_source(user, validation_schema=None, organization=None, name=None):
     return Source.objects.get(id=source.id)
 
 
-def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None, force=False):
+def create_collection(user, validation_schema=None, name=None):
+    suffix = generate_random_string()
+
+    collection = Collection(
+        name=name if name else "source{0}".format(suffix),
+        mnemonic=name if name else "source{0}".format(suffix),
+        full_name=name if name else "Source {0}".format(suffix),
+        collection_type='Dictionary',
+        public_access=ACCESS_TYPE_EDIT,
+        default_locale='en',
+        supported_locales=['en'],
+        website='www.collection2.com',
+        description='This is the second test collection',
+        custom_validation_schema=validation_schema
+    )
+
+    kwargs = {
+        'parent_resource': UserProfile.objects.get(user=user)
+    }
+
+    Collection.persist_new(collection, user, **kwargs)
+
+    return Collection.objects.get(id=collection.id)
+
+
+def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None,
+                   force=False):
     suffix = generate_random_string()
 
     if not names and not force:
@@ -116,7 +142,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
         mnemonic=mnemonic,
         updated_by=user,
         datatype=datatype if datatype else "None",
-        concept_class = concept_class if concept_class else 'Diagnosis',
+        concept_class=concept_class if concept_class else 'Diagnosis',
         names=names,
         descriptions=descriptions,
     )
@@ -130,6 +156,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
         errors = Concept.persist_new(concept, user)
 
     return concept, errors
+
 
 def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
     mapping = Mapping(
@@ -149,6 +176,7 @@ def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
     Mapping.persist_new(mapping, user, **kwargs)
 
     return Mapping.objects.get(id=mapping.id)
+
 
 def create_lookup_concept_classes(user, org_ocl):
     classes_source = create_source(user, organization=org_ocl, name="Classes")

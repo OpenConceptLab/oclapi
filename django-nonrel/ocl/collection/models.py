@@ -13,7 +13,6 @@ from django.db.models import Max
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
-
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
 
@@ -22,6 +21,7 @@ class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
     expressions = []
+
     @property
     def concepts_url(self):
         owner = self.owner
@@ -32,7 +32,8 @@ class Collection(ConceptContainerModel):
     def mappings_url(self):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-mapping-list', kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
+        return reverse('concept-mapping-list',
+                       kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def versions_url(self):
@@ -40,6 +41,7 @@ class Collection(ConceptContainerModel):
 
     def get_head(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.id)
+
     @property
     def resource_type(self):
         return COLLECTION_TYPE
@@ -130,11 +132,39 @@ class CollectionReference(models.Model):
 
     def clean(self):
         concept_klass, mapping_klass = self._resource_klasses()
+        self.create_entities_from_expressions(concept_klass, mapping_klass)
+
+        if CollectionReference.version_specified(self.expression):
+            return
+
+        self.add_concept_version_ids()
+        self.add_mapping_version_ids()
+
+    def create_entities_from_expressions(self, concept_klass, mapping_klass):
         self.concepts = concept_klass.objects.filter(uri=self.expression)
         if not self.concepts:
             self.mappings = mapping_klass.objects.filter(uri=self.expression)
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
+
+    def add_mapping_version_ids(self):
+        if not self.mappings:
+            return
+
+        self.expression = self.expression + '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
+        self.mappings = MappingVersion.objects.filter(uri=self.expression)
+
+    def add_concept_version_ids(self):
+        if len(self.concepts) < 1:
+            return
+
+        self.expression = self.expression + '{}/'.format(self.concepts[0].get_latest_version.id)
+        self.concepts = ConceptVersion.objects.filter(uri=self.expression)
+
+    @classmethod
+    def version_specified(cls, expression):
+        number_of_parts_with_version = 9
+        return len(expression.split('/')) == number_of_parts_with_version
 
     def _resource_klasses(self):
         expression_parts_count = len(compact(self.expression.split('/')))
@@ -246,7 +276,7 @@ class CollectionVersion(ConceptContainerVersionModel):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     @classmethod
-    def persist_new(cls, obj,user=None, **kwargs):
+    def persist_new(cls, obj, user=None, **kwargs):
         obj.is_active = True
         if user:
             obj.created_by = user
@@ -322,10 +352,12 @@ class CollectionVersion(ConceptContainerVersionModel):
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
 
+
 @receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     if created:
         return False
-    for collection in Collection.objects.filter(parent_id=instance.id, parent_type=ContentType.objects.get_for_model(sender)):
+    for collection in Collection.objects.filter(parent_id=instance.id,
+                                                parent_type=ContentType.objects.get_for_model(sender)):
         if instance.is_active != collection.is_active:
             collection.undelete() if instance.is_active else collection.soft_delete()
