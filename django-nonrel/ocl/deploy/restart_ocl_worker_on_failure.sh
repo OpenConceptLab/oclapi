@@ -1,5 +1,6 @@
-#!/bin/bash
-export redis_keys=`/usr/local/bin/docker-compose exec redis redis-cli keys "*celery*"`
+#!/bin/bash -e
+cd /root/oclapi/django-nonrel/ocl/
+redis_keys=$(/usr/local/bin/docker-compose exec -T redis redis-cli keys "*celery*")
 keys=($redis_keys)
 len=${#keys[@]}
 if [ $len -gt 1 ]
