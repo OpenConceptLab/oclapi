@@ -34,6 +34,17 @@ Note that when using the docker quickstart on Windows, you need to check docker 
 docker-machine ip
 ````
 
+In order to initialize look up values to MongoDB you should run the following:
+
+````sh
+docker-compose exec ocl_api python manage.py import_lookup_values --configuration=Dev
+````
+
+Also you will need to sync these values to Solr:
+````sh
+docker-compose exec ocl_api python manage.py update_index
+````
+
 ### Running commands in a container
 
 You can run any command in a container. Open up a new terminal and run for example:
