@@ -1,3 +1,4 @@
+from bson import ObjectId
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -5,7 +6,10 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
-from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+
+from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
+    CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
+from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class, compact
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping, MappingVersion
@@ -18,6 +22,7 @@ HEAD = 'HEAD'
 
 
 class Collection(ConceptContainerModel):
+    REFERENCE_ALREADY_EXIST = 'Concept reference name must be unique in a collection.'
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
     expressions = []
@@ -59,12 +64,9 @@ class Collection(ConceptContainerModel):
         for expression in self.expressions:
             ref = CollectionReference(expression=expression)
             try:
-                ref.full_clean()
+                self.validate(ref, expression)
             except Exception as e:
-                errors[expression] = e.messages
-                continue
-            if expression in [reference.expression for reference in self.references]:
-                errors[expression] = ['Reference Already Exists!']
+                errors[expression] = e.messages if hasattr(e, 'messages') else e
                 continue
 
             self.references.append(ref)
@@ -75,6 +77,48 @@ class Collection(ConceptContainerModel):
                 errors[expression] = error
         if errors:
             raise ValidationError({'references': [errors]})
+
+    def validate(self, ref, expression):
+        ref.full_clean()
+        if ref.expression in [reference.expression for reference in self.references]:
+            raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
+
+        if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+            if len(ref.concepts) < 1:
+                return
+
+            concept = ref.concepts[0]
+            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='is_fully_specified', value=True,
+                                                                                     error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
+                                                                                     error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+
+    def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
+        from concepts.models import Concept, ConceptVersion
+        matching_names_in_concept = dict()
+
+        for name in [n for n in concept.names if getattr(n, attribute) == value]:
+            validation_error = {'names': [error_message]}
+            # making sure names in the submitted concept meet the same rule
+            name_key = name.locale + name.name
+            if name_key in matching_names_in_concept:
+                raise ValidationError(validation_error)
+
+            matching_names_in_concept[name_key] = True
+
+            other_concepts_in_collection = list(ConceptVersion.objects.filter(uri__in=self.current_references()).values_list('id', flat=True))
+
+            if len(other_concepts_in_collection) < 1:
+                continue
+
+            other_concepts_in_collection = list(map(ObjectId, other_concepts_in_collection))
+
+
+            same_name_and_locale = {'_id': {'$in': other_concepts_in_collection},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}}}
+
+            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
+                raise ValidationError(validation_error)
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):

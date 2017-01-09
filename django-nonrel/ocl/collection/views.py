@@ -2,8 +2,8 @@ import logging
 from django.conf import settings
 from django.db import IntegrityError
 
-from collection.messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
-    HEAD_OF_MAPPING_ADDED_TO_COLLECTION
+from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
+    HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT
 from collection.models import Collection, CollectionVersion, CollectionReference
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, \
     CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, \
@@ -116,12 +116,14 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         data = request.DATA.get('data')
+        expressions = data.get('expressions', [])
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
         host_url = request.META['wsgi.url_scheme'] + '://' + request.get_host()
 
-        adding_multiple_references = mapping_expressions == '*' or concept_expressions == '*'
-        if adding_multiple_references:
+        adding_all = mapping_expressions == '*' or concept_expressions == '*'
+
+        if adding_all:
             return add_multiple_references.delay(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
@@ -130,18 +132,43 @@ class CollectionReferencesView(CollectionBaseView,
             self.serializer_class, self.request.user, data, self.parent_resource, host_url
         )
 
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        all_expressions = expressions + concept_expressions + mapping_expressions
 
-        message = self.select_update_message(data['expressions'][0])
+        response = []
 
+        for expression in all_expressions:
+            response_item = self.create_response_item(added_references, errors, expression)
+            if response_item:
+                response.append(response_item)
 
+        return Response(response, status=status.HTTP_200_OK)
 
-        return Response([
-            {'message': message,
-             'expression': added_references[0],
-             'added': True}
-        ], status=status.HTTP_200_OK)
+    def create_response_item(self, added_references, errors, expression):
+        adding_expression_failed = len(errors) > 0 and errors[0].has_key(expression)
+        if adding_expression_failed:
+            return self.create_error_message(errors, expression)
+        return self.create_success_message(added_references, expression)
+
+    def create_success_message(self, added_references, expression):
+        message = self.select_update_message(expression)
+
+        references = filter(lambda reference: reference.startswith(expression), added_references)
+        if len(references) < 1:
+            return
+
+        return {
+            'added': True,
+            'expression': references[0],
+            'message': message
+        }
+
+    def create_error_message(self, errors, expression):
+        error_message = errors[0].get(expression, {})
+        return {
+            'added': False,
+            'expression': expression,
+            'message': error_message
+        }
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = CollectionReferenceSerializer
@@ -189,7 +216,7 @@ class CollectionReferencesView(CollectionBaseView,
     def version_added_message_by_type(self, resource_name, collection_name, resource_type):
         if resource_type == 'concepts':
             return CONCEPT_ADDED_TO_COLLECTION_FMT.format(resource_name, collection_name)
-        return ''
+        return MAPPING_ADDED_TO_COLLECTION_FMT.format(resource_name, collection_name)
 
 
 class CollectionListView(CollectionBaseView,

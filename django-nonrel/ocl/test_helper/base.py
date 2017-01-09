@@ -104,9 +104,9 @@ def create_collection(user, validation_schema=None, name=None):
     suffix = generate_random_string()
 
     collection = Collection(
-        name=name if name else "source{0}".format(suffix),
-        mnemonic=name if name else "source{0}".format(suffix),
-        full_name=name if name else "Source {0}".format(suffix),
+        name=name if name else "collection{0}".format(suffix),
+        mnemonic=name if name else "collection{0}".format(suffix),
+        full_name=name if name else "Collection {0}".format(suffix),
         collection_type='Dictionary',
         public_access=ACCESS_TYPE_EDIT,
         default_locale='en',

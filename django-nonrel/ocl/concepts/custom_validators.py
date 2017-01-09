@@ -24,7 +24,7 @@ class OpenMRSConceptValidator:
         self.lookup_attributes_should_be_valid()
 
     def validate_source_based(self):
-        self.must_have_unique_fully_specified_name_for_same_source_and_locale()
+        self.fully_specified_name_should_be_unique_for_source_and_locale()
         self.preferred_name_should_be_unique_for_source_and_locale()
 
     def must_have_exactly_one_preferred_name(self):
@@ -83,7 +83,7 @@ class OpenMRSConceptValidator:
             if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
                 raise ValidationError(validation_error)
 
-    def must_have_unique_fully_specified_name_for_same_source_and_locale(self):
+    def fully_specified_name_should_be_unique_for_source_and_locale(self):
         from concepts.models import Concept, ConceptVersion
         fully_specified_names_in_concept = dict()
         self_id = getattr(self.concept, "versioned_object_id", None)
