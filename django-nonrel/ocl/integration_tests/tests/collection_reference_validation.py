@@ -320,7 +320,18 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
         data = json.dumps({
             'data': {
-                'concepts': [concept_one.url, concept_two.url],
+                'concepts': [concept_one.url],
+            }
+        })
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        data = json.dumps({
+            'data': {
+                'concepts': [concept_two.url],
             }
         })
 
@@ -331,10 +342,9 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEquals(response.data,
-                          [{'added': False, 'expression': concept_one.url,
-                            'message': [CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE]},
-                           {'added': True, 'expression': concept_two.get_latest_version.url,
-                            'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION}])
+                          [{'added': False, 'expression': concept_two.url,
+                            'message': [CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE]}
+                           ])
 
     def test_preferred_name_within_collection_should_be_unique(self):
         source_with_open_mrs_one, user = self.create_source_and_user_fixture()

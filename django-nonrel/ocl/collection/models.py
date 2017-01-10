@@ -22,7 +22,6 @@ HEAD = 'HEAD'
 
 
 class Collection(ConceptContainerModel):
-    REFERENCE_ALREADY_EXIST = 'Concept reference name must be unique in a collection.'
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
     expressions = []
