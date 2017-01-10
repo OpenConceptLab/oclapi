@@ -124,9 +124,12 @@ class CollectionReferencesView(CollectionBaseView,
         adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
         if adding_all:
-            return add_multiple_references.delay(
+            add_multiple_references.delay(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
+
+            return Response([], status=status.HTTP_202_ACCEPTED)
+
 
         (added_references, errors) = add_multiple_references(
             self.serializer_class, self.request.user, data, self.parent_resource, host_url
