@@ -74,7 +74,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
             custom_validation_schema=None
         )
 
-        self.source_for_openmrs = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS, organization=self.org1)
+        self.source_for_openmrs = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
+                                                organization=self.org1)
 
         kwargs = {
             'parent_resource': self.org2,
@@ -82,8 +83,6 @@ class ConceptBaseTest(OclApiBaseTestCase):
 
         Source.persist_new(self.source2, self.user2, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
-
-
 
         self.name = create_localized_text(name='Fred', locale='es', type='FULLY_SPECIFIED')
         self.description = create_localized_text(name='guapo', locale='es')
@@ -258,6 +257,7 @@ class ConceptTest(ConceptBaseTest):
         concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
 
+
 class OpenMrsLookupValueValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_negative(self):
         classes_source = Source.objects.get(name="Classes")
@@ -269,7 +269,6 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
                        names=[create_localized_text("Drug")])
 
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='XYZQWERT',
                                            source=source,
@@ -365,8 +364,8 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
         self.assertEquals(1, len(errors))
         self.assertEquals(errors['descriptions'][0], OPENMRS_DESCRIPTION_LOCALE)
 
-class ConceptBasicValidationTest(ConceptBaseTest):
 
+class ConceptBasicValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_positive(self):
         classes_source = Source.objects.get(name="Classes")
         create_concept(self.user1, classes_source, concept_class="Concept Class",
@@ -399,7 +398,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')], datatype='Text')
 
         self.assertEquals(0, len(errors))
-
 
     def test_name_type_is_valid_attribute_positive(self):
         nametypes_source = Source.objects.get(name="NameTypes")
@@ -963,55 +961,6 @@ class ConceptVersionTest(ConceptBaseTest):
 
         self.assertEquals(concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
-    def test_collections_ids_with_multiple_concept_versions(self):
-        kwargs = {
-            'parent_resource': self.userprofile1
-        }
-
-        collection = Collection(
-            name='collection2',
-            mnemonic='collection2',
-            full_name='Collection Two',
-            collection_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.collection2.com',
-            description='This is the second test collection'
-        )
-        Collection.persist_new(collection, self.user1, **kwargs)
-
-        source = Source(
-            name='source',
-            mnemonic='source',
-            full_name='Source One',
-            source_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.source1.com',
-            description='This is the first test source'
-        )
-        kwargs = {
-            'parent_resource': self.org1
-        }
-        Source.persist_new(source, self.user1, **kwargs)
-
-        (concept1, errors) = create_concept(mnemonic='concept12', user=self.user1, source=source)
-
-        initial_concept_version = ConceptVersion.objects.get(versioned_object_id=concept1.id)
-        references = [concept1.uri, initial_concept_version.uri]
-
-        collection.expressions = references
-        collection.full_clean()
-        collection.save()
-
-        ConceptVersion.persist_clone(initial_concept_version.clone(), self.user1)
-        new_concept_version = ConceptVersion.objects.filter(versioned_object_id=concept1.id).order_by('-created_at')[0]
-
-        self.assertEquals(initial_concept_version.collection_ids, [collection.id])
-        self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
-
     def test_collections_ids_with_latest_concept_version(self):
         kwargs = {
             'parent_resource': self.userprofile1
@@ -1114,8 +1063,10 @@ class ConceptVersionTest(ConceptBaseTest):
         version = CollectionVersion.for_base_object(collection, 'version1')
         kwargs = {}
         CollectionVersion.persist_new(version, **kwargs)
-        self.assertEquals(concept_version.collection_version_ids,
-                          [CollectionVersion.objects.get(mnemonic='version1').id])
+
+        self.assertEquals(len(concept_version.collection_version_ids), 2)
+        self.assertEquals(concept_version.collection_version_ids[1],
+                          CollectionVersion.objects.get(mnemonic='version1').id)
 
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):

@@ -167,7 +167,11 @@ def add_multiple_references(SerializerClass, user, data, parent_resource, host_u
 
     if 'references' in serializer.errors:
         serializer.object.save()
-        return serializer.errors['references']
+
+    diff = map(lambda ref: ref.expression, CollectionReference.diff(serializer.object.references, prev_refs))
+
+    errors = serializer.errors.get('references', [])
+    return diff, errors
 
 
 def index_resource(resource_ids, resource_klass, resource_version_klass, identifier):

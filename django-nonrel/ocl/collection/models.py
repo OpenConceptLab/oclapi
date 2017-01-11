@@ -1,3 +1,4 @@
+from bson import ObjectId
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -5,14 +6,16 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
-from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+
+from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
+    CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
+from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class, compact
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping, MappingVersion
 from django.db.models import Max
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-
 
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
@@ -22,6 +25,7 @@ class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
     expressions = []
+
     @property
     def concepts_url(self):
         owner = self.owner
@@ -32,7 +36,8 @@ class Collection(ConceptContainerModel):
     def mappings_url(self):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-mapping-list', kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
+        return reverse('concept-mapping-list',
+                       kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def versions_url(self):
@@ -40,6 +45,7 @@ class Collection(ConceptContainerModel):
 
     def get_head(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.id)
+
     @property
     def resource_type(self):
         return COLLECTION_TYPE
@@ -57,12 +63,9 @@ class Collection(ConceptContainerModel):
         for expression in self.expressions:
             ref = CollectionReference(expression=expression)
             try:
-                ref.full_clean()
+                self.validate(ref, expression)
             except Exception as e:
-                errors[expression] = e.messages
-                continue
-            if expression in [reference.expression for reference in self.references]:
-                errors[expression] = ['Reference Already Exists!']
+                errors[expression] = e.messages if hasattr(e, 'messages') else e
                 continue
 
             self.references.append(ref)
@@ -73,6 +76,48 @@ class Collection(ConceptContainerModel):
                 errors[expression] = error
         if errors:
             raise ValidationError({'references': [errors]})
+
+    def validate(self, ref, expression):
+        ref.full_clean()
+        if ref.expression in [reference.expression for reference in self.references]:
+            raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
+
+        if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+            if len(ref.concepts) < 1:
+                return
+
+            concept = ref.concepts[0]
+            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='is_fully_specified', value=True,
+                                                                                     error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
+                                                                                     error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+
+    def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
+        from concepts.models import Concept, ConceptVersion
+        matching_names_in_concept = dict()
+
+        for name in [n for n in concept.names if getattr(n, attribute) == value]:
+            validation_error = {'names': [error_message]}
+            # making sure names in the submitted concept meet the same rule
+            name_key = name.locale + name.name
+            if name_key in matching_names_in_concept:
+                raise ValidationError(validation_error)
+
+            matching_names_in_concept[name_key] = True
+
+            other_concepts_in_collection = list(ConceptVersion.objects.filter(uri__in=self.current_references()).values_list('id', flat=True))
+
+            if len(other_concepts_in_collection) < 1:
+                continue
+
+            other_concepts_in_collection = list(map(ObjectId, other_concepts_in_collection))
+
+
+            same_name_and_locale = {'_id': {'$in': other_concepts_in_collection},
+                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}}}
+
+            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
+                raise ValidationError(validation_error)
 
     @classmethod
     def persist_changes(cls, obj, updated_by, **kwargs):
@@ -130,11 +175,39 @@ class CollectionReference(models.Model):
 
     def clean(self):
         concept_klass, mapping_klass = self._resource_klasses()
+        self.create_entities_from_expressions(concept_klass, mapping_klass)
+
+        if CollectionReference.version_specified(self.expression):
+            return
+
+        self.add_concept_version_ids()
+        self.add_mapping_version_ids()
+
+    def create_entities_from_expressions(self, concept_klass, mapping_klass):
         self.concepts = concept_klass.objects.filter(uri=self.expression)
         if not self.concepts:
             self.mappings = mapping_klass.objects.filter(uri=self.expression)
             if not self.mappings:
                 raise ValidationError({'detail': ['Expression specified is not valid.']})
+
+    def add_mapping_version_ids(self):
+        if not self.mappings:
+            return
+
+        self.expression = self.expression + '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
+        self.mappings = MappingVersion.objects.filter(uri=self.expression)
+
+    def add_concept_version_ids(self):
+        if len(self.concepts) < 1:
+            return
+
+        self.expression = self.expression + '{}/'.format(self.concepts[0].get_latest_version.id)
+        self.concepts = ConceptVersion.objects.filter(uri=self.expression)
+
+    @classmethod
+    def version_specified(cls, expression):
+        number_of_parts_with_version = 9
+        return len(expression.split('/')) == number_of_parts_with_version
 
     def _resource_klasses(self):
         expression_parts_count = len(compact(self.expression.split('/')))
@@ -246,7 +319,7 @@ class CollectionVersion(ConceptContainerVersionModel):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
 
     @classmethod
-    def persist_new(cls, obj,user=None, **kwargs):
+    def persist_new(cls, obj, user=None, **kwargs):
         obj.is_active = True
         if user:
             obj.created_by = user
@@ -322,10 +395,12 @@ class CollectionVersion(ConceptContainerVersionModel):
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
 
+
 @receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     if created:
         return False
-    for collection in Collection.objects.filter(parent_id=instance.id, parent_type=ContentType.objects.get_for_model(sender)):
+    for collection in Collection.objects.filter(parent_id=instance.id,
+                                                parent_type=ContentType.objects.get_for_model(sender)):
         if instance.is_active != collection.is_active:
             collection.undelete() if instance.is_active else collection.soft_delete()
