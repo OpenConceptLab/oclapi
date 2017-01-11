@@ -1,6 +1,9 @@
 from django.core.exceptions import ValidationError
 
 from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+
 def message_with_name_details(message, name):
     if name is None:
         return message
@@ -10,8 +13,33 @@ def message_with_name_details(message, name):
     preferred = 'yes' if name.locale_preferred else 'no'
     return unicode(u'{}: {} (locale: {}, preferred: {})'.format(message, unicode(name_str), locale, preferred))
 
+class ValidatorSelector:
+    def __init__(self, validation_schema=None):
+        from concepts.custom_validators import OpenMRSConceptValidator
 
-class BasicConceptValidator:
+        validator_map = {
+            CUSTOM_VALIDATION_SCHEMA_OPENMRS: OpenMRSConceptValidator
+        }
+
+        self.validator_class = validator_map.get(validation_schema, BasicConceptValidator)
+
+    def get_validator(self, concept):
+        return self.validator_class(concept)
+
+
+
+class BaseConceptValidator:
+    def validate(self):
+        self.validate_concept_based()
+        self.validate_source_based()
+
+    def validate_concept_based(self):
+        pass
+
+    def validate_source_based(self):
+        pass
+
+class BasicConceptValidator(BaseConceptValidator):
     def __init__(self, concept):
         self.concept = concept
 

@@ -32,7 +32,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     datatype = serializers.CharField(required=False)
     display_name = serializers.CharField(read_only=True)
     display_locale = serializers.CharField(read_only=True)
-    names = LocalizedTextListField(required=True)
+    names = LocalizedTextListField(required=True, error_messages={'required': 'A concept must have at least one name'})
     descriptions = LocalizedTextListField(required=False, name_override='description')
     retired = serializers.BooleanField(required=False)
     url = serializers.URLField(read_only=True)
