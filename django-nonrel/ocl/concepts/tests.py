@@ -277,7 +277,7 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], OPENMRS_CONCEPT_CLASS)
+        self.assertEquals(errors['concept_class'][0], OPENMRS_CONCEPT_CLASS)
 
     def test_data_type_is_valid_attribute_negative(self):
         datatypes_source = Source.objects.get(name="Datatypes")
@@ -297,7 +297,7 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
                                                                         type='FULLY_SPECIFIED')], datatype='XYZWERRTR')
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], OPENMRS_DATATYPE)
+        self.assertEquals(errors['data_type'][0], OPENMRS_DATATYPE)
 
     def test_description_type_is_valid_attribute_negative(self):
         descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
@@ -318,7 +318,7 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
                                                                                type='XYZWERRTR')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], OPENMRS_DESCRIPTION_TYPE)
+        self.assertEquals(errors['descriptions'][0], OPENMRS_DESCRIPTION_TYPE)
 
     def test_name_locale_is_valid_attribute_negative(self):
         descriptiontypes_source = Source.objects.get(name="Locales")
@@ -362,7 +362,7 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
                                                                      type='FULLY_SPECIFIED')])
 
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], OPENMRS_DESCRIPTION_LOCALE)
+        self.assertEquals(errors['descriptions'][0], OPENMRS_DESCRIPTION_LOCALE)
 
 
 class ConceptBasicValidationTest(ConceptBaseTest):

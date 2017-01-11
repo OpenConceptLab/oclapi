@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 
 from concepts.custom_validators import OpenMRSConceptValidator
-from concepts.validators import BasicConceptValidator
+from concepts.validators import BasicConceptValidator, ValidatorSelector
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 import os
 
@@ -89,12 +89,12 @@ class ConceptValidationMixin:
 
         validators = [BasicConceptValidator(self)]
 
-        if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
-            validators.append(OpenMRSConceptValidator(self))
+        schema = self.parent_source.custom_validation_schema
+        if schema:
+            custom_validator = ValidatorSelector(schema).get_validator(self)
+            validators.append(custom_validator)
 
         for validator in validators:
-            validator.validate_concept_based()
+            validator.validate()
 
-        for validator in validators:
-            validator.validate_source_based()
 

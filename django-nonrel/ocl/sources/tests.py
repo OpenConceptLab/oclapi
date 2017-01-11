@@ -10,13 +10,16 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from mock import mock
 
 from concepts.models import Concept, LocalizedText
+from concepts.validation_messages import OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED
+from concepts.validators import message_with_name_details
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, LOOKUP_SOURCES
+from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
-from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
-from test_helper.base import OclApiBaseTestCase, create_localized_text, create_concept
+from test_helper.base import OclApiBaseTestCase, create_concept, create_source, create_user, create_localized_text
 from users.models import UserProfile
 
 class SourceBaseTest(OclApiBaseTestCase):
@@ -1269,6 +1272,107 @@ class SourceVersionListViewTest(SourceBaseTest):
         content = json.loads(response.content)
         self.assertEquals(10,len(content))
         self.assertEquals(content[0]['id'], 'HEAD')
+
+
+class SourceChangeSchemaTest(SourceBaseTest):
+
+    def test_changing_schema_to_openmrs_should_fail_given_duplicate_preferred_names(self):
+        user = create_user()
+        source = create_source(user=user)
+
+        non_unique_preferred_name = create_localized_text('Non Unique Preferred Name', locale_preferred=True)
+        create_concept(user, source=source, mnemonic='Concept1', names=[non_unique_preferred_name])
+        create_concept(user, source=source, mnemonic='Concept2', names=[non_unique_preferred_name])
+
+        source.custom_validation_schema = CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+        errors = Source.persist_changes(source, user)
+
+        self.assertGreater(len(errors), 0)
+
+    def test_changing_schema_to_none_should_always_pass(self):
+        user = create_user()
+        source = create_source(user=user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        create_concept(user, source=source, mnemonic='Concept1',
+                       names=[create_localized_text('name 1', locale_preferred=True)])
+        create_concept(user, source=source, mnemonic='Concept2',
+                       names=[create_localized_text('name 2')])
+
+
+        source.custom_validation_schema = None
+        errors = Source.persist_changes(source, user)
+
+        self.assertEquals(len(errors), 0)
+
+    def test_should_list_errors_under_failed_validations_field_on_fail(self):
+        user = create_user()
+        source = create_source(user=user)
+
+        non_unique_preferred_name = create_localized_text('Non Unique Preferred Name', locale_preferred=True)
+        create_concept(user, source=source, mnemonic='Concept1', names=[non_unique_preferred_name])
+        create_concept(user, source=source, mnemonic='Concept2', names=[non_unique_preferred_name])
+
+        source.custom_validation_schema = CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+        errors = Source.persist_changes(source, user)
+
+        self.assertTrue('failed_concept_validations' in errors)
+        self.assertEquals(len(errors['failed_concept_validations']), 2)
+
+    def test_concept_validation_error_should_include_concept_mnemonic_url_error(self):
+        user = create_user()
+        source = create_source(user=user)
+
+        short_preferred = create_localized_text('Non Unique Preferred Name', locale_preferred=True, type='Short')
+        concept, _ = create_concept(user, source=source, mnemonic='Concept1', names=[short_preferred])
+
+        source.custom_validation_schema = CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+        errors = Source.persist_changes(source, user)
+
+        self.assertTrue('failed_concept_validations' in errors)
+        self.assertEquals(len(errors['failed_concept_validations']), 1)
+
+        validation_error = errors['failed_concept_validations'][0]
+
+        expected_errors = {
+                'mnemonic': 'Concept1',
+                'url': concept.url,
+                'errors': {
+                    'names': [message_with_name_details(OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, short_preferred)]
+                }
+            }
+
+
+        self.assertDictEqual(validation_error, expected_errors)
+
+    def test_validation_is_necessary_should_return_false_when_validation_schema_is_unchanged(self):
+        user = create_user()
+        source = create_source(user=user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        create_concept(user, source=source, mnemonic='Concept1',
+                       names=[create_localized_text('name 1', locale_preferred=True)])
+
+        source.name = 'New name'
+
+        self.assertFalse(Source.validation_is_necessary(source))
+
+    def test_validation_is_necessary_should_return_false_when_validation_schema_is_set_to_none(self):
+        user = create_user()
+        source = create_source(user=user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        create_concept(user, source=source, mnemonic='Concept1',
+                       names=[create_localized_text('name 1', locale_preferred=True)])
+
+        source.custom_validation_schema = None
+
+        self.assertFalse(Source.validation_is_necessary(source))
+
+
+
+
+
+
 
 
 

@@ -6,11 +6,11 @@ from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LO
     OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME, \
     OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_CONCEPT_CLASS, OPENMRS_DATATYPE, OPENMRS_NAME_TYPE, \
     OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_LOCALE, OPENMRS_DESCRIPTION_LOCALE
-from concepts.validators import message_with_name_details
+from concepts.validators import message_with_name_details, BaseConceptValidator
 from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 
-class OpenMRSConceptValidator:
+class OpenMRSConceptValidator(BaseConceptValidator):
     def __init__(self, concept):
         self.concept = concept
 
@@ -52,24 +52,25 @@ class OpenMRSConceptValidator:
         from concepts.models import Concept, ConceptVersion
 
         # Concept preferred_name should be unique for same source and locale.
-        preferred_names_in_concept = dict()
-        self_id = getattr(self.concept, "versioned_object_id", None)
+        preferred_names_dict = dict()
+        self_id = getattr(self.concept, 'versioned_object_id', getattr(self.concept, 'id', None))
 
-        for name in [n for n in self.concept.names if n.locale_preferred]:
+        preferred_names_list = [n for n in self.concept.names if n.locale_preferred]
+        for name in preferred_names_list:
             validation_error = {
                 'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
 
             # making sure names in the submitted concept meet the same rule
             name_key = name.locale + name.name
-            if name_key in preferred_names_in_concept:
+            if name_key in preferred_names_dict:
                 raise ValidationError(validation_error)
 
-            preferred_names_in_concept[name_key] = True
+            preferred_names_dict[name_key] = True
 
-            other_concepts_in_source = list(Concept.objects \
+            other_concepts_in_source = list(Concept.objects
                                             .filter(parent_id=self.concept.parent_source.id, is_active=True,
-                                                    retired=False) \
-                                            .exclude(id=self_id) \
+                                                    retired=False)
+                                            .exclude(id=self_id)
                                             .values_list('id', flat=True))
 
             if len(other_concepts_in_source) < 1:
@@ -86,7 +87,7 @@ class OpenMRSConceptValidator:
     def fully_specified_name_should_be_unique_for_source_and_locale(self):
         from concepts.models import Concept, ConceptVersion
         fully_specified_names_in_concept = dict()
-        self_id = getattr(self.concept, "versioned_object_id", None)
+        self_id = getattr(self.concept, 'versioned_object_id', getattr(self.concept, 'id', None))
 
         for name in [n for n in self.concept.names if n.is_fully_specified]:
             # Concept preferred_name should be unique for same source and locale.
@@ -181,13 +182,13 @@ class OpenMRSConceptValidator:
         is_concept_class_valid = self.is_attribute_valid(self.concept.concept_class, org, 'Classes', 'Concept Class')
 
         if not is_concept_class_valid:
-            raise ValidationError({'names': [OPENMRS_CONCEPT_CLASS]})
+            raise ValidationError({'concept_class': [OPENMRS_CONCEPT_CLASS]})
 
     def data_type_should_be_valid_attribute(self, org):
         is_data_type_valid = self.is_attribute_valid(self.concept.datatype, org, 'Datatypes', 'Datatype')
 
         if not is_data_type_valid:
-            raise ValidationError({'names': [OPENMRS_DATATYPE]})
+            raise ValidationError({'data_type': [OPENMRS_DATATYPE]})
 
     def name_type_should_be_valid_attribute(self, org):
         if not self.concept.names:
@@ -211,7 +212,7 @@ class OpenMRSConceptValidator:
                    self.concept.descriptions))
 
         if description_type_count < len(self.concept.descriptions):
-            raise ValidationError({'names': [OPENMRS_DESCRIPTION_TYPE]})
+            raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_TYPE]})
 
     def locale_should_be_valid_attribute(self, org):
         if not self.concept.names or not self.concept.descriptions:
@@ -229,7 +230,7 @@ class OpenMRSConceptValidator:
                    self.concept.descriptions))
 
         if description_locale_count < len(self.concept.descriptions):
-            raise ValidationError({'names': [OPENMRS_DESCRIPTION_LOCALE]})
+            raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_LOCALE]})
 
     def lookup_attributes_should_be_valid(self):
         if self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
@@ -239,7 +240,7 @@ class OpenMRSConceptValidator:
         ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
 
         if ocl_org_filter.count() < 1:
-            raise ValidationError({'names': ['Lookup attributes must be imported']})
+            raise ValidationError({'non_field_errors': ['Lookup attributes must be imported']})
 
         org = ocl_org_filter.get()
 
