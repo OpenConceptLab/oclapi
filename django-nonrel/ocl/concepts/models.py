@@ -17,7 +17,6 @@ from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
 
-
 class LocalizedText(models.Model):
     uuid = UUIDField(auto=True)
     external_id = models.TextField(null=True, blank=True)
@@ -340,10 +339,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
         return self.versioned_object.get_empty_mappings()
 
     def get_unidirectional_mappings(self):
-        return self.versioned_object.get_unidirectional_mappings()
+        self.versioned_object.get_unidirectional_mappings()
 
     def get_bidirectional_mappings(self):
-        return self.versioned_object.get_bidirectional_mappings()
+        self.versioned_object.get_bidirectional_mappings()
 
     @classmethod
     def get_latest_version_of(cls, concept):

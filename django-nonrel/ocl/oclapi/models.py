@@ -9,6 +9,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
+
 from oclapi.utils import reverse_resource, reverse_resource_version
 from oclapi.settings.common import Common
 from django.db.models import get_model
@@ -309,15 +310,59 @@ class ConceptContainerModel(SubResourceBaseModel):
         parent_resource = kwargs.pop('parent_resource', obj.parent)
         if not parent_resource:
             errors['parent'] = 'Source parent cannot be None.'
+
+        if cls.validation_is_necessary(obj):
+            failed_concept_validations = cls.validate_child_concepts(obj) or []
+            if len(failed_concept_validations) > 0:
+                errors.update({'failed_concept_validations': failed_concept_validations})
+
         try:
+
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
+
         if errors:
             return errors
         obj.updated_by = updated_by
         obj.save(**kwargs)
         return errors
+
+    @classmethod
+    def validation_is_necessary(cls, obj):
+        from sources.models import Source
+        from concepts.models import Concept
+
+        if not isinstance(obj, Source):
+            return False
+
+        origin_source = Source.objects.get(id=obj.id)
+        if origin_source.custom_validation_schema == obj.custom_validation_schema:
+            return False
+
+        return obj.custom_validation_schema is not None \
+               and Concept.objects.filter(parent_id=obj.id).count() > 0
+
+    @classmethod
+    def validate_child_concepts(cls, obj):
+        # If source is being configured to have a validation schema
+        # we need to validate all concepts
+        # according to the new schema
+        from concepts.models import Concept
+
+        concepts = Concept.objects.filter(parent_id=obj.id).all()
+        failed_concept_validations = []
+
+        for concept in concepts:
+            from concepts.validators import ValidatorSelector
+            validator = ValidatorSelector(obj.custom_validation_schema).get_validator(concept)
+            try:
+                validator.validate()
+            except ValidationError as validation_error:
+                concept_validation_error = {'mnemonic': concept.mnemonic, 'url': concept.url, 'errors': validation_error.message_dict}
+                failed_concept_validations.append(concept_validation_error)
+
+        return failed_concept_validations
 
 
 class ConceptContainerVersionModel(ResourceVersionModel):
