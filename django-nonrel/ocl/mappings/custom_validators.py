@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS, OPENMRS_MAPTYPE
+from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS, OPENMRS_INVALID_MAPTYPE
 from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 class OpenMRSMappingValidator:
@@ -24,7 +24,7 @@ class OpenMRSMappingValidator:
         is_data_type_valid = self.is_attribute_valid(self.mapping.map_type, org, 'MapTypes', 'MapType')
 
         if not is_data_type_valid:
-            raise ValidationError({'map_type': [OPENMRS_MAPTYPE]})
+            raise ValidationError({'map_type': [OPENMRS_INVALID_MAPTYPE]})
 
     def is_attribute_valid(self, attribute_property, org, source_mnemonic, concept_class):
         from sources.models import Source
