@@ -10,6 +10,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
 from collection.models import CollectionReference
+from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
+    CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from oclapi.models import ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
 
@@ -167,7 +169,6 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(0, collection.num_versions)
 
     def test_add_concept_reference(self):
-
         kwargs = {
             'parent_resource': self.userprofile1
         }
@@ -201,7 +202,8 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        (concept1, errors) = create_concept(user=self.user1, source=source, names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+        (concept1, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         reference = '/orgs/org1/sources/source/concepts/' + concept1.mnemonic + '/'
         collection.expressions = [reference]
@@ -248,11 +250,11 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-        (fromConcept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source, names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+        (fromConcept, errors) = create_concept(mnemonic="fromConcept", user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         (toConcept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
-
 
         mapping = Mapping(
             map_type='Same As',
@@ -274,6 +276,8 @@ class CollectionTest(CollectionBaseTest):
 
         self.assertEquals(len(head.mappings), 1)
         self.assertEquals(len(head.references), 1)
+
+        reference += mapping.get_latest_version.mnemonic + '/'
 
         collection.delete_references([reference])
 
@@ -334,7 +338,7 @@ class CollectionTest(CollectionBaseTest):
 
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.references), 1)
-
+        expression += concept1.get_latest_version.id + '/'
         collection.delete_references([expression])
 
         head = CollectionVersion.get_head(collection.id)
@@ -378,14 +382,12 @@ class CollectionTest(CollectionBaseTest):
         }
         Source.persist_new(source, self.user1, **kwargs)
 
-
         (concept1, errors) = create_concept(
             mnemonic='concept1',
             user=self.user1,
             source=source,
             names=[create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')],
         )
-
 
         (from_concept, error) = create_concept(
             mnemonic='fromConcept',
@@ -431,6 +433,9 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(head.mappings), 1)
         self.assertEquals(len(head.references), 3)
 
+        references[0] += '{}/'.format(concept1.get_latest_version.id)
+        references[2] += '{}/'.format(Mapping.objects.filter()[0].get_latest_version.mnemonic)
+
         deleted_concepts, deleted_mappings = collection.delete_references([references[0], references[2]])
 
         head = CollectionVersion.get_head(collection.id)
@@ -439,12 +444,14 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(deleted_concepts), 1)
         self.assertEquals(len(deleted_mappings), 1)
         self.assertEquals(len(collection.references), 1)
-        self.assertEquals(collection.references[0].expression, from_concept_reference)
+        from_concept_reference_with_version_id = '{}{}/'.format(from_concept_reference,
+                                                                from_concept.get_latest_version.id)
+        self.assertEquals(collection.references[0].expression, from_concept_reference_with_version_id)
         self.assertEquals(len(head.references), 1)
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.mappings), 0)
-        self.assertEquals(head.references[0].expression, from_concept_reference)
-        self.assertEquals(head.concepts[0], from_concept.id)
+        self.assertEquals(head.references[0].expression, from_concept_reference_with_version_id)
+        self.assertEquals(head.concepts[0], from_concept.get_latest_version.id)
 
     def test_delete_reference_when_no_reference_given(self):
         kwargs = {
@@ -1740,7 +1747,6 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
             (concept1, errors) = create_concept(mnemonic="concept1", user=self.user1, source=source)
 
-
             self.collection1.expressions = [
                 '/orgs/org1/sources/source/concepts/concept/',
                 '/orgs/org1/sources/source/concepts/concept1/'
@@ -1861,7 +1867,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
         mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id)
 
-        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/' + mapping_version.mnemonic + '/')
+        reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[
+            0].id + '/' + mapping_version.mnemonic + '/')
 
         reference.full_clean()
 
@@ -1935,6 +1942,219 @@ class CollectionReferenceTest(CollectionBaseTest):
             reference.full_clean()
         except ValidationError as e:
             self.assertTrue(False)
+
+    def test_add_concept_as_single_reference_without_version_information_should_add_latest_version_number(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        concept_version_number = concept.get_latest_version.id
+
+        single_reference = '/users/{}/sources/{}/concepts/{}/'.format(self.user1.username, source.name,
+                                                                      concept.mnemonic)
+        collection.expressions = [single_reference]
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(errors), 0)
+        self.assertEquals(collection.current_references()[0], single_reference + concept_version_number + '/')
+        self.assertEquals(head.concepts[0], concept_version_number)
+
+    def test_add_concept_as_multiple_reference_without_version_information_should_add_latest_versions_numbers(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
+
+        concept_one_reference = '/users/{}/sources/{}/concepts/{}/'.format(self.user1.username, source.name,
+                                                                           concept_one.mnemonic)
+        concept_two_reference = '/users/{}/sources/{}/concepts/{}/'.format(self.user1.username, source.name,
+                                                                           concept_two.mnemonic)
+
+        collection.expressions = [concept_one_reference, concept_two_reference]
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.concepts), 2)
+        self.assertEquals(len(errors), 0)
+        self.assertEquals(collection.current_references()[0],
+                          concept_one_reference + concept_one.get_latest_version.id + '/')
+        self.assertEquals(collection.current_references()[1],
+                          concept_two_reference + concept_two.get_latest_version.id + '/')
+
+    def test_add_mapping_as_single_reference_without_version_information_should_add_latest_version_number(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
+
+        mapping = create_mapping(self.user1, source, concept_one, concept_two, "Broader Than")
+
+        mapping_version_number = mapping.get_latest_version.mnemonic + '/'
+
+        single_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
+                                                                      mapping.mnemonic)
+        collection.expressions = [single_reference]
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(collection.current_references()[0], single_reference + mapping_version_number)
+
+    def test_add_mapping_as_multiple_reference_without_version_information_should_add_latest_versions_numbers(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
+
+        mapping_one = create_mapping(self.user1, source, concept_one, concept_two, "Broader Than")
+        mapping_two = create_mapping(self.user1, source, concept_two, concept_one, "Same-As")
+
+        mapping_one_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
+                                                                           mapping_one.mnemonic)
+
+        mapping_two_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
+                                                                           mapping_two.mnemonic)
+        collection.expressions = [mapping_one_reference, mapping_two_reference]
+        collection.full_clean()
+        collection.save()
+
+        head = CollectionVersion.get_head(collection.id)
+
+        mapping_one_version_number = mapping_one.get_latest_version.mnemonic + '/'
+        mapping_two_version_number = mapping_two.get_latest_version.mnemonic + '/'
+
+        self.assertEquals(len(head.mappings), 2)
+        self.assertEquals(collection.current_references()[0], mapping_one_reference + mapping_one_version_number)
+        self.assertEquals(collection.current_references()[0], mapping_one_reference + mapping_two_version_number)
+
+    def test_add_duplicate_concept_reference_should_not_add(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='None')])
+
+        collection.expressions = [concept_one.url]
+        collection.full_clean()
+        collection.save()
+
+        with self.assertRaisesRegexp(ValidationError, REFERENCE_ALREADY_EXISTS):
+            collection.expressions = [concept_one.url]
+            collection.full_clean()
+            collection.save()
+
+        self.assertEquals(len(collection.current_references()), 1)
+
+    def test_add_duplicate_mapping_reference_should_not_add(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+
+        collection.expressions = [mapping.url, from_concept.url]
+        collection.full_clean()
+        collection.save()
+
+        kwargs = {
+            'parent_resource': self.user1,
+            'expressions': [mapping.url]
+        }
+        errors = Collection.persist_changes(collection, self.user1, **kwargs)
+
+        self.assertEquals(len(errors), 1)
+        self.assertIn(REFERENCE_ALREADY_EXISTS, errors['references'][0][mapping.url])
+        self.assertEquals(len(collection.current_references()), 2)
+
+    def test_concept_fully_specified_name_within_collection_should_be_unique(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source1 = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source2 = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, _) = create_concept(user=self.user1, source=source1, names=[
+            create_localized_text(name='Non Unique Name', locale='en', type='FULLY_SPECIFIED')])
+
+        collection.expressions = [concept_one.url]
+        collection.full_clean()
+        collection.save()
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source2, names=[
+            create_localized_text(name='Non Unique Name', locale='en', type='FULLY_SPECIFIED')])
+
+        kwargs = {
+            'parent_resource': self.user1,
+            'expressions': [concept_two.url]
+        }
+
+        errors = Collection.persist_changes(collection, self.user1, **kwargs)
+
+        self.assertEquals(len(errors), 1)
+        actual_message = errors['references'][0][concept_two.url]
+        self.assertIn(CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, actual_message)
+
+    def test_preferred_name_within_collection_should_be_unique(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source1 = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source2 = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source1, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en',type='None'),
+            create_localized_text(name='Any Name', locale='en',type='Fully Specified')
+        ])
+
+        collection.expressions = [concept_one.url]
+        collection.full_clean()
+        collection.save()
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source2, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name 2', locale='en',type='Fully Specified')
+        ])
+
+        kwargs = {
+            'parent_resource': self.user1,
+            'expressions': [concept_two.url]
+        }
+
+        errors = Collection.persist_changes(collection, self.user1, **kwargs)
+
+        self.assertEquals(len(errors), 1)
+        actual_message = errors['references'][0][concept_two.url]
+        self.assertIn(CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, actual_message)
 
     def test_diff(self):
         superset = [CollectionReference(expression='foo'), CollectionReference(expression='bar')]

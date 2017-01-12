@@ -27,6 +27,7 @@ from test_helper.base import create_user, create_source, create_organization, cr
 def update_haystack_index():
     update_index.Command().handle()
 
+
 class ConceptCreateViewTest(ConceptBaseTest):
     def setUp(self):
         super(ConceptCreateViewTest, self).setUp()
@@ -38,7 +39,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
         )
 
         (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[display_name])
-
 
     def test_dispatch_with_head(self):
         update_haystack_index()
@@ -195,7 +195,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "name": "grip",
                 "locale": 'en',
                 "name_type": "FULLY_SPECIFIED"
-            },{
+            }, {
                 "name": "test",
                 "locale": 'en',
                 "name_type": "QWERTY"
@@ -515,7 +515,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
-
         kwargs = {
             'org': org.mnemonic,
             'source': source.mnemonic,
@@ -644,7 +643,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.put(reverse('concept-detail', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-
 
     def test_dispatch_with_head_and_versions(self):
         source_version = SourceVersion(
@@ -1139,7 +1137,6 @@ class MappingViewsTest(MappingBaseTest):
 
         update_haystack_index()
 
-
     def test_mappings_list_positive(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -1149,7 +1146,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
-
 
     def test_mappings_list_positive__latest_version(self):
         mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping4.id)
@@ -1193,7 +1189,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.get_to_concept_name(), content['to_concept_name'])
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
-
 
     def test_mappings_list_positive__contains_head_length(self):
         self.client.login(username='user1', password='user1')
@@ -1240,7 +1235,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-
     def test_mappings_list_positive__contains_head_with_user(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
@@ -1252,7 +1246,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
-
 
     def test_mappings_list_positive__org_owner(self):
         mapping_version = MappingVersion.objects.get(versioned_object_id=self.mapping3.id)
@@ -1298,7 +1291,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(mapping.to_concept_url, content['to_concept_url'])
         self.assertEquals(mapping.url, content['url'])
 
-
     def test_mappings_list_positive__contains_head(self):
         self.client.login(username='user2', password='user2')
         kwargs = {
@@ -1312,7 +1304,6 @@ class MappingViewsTest(MappingBaseTest):
         self.assertEquals(1, len(content))
         self.assertEquals(1, int(content[0].get('version')))
         self.assertTrue(content[0].get('is_latest_version'))
-
 
     def test_mappings_get_positive(self):
         self.client.login(username='user1', password='user1')
@@ -2556,7 +2547,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         c = Client()
         path = reverse('collection-references', kwargs=kwargs)
-        data = json.dumps({'references': [reference]})
+        data = json.dumps({'references': [concept1.get_latest_version.url]})
         response = c.delete(path, data, 'application/json')
         self.assertEquals(response.status_code, 200)
         self.assertJSONEqual(response.content, {'message': 'ok!'})
@@ -2565,73 +2556,6 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
         self.assertEquals(len(head.concepts), 0)
-
-    def test_retrieve(self):
-        kwargs = {
-            'parent_resource': self.userprofile1
-        }
-
-        collection = Collection(
-            name='collection2',
-            mnemonic='collection2',
-            full_name='Collection Two',
-            collection_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.collection2.com',
-            description='This is the second test collection'
-        )
-        Collection.persist_new(collection, self.user1, **kwargs)
-
-        source = Source(
-            name='source',
-            mnemonic='source',
-            full_name='Source One',
-            source_type='Dictionary',
-            public_access=ACCESS_TYPE_EDIT,
-            default_locale='en',
-            supported_locales=['en'],
-            website='www.source1.com',
-            description='This is the first test source'
-        )
-        kwargs = {
-            'parent_resource': self.org1
-        }
-        Source.persist_new(source, self.user1, **kwargs)
-
-        expected_references = []
-        expressions = []
-        for i in range(11):
-            mnemonic = 'concept1' + str(i)
-
-            (concept1, _) = create_concept(mnemonic=mnemonic, user=self.user1, source=source)
-            reference = '/orgs/org1/sources/source/concepts/' + mnemonic + '/'
-            expressions += [reference]
-            expected_references += [{'reference_type': 'concepts', 'expression': reference}]
-        collection.expressions = expressions
-        collection.full_clean()
-        collection.save()
-
-        head = CollectionVersion.get_head(collection.id)
-
-        self.assertEquals(len(collection.references), 11)
-        self.assertEquals(len(head.references), 11)
-        self.assertEquals(len(head.concepts), 11)
-
-        c = Client()
-        path = reverse('collection-references', kwargs={'user': 'user1', 'collection': collection.mnemonic})
-        response = c.get(path)
-        self.assertEquals(response.status_code, 200)
-        self.assertJSONEqual(response.content, expected_references[:10])
-
-        response = c.get(path + '?page=1')
-        self.assertEquals(response.status_code, 200)
-        self.assertJSONEqual(response.content, expected_references[:10])
-
-        response = c.get(path + '?page=2')
-        self.assertEquals(response.status_code, 200)
-        self.assertJSONEqual(response.content, [expected_references[10]])
 
     def test_reference_sorting(self):
         kwargs = {
@@ -2705,22 +2629,22 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         response = c.get(path)
         response_content = json.loads(response.content)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(references[0], response_content[0]['expression'])
-        self.assertEquals(references[1], response_content[1]['expression'])
+        self.assertEquals(concept1.get_latest_version.url, response_content[0]['expression'])
+        self.assertEquals(concept2.get_latest_version.url, response_content[1]['expression'])
 
         # Sort ASC
         response = c.get(path, {'search_sort': 'ASC'})
         response_content = json.loads(response.content)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(references[0], response_content[0]['expression'])
-        self.assertEquals(references[1], response_content[1]['expression'])
+        self.assertEquals(concept1.get_latest_version.url, response_content[0]['expression'])
+        self.assertEquals(concept2.get_latest_version.url, response_content[1]['expression'])
 
         # Sort DESC
         response = c.get(path, {'search_sort': 'DESC'})
         response_content = json.loads(response.content)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(references[0], response_content[1]['expression'])
-        self.assertEquals(references[1], response_content[0]['expression'])
+        self.assertEquals(concept1.get_latest_version.url, response_content[1]['expression'])
+        self.assertEquals(concept2.get_latest_version.url, response_content[0]['expression'])
 
     @skip('Skipping this as this task is now async and it is not handeled well in test')
     def test_add_all_concept_references(self):
@@ -2989,7 +2913,6 @@ class SourceDeleteViewTest(SourceBaseTest):
         )
         CollectionVersion.persist_new(self.collection_version)
 
-
     def test_delete_source_with_referenced_mapping_in_collection(self):
         self.collection.expressions = [self.mapping.uri]
         self.collection.full_clean()
@@ -3003,7 +2926,6 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertTrue(
             'This source cannot be deleted because others have created mapping or references that point to it.' in message)
 
-
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
         self.collection.full_clean()
@@ -3016,7 +2938,6 @@ class SourceDeleteViewTest(SourceBaseTest):
         message = json.loads(response.content)['detail']
         self.assertTrue(
             'This source cannot be deleted because others have created mapping or references that point to it.' in message)
-
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(

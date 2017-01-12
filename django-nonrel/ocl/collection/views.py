@@ -2,8 +2,12 @@ import logging
 from django.conf import settings
 from django.db import IntegrityError
 
+from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
+    HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT
 from collection.models import Collection, CollectionVersion, CollectionReference
-from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, CollectionVersionUpdateSerializer, \
+from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, \
+    CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, \
+    CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
 from concepts.models import Concept, ConceptVersion
 from mappings.models import MappingVersion
@@ -13,9 +17,12 @@ from django.http import HttpResponse, HttpResponseForbidden
 from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionaryVersion
+from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, \
+    CanEditConceptDictionaryVersion
 from oclapi.permissions import HasAccessToVersionedObject
-from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, BaseAPIView
+from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, \
+    ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, \
+    BaseAPIView
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
@@ -28,8 +35,8 @@ from collection.filters import CollectionSearchFilter
 from tasks import update_collection_in_solr, delete_resources_from_collection_in_solr
 from django.core.exceptions import ValidationError
 
-
 logger = logging.getLogger('oclapi')
+
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -70,6 +77,7 @@ class CollectionVersionBaseView(ResourceVersionMixin):
     queryset = CollectionVersion.objects.filter(is_active=True)
     permission_classes = (HasAccessToVersionedObject,)
 
+
 class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
                                           RetrieveAPIView,
                                           DestroyAPIView,
@@ -91,7 +99,6 @@ class CollectionReferencesView(CollectionBaseView,
                                ConceptDictionaryUpdateMixin,
                                ListWithHeadersMixin
                                ):
-
     serializer_class = CollectionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
@@ -109,24 +116,62 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         data = request.DATA.get('data')
+        expressions = data.get('expressions', [])
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
         host_url = request.META['wsgi.url_scheme'] + '://' + request.get_host()
 
-        errors = False
+        adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
-        if mapping_expressions == '*' or concept_expressions == '*':
+        if adding_all:
             add_multiple_references.delay(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
-        else:
-            errors = add_multiple_references(
-                self.serializer_class, self.request.user, data, self.parent_resource, host_url
-            )
 
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({}, status=status.HTTP_200_OK)
+            return Response([], status=status.HTTP_202_ACCEPTED)
+
+
+        (added_references, errors) = add_multiple_references(
+            self.serializer_class, self.request.user, data, self.parent_resource, host_url
+        )
+
+        all_expressions = expressions + concept_expressions + mapping_expressions
+
+        response = []
+
+        for expression in all_expressions:
+            response_item = self.create_response_item(added_references, errors, expression)
+            if response_item:
+                response.append(response_item)
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    def create_response_item(self, added_references, errors, expression):
+        adding_expression_failed = len(errors) > 0 and errors[0].has_key(expression)
+        if adding_expression_failed:
+            return self.create_error_message(errors, expression)
+        return self.create_success_message(added_references, expression)
+
+    def create_success_message(self, added_references, expression):
+        message = self.select_update_message(expression)
+
+        references = filter(lambda reference: reference.startswith(expression), added_references)
+        if len(references) < 1:
+            return
+
+        return {
+            'added': True,
+            'expression': references[0],
+            'message': message
+        }
+
+    def create_error_message(self, errors, expression):
+        error_message = errors[0].get(expression, {})
+        return {
+            'added': False,
+            'expression': expression,
+            'message': error_message
+        }
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = CollectionReferenceSerializer
@@ -140,7 +185,7 @@ class CollectionReferencesView(CollectionBaseView,
         references = [r for r in references if search_query.upper() in r.expression.upper()]
         return references if sort == 'ASC' else list(reversed(references))
 
-    def destroy(self,request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -150,8 +195,32 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         unreferenced_concepts, unreferenced_mappings = self.parent_resource.delete_references(references)
-        delete_resources_from_collection_in_solr.delay(self.parent_resource.get_head().id, unreferenced_concepts, unreferenced_mappings)
+        delete_resources_from_collection_in_solr.delay(self.parent_resource.get_head().id, unreferenced_concepts,
+                                                       unreferenced_mappings)
         return Response({'message': 'ok!'}, status=status.HTTP_200_OK)
+
+    def select_update_message(self, expression):
+        adding_head_version = not CollectionReference.version_specified(expression)
+
+        expression_parts = expression.split('/')
+        resource_type = expression_parts[5]
+
+        if adding_head_version:
+            return self.adding_to_head_message_by_type(resource_type)
+
+        resource_name = expression_parts[6]
+        return self.version_added_message_by_type(resource_name, self.parent_resource.name, resource_type)
+
+    def adding_to_head_message_by_type(self, resource_type):
+        if resource_type == 'concepts':
+            return HEAD_OF_CONCEPT_ADDED_TO_COLLECTION
+        return HEAD_OF_MAPPING_ADDED_TO_COLLECTION
+
+    def version_added_message_by_type(self, resource_name, collection_name, resource_type):
+        if resource_type == 'concepts':
+            return CONCEPT_ADDED_TO_COLLECTION_FMT.format(resource_name, collection_name)
+        return MAPPING_ADDED_TO_COLLECTION_FMT.format(resource_name, collection_name)
+
 
 class CollectionListView(CollectionBaseView,
                          ConceptDictionaryCreateMixin,
@@ -174,10 +243,8 @@ class CollectionListView(CollectionBaseView,
         if not queryset:
             queryset = self.get_queryset()
 
-
         values = queryset.values('mnemonic', 'name', 'full_name', 'collection_type', 'description', 'default_locale',
                                  'supported_locales', 'website', 'external_id', 'updated_at', 'updated_by', 'uri')
-
 
         for value in values:
             value['Owner'] = Collection.objects.get(uri=value['uri']).parent.mnemonic
@@ -194,11 +261,13 @@ class CollectionListView(CollectionBaseView,
             value['Updated By'] = value.pop('updated_by')
             value['URI'] = value.pop('uri')
 
-
-        values.field_names.extend(['Owner','Collection ID','Collection Name','Collection Full Name','Collection Type','Description','Default Locale','Supported Locales','Website'
-                                      ,'External ID','Last Updated','Updated By','URI'])
+        values.field_names.extend(
+            ['Owner', 'Collection ID', 'Collection Name', 'Collection Full Name', 'Collection Type', 'Description',
+             'Default Locale', 'Supported Locales', 'Website'
+                , 'External ID', 'Last Updated', 'Updated By', 'URI'])
         del values.field_names[0:12]
         return values
+
 
 class CollectionExtrasView(ConceptDictionaryExtrasView):
     pass
@@ -206,7 +275,6 @@ class CollectionExtrasView(ConceptDictionaryExtrasView):
 
 class CollectionExtraRetrieveUpdateDestroyView(ConceptDictionaryExtraRetrieveUpdateDestroyView):
     concept_dictionary_version_class = CollectionVersion
-
 
 
 class CollectionVersionListView(CollectionVersionBaseView,
@@ -217,7 +285,8 @@ class CollectionVersionListView(CollectionVersionBaseView,
 
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewConceptDictionary,)
-        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(request) else CollectionVersionListSerializer
+        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(
+            request) else CollectionVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -239,11 +308,11 @@ class CollectionVersionListView(CollectionVersionBaseView,
                     return Response(serializer.data, status=status.HTTP_201_CREATED,
                                     headers=headers)
             except IntegrityError, e:
-                result = {'error':str(e), 'detail':'Collection version  \'%s\' already exist. ' % serializer.data.get('id')}
+                result = {'error': str(e),
+                          'detail': 'Collection version  \'%s\' already exist. ' % serializer.data.get('id')}
                 return Response(result, status=status.HTTP_409_CONFLICT)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def get_queryset(self):
         queryset = super(CollectionVersionListView, self).get_queryset()
@@ -302,7 +371,6 @@ class CollectionVersionRetrieveUpdateView(CollectionVersionBaseView, RetrieveAPI
 
 
 class CollectionVersionRetrieveUpdateDestroyView(CollectionVersionRetrieveUpdateView, DestroyAPIView):
-
     def destroy(self, request, *args, **kwargs):
         version = self.get_object()
         version.delete()
@@ -320,7 +388,8 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeader
     serializer_class = CollectionVersionListSerializer
 
     def get(self, request, *args, **kwargs):
-        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(request) else CollectionVersionListSerializer
+        self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(
+            request) else CollectionVersionListSerializer
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -328,9 +397,8 @@ class CollectionVersionChildListView(ResourceAttributeChildMixin, ListWithHeader
         return queryset.filter(parent_version=self.resource_version, is_active=True)
 
 
-
 class CollectionVersionReferenceListView(CollectionVersionBaseView,
-                                       ListWithHeadersMixin):
+                                         ListWithHeadersMixin):
     serializer_class = CollectionReferenceSerializer
 
     def get(self, request, *args, **kwargs):
@@ -340,7 +408,7 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
         references = [
             r for r in object_version.references
             if search_query.upper() in r.expression.upper()
-        ]
+            ]
         self.object_list = references if sort == 'ASC' else list(reversed(references))
         return self.list(request, *args, **kwargs)
 
@@ -368,7 +436,6 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             logger.debug('   Key does not exist for collection version %s' % version)
             return HttpResponse(status=204)
 
-
         response = HttpResponse(status=status)
         response['Location'] = url
 
@@ -383,8 +450,10 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
     def get_queryset(self):
         owner = self.get_owner(self.kwargs)
         queryset = super(CollectionVersionExportView, self).get_queryset()
-        return queryset.filter(versioned_object_id=Collection.objects.get(parent_id=owner.id, mnemonic=self.kwargs['collection']).id,
-                                            mnemonic=self.kwargs['version'])
+        return queryset.filter(
+            versioned_object_id=Collection.objects.get(parent_id=owner.id, mnemonic=self.kwargs['collection']).id,
+            mnemonic=self.kwargs['version'])
+
     def get_owner(self, kwargs):
         owner = None
         if 'user' in kwargs:
@@ -409,7 +478,7 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             status = self.handle_export_collection_version()
         else:
             response = HttpResponse(status=status)
-            response['URL']=self.resource_version_path_info+'export/'
+            response['URL'] = self.resource_version_path_info + 'export/'
             return response
         return HttpResponse(status=status)
 
@@ -432,4 +501,3 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             return 202
         except AlreadyQueued:
             return 409
-

@@ -2,11 +2,12 @@ version: '2'
 services:
   mongo:
     container_name: ocl_mongo
-    image: mongo
+    image: mongo:3.2.11
     ports:
       - "27017:27017"
     volumes:
       - .:/code
+      - ./data:/data/db
   redis:
     container_name: ocl_redis
     image: redis

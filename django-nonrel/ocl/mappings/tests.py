@@ -374,7 +374,6 @@ class MappingTest(MappingBaseTest):
         self.assertNotEquals(public_access, self.source1.public_access)
         self.assertEquals(self.source1.public_access, mapping.public_access)
 
-    @skip('Skip this test until development of map type validation feature is complete.')
     def test_create_mapping_negative__invalid_mapping_type(self):
         maptypes_source = Source.objects.get(name="MapTypes")
         create_concept(self.user1, maptypes_source, concept_class="MapType",names=[create_localized_text("SAME-AS")])
@@ -382,7 +381,7 @@ class MappingTest(MappingBaseTest):
 
         user = create_user()
 
-        source = create_source(user)
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
         (concept1, _) = create_concept(user, source)
         (concept2, _) = create_concept(user, source)
 
@@ -402,9 +401,8 @@ class MappingTest(MappingBaseTest):
 
         errors = Mapping.persist_new(mapping, user, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['names'][0], 'Mapping type should be valid attribute')
+        self.assertEquals(errors['map_type'][0], 'Mapping type should be valid attribute')
 
-    @skip('Skip this test until development of map type validation feature is complete.')
     def test_create_mapping_positive__valid_mapping_type(self):
         maptypes_source = Source.objects.get(name="MapTypes")
         create_concept(self.user1, maptypes_source, concept_class="MapType", names=[create_localized_text("SAME-AS")])
@@ -724,7 +722,9 @@ class MappingVersionTest(MappingVersionBaseTest):
         collection_version.full_clean()
         collection_version.save()
 
-        self.assertEquals(mapping_version.collection_version_ids, [collection_version.id])
+        self.assertEquals(len(mapping_version.collection_version_ids), 2)
+        self.assertEquals(mapping_version.collection_version_ids[1],
+                          CollectionVersion.objects.get(mnemonic='version1').id)
 
 
 class MappingClassMethodsTest(MappingBaseTest):
