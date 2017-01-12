@@ -21,7 +21,7 @@ class OpenMRSMappingValidator:
             raise ValidationError(OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS)
 
     def map_type_should_be_valid_attribute(self, org):
-        is_data_type_valid = self.is_attribute_valid(self.concept.datatype, org, 'MapTypes', 'MapType')
+        is_data_type_valid = self.is_attribute_valid(self.mapping.map_type, org, 'MapTypes', 'MapType')
 
         if not is_data_type_valid:
             raise ValidationError({'map_type': [OPENMRS_MAPTYPE]})
@@ -43,9 +43,6 @@ class OpenMRSMappingValidator:
         return Concept.objects.raw_query(matching_attribute_types).count() > 0
 
     def lookup_attributes_should_be_valid(self):
-        if self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
-            return
-
         from orgs.models import Organization
         ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
 
