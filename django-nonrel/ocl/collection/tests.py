@@ -2032,8 +2032,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping_one = create_mapping(self.user1, source, concept_one, concept_two, "Broader Than")
-        mapping_two = create_mapping(self.user1, source, concept_two, concept_one, "Same-As")
+        mapping_one = create_mapping(self.user1, source, concept_one, concept_two, "BROADER-THAN")
+        mapping_two = create_mapping(self.user1, source, concept_two, concept_one, "SAME-AS")
 
         mapping_one_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
                                                                            mapping_one.mnemonic)
