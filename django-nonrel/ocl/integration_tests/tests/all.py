@@ -675,6 +675,27 @@ class ConceptCreateViewTest(ConceptBaseTest):
             self.assertTrue(concept['version'] in source_head_concepts)
 
 
+    def test_remove_names_on_edit_concept_should_fail(self):
+        (concept, _) = create_concept(mnemonic='concept', user=self.user1, source=self.source1)
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+            'concept': concept.mnemonic
+        }
+
+        data = json.dumps({
+            "names": None
+        })
+
+
+        response = self.client.put(reverse('concept-detail', kwargs=kwargs), data,
+                                         content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.json())
+
+
 class ConceptVersionAllView(ConceptBaseTest):
     def test_collection_concept_version_list(self):
         kwargs = {
