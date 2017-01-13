@@ -14,7 +14,8 @@ from collection.models import Collection, CollectionVersion
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
-from concepts.validation_messages import OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS
+from concepts.validation_messages import OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS, \
+    BASIC_NAMES_CANNOT_BE_EMPTY
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
@@ -693,7 +694,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
                                          content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEquals(response.json())
+        self.assertEquals(response.data['names'], [BASIC_NAMES_CANNOT_BE_EMPTY])
 
 
 class ConceptVersionAllView(ConceptBaseTest):
