@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY
+from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY, BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 
 
@@ -45,9 +45,16 @@ class BasicConceptValidator(BaseConceptValidator):
 
     def validate_concept_based(self):
         self.description_cannot_be_null()
+        self.must_have_at_least_one_name()
 
     def validate_source_based(self):
         pass
+
+    def must_have_at_least_one_name(self):
+        if self.concept.names and len(self.concept.names) > 0:
+            return
+
+        raise ValidationError({'names': [BASIC_NAMES_CANNOT_BE_EMPTY]})
 
     def description_cannot_be_null(self):
         if not self.concept.descriptions:

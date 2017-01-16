@@ -1,4 +1,5 @@
 BASIC_DESCRIPTION_CANNOT_BE_EMPTY = 'Concept description cannot be empty'
+BASIC_NAMES_CANNOT_BE_EMPTY = 'A concept must have at least one name'
 
 OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LOCALE = 'A concept may not have more than one fully specified name in any locale'
 OPENMRS_NO_MORE_THAN_ONE_SHORT_NAME_PER_LOCALE = 'A concept cannot have more than one short name in a locale'

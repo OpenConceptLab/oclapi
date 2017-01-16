@@ -14,7 +14,8 @@ from collection.models import Collection, CollectionVersion
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
-from concepts.validation_messages import OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS
+from concepts.validation_messages import OPENMRS_DESCRIPTION_TYPE, OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS, \
+    BASIC_NAMES_CANNOT_BE_EMPTY
 from mappings.models import Mapping, MappingVersion
 from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
@@ -673,6 +674,27 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(2, len(source_head_concepts))
         for concept in content:
             self.assertTrue(concept['version'] in source_head_concepts)
+
+
+    def test_remove_names_on_edit_concept_should_fail(self):
+        (concept, _) = create_concept(mnemonic='concept', user=self.user1, source=self.source1)
+        self.client.login(username='user1', password='user1')
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source1.mnemonic,
+            'concept': concept.mnemonic
+        }
+
+        data = json.dumps({
+            "names": None
+        })
+
+
+        response = self.client.put(reverse('concept-detail', kwargs=kwargs), data,
+                                         content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(response.data['names'], [BASIC_NAMES_CANNOT_BE_EMPTY])
 
 
 class ConceptVersionAllView(ConceptBaseTest):

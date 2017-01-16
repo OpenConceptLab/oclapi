@@ -12,7 +12,7 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
     text = indexes.CharField(
         document=True, use_template=True)
     name = SortOrFilterField(
-        model_attr='display_name', indexed=True, stored=True)
+        model_attr='display_name', indexed=True, stored=True, default="")
     lastUpdate = indexes.DateTimeField(
         model_attr='updated_at', indexed=True, stored=True)
     num_stars = indexes.IntegerField(
@@ -44,9 +44,10 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
 
     def prepare_locale(self, obj):
         locales = set()
-        for name in obj.names:
-            if name.locale is not None:
-                locales.add(name.locale)
+        if obj.names:
+            for name in obj.names:
+                if name.locale is not None:
+                    locales.add(name.locale)
         return list(locales)
 
     def prepare_source_version(self, obj):

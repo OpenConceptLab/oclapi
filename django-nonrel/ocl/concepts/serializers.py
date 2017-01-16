@@ -2,6 +2,7 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from concepts.fields import LocalizedTextListField, MappingListField
 from concepts.models import Concept, ConceptVersion, LocalizedText
+from concepts.validation_messages import BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -32,7 +33,7 @@ class ConceptDetailSerializer(serializers.Serializer):
     datatype = serializers.CharField(required=False)
     display_name = serializers.CharField(read_only=True)
     display_locale = serializers.CharField(read_only=True)
-    names = LocalizedTextListField(required=True, error_messages={'required': 'A concept must have at least one name'})
+    names = LocalizedTextListField(required=True)
     descriptions = LocalizedTextListField(required=False, name_override='description')
     retired = serializers.BooleanField(required=False)
     url = serializers.URLField(read_only=True)
