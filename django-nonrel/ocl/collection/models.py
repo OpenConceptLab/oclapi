@@ -79,7 +79,14 @@ class Collection(ConceptContainerModel):
 
     def validate(self, ref, expression):
         ref.full_clean()
-        if ref.expression in [reference.expression for reference in self.references]:
+
+        references = self.clean_version_information_in_references(self.references)
+        ref_expression = self.clean_version_information_in_references([ref])[0]
+
+        if references is None:
+            return
+
+        if ref_expression in references:
             raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
 
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
@@ -91,6 +98,22 @@ class Collection(ConceptContainerModel):
                                                                                      error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
             self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
                                                                                      error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+
+    def clean_version_information_in_references(self, references):
+        version_information_index = 7
+        new_references = []
+        for reference in references:
+            new_references.append(reference)
+            slash = 1
+            version_information = new_references[0].expression.split('/')[version_information_index]
+            version_information_length = (len(version_information) + slash)
+
+            if version_information:
+                without_version_concept = new_references[0].expression[0: len(reference.expression) - version_information_length]
+                new_references.append(without_version_concept)
+                del new_references[0]
+
+            return new_references
 
     def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
         from concepts.models import Concept, ConceptVersion
@@ -111,7 +134,6 @@ class Collection(ConceptContainerModel):
                 continue
 
             other_concepts_in_collection = list(map(ObjectId, other_concepts_in_collection))
-
 
             same_name_and_locale = {'_id': {'$in': other_concepts_in_collection},
                                     'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}}}
