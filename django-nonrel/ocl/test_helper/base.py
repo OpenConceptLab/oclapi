@@ -158,7 +158,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
     return concept, errors
 
 
-def create_mapping(user, source, from_concept, to_concept, map_type="Same As"):
+def create_mapping(user, source, from_concept, to_concept, map_type="SAME-AS"):
     mapping = Mapping(
         created_by=user,
         updated_by=user,

@@ -2072,6 +2072,106 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.current_references()), 1)
 
+    def test_add_duplicate_concept_reference_different_version_number(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source = create_source(self.user1)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='None')])
+
+        collection.expressions = [concept_one.url]
+        collection.full_clean()
+        collection.save()
+
+        concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=concept_one,
+            concept_class='Diagnosis',
+            datatype=concept_one.datatype,
+            names=concept_one.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
+            version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")]
+        )
+
+        concept_version.full_clean()
+        concept_version.save()
+
+        with self.assertRaisesRegexp(ValidationError, REFERENCE_ALREADY_EXISTS):
+            collection.expressions = [concept_version.url]
+            collection.full_clean()
+            collection.save()
+
+        self.assertEquals(len(collection.current_references()), 1)
+
+    def test_add_duplicate_concept_reference_different_version_number(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source = create_source(self.user1)
+
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='None')])
+
+        collection.expressions = [concept_one.url]
+        collection.full_clean()
+        collection.save()
+
+        concept_version = ConceptVersion(
+            mnemonic='version1',
+            versioned_object=concept_one,
+            concept_class='Diagnosis',
+            datatype=concept_one.datatype,
+            names=concept_one.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
+            version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")]
+        )
+
+        concept_version.full_clean()
+        concept_version.save()
+
+        with self.assertRaisesRegexp(ValidationError, REFERENCE_ALREADY_EXISTS):
+            collection.expressions = [concept_version.url]
+            collection.full_clean()
+            collection.save()
+
+        self.assertEquals(len(collection.current_references()), 1)
+
+    def test_add_duplicate_mapping_reference_different_version_number(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source = create_source(self.user1)
+        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='None')])
+
+        (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
+
+        mapping = create_mapping(self.user1, source, concept_one, concept_two, "SAME-AS")
+
+        collection.expressions = [mapping.url]
+        collection.full_clean()
+        collection.save()
+
+        mapping_version = MappingVersion(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            from_concept=concept_one,
+            to_concept=concept_two,
+            external_id='mapping1',
+            versioned_object_id=mapping.id,
+            versioned_object_type=ContentType.objects.get_for_model(Mapping),
+            mnemonic='1'
+        )
+
+        with self.assertRaisesRegexp(ValidationError, REFERENCE_ALREADY_EXISTS):
+            collection.expressions = [mapping_version.url]
+            collection.full_clean()
+            collection.save()
+
+        self.assertEquals(len(collection.current_references()), 1)
+
     def test_add_duplicate_mapping_reference_should_not_add(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
@@ -2132,8 +2232,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         source2 = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept_one, errors) = create_concept(user=self.user1, source=source1, names=[
-            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en',type='None'),
-            create_localized_text(name='Any Name', locale='en',type='Fully Specified')
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name', locale='en', type='Fully Specified')
         ])
 
         collection.expressions = [concept_one.url]
@@ -2142,7 +2242,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         (concept_two, errors) = create_concept(user=self.user1, source=source2, names=[
             create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
-            create_localized_text(name='Any Name 2', locale='en',type='Fully Specified')
+            create_localized_text(name='Any Name 2', locale='en', type='Fully Specified')
         ])
 
         kwargs = {
