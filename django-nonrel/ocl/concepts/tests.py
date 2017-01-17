@@ -14,6 +14,7 @@ from concepts.validation_messages import OPENMRS_ONE_FULLY_SPECIFIED_NAME_PER_LO
     OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED, OPENMRS_DESCRIPTION_LOCALE, OPENMRS_NAME_LOCALE, OPENMRS_DESCRIPTION_TYPE, \
     OPENMRS_NAME_TYPE, OPENMRS_DATATYPE, OPENMRS_CONCEPT_CLASS, BASIC_DESCRIPTION_CANNOT_BE_EMPTY, \
     OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME
+from concepts.validators import ValidatorSpecifier
 from concepts.views import ConceptVersionListView
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
@@ -1397,3 +1398,58 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
         _, errors = create_concept(user, source, names=[name_fully_specified_mg, name_short_mg])
 
         self.assertEquals(0, len(errors))
+
+
+class ValidatorSpecifierTest(ConceptBaseTest):
+    def test_specifier_should_initialize_openmrs_validator_with_name_registry(self):
+        user = create_user()
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        diabetes_en_1 = create_localized_text('Diabetes', locale='en', type='None')
+        diabetes_en_2 = create_localized_text('Diabetes', locale='en', type='None')
+        diabetes_es = create_localized_text('Diabetes', locale='es', type='Fully Specified')
+        flu_es = create_localized_text('Flu', locale='es', type='Fully Specified')
+        flu_fr = create_localized_text('Flu', locale='fr', locale_preferred=True)
+        flu_en = create_localized_text('Flu', locale='en', locale_preferred=True)
+
+        concept_1, errors1 = create_concept(user=user, source=source, names=[diabetes_en_1, diabetes_es])
+        concept_2, errors2 = create_concept(user=user, source=source, names=[diabetes_en_2, flu_es])
+        concept_3, _ = create_concept(user=user, source=source, names=[flu_en, flu_fr])
+
+        expected_name_registry = {
+            'enDiabetes': [concept_1.id, concept_2.id],
+            'frFlu': [concept_3.id],
+            'enFlu': [concept_3.id],
+            'esDiabetes': [concept_1.id],
+            'esFlu': [concept_2.id]
+        }
+
+        validator = ValidatorSpecifier() \
+            .with_validation_schema(CUSTOM_VALIDATION_SCHEMA_OPENMRS) \
+            .with_repo(source) \
+            .get()
+
+        actual_name_registry = validator.name_registry
+
+        self.assertDictEqual(expected_name_registry, actual_name_registry)
+
+    def test_specifier_should_initialize_openmrs_validator_with_reference_values(self):
+        user = create_user()
+        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        expected_reference_values = {
+            u'DescriptionTypes': [u'None', u'FULLY_SPECIFIED'],
+            u'Datatypes': [u'None', u'N/A'], u'Classes': [u'Diagnosis', u'Drug'],
+            u'Locales': [u'en', u'es', u'fr', u'tr'],
+            u'NameTypes': [u'FULLY_SPECIFIED', u'Fully Specified', u'Short', u'SHORT',
+                           u'INDEX_TERM', u'Index Term', u'None']}
+
+        validator = ValidatorSpecifier() \
+            .with_validation_schema(CUSTOM_VALIDATION_SCHEMA_OPENMRS) \
+            .with_repo(source) \
+            .with_reference_values() \
+            .get()
+
+        actual_reference_values = validator.reference_values
+
+        self.assertDictEqual(expected_reference_values, actual_reference_values)

@@ -254,7 +254,6 @@ class MappingListView(MappingBaseView,
                 headers = self.get_success_headers(serializer.data)
                 serializer = MappingDetailSerializer(self.object, context={'request': request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({'errors' : (('' if k == '__all__' else k +' : ')+ v[0]) for k, v in serializer.errors.items()}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
