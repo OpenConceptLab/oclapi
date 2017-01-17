@@ -2105,39 +2105,6 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.current_references()), 1)
 
-    def test_add_duplicate_concept_reference_different_version_number(self):
-        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-        source = create_source(self.user1)
-
-        (concept_one, errors) = create_concept(user=self.user1, source=source, names=[
-            create_localized_text(name='User', locale='es', type='None')])
-
-        collection.expressions = [concept_one.url]
-        collection.full_clean()
-        collection.save()
-
-        concept_version = ConceptVersion(
-            mnemonic='version1',
-            versioned_object=concept_one,
-            concept_class='Diagnosis',
-            datatype=concept_one.datatype,
-            names=concept_one.names,
-            created_by=self.user1.username,
-            updated_by=self.user1.username,
-            version_created_by=self.user1.username,
-            descriptions=[create_localized_text("aDescription")]
-        )
-
-        concept_version.full_clean()
-        concept_version.save()
-
-        with self.assertRaisesRegexp(ValidationError, REFERENCE_ALREADY_EXISTS):
-            collection.expressions = [concept_version.url]
-            collection.full_clean()
-            collection.save()
-
-        self.assertEquals(len(collection.current_references()), 1)
-
     def test_add_duplicate_mapping_reference_different_version_number(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
         source = create_source(self.user1)

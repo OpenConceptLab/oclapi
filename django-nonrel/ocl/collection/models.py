@@ -80,13 +80,7 @@ class Collection(ConceptContainerModel):
     def validate(self, ref, expression):
         ref.full_clean()
 
-        references = self.clean_version_information_in_references(self.references)
-        ref_expression = self.clean_version_information_in_references([ref])[0]
-
-        if references is None:
-            return
-
-        if ref_expression in references:
+        if self.drop_version(ref.expression) in [self.drop_version(reference.expression) for reference in self.references]:
             raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
 
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
@@ -99,21 +93,9 @@ class Collection(ConceptContainerModel):
             self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
                                                                                      error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
 
-    def clean_version_information_in_references(self, references):
-        version_information_index = 7
-        new_references = []
-        for reference in references:
-            new_references.append(reference)
-            slash = 1
-            version_information = new_references[0].expression.split('/')[version_information_index]
-            version_information_length = (len(version_information) + slash)
-
-            if version_information:
-                without_version_concept = new_references[0].expression[0: len(reference.expression) - version_information_length]
-                new_references.append(without_version_concept)
-                del new_references[0]
-
-            return new_references
+    def drop_version(self, expression):
+        expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
+        return expression_parts_without_version
 
     def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
         from concepts.models import Concept, ConceptVersion
