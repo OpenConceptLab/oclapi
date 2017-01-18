@@ -219,7 +219,7 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
         collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept_one, errors) = create_concept(mnemonic="ConceptOne", user=self.user1, source=source_with_open_mrs, names=[
-            create_localized_text(name='UserThree', locale='es', type='FULLY_SPECIFIED')])
+            create_localized_text(name='UserOne', locale='es', type='FULLY_SPECIFIED')])
 
         data = json.dumps({
             'data': {
@@ -264,10 +264,10 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
         collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept_one, errors) = create_concept(mnemonic="ConceptOne", user=self.user1, source=source_with_open_mrs, names=[
-            create_localized_text(name='UserFour', locale='es', type='FULLY_SPECIFIED')])
+            create_localized_text(name='UserOne', locale='es', type='FULLY_SPECIFIED')])
 
         (concept_two, errors) = create_concept(mnemonic="ConceptTwo", user=self.user1, source=source_with_open_mrs, names=[
-            create_localized_text(name='UserFive', locale='en', type='FULLY_SPECIFIED')])
+            create_localized_text(name='UserTwo', locale='en', type='FULLY_SPECIFIED')])
 
         mapping = create_mapping(user, source_with_open_mrs, concept_one, concept_two)
 
