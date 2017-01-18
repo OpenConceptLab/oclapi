@@ -11,26 +11,27 @@ from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 
 class OpenMRSConceptValidator(BaseConceptValidator):
-    def __init__(self, concept):
-        self.concept = concept
+    def __init__(self, **kwargs):
+        self.name_registry = kwargs.pop('name_registry')
+        self.reference_values = kwargs.pop('reference_values')
 
-    def validate_concept_based(self):
-        self.must_have_exactly_one_preferred_name()
-        self.all_non_short_names_must_be_unique()
-        self.no_more_than_one_short_name_per_locale()
-        self.short_name_cannot_be_marked_as_locale_preferred()
-        self.only_one_fully_specified_name_per_locale()
-        self.requires_at_least_one_fully_specified_name()
-        self.lookup_attributes_should_be_valid()
+    def validate_concept_based(self, concept):
+        self.must_have_exactly_one_preferred_name(concept)
+        self.all_non_short_names_must_be_unique(concept)
+        self.no_more_than_one_short_name_per_locale(concept)
+        self.short_name_cannot_be_marked_as_locale_preferred(concept)
+        self.only_one_fully_specified_name_per_locale(concept)
+        self.requires_at_least_one_fully_specified_name(concept)
+        self.lookup_attributes_should_be_valid(concept)
 
-    def validate_source_based(self):
-        self.fully_specified_name_should_be_unique_for_source_and_locale()
-        self.preferred_name_should_be_unique_for_source_and_locale()
+    def validate_source_based(self, concept):
+        self.fully_specified_name_should_be_unique_for_source_and_locale(concept)
+        self.preferred_name_should_be_unique_for_source_and_locale(concept)
 
-    def must_have_exactly_one_preferred_name(self):
+    def must_have_exactly_one_preferred_name(self, concept):
         preferred_name_locales_in_concept = dict()
 
-        for name in self.concept.names:
+        for name in concept.names:
             if not name.locale_preferred:
                 continue
 
@@ -41,84 +42,39 @@ class OpenMRSConceptValidator(BaseConceptValidator):
 
             preferred_name_locales_in_concept[name.locale] = True
 
-    def requires_at_least_one_fully_specified_name(self):
+    def requires_at_least_one_fully_specified_name(self, concept):
         # A concept must have at least one fully specified name (across all locales)
         fully_specified_name_count = len(
-            filter(lambda n: n.is_fully_specified, self.concept.names))
+            filter(lambda n: n.is_fully_specified, concept.names))
         if fully_specified_name_count < 1:
             raise ValidationError({'names': [OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME]})
 
-    def preferred_name_should_be_unique_for_source_and_locale(self):
-        from concepts.models import Concept, ConceptVersion
+    def preferred_name_should_be_unique_for_source_and_locale(self, concept):
+        self.attribute_should_be_unique_for_source_and_locale(concept, attribute='locale_preferred',
+                                                              error_message=OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
-        # Concept preferred_name should be unique for same source and locale.
-        preferred_names_dict = dict()
-        self_id = getattr(self.concept, 'versioned_object_id', getattr(self.concept, 'id', None))
+    def fully_specified_name_should_be_unique_for_source_and_locale(self, concept):
+        self.attribute_should_be_unique_for_source_and_locale(concept, attribute='is_fully_specified',
+                                                              error_message=OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
-        preferred_names_list = [n for n in self.concept.names if n.locale_preferred]
-        for name in preferred_names_list:
-            validation_error = {
-                'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
+    def attribute_should_be_unique_for_source_and_locale(self, concept, attribute, error_message):
+        self_id = getattr(concept, 'versioned_object_id', getattr(concept, 'id', None))
 
-            # making sure names in the submitted concept meet the same rule
-            name_key = name.locale + name.name
-            if name_key in preferred_names_dict:
-                raise ValidationError(validation_error)
-
-            preferred_names_dict[name_key] = True
-
-            other_concepts_in_source = list(Concept.objects
-                                            .filter(parent_id=self.concept.parent_source.id, is_active=True,
-                                                    retired=False)
-                                            .exclude(id=self_id)
-                                            .values_list('id', flat=True))
-
-            if len(other_concepts_in_source) < 1:
+        names = [n for n in concept.names if getattr(n, attribute)]
+        for name in names:
+            if self.no_other_record_has_same_name(name, self_id):
                 continue
 
-            same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
-                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale,
-                                                             'type': {'$nin': ['Short', 'SHORT']}}},
-                                    'is_latest_version': True}
+            raise ValidationError({
+                'names': [message_with_name_details(error_message, name)]})
 
-            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
-                raise ValidationError(validation_error)
+    def no_other_record_has_same_name(self, name, self_id):
+        key = name.locale + name.name
+        return key not in self.name_registry or self.name_registry[key] is [self_id]
 
-    def fully_specified_name_should_be_unique_for_source_and_locale(self):
-        from concepts.models import Concept, ConceptVersion
-        fully_specified_names_in_concept = dict()
-        self_id = getattr(self.concept, 'versioned_object_id', getattr(self.concept, 'id', None))
-
-        for name in [n for n in self.concept.names if n.is_fully_specified]:
-            # Concept preferred_name should be unique for same source and locale.
-            validation_error = {'names': [
-                message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
-            # making sure names in the submitted concept meet the same rule
-            name_key = name.locale + name.name
-            if name_key in fully_specified_names_in_concept:
-                raise ValidationError(validation_error)
-
-            fully_specified_names_in_concept[name_key] = True
-
-            other_concepts_in_source = list(Concept.objects \
-                                            .filter(parent_id=self.concept.parent_source.id, is_active=True,
-                                                    retired=False) \
-                                            .exclude(id=self_id) \
-                                            .values_list('id', flat=True))
-
-            if len(other_concepts_in_source) < 1:
-                continue
-
-            same_name_and_locale = {'versioned_object_id': {'$in': other_concepts_in_source},
-                                    'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}},
-                                    'is_latest_version': True}
-
-            if ConceptVersion.objects.raw_query(same_name_and_locale).count() > 0:
-                raise ValidationError(validation_error)
-
-    def short_name_cannot_be_marked_as_locale_preferred(self):
+    def short_name_cannot_be_marked_as_locale_preferred(self, concept):
         short_preferred_names_in_concept = filter(
-            lambda name: (name.is_short or name.is_search_index_term) and name.locale_preferred, self.concept.names)
+            lambda name: (name.is_short or name.is_search_index_term) and name.locale_preferred, concept.names)
 
         if len(short_preferred_names_in_concept) > 0:
             raise ValidationError({
@@ -126,20 +82,20 @@ class OpenMRSConceptValidator(BaseConceptValidator):
                                                     short_preferred_names_in_concept[0])]
             })
 
-    def all_non_short_names_must_be_unique(self):
+    def all_non_short_names_must_be_unique(self, concept):
         name_id = lambda n: n.locale + n.name
 
-        non_short_names_in_concept = map(name_id, filter(lambda n: n.is_short == False, self.concept.names))
+        non_short_names_in_concept = map(name_id, filter(lambda n: n.is_short == False, concept.names))
         name_set = set(non_short_names_in_concept)
 
         if len(name_set) != len(non_short_names_in_concept):
             raise ValidationError(
                 {'names': [OPENMRS_NAMES_EXCEPT_SHORT_MUST_BE_UNIQUE]})
 
-    def only_one_fully_specified_name_per_locale(self):
+    def only_one_fully_specified_name_per_locale(self, concept):
         fully_specified_names_per_locale = dict()
 
-        for name in self.concept.names:
+        for name in concept.names:
             if not name.is_fully_specified:
                 continue
 
@@ -149,10 +105,10 @@ class OpenMRSConceptValidator(BaseConceptValidator):
 
             fully_specified_names_per_locale[name.locale] = True
 
-    def no_more_than_one_short_name_per_locale(self):
+    def no_more_than_one_short_name_per_locale(self, concept):
         short_names_per_locale = dict()
 
-        for name in self.concept.names:
+        for name in concept.names:
             if not name.is_short:
                 continue
 
@@ -162,90 +118,53 @@ class OpenMRSConceptValidator(BaseConceptValidator):
 
             short_names_per_locale[name.locale] = True
 
-    def is_attribute_valid(self, attribute_property, org, source_mnemonic, concept_class):
-        from sources.models import Source
-        from concepts.models import Concept
-
-        attributetypes_source_filter = Source.objects.filter(parent_id=org.id, mnemonic=source_mnemonic)
-
-        if attributetypes_source_filter.count() < 1:
-            raise ValidationError({'names': ['Lookup attributes must be imported']})
-
-        source_attributetypes = attributetypes_source_filter.values_list('id').get()
-
-        matching_attribute_types = {'retired': False, 'is_active': True, 'concept_class': concept_class,
-                                    'parent_id': source_attributetypes[0], 'names.name': attribute_property or 'None'}
-
-        return Concept.objects.raw_query(matching_attribute_types).count() > 0
-
-    def concept_class_should_be_valid_attribute(self, org):
-        is_concept_class_valid = self.is_attribute_valid(self.concept.concept_class, org, 'Classes', 'Concept Class')
-
-        if not is_concept_class_valid:
+    def concept_class_should_be_valid_attribute(self, concept):
+        if concept.concept_class not in self.reference_values['Classes']:
             raise ValidationError({'concept_class': [OPENMRS_CONCEPT_CLASS]})
 
-    def data_type_should_be_valid_attribute(self, org):
-        is_data_type_valid = self.is_attribute_valid(self.concept.datatype, org, 'Datatypes', 'Datatype')
-
-        if not is_data_type_valid:
+    def data_type_should_be_valid_attribute(self, concept):
+        if (concept.datatype or 'None') not in self.reference_values['Datatypes']:
             raise ValidationError({'data_type': [OPENMRS_DATATYPE]})
 
-    def name_type_should_be_valid_attribute(self, org):
-        if not self.concept.names:
+    def name_type_should_be_valid_attribute(self, concept):
+        if not concept.names:
             return
 
-        for name in self.concept.names:
+        for name in concept.names:
             if name.type in ['FULLY_SPECIFIED', 'SHORT']:
                 continue
 
-            if self.is_attribute_valid(name.type, org, 'NameTypes', 'NameType'):
+            if (name.type or 'None') in self.reference_values['NameTypes']:
                 continue
 
             raise ValidationError({'names': [message_with_name_details(OPENMRS_NAME_TYPE, name)]})
 
-    def description_type_should_be_valid_attribute(self, org):
-        if not self.concept.descriptions:
+    def description_type_should_be_valid_attribute(self, concept):
+        if not concept.descriptions:
             return
 
-        description_type_count = len(
-            filter(lambda d: self.is_attribute_valid(d.type, org, 'DescriptionTypes', 'DescriptionType'),
-                   self.concept.descriptions))
+        for description in concept.descriptions:
+            if (description.type or 'None') not in self.reference_values['DescriptionTypes']:
+                raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_TYPE]})
 
-        if description_type_count < len(self.concept.descriptions):
-            raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_TYPE]})
-
-    def locale_should_be_valid_attribute(self, org):
-        if not self.concept.names or not self.concept.descriptions:
+    def locale_should_be_valid_attribute(self, concept):
+        if not concept.names or not concept.descriptions:
             return
 
-        name_locale_count = len(
-            filter(lambda n: self.is_attribute_valid(n.locale, org, 'Locales', 'Locale'),
-                   self.concept.names))
+        for name in concept.names:
+            if name.locale not in self.reference_values['Locales']:
+                raise ValidationError({'names': [OPENMRS_NAME_LOCALE]})
 
-        if name_locale_count < len(self.concept.names):
-            raise ValidationError({'names': [OPENMRS_NAME_LOCALE]})
+        for description in concept.descriptions:
+            if description.locale not in self.reference_values['Locales']:
+                raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_LOCALE]})
 
-        description_locale_count = len(
-            filter(lambda d: self.is_attribute_valid(d.locale, org, 'Locales', 'Locale'),
-                   self.concept.descriptions))
-
-        if description_locale_count < len(self.concept.descriptions):
-            raise ValidationError({'descriptions': [OPENMRS_DESCRIPTION_LOCALE]})
-
-    def lookup_attributes_should_be_valid(self):
-        if self.concept.concept_class in LOOKUP_CONCEPT_CLASSES:
+    def lookup_attributes_should_be_valid(self, concept):
+        if concept.concept_class in LOOKUP_CONCEPT_CLASSES:
             return
 
-        from orgs.models import Organization
-        ocl_org_filter = Organization.objects.filter(mnemonic='OCL')
-
-        if ocl_org_filter.count() < 1:
-            raise ValidationError({'non_field_errors': ['Lookup attributes must be imported']})
-
-        org = ocl_org_filter.get()
-
-        self.concept_class_should_be_valid_attribute(org)
-        self.data_type_should_be_valid_attribute(org)
-        self.name_type_should_be_valid_attribute(org)
-        self.description_type_should_be_valid_attribute(org)
-        self.locale_should_be_valid_attribute(org)
+        self.concept_class_should_be_valid_attribute(concept)
+        self.data_type_should_be_valid_attribute(concept)
+        self.name_type_should_be_valid_attribute(concept)
+        self.description_type_should_be_valid_attribute(concept)
+        self.locale_should_be_valid_attribute(concept)
