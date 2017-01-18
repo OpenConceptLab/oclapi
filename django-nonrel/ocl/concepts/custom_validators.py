@@ -70,7 +70,7 @@ class OpenMRSConceptValidator(BaseConceptValidator):
 
     def no_other_record_has_same_name(self, name, self_id):
         key = name.locale + name.name
-        return key not in self.name_registry or self.name_registry[key] is [self_id]
+        return key not in self.name_registry or self.name_registry[key] == [self_id]
 
     def short_name_cannot_be_marked_as_locale_preferred(self, concept):
         short_preferred_names_in_concept = filter(
