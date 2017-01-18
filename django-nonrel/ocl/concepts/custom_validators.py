@@ -14,7 +14,7 @@ class OpenMRSConceptValidator(BaseConceptValidator):
     def __init__(self, **kwargs):
         self.name_registry = kwargs.pop('name_registry')
         self.reference_values = kwargs.pop('reference_values')
-        
+
     def validate_concept_based(self, concept):
         self.must_have_exactly_one_preferred_name(concept)
         self.all_non_short_names_must_be_unique(concept)
@@ -50,50 +50,27 @@ class OpenMRSConceptValidator(BaseConceptValidator):
             raise ValidationError({'names': [OPENMRS_AT_LEAST_ONE_FULLY_SPECIFIED_NAME]})
 
     def preferred_name_should_be_unique_for_source_and_locale(self, concept):
-        # Concept preferred_name should be unique for same source and locale.
-        preferred_names_dict = dict()
-        self_id = getattr(concept, 'versioned_object_id', getattr(concept, 'id', None))
-
-        preferred_names_list = [n for n in concept.names if n.locale_preferred]
-        for name in preferred_names_list:
-            validation_error = {
-                'names': [message_with_name_details(OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
-
-            # making sure names in the submitted concept meet the same rule
-            name_key = name.locale + name.name
-
-            if name_key in preferred_names_dict:
-                raise ValidationError(validation_error)
-
-            if name_key in self.name_registry:
-                if self_id not in self.name_registry[name_key]:
-                    raise ValidationError(validation_error)
-                elif len(self.name_registry[name_key]) > 1:
-                    raise ValidationError(validation_error)
-
-            preferred_names_dict[name_key] = True
+        self.attribute_should_be_unique_for_source_and_locale(concept, attribute='locale_preferred',
+                                                              error_message=OPENMRS_PREFERRED_NAME_UNIQUE_PER_SOURCE_LOCALE)
 
     def fully_specified_name_should_be_unique_for_source_and_locale(self, concept):
-        fully_specified_names_in_concept = dict()
+        self.attribute_should_be_unique_for_source_and_locale(concept, attribute='is_fully_specified',
+                                                              error_message=OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE)
+
+    def attribute_should_be_unique_for_source_and_locale(self, concept, attribute, error_message):
         self_id = getattr(concept, 'versioned_object_id', getattr(concept, 'id', None))
 
-        for name in [n for n in concept.names if n.is_fully_specified]:
-            # Concept preferred_name should be unique for same source and locale.
-            validation_error = {'names': [
-                message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, name)]}
-            # making sure names in the submitted concept meet the same rule
-            name_key = name.locale + name.name
-            if name_key in fully_specified_names_in_concept:
-                raise ValidationError(validation_error)
+        names = [n for n in concept.names if getattr(n, attribute)]
+        for name in names:
+            if self.no_other_record_has_same_name(name, self_id):
+                continue
 
-            if name_key in self.name_registry:
-                if self_id not in self.name_registry[name_key]:
-                    raise ValidationError(validation_error)
-                elif len(self.name_registry[name_key]) > 1:
-                    raise ValidationError(validation_error)
+            raise ValidationError({
+                'names': [message_with_name_details(error_message, name)]})
 
-
-            fully_specified_names_in_concept[name_key] = True
+    def no_other_record_has_same_name(self, name, self_id):
+        key = name.locale + name.name
+        return key not in self.name_registry or self.name_registry[key] is [self_id]
 
     def short_name_cannot_be_marked_as_locale_preferred(self, concept):
         short_preferred_names_in_concept = filter(
