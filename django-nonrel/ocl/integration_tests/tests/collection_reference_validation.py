@@ -233,7 +233,7 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
                         content_type='application/json')
 
         concept_version = ConceptVersion(
-            mnemonic=concept_one.id,
+            mnemonic='version1',
             versioned_object=concept_one,
             concept_class='Diagnosis',
             datatype=concept_one.datatype,
