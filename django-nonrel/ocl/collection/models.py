@@ -79,7 +79,8 @@ class Collection(ConceptContainerModel):
 
     def validate(self, ref, expression):
         ref.full_clean()
-        if ref.expression in [reference.expression for reference in self.references]:
+
+        if self.drop_version(ref.expression) in [self.drop_version(reference.expression) for reference in self.references]:
             raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
 
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
@@ -91,6 +92,10 @@ class Collection(ConceptContainerModel):
                                                                                      error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
             self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
                                                                                      error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+
+    def drop_version(self, expression):
+        expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
+        return expression_parts_without_version
 
     def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
         from concepts.models import Concept, ConceptVersion
@@ -111,7 +116,6 @@ class Collection(ConceptContainerModel):
                 continue
 
             other_concepts_in_collection = list(map(ObjectId, other_concepts_in_collection))
-
 
             same_name_and_locale = {'_id': {'$in': other_concepts_in_collection},
                                     'names': {'$elemMatch': {'name': name.name, 'locale': name.locale}}}

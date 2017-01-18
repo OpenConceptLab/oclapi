@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -7,7 +8,9 @@ from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, 
     HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT, REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from collection.models import Collection
+from concepts.models import ConceptVersion
 from concepts.tests import ConceptBaseTest, create_localized_text
+from mappings.models import MappingVersion, Mapping
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user, create_concept, create_collection, create_mapping
 
@@ -184,14 +187,16 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
     def test_add_duplicate_mapping_expressions_should_fail(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
-        (concept_one, errors) = create_concept(mnemonic='conceptTwo', user=user, source=source_with_open_mrs)
-        (concept_two, errors) = create_concept(mnemonic='conceptOne', user=user, source=source_with_open_mrs)
+        (concept_one, errors) = create_concept(mnemonic="ConceptOne", user=self.user1, source=source_with_open_mrs, names=[
+            create_localized_text(name='UserOne', locale='es', type='FULLY_SPECIFIED')])
+        (concept_two, errors) = create_concept(mnemonic="ConceptTwo", user=self.user1, source=source_with_open_mrs, names=[
+            create_localized_text(name='UserTwo', locale='en', type='FULLY_SPECIFIED')])
+
         mapping = create_mapping(user, source_with_open_mrs, concept_one, concept_two)
         collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         data = json.dumps({
             'data': {
-                'concepts': [concept_one.url, concept_two.url],
                 'mappings': [mapping.url]
             }
         })
@@ -206,12 +211,105 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEquals(response.data,
-                          [{'added': False, 'expression': concept_one.url,
-                            'message': [REFERENCE_ALREADY_EXISTS]},
-                           {'added': False, 'expression': concept_two.url,
-                            'message': [REFERENCE_ALREADY_EXISTS]},
-                           {'added': False, 'expression': mapping.url,
+                          [{'added': False, 'expression': mapping.url,
                             'message': [REFERENCE_ALREADY_EXISTS]}])
+
+    def test_add_duplicate_concept_reference_different_version_number(self):
+        source_with_open_mrs, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(mnemonic="ConceptOne", user=self.user1, source=source_with_open_mrs, names=[
+            create_localized_text(name='UserOne', locale='es', type='FULLY_SPECIFIED')])
+
+        data = json.dumps({
+            'data': {
+                'expressions': [concept_one.url]
+            }
+        })
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                        content_type='application/json')
+
+        concept_version = ConceptVersion(
+            mnemonic=concept_one.id,
+            versioned_object=concept_one,
+            concept_class='Diagnosis',
+            datatype=concept_one.datatype,
+            names=concept_one.names,
+            created_by=self.user1.username,
+            updated_by=self.user1.username,
+            version_created_by=self.user1.username,
+            descriptions=[create_localized_text("aDescription")])
+
+        concept_version.full_clean()
+        concept_version.save()
+
+        data = json.dumps({
+            'data': {
+                'expressions': [concept_version.url]
+            }
+        })
+
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(response.data, [{'added': False, 'expression': concept_version.url,
+                                           'message': [REFERENCE_ALREADY_EXISTS]}])
+
+    def test_add_duplicate_mapping_reference_different_version_number(self):
+        source_with_open_mrs, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept_one, errors) = create_concept(mnemonic="ConceptOne", user=self.user1, source=source_with_open_mrs, names=[
+            create_localized_text(name='UserOne', locale='es', type='FULLY_SPECIFIED')])
+
+        (concept_two, errors) = create_concept(mnemonic="ConceptTwo", user=self.user1, source=source_with_open_mrs, names=[
+            create_localized_text(name='UserTwo', locale='en', type='FULLY_SPECIFIED')])
+
+        mapping = create_mapping(user, source_with_open_mrs, concept_one, concept_two)
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        data = json.dumps({
+            'data': {
+                'expressions': [mapping.url]
+            }
+        })
+
+        self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                        content_type='application/json')
+
+        mapping_version = MappingVersion(
+            created_by=self.user1,
+            updated_by=self.user1,
+            map_type=mapping.map_type,
+            parent=source_with_open_mrs,
+            from_concept=concept_two,
+            to_concept=concept_one,
+            external_id='mapping1',
+            versioned_object_id=mapping.id,
+            versioned_object_type=ContentType.objects.get_for_model(Mapping),
+            mnemonic='1'
+        )
+
+        mapping_version.full_clean()
+        mapping_version.save()
+
+        data = json.dumps({
+            'data': {
+                'expressions': [mapping_version.url]
+            }
+        })
+
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(response.data, [{'added': False, 'expression': mapping_version.url,
+                                           'message': [REFERENCE_ALREADY_EXISTS]}])
 
     def test_add_concept_as_single_reference_without_version_information_should_add_latest_version_number(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
@@ -327,7 +425,7 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
         kwargs = {'user': user.username, 'collection': collection.name}
 
         self.client.put(reverse('collection-references', kwargs=kwargs), data,
-                                   content_type='application/json')
+                        content_type='application/json')
 
         data = json.dumps({
             'data': {
