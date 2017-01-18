@@ -317,7 +317,6 @@ class ConceptContainerModel(SubResourceBaseModel):
                 errors.update({'failed_concept_validations': failed_concept_validations})
 
         try:
-
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
@@ -349,15 +348,21 @@ class ConceptContainerModel(SubResourceBaseModel):
         # we need to validate all concepts
         # according to the new schema
         from concepts.models import Concept
+        from concepts.validators import ValidatorSpecifier
 
-        concepts = Concept.objects.filter(parent_id=obj.id).all()
+        concepts = Concept.objects.filter(parent_id=obj.id, is_active=True, retired=False).all()
         failed_concept_validations = []
 
+        validator = ValidatorSpecifier()\
+            .with_validation_schema(obj.custom_validation_schema)\
+            .with_repo(obj)\
+            .with_reference_values()\
+            .get()
+
         for concept in concepts:
-            from concepts.validators import ValidatorSelector
-            validator = ValidatorSelector(obj.custom_validation_schema).get_validator(concept)
             try:
-                validator.validate()
+                validator.validate(concept)
+                pass
             except ValidationError as validation_error:
                 concept_validation_error = {'mnemonic': concept.mnemonic, 'url': concept.url, 'errors': validation_error.message_dict}
                 failed_concept_validations.append(concept_validation_error)
