@@ -188,9 +188,13 @@ def create_lookup_concept_classes(user, org_ocl):
 
     create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Diagnosis")])
     create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Drug")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Test")])
+    create_concept(user, classes_source, concept_class="Concept Class", names=[create_localized_text("Procedure")])
 
-    create_concept(user, datatypes_source, concept_class="Datatype",
-                   names=[create_localized_text("None"), create_localized_text("N/A")])
+    create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("None"), create_localized_text("N/A")])
+    create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("Numeric")])
+    create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("Coded")])
+    create_concept(user, datatypes_source, concept_class="Datatype", names=[create_localized_text("Text")])
 
     create_concept(user, nametypes_source, concept_class="NameType",
                    names=[create_localized_text("FULLY_SPECIFIED"), create_localized_text("Fully Specified")])
@@ -200,10 +204,9 @@ def create_lookup_concept_classes(user, org_ocl):
                    names=[create_localized_text("INDEX_TERM"), create_localized_text("Index Term")])
     create_concept(user, nametypes_source, concept_class="NameType", names=[create_localized_text("None")])
 
-    create_concept(user, descriptiontypes_source, concept_class="DescriptionType",
-                   names=[create_localized_text("None")])
-    create_concept(user, descriptiontypes_source, concept_class="DescriptionType",
-                   names=[create_localized_text("FULLY_SPECIFIED")])
+    create_concept(user, descriptiontypes_source, concept_class="DescriptionType", names=[create_localized_text("None")])
+    create_concept(user, descriptiontypes_source, concept_class="DescriptionType", names=[create_localized_text("FULLY_SPECIFIED")])
+    create_concept(user, descriptiontypes_source, concept_class="DescriptionType", names=[create_localized_text("Definition")])
 
     create_concept(user, maptypes_source, concept_class="MapType",
                    names=[create_localized_text("SAME-AS"), create_localized_text("Same As")])
@@ -224,3 +227,5 @@ def create_lookup_concept_classes(user, org_ocl):
     create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("es")])
     create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("fr")])
     create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("tr")])
+    create_concept(user, locales_source, concept_class="Locale", names=[create_localized_text("Abkhazian", "en")])
+    create_concept(user, locales_source, concept_class="Locale",names=[create_localized_text("English", "en")])

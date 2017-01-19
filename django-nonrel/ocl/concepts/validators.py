@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
 from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY, BASIC_NAMES_CANNOT_BE_EMPTY
@@ -27,20 +28,18 @@ class ValidatorSpecifier:
         return self
 
     def with_repo(self, repo):
-        from concepts.models import Concept, ConceptVersion
-
-        concepts_id_in_source = list(Concept.objects.filter(parent_id=repo.id, is_active=True, retired=False).values_list('id', flat=True))
-        concept_versions_in_source = ConceptVersion.objects.raw_query({'versioned_object_id': {'$in': concepts_id_in_source},'is_latest_version': True}).all()
+        from concepts.models import Concept
+        concepts_in_source = Concept.objects.filter(parent_id=repo.id, is_active=True, retired=False).all()
 
         name_registry = dict()
 
-        for concept_version in concept_versions_in_source:
-            for name in concept_version.names:
+        for concept in concepts_in_source:
+            for name in concept.names:
                 if name.is_short:
                     continue
                 name_key = u"{}{}".format(name.locale, name.name)
                 ids = name_registry.get(name_key, [])
-                ids.append(concept_version.versioned_object_id)
+                ids.append(concept.id)
                 name_registry[name_key] = ids
 
         self.name_registry = name_registry
@@ -50,20 +49,31 @@ class ValidatorSpecifier:
     def with_reference_values(self):
         from orgs.models import Organization
         from sources.models import Source
-        from concepts.models import Concept
 
+        FIVE_MINS = 5*60
         reference_value_source_mnemonics = ['Classes', 'Datatypes', 'NameTypes', 'DescriptionTypes', 'Locales']
 
         ocl_org_filter = Organization.objects.get(mnemonic='OCL')
-        sources = Source.objects.filter(parent_id=ocl_org_filter.id, mnemonic__in=reference_value_source_mnemonics)
+
+        if not cache.has_key('reference_sources'):
+            cache.set('reference_sources', Source.objects.filter(parent_id=ocl_org_filter.id, mnemonic__in=reference_value_source_mnemonics), FIVE_MINS)
+
+        sources = cache.get('reference_sources')
 
         self.reference_values = dict()
         for source in sources:
-            reference_concepts = list(Concept.objects.filter(retired=False, is_active=True, parent_id=source.id).all())
-            names_in_concepts = map(lambda value: value.names, reference_concepts)
-            self.reference_values[source.mnemonic] = [name_object.name for names in names_in_concepts for name_object in names]
+            if not cache.has_key(source.mnemonic):
+                cache.set(source.mnemonic,self._get_reference_values(source), FIVE_MINS)
+            reference_values = cache.get(source.mnemonic)
+            self.reference_values[source.mnemonic] = reference_values
 
         return self
+
+    def _get_reference_values(self, reference_value_source):
+        from concepts.models import Concept
+        reference_concepts = list(Concept.objects.filter(retired=False, is_active=True, parent_id=reference_value_source.id).all())
+        names_in_concepts = map(lambda value: value.names, reference_concepts)
+        return [name_object.name for names in names_in_concepts for name_object in names]
 
     def get(self):
         validator_class = self.validator_map.get(self.validation_schema, BasicConceptValidator)
