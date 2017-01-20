@@ -1,4 +1,4 @@
-oclapi
+oclapi [![Build Status](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master/build_image)](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master)
 ======
 
 Source for the Open Concept Lab APIs
