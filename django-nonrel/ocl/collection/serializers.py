@@ -54,7 +54,6 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return Mapping.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
                                                                                                    versioned_object_id=obj.id).mappings).count()
 
-
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
     uuid = serializers.CharField(source='id', read_only=True)

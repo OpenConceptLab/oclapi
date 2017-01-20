@@ -261,14 +261,6 @@ class ConceptTest(ConceptBaseTest):
 
 class OpenMrsLookupValueValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_negative(self):
-        classes_source = Source.objects.get(name="Classes")
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Test")])
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Procedure")])
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Drug")])
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='XYZQWERT',
@@ -281,16 +273,7 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
         self.assertEquals(errors['concept_class'][0], OPENMRS_CONCEPT_CLASS)
 
     def test_data_type_is_valid_attribute_negative(self):
-        datatypes_source = Source.objects.get(name="Datatypes")
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Numeric")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Coded")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Text")])
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=source,
                                            names=[create_localized_text(name='Grip', locale='es',
@@ -301,12 +284,6 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
         self.assertEquals(errors['data_type'][0], OPENMRS_DATATYPE)
 
     def test_description_type_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("None")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("Definition")])
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
@@ -322,12 +299,6 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
         self.assertEquals(errors['descriptions'][0], OPENMRS_DESCRIPTION_TYPE)
 
     def test_name_locale_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
@@ -344,12 +315,6 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
         self.assertEquals(errors['names'][0], OPENMRS_NAME_LOCALE)
 
     def test_description_locale_is_valid_attribute_negative(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
         source = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
@@ -368,14 +333,6 @@ class OpenMrsLookupValueValidationTest(ConceptBaseTest):
 
 class ConceptBasicValidationTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_positive(self):
-        classes_source = Source.objects.get(name="Classes")
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Test")])
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Procedure")])
-        create_concept(self.user1, classes_source, concept_class="Concept Class",
-                       names=[create_localized_text("Drug")])
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Drug',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es', locale_preferred=True,
@@ -384,14 +341,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_data_type_is_valid_attribute_positive(self):
-        datatypes_source = Source.objects.get(name="Datatypes")
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Numeric")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Coded")])
-        create_concept(self.user1, datatypes_source, concept_class="Datatype",
-                       names=[create_localized_text("Text")])
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
@@ -401,14 +350,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_name_type_is_valid_attribute_positive(self):
-        nametypes_source = Source.objects.get(name="NameTypes")
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("None")])
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("Fully-Specified")])
-        create_concept(self.user1, nametypes_source, concept_class="NameType",
-                       names=[create_localized_text("Short")])
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='es',
@@ -421,11 +362,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_description_type_is_valid_attribute_positive(self):
-        descriptiontypes_source = Source.objects.get(name="DescriptionTypes")
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("None")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="DescriptionType",
-                       names=[create_localized_text("Definition")])
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
@@ -440,12 +376,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_name_locale_is_valid_attribute_positive(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='Abkhazian',
@@ -459,12 +389,6 @@ class ConceptBasicValidationTest(ConceptBaseTest):
         self.assertEquals(0, len(errors))
 
     def test_description_locale_is_valid_attribute_positive(self):
-        descriptiontypes_source = Source.objects.get(name="Locales")
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("Abkhazian", "en")])
-        create_concept(self.user1, descriptiontypes_source, concept_class="Locale",
-                       names=[create_localized_text("English", "en")])
-
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, concept_class='Diagnosis',
                                            source=self.source1,
                                            names=[create_localized_text(name='Grip', locale='English',
@@ -1417,11 +1341,11 @@ class ValidatorSpecifierTest(ConceptBaseTest):
         concept_3, _ = create_concept(user=user, source=source, names=[flu_en, flu_fr])
 
         expected_name_registry = {
-            'enDiabetes': [concept_1.id, concept_2.id],
-            'frFlu': [concept_3.id],
-            'enFlu': [concept_3.id],
-            'esDiabetes': [concept_1.id],
-            'esFlu': [concept_2.id]
+            u'enDiabetes': [concept_1.id, concept_2.id],
+            u'frFlu': [concept_3.id],
+            u'enFlu': [concept_3.id],
+            u'esDiabetes': [concept_1.id],
+            u'esFlu': [concept_2.id]
         }
 
         validator = ValidatorSpecifier() \
@@ -1431,16 +1355,21 @@ class ValidatorSpecifierTest(ConceptBaseTest):
 
         actual_name_registry = validator.name_registry
 
-        self.assertDictEqual(expected_name_registry, actual_name_registry)
+        self.assertItemsEqual(expected_name_registry[u'enDiabetes'], actual_name_registry[u'enDiabetes'])
+        self.assertItemsEqual(expected_name_registry[u'frFlu'], actual_name_registry[u'frFlu'])
+        self.assertItemsEqual(expected_name_registry[u'enFlu'], actual_name_registry[u'enFlu'])
+        self.assertItemsEqual(expected_name_registry[u'esDiabetes'], actual_name_registry[u'esDiabetes'])
+        self.assertItemsEqual(expected_name_registry[u'esFlu'], actual_name_registry[u'esFlu'])
 
     def test_specifier_should_initialize_openmrs_validator_with_reference_values(self):
         user = create_user()
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
         expected_reference_values = {
-            u'DescriptionTypes': [u'None', u'FULLY_SPECIFIED'],
-            u'Datatypes': [u'None', u'N/A'], u'Classes': [u'Diagnosis', u'Drug'],
-            u'Locales': [u'en', u'es', u'fr', u'tr'],
+            u'DescriptionTypes': [u'None', u'FULLY_SPECIFIED', u'Definition'],
+            u'Datatypes': [u'None', u'N/A', u'Numeric', u'Coded', u'Text'],
+            u'Classes': [u'Diagnosis', u'Drug', u'Test', u'Procedure'],
+            u'Locales': [u'en', u'es', u'fr', u'tr', u'Abkhazian', u'English'],
             u'NameTypes': [u'FULLY_SPECIFIED', u'Fully Specified', u'Short', u'SHORT',
                            u'INDEX_TERM', u'Index Term', u'None']}
 
@@ -1452,4 +1381,8 @@ class ValidatorSpecifierTest(ConceptBaseTest):
 
         actual_reference_values = validator.reference_values
 
-        self.assertDictEqual(expected_reference_values, actual_reference_values)
+        self.assertItemsEqual(expected_reference_values[u'DescriptionTypes'], actual_reference_values[u'DescriptionTypes'])
+        self.assertItemsEqual(expected_reference_values[u'Datatypes'], actual_reference_values[u'Datatypes'])
+        self.assertItemsEqual(expected_reference_values[u'Classes'], actual_reference_values[u'Classes'])
+        self.assertItemsEqual(expected_reference_values[u'Locales'], actual_reference_values[u'Locales'])
+        self.assertItemsEqual(expected_reference_values[u'NameTypes'], actual_reference_values[u'NameTypes'])
