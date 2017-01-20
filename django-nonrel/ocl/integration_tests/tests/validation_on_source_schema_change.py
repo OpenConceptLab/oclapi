@@ -31,14 +31,14 @@ class ValidationOnSourceSchemaTest(ConceptBaseTest):
 
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         self.assertDictEqual(json.loads(response.content), {
-            "failed_concept_validations": [
-                {"mnemonic": concept_1.mnemonic,
-                 "url": concept_1.url,
-                 "errors": {"names": [
+            u"failed_concept_validations": [
+                {u"mnemonic": concept_1.mnemonic,
+                 u"url": concept_1.url,
+                 u"errors": {u"names": [
                      message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, non_unique_name)]}},
-                {"mnemonic": concept_2.mnemonic,
-                 "url": concept_2.url,
-                 "errors": {"names": [
+                {u"mnemonic": concept_2.mnemonic,
+                 u"url": concept_2.url,
+                 u"errors": {u"names": [
                      message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, non_unique_name)]}}]})
 
 
