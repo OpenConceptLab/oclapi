@@ -1341,11 +1341,11 @@ class ValidatorSpecifierTest(ConceptBaseTest):
         concept_3, _ = create_concept(user=user, source=source, names=[flu_en, flu_fr])
 
         expected_name_registry = {
-            'enDiabetes': [concept_1.id, concept_2.id],
-            'frFlu': [concept_3.id],
-            'enFlu': [concept_3.id],
-            'esDiabetes': [concept_1.id],
-            'esFlu': [concept_2.id]
+            u'enDiabetes': [concept_1.id, concept_2.id],
+            u'frFlu': [concept_3.id],
+            u'enFlu': [concept_3.id],
+            u'esDiabetes': [concept_1.id],
+            u'esFlu': [concept_2.id]
         }
 
         validator = ValidatorSpecifier() \
@@ -1355,7 +1355,11 @@ class ValidatorSpecifierTest(ConceptBaseTest):
 
         actual_name_registry = validator.name_registry
 
-        self.assertDictEqual(expected_name_registry, actual_name_registry)
+        self.assertListEqual(expected_name_registry[u'enDiabetes'], actual_name_registry[u'enDiabetes'])
+        self.assertListEqual(expected_name_registry[u'frFlu'], actual_name_registry[u'frFlu'])
+        self.assertListEqual(expected_name_registry[u'enFlu'], actual_name_registry[u'enFlu'])
+        self.assertListEqual(expected_name_registry[u'esDiabetes'], actual_name_registry[u'esDiabetes'])
+        self.assertListEqual(expected_name_registry[u'esFlu'], actual_name_registry[u'esFlu'])
 
     def test_specifier_should_initialize_openmrs_validator_with_reference_values(self):
         user = create_user()
@@ -1377,4 +1381,8 @@ class ValidatorSpecifierTest(ConceptBaseTest):
 
         actual_reference_values = validator.reference_values
 
-        self.assertDictEqual(expected_reference_values, actual_reference_values)
+        self.assertListEqual(expected_reference_values[u'DescriptionTypes'], actual_reference_values[u'DescriptionTypes'])
+        self.assertListEqual(expected_reference_values[u'Datatypes'], actual_reference_values[u'Datatypes'])
+        self.assertListEqual(expected_reference_values[u'Classes'], actual_reference_values[u'Classes'])
+        self.assertListEqual(expected_reference_values[u'Locales'], actual_reference_values[u'Locales'])
+        self.assertListEqual(expected_reference_values[u'NameTypes'], actual_reference_values[u'NameTypes'])
