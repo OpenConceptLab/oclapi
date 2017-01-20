@@ -16,7 +16,6 @@ from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS, LOOKUP_CONCEPT_CLASS
 from test_helper.base import create_source, create_user, create_concept
 
 
-
 class BulkConceptImporterTest(ConceptBaseTest):
     def setUp(self):
         super(BulkConceptImporterTest, self).setUp()
