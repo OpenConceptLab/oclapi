@@ -30,8 +30,9 @@ class ValidationOnSourceSchemaTest(ConceptBaseTest):
         response = self.client.put(reverse('source-detail', kwargs=kwargs), data, content_type='application/json')
 
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        self.assertDictEqual(json.loads(response.content), {
-            u"failed_concept_validations": [
+        response_content = json.loads(response.content)
+        self.assertIn('failed_concept_validations', response_content)
+        self.assertItemsEqual(response_content['failed_concept_validations'], [
                 {u"mnemonic": concept_1.mnemonic,
                  u"url": concept_1.url,
                  u"errors": {u"names": [
@@ -39,14 +40,11 @@ class ValidationOnSourceSchemaTest(ConceptBaseTest):
                 {u"mnemonic": concept_2.mnemonic,
                  u"url": concept_2.url,
                  u"errors": {u"names": [
-                     message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, non_unique_name)]}}]})
-
+                     message_with_name_details(OPENMRS_FULLY_SPECIFIED_NAME_UNIQUE_PER_SOURCE_LOCALE, non_unique_name)]}}])
 
     def test_change_source_schema_should_fail_when_valid_against_open_mrs(self):
         user = create_user()
         source_no_validation = create_source(user, organization=self.org1)
-
-        non_unique_name = create_localized_text("Non Unique")
 
         concept_1, _ = create_concept(user, source_no_validation, mnemonic="concept1", names=[create_localized_text("Name 1")])
         concept_2, _ = create_concept(user, source_no_validation, mnemonic="concept2", names=[create_localized_text("Name 2")])
