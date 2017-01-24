@@ -339,10 +339,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
         return self.versioned_object.get_empty_mappings()
 
     def get_unidirectional_mappings(self):
-        self.versioned_object.get_unidirectional_mappings()
+        return self.versioned_object.get_unidirectional_mappings()
 
     def get_bidirectional_mappings(self):
-        self.versioned_object.get_bidirectional_mappings()
+        return self.versioned_object.get_bidirectional_mappings()
 
     @classmethod
     def get_latest_version_of(cls, concept):
