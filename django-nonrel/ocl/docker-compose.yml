@@ -6,7 +6,6 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - .:/code
       - ./data:/data/db
   redis:
     container_name: ocl_redis

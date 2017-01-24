@@ -1,10 +1,5 @@
 FROM solr:5.5
 USER root
 COPY solr /opt/solr/server/solr
-RUN chmod -R 777 /opt/solr/server/solr && ls -latrh /opt/solr/server/solr/
-RUN set -e
-RUN cp /opt/solr/bin/solr.in.sh /opt/solr/bin/solr.in.sh.orig
-RUN sed -e 's/SOLR_HEAP=".*"/SOLR_HEAP="2048m"/' </opt/solr/bin/solr.in.sh.orig >/opt/solr/bin/solr.in.sh
-RUN grep '^SOLR_HEAP=' /opt/solr/bin/solr.in.sh
-RUN cp /opt/solr/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml /opt/solr/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml.orig
-RUN sed -e 's/<!-- <ramBufferSizeMB>100<\/ramBufferSizeMB> -->/<ramBufferSizeMB>128<\/ramBufferSizeMB>/' </opt/solr/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml.orig > /opt/solr/server/solr/configsets/data_driven_schema_configs/conf/solrconfig.xml
+RUN chmod -R 777 /opt/solr/server/solr
+RUN ls -latrh /opt/solr/server/solr/
