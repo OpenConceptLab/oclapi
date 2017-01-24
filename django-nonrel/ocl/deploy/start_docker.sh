@@ -12,11 +12,6 @@ if [ $? -ne 0 ]; then
     iptables -I DOCKER 1 -p tcp ! -s 172.18.0.0/16 --dport 8983 -j DROP
 fi
 
-iptables -C DOCKER -p tcp ! -s 172.18.0.0/16 --dport 8000 -j DROP
-if [ $? -ne 0 ]; then
-    iptables -I DOCKER 1 -p tcp ! -s 172.18.0.0/16 --dport 8000 -j DROP
-fi
-
 iptables -C DOCKER -p tcp ! -s 172.18.0.0/16 --dport 5555 -j DROP
 if [ $? -ne 0 ]; then
     iptables -I DOCKER 1 -p tcp ! -s 172.18.0.0/16 --dport 5555 -j DROP
