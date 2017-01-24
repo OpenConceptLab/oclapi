@@ -53,6 +53,7 @@ class IntegrationTest(Common):
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
     }
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
 
     BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
