@@ -14,7 +14,7 @@ from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
 
-from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS
+from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS, OPENMRS_INVALID_MAPTYPE
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from oclapi.utils import add_user_to_org
 from test_helper.base import *
@@ -401,7 +401,7 @@ class MappingTest(MappingBaseTest):
 
         errors = Mapping.persist_new(mapping, user, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertEquals(errors['map_type'][0], 'Mapping type should be valid attribute')
+        self.assertEquals(errors['map_type'][0], OPENMRS_INVALID_MAPTYPE)
 
     def test_create_mapping_positive__valid_mapping_type(self):
         maptypes_source = Source.objects.get(name="MapTypes")
