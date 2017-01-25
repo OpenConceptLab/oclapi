@@ -6,7 +6,6 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - .:/code
       # https://docs.docker.com/compose/compose-file/#variable-substitution
       - ${DATA_ROOT-.}/data/ocl/mongo:/data/db
   redis:
