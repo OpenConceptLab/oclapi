@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 services:
   mongo:
     container_name: ocl_mongo
@@ -6,7 +6,8 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./data:/data/db
+      # https://docs.docker.com/compose/compose-file/#variable-substitution
+      - ${DATA_ROOT-.}/data/ocl/mongo:/data/db
   redis:
     container_name: ocl_redis
     image: redis
@@ -19,6 +20,8 @@ services:
     container_name: ocl_solr
     ports:
       - "8983:8983"
+    volumes:
+      - ${DATA_ROOT-.}/data/ocl/solr:/opt/solr/server/solr/collection1/data
   ocl_api:
     container_name: ocl_api
     extends:
