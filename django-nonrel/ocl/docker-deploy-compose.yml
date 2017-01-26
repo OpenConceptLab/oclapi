@@ -22,7 +22,7 @@ services:
     extends:
       file: docker-deploy-common.yml
       service: ocl
-    command: bash startup.sh ${SETTINGS} ${CONFIG} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
+    command: bash startup.sh ${SETTINGS} ${CONFIG} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME} ${ROOT_PWD}
     depends_on:
       - mongo
       - solr
