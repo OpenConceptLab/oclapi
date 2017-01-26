@@ -15,4 +15,9 @@ echo "Settings for: $SETTINGS"
 echo "Configurations for: $CONFIG"
 
 python manage.py syncdb --noinput --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
+
+echo "Importing Lookup Values"
+python manage.py import_lookup_values
+
+echo "Starting the server"
 python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
