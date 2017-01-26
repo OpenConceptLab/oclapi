@@ -225,7 +225,6 @@ class Common(Configuration):
     AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
-    ROOT_PWD=os.environ.get('ROOT_PWD', 'Root123')
 
     # Model that stores auxiliary user profile attributes.
     # A user must have a profile in order to access the system.
