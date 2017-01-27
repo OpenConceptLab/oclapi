@@ -391,12 +391,16 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             diffs['datatype'] = {'was': v1.datatype, 'is': v2.datatype}
 
         # Diff names
-        diffs['names'] = cls.diff_in_localized_text_list(v1.names, v2.names)
+        names_diff = cls.diff_in_localized_text_list(v1.names, v2.names)
+        if names_diff:
+            diffs['names'] = names_diff
 
         # Diff descriptions
-        diffs['descriptions'] = cls.diff_in_localized_text_list(v1.descriptions, v2.descriptions)
+        desc_diff = cls.diff_in_localized_text_list(v1.descriptions, v2.descriptions)
+        if desc_diff:
+            diffs['descriptions'] = desc_diff
 
-        # Diff extras
+            # Diff extras
         extras1 = v1.extras if v1.extras else {}
         extras2 = v2.extras if v2.extras else {}
         diff = len(extras1) != len(extras2)

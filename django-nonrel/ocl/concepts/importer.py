@@ -234,7 +234,7 @@ class ConceptsImporter(object):
                 self.concept_version_ids.remove(concept_version.id)
 
             # Log the update
-            if update_action:
+            if update_action is ImportActionHelper.IMPORT_ACTION_UPDATE:
                 self.info('Updated concept, replacing version ID %s: %s\n' % (concept_version.id, data))
 
         # Concept does not exist in OCL, so create new one
@@ -295,7 +295,7 @@ class ConceptsImporter(object):
         diffs = ConceptVersion.diff(concept_version, new_version)
 
         # Update concept if different
-        if diffs:
+        if diffs and len(diffs.keys()) > 0:
             if 'names' in diffs:
                 diffs['names'] = {'is': data.get('names')}
             if 'descriptions' in diffs:
