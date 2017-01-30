@@ -15,11 +15,12 @@ from django.test import TestCase
 
 class OclApiBaseTestCase(TestCase):
     def setUp(self):
+        self._clear_fixtures()
         user = create_user()
         org_ocl = create_organization("OCL")
         create_lookup_concept_classes(user, org_ocl)
 
-    def tearDown(self):
+    def _clear_fixtures(self):
         LocalizedText.objects.filter().delete()
         ConceptVersion.objects.filter().delete()
         Concept.objects.filter().delete()
@@ -32,6 +33,9 @@ class OclApiBaseTestCase(TestCase):
         Organization.objects.filter().delete()
         UserProfile.objects.filter().delete()
         User.objects.filter().delete()
+
+    def tearDown(self):
+        self._clear_fixtures()
 
 
 def generate_random_string(length=5):
