@@ -7,6 +7,6 @@ if ssh root@$IP "~/oclapi/django-nonrel/ocl/deploy/kill_docker.sh"; then echo "k
 ssh root@$IP "rm -rf oclapi"
 ssh root@$IP "tar -xzf releases/oclapi$RELEASE_VERSION.tgz && mv repo oclapi"
 ssh root@$IP "chmod -R 777 oclapi/solr/collection1"
-if ssh root@$IP "~/oclapi/django-nonrel/ocl/deploy/manage_releases.sh clear_releases"; then echo "Removed old releases"; fi;
+if ssh root@$IP "source ~/oclapi/django-nonrel/ocl/deploy/manage_releases.sh && clear_releases ~/releases/"; then echo "Removed old releases"; fi;
 ssh root@$IP "~/oclapi/django-nonrel/ocl/deploy/start_docker.sh"
 ssh root@$IP "docker ps"
