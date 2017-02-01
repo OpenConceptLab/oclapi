@@ -2,7 +2,7 @@ from bson import ObjectId
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
-from mappings.models import Mapping
+from mappings.models import Mapping, MappingVersion
 from oclapi.fields import HyperlinkedResourceVersionIdentityField
 from oclapi.models import NAMESPACE_REGEX
 from oclapi.serializers import ResourceVersionSerializer
@@ -10,7 +10,7 @@ from collection.models import Collection, CollectionVersion, CollectionReference
 from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
 from tasks import update_children_for_resource_version
-from concepts.models import Concept
+from concepts.models import Concept, ConceptVersion
 
 
 class CollectionListSerializer(serializers.Serializer):
@@ -49,10 +49,11 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return collection
 
     def get_active_concepts(self, obj):
-        return len(CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).concepts)
+        return ConceptVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
+                                                                                                                 versioned_object_id=obj.id).concepts).count()
 
     def get_active_mappings(self, obj):
-        return len(CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).mappings)
+        return MappingVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).mappings).count()
 
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
