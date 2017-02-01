@@ -1,3 +1,4 @@
+from bson import ObjectId
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
@@ -10,6 +11,7 @@ from oclapi.models import ACCESS_TYPE_CHOICES, DEFAULT_ACCESS_TYPE
 from oclapi.settings.common import Common
 from tasks import update_children_for_resource_version
 from concepts.models import Concept
+
 
 class CollectionListSerializer(serializers.Serializer):
     # TODO id and short code are same .. remove one of them
@@ -39,7 +41,7 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.custom_validation_schema = attrs.get('custom_validation_schema', collection.custom_validation_schema)
         collection.collection_type = attrs.get('collection_type', collection.collection_type)
         collection.public_access = attrs.get('public_access', collection.public_access or DEFAULT_ACCESS_TYPE)
-        collection.default_locale=attrs.get('default_locale', collection.default_locale or Common.DEFAULT_LOCALE)
+        collection.default_locale = attrs.get('default_locale', collection.default_locale or Common.DEFAULT_LOCALE)
         collection.website = attrs.get('website', collection.website)
         collection.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else collection.supported_locales
         collection.extras = attrs.get('extras', collection.extras)
@@ -47,12 +49,11 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return collection
 
     def get_active_concepts(self, obj):
-        return Concept.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
-                                                                                                   versioned_object_id=obj.id).concepts).count()
+        return len(CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).concepts)
 
     def get_active_mappings(self, obj):
-        return Mapping.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
-                                                                                                   versioned_object_id=obj.id).mappings).count()
+        return len(CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).mappings)
+
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
@@ -84,7 +85,6 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     external_id = serializers.CharField(required=False)
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
     active_mappings = serializers.SerializerMethodField(method_name='get_active_mappings')
-
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -207,7 +207,6 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     active_concepts = serializers.IntegerField(required=False)
     active_mappings = serializers.IntegerField(required=False)
 
-
     class Meta:
         model = CollectionVersion
         versioned_object_view_name = 'collection-detail'
@@ -224,6 +223,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
             }
         )
         return default_fields
+
 
 class CollectionVersionExportSerializer(ResourceVersionSerializer):
     type = serializers.CharField(required=True, source='resource_type')
@@ -242,7 +242,6 @@ class CollectionVersionExportSerializer(ResourceVersionSerializer):
     collection = serializers.WritableField(source="collection_snapshot")
     active_concepts = serializers.IntegerField(required=False)
     active_mappings = serializers.IntegerField(required=False)
-
 
     class Meta:
         model = CollectionVersion
