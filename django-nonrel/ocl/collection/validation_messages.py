@@ -1,5 +1,5 @@
-HEAD_OF_CONCEPT_ADDED_TO_COLLECTION = 'The latest version of concept is added to collection, and it will not be effected from future updates.'
-HEAD_OF_MAPPING_ADDED_TO_COLLECTION = 'The latest version of mapping is added to collection, and it will not be effected from future updates.'
+HEAD_OF_CONCEPT_ADDED_TO_COLLECTION = 'Added the latest versions of concept to the collection. Future updates will not be added automatically.'
+HEAD_OF_MAPPING_ADDED_TO_COLLECTION = 'Added the latest versions of mapping to the collection. Future updates will not be added automatically.'
 CONCEPT_ADDED_TO_COLLECTION_FMT = 'The concept {} is successfully added to collection {}'
 MAPPING_ADDED_TO_COLLECTION_FMT = 'The mapping {} is successfully added to collection {}'
 REFERENCE_ALREADY_EXISTS = 'Concept or Mapping reference name must be unique in a collection.'
