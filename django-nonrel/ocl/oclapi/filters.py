@@ -1,3 +1,4 @@
+from django.conf import settings
 from haystack.inputs import Raw
 from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
@@ -7,7 +8,7 @@ class SearchQuerySetWrapper(object):
 
     def __init__(self, sqs, limit_iter=True):
         self.sqs = sqs
-        self.sqs._fill_cache(0,10)
+        self.sqs._fill_cache(0, settings.HAYSTACK_ITERATOR_LOAD_PER_QUERY or 25)
         self.limit_iter = limit_iter
         self.facets = sqs.facet_counts()
 
