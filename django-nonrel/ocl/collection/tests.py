@@ -479,7 +479,7 @@ class CollectionTest(CollectionBaseTest):
         collection.full_clean()
         collection.save()
 
-        self.assertEquals(collection.concepts_url, '/orgs/org1/sources/collection1/concepts/')
+        self.assertEquals(collection.concepts_url, '/orgs/org1/collections/collection1/concepts/')
 
     def test_mappings_url(self):
         collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
@@ -487,7 +487,7 @@ class CollectionTest(CollectionBaseTest):
         collection.full_clean()
         collection.save()
 
-        self.assertEquals(collection.mappings_url, '/orgs/org1/sources/org1/concepts/collection1/mappings/')
+        self.assertEquals(collection.mappings_url, '/orgs/org1/collections/collection1/mappings/')
 
     def test_create_collection_with_openmrs_validation(self):
         user = create_user()
