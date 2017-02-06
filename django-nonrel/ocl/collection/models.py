@@ -30,14 +30,14 @@ class Collection(ConceptContainerModel):
     def concepts_url(self):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+        return reverse('concept-create', kwargs={'collection': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def mappings_url(self):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
         return reverse('concept-mapping-list',
-                       kwargs={'concept': self.mnemonic, 'source': owner.mnemonic, owner_kwarg: owner.mnemonic})
+                       kwargs={'collection': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
     def versions_url(self):
