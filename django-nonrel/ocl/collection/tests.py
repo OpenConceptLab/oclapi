@@ -82,22 +82,6 @@ class CollectionTest(CollectionBaseTest):
             collection.full_clean()
             collection.save()
 
-    def test_create_collection_positive__valid_attributes(self):
-        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,
-                                parent=self.userprofile1,
-                                collection_type='Dictionary', public_access=ACCESS_TYPE_EDIT, updated_by=self.user1)
-        collection.full_clean()
-        collection.save()
-        self.assertTrue(Collection.objects.filter(
-            mnemonic='collection1',
-            parent_type=ContentType.objects.get_for_model(UserProfile),
-            parent_id=self.userprofile1.id)
-                        .exists())
-        self.assertEquals(collection.mnemonic, collection.__unicode__())
-        self.assertEquals(self.userprofile1.mnemonic, collection.parent_resource)
-        self.assertEquals(self.userprofile1.resource_type, collection.parent_resource_type)
-        self.assertEquals(0, collection.num_versions)
-
     def test_create_collection_negative__no_name(self):
         with self.assertRaises(ValidationError):
             collection = Collection(mnemonic='collection1', created_by=self.user1, parent=self.org1,

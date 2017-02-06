@@ -28,16 +28,13 @@ class Collection(ConceptContainerModel):
 
     @property
     def concepts_url(self):
-        owner = self.owner
-        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-create', kwargs={'collection': self.mnemonic, owner_kwarg: owner.mnemonic})
+        owner_kwarg = self.get_owner_type(self.owner)
+        return reverse('concept-create', kwargs={'collection': self.mnemonic, owner_kwarg: self.owner.mnemonic})
 
     @property
     def mappings_url(self):
-        owner = self.owner
-        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-mapping-list',
-                       kwargs={'collection': self.mnemonic, owner_kwarg: owner.mnemonic})
+        owner_kwarg = self.get_owner_type(self.owner)
+        return reverse('concept-mapping-list', kwargs={'collection': self.mnemonic, owner_kwarg: self.owner.mnemonic})
 
     @property
     def versions_url(self):
@@ -167,6 +164,10 @@ class Collection(ConceptContainerModel):
 
     def current_references(self):
         return map(lambda ref: ref.expression, self.references)
+
+    def get_owner_type(self, owner):
+        collections_url_part = owner.collections_url.split('/')[1]
+        return 'user' if collections_url_part == 'users' else 'org'
 
 
 COLLECTION_VERSION_TYPE = "Collection Version"
