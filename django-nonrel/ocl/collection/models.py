@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from bson import ObjectId
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -57,7 +59,20 @@ class Collection(ConceptContainerModel):
 
     def clean(self):
         errors = {}
+
+        self.expression_with_mappings = set(self.expressions)
+
         for expression in self.expressions:
+            if expression.__contains__('concepts'):
+                if CollectionReference.version_specified(expression):
+                    concept_related_mappings = Mapping.objects.filter(from_concept_id=ConceptVersion.objects.get(uri=expression).id)
+                else:
+                    concept_related_mappings = Mapping.objects.filter(from_concept_id=Concept.objects.get(uri=expression).id)
+
+                for concept_related_mapping in concept_related_mappings:
+                    self.expression_with_mappings.add(concept_related_mapping.url)
+
+        for expression in self.expression_with_mappings:
             ref = CollectionReference(expression=expression)
             try:
                 self.validate(ref, expression)
@@ -68,9 +83,11 @@ class Collection(ConceptContainerModel):
             self.references.append(ref)
             object_version = CollectionVersion.get_head(self.id)
             ref_hash = {'col_reference': ref}
+
             error = CollectionVersion.persist_changes(object_version, **ref_hash)
             if error:
                 errors[expression] = error
+
         if errors:
             raise ValidationError({'references': [errors]})
 
