@@ -28,7 +28,7 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_o
 from rest_framework.response import Response
 from users.models import UserProfile
 from orgs.models import Organization
-from tasks import export_collection, add_multiple_references
+from tasks import export_collection, add_references
 from celery_once import AlreadyQueued
 from django.shortcuts import get_list_or_404
 from collection.filters import CollectionSearchFilter
@@ -124,23 +124,25 @@ class CollectionReferencesView(CollectionBaseView,
         adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
         if adding_all:
-            add_multiple_references.delay(
+            add_references.delay(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url
             )
 
             return Response([], status=status.HTTP_202_ACCEPTED)
 
-
-        (added_references, errors) = add_multiple_references(
+        (added_references, errors) = add_references(
             self.serializer_class, self.request.user, data, self.parent_resource, host_url
         )
 
-        all_expressions = expressions + concept_expressions + mapping_expressions
+        all_expression = expressions + concept_expressions + mapping_expressions
+
+        added_expression = [references.expression for references in added_references]
+        added_original_expression = set([references.original_expression for references in added_references] + all_expression)
 
         response = []
 
-        for expression in all_expressions:
-            response_item = self.create_response_item(added_references, errors, expression)
+        for expression in added_original_expression:
+            response_item = self.create_response_item(added_expression, errors, expression)
             if response_item:
                 response.append(response_item)
 

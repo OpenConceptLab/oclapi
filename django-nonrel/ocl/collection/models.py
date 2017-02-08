@@ -62,15 +62,7 @@ class Collection(ConceptContainerModel):
 
         self.expression_with_mappings = set(self.expressions)
 
-        for expression in self.expressions:
-            if expression.__contains__('concepts'):
-                if CollectionReference.version_specified(expression):
-                    concept_related_mappings = Mapping.objects.filter(from_concept_id=ConceptVersion.objects.get(uri=expression).id)
-                else:
-                    concept_related_mappings = Mapping.objects.filter(from_concept_id=Concept.objects.get(uri=expression).id)
-
-                for concept_related_mapping in concept_related_mappings:
-                    self.expression_with_mappings.add(concept_related_mapping.url)
+        self.add_expression_concept_related_mappings()
 
         for expression in self.expression_with_mappings:
             ref = CollectionReference(expression=expression)
@@ -90,6 +82,21 @@ class Collection(ConceptContainerModel):
 
         if errors:
             raise ValidationError({'references': [errors]})
+
+    def add_expression_concept_related_mappings(self):
+        for expression in self.expressions:
+            if expression.__contains__('concepts'):
+                concept_id = self.get_concept_id_by_version_information(expression)
+                concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
+
+                for concept_related_mapping in concept_related_mappings:
+                    self.expression_with_mappings.add(concept_related_mapping.url)
+
+    def get_concept_id_by_version_information(self, expression):
+        if CollectionReference.version_specified(expression):
+            return ConceptVersion.objects.get(uri=expression).id
+        else:
+            return Concept.objects.get(uri=expression).id
 
     def validate(self, ref, expression):
         ref.full_clean()
@@ -194,10 +201,12 @@ class CollectionReference(models.Model):
     expression = models.TextField()
     concepts = None
     mappings = None
+    original_expression = None
 
     def clean(self):
         concept_klass, mapping_klass = self._resource_klasses()
         self.create_entities_from_expressions(concept_klass, mapping_klass)
+        self.original_expression = str(self.expression)
 
         if CollectionReference.version_specified(self.expression):
             return
