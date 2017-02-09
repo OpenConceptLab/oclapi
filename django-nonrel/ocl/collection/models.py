@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from bson import ObjectId
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -17,7 +15,6 @@ from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping, MappingVersion
 from django.db.models import Max
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
 
 COLLECTION_TYPE = 'Collection'
 HEAD = 'HEAD'
@@ -62,7 +59,7 @@ class Collection(ConceptContainerModel):
 
         self.expression_with_mappings = set(self.expressions)
 
-        self.add_expression_concept_related_mappings()
+        self.add_direct_mappings(self.expressions)
 
         for expression in self.expression_with_mappings:
             ref = CollectionReference(expression=expression)
@@ -83,8 +80,8 @@ class Collection(ConceptContainerModel):
         if errors:
             raise ValidationError({'references': [errors]})
 
-    def add_expression_concept_related_mappings(self):
-        for expression in self.expressions:
+    def add_direct_mappings(self,expressions):
+        for expression in expressions:
             if expression.__contains__('concepts'):
                 concept_id = self.get_concept_id_by_version_information(expression)
                 concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
