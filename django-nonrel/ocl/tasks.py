@@ -115,7 +115,7 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
 
 
 @celery.task
-def add_multiple_references(SerializerClass, user, data, parent_resource, host_url):
+def add_references(SerializerClass, user, data, parent_resource, host_url):
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])
@@ -168,7 +168,7 @@ def add_multiple_references(SerializerClass, user, data, parent_resource, host_u
     if 'references' in serializer.errors:
         serializer.object.save()
 
-    diff = map(lambda ref: ref.expression, CollectionReference.diff(serializer.object.references, prev_refs))
+    diff = map(lambda ref: ref, CollectionReference.diff(serializer.object.references, prev_refs))
 
     errors = serializer.errors.get('references', [])
     return diff, errors

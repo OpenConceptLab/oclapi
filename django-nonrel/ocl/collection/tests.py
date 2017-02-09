@@ -1972,12 +1972,12 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
+        expected_concepts = [concept_one.get_latest_version.url, concept_two.get_latest_version.url]
+
         self.assertEquals(len(head.concepts), 2)
         self.assertEquals(len(errors), 0)
-        self.assertEquals(collection.current_references()[0],
-                          concept_one_reference + concept_one.get_latest_version.id + '/')
-        self.assertEquals(collection.current_references()[1],
-                          concept_two_reference + concept_two.get_latest_version.id + '/')
+
+        self.assertItemsEqual(collection.current_references(), expected_concepts)
 
     def test_add_mapping_as_single_reference_without_version_information_should_add_latest_version_number(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
@@ -2030,12 +2030,10 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        mapping_one_version_number = mapping_one.get_latest_version.mnemonic + '/'
-        mapping_two_version_number = mapping_two.get_latest_version.mnemonic + '/'
+        expected_mappings = [mapping_one.get_latest_version.url, mapping_two.get_latest_version.url]
 
         self.assertEquals(len(head.mappings), 2)
-        self.assertEquals(collection.current_references()[0], mapping_one_reference + mapping_one_version_number)
-        self.assertEquals(collection.current_references()[0], mapping_one_reference + mapping_two_version_number)
+        self.assertItemsEqual(collection.current_references(), expected_mappings)
 
     def test_add_duplicate_concept_reference_should_not_add(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
@@ -2135,7 +2133,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         mapping = create_mapping(self.user1, source, from_concept, to_concept)
 
-        collection.expressions = [mapping.url, from_concept.url]
+        collection.expressions = [mapping.url]
         collection.full_clean()
         collection.save()
 
@@ -2147,7 +2145,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         self.assertEquals(len(errors), 1)
         self.assertIn(REFERENCE_ALREADY_EXISTS, errors['references'][0][mapping.url])
-        self.assertEquals(len(collection.current_references()), 2)
+        self.assertEquals(len(collection.current_references()), 1)
 
     def test_concept_fully_specified_name_within_collection_should_be_unique(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
@@ -2212,6 +2210,95 @@ class CollectionReferenceTest(CollectionBaseTest):
         subset = [CollectionReference(expression='foo'), CollectionReference(expression='tao')]
         self.assertEquals(CollectionReference.diff(superset, subset), [superset[1]])
         self.assertEquals(CollectionReference.diff(subset, superset), [subset[1]])
+
+    def test_when_add_concept_as_a_reference_should_add_related_mappings(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')])
+
+        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+
+        collection.expressions = [from_concept.url]
+        collection.full_clean()
+        collection.save()
+
+        expected_references = [from_concept.get_latest_version.url, mapping.get_latest_version.url]
+        self.assertItemsEqual(expected_references, collection.current_references())
+
+    def test_when_add_concept_as_a_reference_should_add_multiple_related_mappings(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')])
+
+        (to_concept2, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User1', locale='fr', type='FULLY_SPECIFIED')])
+
+        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+
+        mapping2 = create_mapping(self.user1, source, from_concept, to_concept2)
+
+        collection.expressions = [from_concept.url]
+        collection.full_clean()
+        collection.save()
+
+        expected_references = [from_concept.get_latest_version.url, mapping.get_latest_version.url, mapping2.get_latest_version.url]
+        self.assertItemsEqual(expected_references, collection.current_references())
+
+    def test_when_add_concept_as_a_reference_and_has_not_related_mappings_should_add_only_concept(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')])
+
+        (from_concept2, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User1', locale='fr', type='FULLY_SPECIFIED')])
+
+        non_related_mapping = create_mapping(self.user1, source, from_concept2, to_concept)
+
+        collection.expressions = [from_concept.url]
+        collection.full_clean()
+        collection.save()
+
+        self.assertEquals(collection.current_references()[0], from_concept.get_latest_version.url)
+        self.assertEquals(len(collection.current_references()), 1)
+
+    def test_when_add_concept_with_related_mappings_as_a_reference_and_same_mapping(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')])
+
+        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+
+        collection.expressions = [from_concept.url, mapping.url]
+        collection.full_clean()
+        collection.save()
+
+        expected_references = [from_concept.get_latest_version.url, mapping.get_latest_version.url]
+        self.assertItemsEqual(expected_references, collection.current_references())
+        self.assertEquals(len(collection.current_references()), 2)
 
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
