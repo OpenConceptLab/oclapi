@@ -80,7 +80,7 @@ class Collection(ConceptContainerModel):
         if errors:
             raise ValidationError({'references': [errors]})
 
-    def add_direct_mappings(self,expressions):
+    def add_direct_mappings(self, expressions):
         for expression in expressions:
             if expression.__contains__('concepts'):
                 concept_id = self.get_concept_id_by_version_information(expression)
@@ -91,7 +91,7 @@ class Collection(ConceptContainerModel):
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
-            return ConceptVersion.objects.get(uri=expression).id
+            return ConceptVersion.objects.get(uri=expression).versioned_object_id
         else:
             return Concept.objects.get(uri=expression).id
 
