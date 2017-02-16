@@ -2321,6 +2321,27 @@ class CollectionReferenceTest(CollectionBaseTest):
         self.assertEquals(len(collection.current_references()), 2)
         self.assertItemsEqual(expected_references, collection.current_references())
 
+    def test_when_add_concept_with_related_mappings_as_a_reference_and_same_mapping_with_version(self):
+        collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        source = create_source(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')])
+
+        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+
+        collection.expressions = [from_concept.url, mapping.get_latest_version.url]
+        collection.full_clean()
+        collection.save()
+
+        expected_references = [from_concept.get_latest_version.url, mapping.get_latest_version.url]
+        self.assertItemsEqual(expected_references, collection.current_references())
+        self.assertEquals(len(collection.current_references()), 2)
+
 
 class CollectionVersionReferenceTest(CollectionReferenceTest):
     def test_add_valid_concept_expression_to_collection_positive(self):
