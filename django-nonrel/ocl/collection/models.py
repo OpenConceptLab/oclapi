@@ -57,6 +57,9 @@ class Collection(ConceptContainerModel):
     def clean(self):
         errors = {}
 
+        self.mapping_expressions_without_version = \
+            [self.drop_version(expression) for expression in self.expressions if 'mappings' in expression]
+
         self.expression_with_mappings = set(self.expressions)
 
         self.add_direct_mappings(self.expressions)
@@ -87,7 +90,8 @@ class Collection(ConceptContainerModel):
                 concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
 
                 for concept_related_mapping in concept_related_mappings:
-                    self.expression_with_mappings.add(concept_related_mapping.url)
+                    if concept_related_mapping.url not in self.mapping_expressions_without_version:
+                        self.expression_with_mappings.add(concept_related_mapping.url)
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
