@@ -57,8 +57,8 @@ class Collection(ConceptContainerModel):
     def clean(self):
         errors = {}
 
-        expressions_without_version = [self.drop_version(expression) for expression in self.expressions]
-        self.mapping_expressions_without_version = filter(lambda exp: 'mappings' in exp, expressions_without_version)
+        self.mapping_expressions_without_version = \
+            [self.drop_version(expression) for expression in self.expressions if 'mappings' in expression]
 
         self.expression_with_mappings = set(self.expressions)
 
