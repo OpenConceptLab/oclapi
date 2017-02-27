@@ -96,6 +96,8 @@ class ListWithHeadersMixin(ListModelMixin):
 
         if limit == 0 and isinstance(sorted_list, SearchQuerySetWrapper):
             sorted_list.limit_iter = False
+            klass = sorted_list.sqs.query.models.copy().pop()
+            sorted_list = klass.objects.filter(id__in=sorted_list.sqs.values_list('pk', flat=True)).select_related().all()
 
         serializer = self.get_serializer(sorted_list, many=True)
 

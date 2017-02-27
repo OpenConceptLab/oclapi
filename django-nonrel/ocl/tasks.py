@@ -126,7 +126,7 @@ def add_references(SerializerClass, user, data, parent_resource, host_url):
         ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
 
     if concept_expressions == '*':
-        url = host_url + uri + 'concepts?q=' + search_term
+        url = host_url + uri + 'concepts?q=' + search_term + '&limit=0'
         view = ConceptVersionListView.as_view()
         request = APIRequestFactory().get(url)
         response = view(request)
@@ -139,7 +139,7 @@ def add_references(SerializerClass, user, data, parent_resource, host_url):
         expressions.extend(concept_expressions)
 
     if mapping_expressions == '*':
-        url = host_url + uri + 'mappings?q=' + search_term
+        url = host_url + uri + 'mappings?q=' + search_term + '&limit=0'
         view = MappingListView.as_view()
         request = APIRequestFactory().get(url)
         response = view(request)
