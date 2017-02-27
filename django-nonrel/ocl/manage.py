@@ -9,8 +9,7 @@ if __name__ == "__main__":
 
     from configurations.management import execute_from_command_line
 
-
-    if os.getenv("NEW_RELIC_API_KEY"):
+    if os.getenv("NEW_RELIC_API_KEY") and os.getenv("DJANGO_CONFIGURATION") not in ['Production', 'Showcase', 'Staging']:
         import newrelic.agent
         newrelic.agent.initialize('newrelic-api.ini')
 
