@@ -9,4 +9,9 @@ if __name__ == "__main__":
 
     from configurations.management import execute_from_command_line
 
+
+    if os.getenv("NEW_RELIC_API_KEY"):
+        import newrelic.agent
+        newrelic.agent.initialize('newrelic-api.ini')
+
     execute_from_command_line(sys.argv)

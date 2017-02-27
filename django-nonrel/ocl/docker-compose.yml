@@ -40,6 +40,8 @@ services:
       - "8000:8000"
     volumes:
       - .:/code
+    environment:
+      - NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY
   ocl_worker:
     container_name: ocl_worker
     extends:
