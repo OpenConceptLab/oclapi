@@ -7,6 +7,8 @@ export AWS_SECRET_ACCESS_KEY=$4
 export AWS_STORAGE_BUCKET_NAME=$5
 ROOT_PWD=$6
 
+./setup_newrelic.sh $NEW_RELIC_API_KEY
+
 if [ -z $1 ]; then export SETTINGS=local; export CONFIG=Local; fi;
 if [ -z $6 ]; then ROOT_PWD=Root123; fi;
 
