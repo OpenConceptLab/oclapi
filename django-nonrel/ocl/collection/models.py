@@ -55,16 +55,19 @@ class Collection(ConceptContainerModel):
         return CollectionVersion
 
     def clean(self):
+        errors, valid_expressions = self.add_references(self.expressions)
+        mappings = self.get_related_mappings(valid_expressions)
+        other_errors, valid_expressions = self.add_references(mappings)
+
+        errors.update(other_errors)
+
+        if errors:
+            raise ValidationError({'references': [errors]})
+
+    def add_references(self, expressions):
         errors = {}
-
-        self.mapping_expressions_without_version = \
-            [self.drop_version(expression) for expression in self.expressions if 'mappings' in expression]
-
-        self.expression_with_mappings = set(self.expressions)
-
-        self.add_direct_mappings(self.expressions)
-
-        for expression in self.expression_with_mappings:
+        valid_expressions = []
+        for expression in expressions:
             ref = CollectionReference(expression=expression)
             try:
                 self.validate(ref, expression)
@@ -80,18 +83,25 @@ class Collection(ConceptContainerModel):
             if error:
                 errors[expression] = error
 
-        if errors:
-            raise ValidationError({'references': [errors]})
+            valid_expressions.append(expression)
 
-    def add_direct_mappings(self, expressions):
+        return errors, valid_expressions
+
+    def get_related_mappings(self, expressions):
+        mapping_expressions_without_version = \
+            [self.drop_version(expression) for expression in expressions if 'mappings' in expression]
+        mappings = []
+
         for expression in expressions:
             if expression.__contains__('concepts'):
                 concept_id = self.get_concept_id_by_version_information(expression)
                 concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
 
-                for concept_related_mapping in concept_related_mappings:
-                    if concept_related_mapping.url not in self.mapping_expressions_without_version:
-                        self.expression_with_mappings.add(concept_related_mapping.url)
+                for mapping in concept_related_mappings:
+                    if mapping.url not in mapping_expressions_without_version:
+                        mappings.append(mapping.url)
+
+        return mappings
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
@@ -205,9 +215,9 @@ class CollectionReference(models.Model):
     original_expression = None
 
     def clean(self):
+        self.original_expression = str(self.expression)
         concept_klass, mapping_klass = self._resource_klasses()
         self.create_entities_from_expressions(concept_klass, mapping_klass)
-        self.original_expression = str(self.expression)
 
         if CollectionReference.version_specified(self.expression):
             return
