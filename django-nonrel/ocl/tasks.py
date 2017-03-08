@@ -7,6 +7,7 @@ os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
 # order of imports seems to matter. Do the django-configuration
 # import first
 from configurations import importer
+
 importer.install()
 
 from celery import Celery
@@ -114,6 +115,35 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     cv.save()
 
 
+def get_related_mappings(expressions):
+    mapping_expressions_without_version = \
+        [drop_version(expression) for expression in expressions if 'mappings' in expression]
+    mappings = []
+
+    for expression in expressions:
+        if expression.__contains__('concepts'):
+            concept_id = get_concept_id_by_version_information(expression)
+            concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
+
+            for mapping in concept_related_mappings:
+                if mapping.url not in mapping_expressions_without_version:
+                    mappings.append(mapping.url)
+
+    return mappings
+
+
+def get_concept_id_by_version_information(expression):
+    if CollectionReference.version_specified(expression):
+        return ConceptVersion.objects.get(uri=expression).versioned_object_id
+    else:
+        return Concept.objects.get(uri=expression).id
+
+
+def drop_version(expression):
+    expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
+    return expression_parts_without_version
+
+
 @celery.task
 def add_references(SerializerClass, user, data, parent_resource, host_url):
     expressions = data.get('expressions', [])
@@ -152,6 +182,22 @@ def add_references(SerializerClass, user, data, parent_resource, host_url):
         expressions.extend(mapping_expressions)
 
     expressions = set(expressions)
+
+    valid_expressions = []
+
+    for expression in expressions:
+        ref = CollectionReference(expression=expression)
+        try:
+            parent_resource.validate(ref, expression)
+            valid_expressions.append(expression)
+        except Exception:
+            continue
+
+    mappings = get_related_mappings(valid_expressions)
+
+    expressions = expressions.union(set(mappings))
+
+
     prev_refs = parent_resource.references
     save_kwargs = {
         'force_update': True, 'expressions': expressions, 'user': user

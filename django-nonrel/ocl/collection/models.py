@@ -55,18 +55,12 @@ class Collection(ConceptContainerModel):
         return CollectionVersion
 
     def clean(self):
-        errors, valid_expressions = self.add_references(self.expressions)
-        mappings = self.get_related_mappings(valid_expressions)
-        other_errors, valid_expressions = self.add_references(mappings)
-
-        errors.update(other_errors)
-
+        errors = self.add_references(self.expressions)
         if errors:
             raise ValidationError({'references': [errors]})
 
     def add_references(self, expressions):
         errors = {}
-        valid_expressions = []
         for expression in expressions:
             ref = CollectionReference(expression=expression)
             try:
@@ -83,25 +77,8 @@ class Collection(ConceptContainerModel):
             if error:
                 errors[expression] = error
 
-            valid_expressions.append(expression)
+        return errors
 
-        return errors, valid_expressions
-
-    def get_related_mappings(self, expressions):
-        mapping_expressions_without_version = \
-            [self.drop_version(expression) for expression in expressions if 'mappings' in expression]
-        mappings = []
-
-        for expression in expressions:
-            if expression.__contains__('concepts'):
-                concept_id = self.get_concept_id_by_version_information(expression)
-                concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
-
-                for mapping in concept_related_mappings:
-                    if mapping.url not in mapping_expressions_without_version:
-                        mappings.append(mapping.url)
-
-        return mappings
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
@@ -236,14 +213,14 @@ class CollectionReference(models.Model):
         if not self.mappings:
             return
 
-        self.expression = self.expression + '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
+        self.expression += '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
         self.mappings = MappingVersion.objects.filter(uri=self.expression)
 
     def add_concept_version_ids(self):
         if len(self.concepts) < 1:
             return
 
-        self.expression = self.expression + '{}/'.format(self.concepts[0].get_latest_version.id)
+        self.expression += '{}/'.format(self.concepts[0].get_latest_version.id)
         self.concepts = ConceptVersion.objects.filter(uri=self.expression)
 
     @classmethod

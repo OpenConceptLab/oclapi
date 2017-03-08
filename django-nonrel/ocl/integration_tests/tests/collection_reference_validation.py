@@ -15,7 +15,15 @@ from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user, create_concept, create_collection, create_mapping
 
 
-class AddCollectionReferenceAPITest(ConceptBaseTest):
+class AddReferenceBaseTest(ConceptBaseTest):
+    def create_source_and_user_fixture(self, custom_validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS):
+        user = create_user()
+        source_with_open_mrs = create_source(user, validation_schema=custom_validation_schema,
+                                             organization=self.org1)
+        self.client.login(username=user.username, password=user.password)
+        return source_with_open_mrs, user
+
+class AddCollectionReferenceAPITest(AddReferenceBaseTest):
     def test_add_concept_without_version_information_should_return_info_and_versioned_reference(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
         (concept, errors) = create_concept(mnemonic='concept12', user=user, source=source_with_open_mrs)
@@ -626,3 +634,65 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
                                                'message': HEAD_OF_MAPPING_ADDED_TO_COLLECTION}
                                               ])
         self.assertEquals(len(response.data), 2)
+
+class AddRelatedMappingsTest(AddReferenceBaseTest):
+
+    def test_should_not_add_related_mapping_if_another_version_is_present_in_collection(self):
+        source, user = self.create_source_and_user_fixture(custom_validation_schema=None)
+        collection = create_collection(user)
+
+        (from_concept, errors) = create_concept(user=user, source=source, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name', locale='en', type='Fully Specified')
+        ])
+
+        (to_concept, errors) = create_concept(user=user, source=source, names=[
+            create_localized_text(name='Any Name 2', locale='en', type='Fully Specified')
+        ])
+
+        mapping = create_mapping(user, source, from_concept, to_concept)
+        mapping_first_version = MappingVersion.get_latest_version_of(mapping)
+
+        mapping.map_type = "new type"
+
+        errors = Mapping.persist_changes(mapping, updated_by=user, update_comment="--")
+        mapping_head_version = MappingVersion.get_latest_version_of(mapping)
+
+
+
+        data = json.dumps({
+            'data': {
+                'expressions': [mapping_first_version.url]
+            }
+        })
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        data = json.dumps({
+            'data': {
+                'expressions': [from_concept.url]
+            }
+        })
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        self.assertEquals(response.content, json.dumps([{
+            "message": HEAD_OF_CONCEPT_ADDED_TO_COLLECTION,
+            "added": True,
+            "expression": from_concept.get_latest_version.url}]))
+
+
+
+
+
+
+
+
+
+
+
+
