@@ -55,18 +55,12 @@ class Collection(ConceptContainerModel):
         return CollectionVersion
 
     def clean(self):
-        errors, valid_expressions = self.add_references(self.expressions)
-        mappings = self.get_related_mappings(valid_expressions)
-        other_errors, valid_expressions = self.add_references(mappings)
-
-        errors.update(other_errors)
-
+        errors = self.add_references(self.expressions)
         if errors:
             raise ValidationError({'references': [errors]})
 
     def add_references(self, expressions):
         errors = {}
-        valid_expressions = []
         for expression in expressions:
             ref = CollectionReference(expression=expression)
             try:
@@ -83,25 +77,8 @@ class Collection(ConceptContainerModel):
             if error:
                 errors[expression] = error
 
-            valid_expressions.append(expression)
+        return errors
 
-        return errors, valid_expressions
-
-    def get_related_mappings(self, expressions):
-        mapping_expressions_without_version = \
-            [self.drop_version(expression) for expression in expressions if 'mappings' in expression]
-        mappings = []
-
-        for expression in expressions:
-            if expression.__contains__('concepts'):
-                concept_id = self.get_concept_id_by_version_information(expression)
-                concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
-
-                for mapping in concept_related_mappings:
-                    if mapping.url not in mapping_expressions_without_version:
-                        mappings.append(mapping.url)
-
-        return mappings
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
@@ -112,7 +89,8 @@ class Collection(ConceptContainerModel):
     def validate(self, ref, expression):
         ref.full_clean()
 
-        if self.drop_version(ref.expression) in [self.drop_version(reference.expression) for reference in self.references]:
+        drop_version = CollectionReferenceUtils.drop_version
+        if drop_version(ref.expression) in [drop_version(reference.expression) for reference in self.references]:
             raise ValidationError({expression: [REFERENCE_ALREADY_EXISTS]})
 
         if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
@@ -124,10 +102,6 @@ class Collection(ConceptContainerModel):
                                                                                      error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
             self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
                                                                                      error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
-
-    def drop_version(self, expression):
-        expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
-        return expression_parts_without_version
 
     def check_concept_uniqueness_in_collection_and_locale_by_name_attribute(self, concept, attribute, value, error_message):
         from concepts.models import Concept, ConceptVersion
@@ -236,14 +210,14 @@ class CollectionReference(models.Model):
         if not self.mappings:
             return
 
-        self.expression = self.expression + '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
+        self.expression += '{}/'.format(self.mappings[0].get_latest_version.mnemonic)
         self.mappings = MappingVersion.objects.filter(uri=self.expression)
 
     def add_concept_version_ids(self):
         if len(self.concepts) < 1:
             return
 
-        self.expression = self.expression + '{}/'.format(self.concepts[0].get_latest_version.id)
+        self.expression += '{}/'.format(self.concepts[0].get_latest_version.id)
         self.concepts = ConceptVersion.objects.filter(uri=self.expression)
 
     @classmethod
@@ -446,3 +420,60 @@ def propagate_owner_status(sender, instance=None, created=False, **kwargs):
                                                 parent_type=ContentType.objects.get_for_model(sender)):
         if instance.is_active != collection.is_active:
             collection.undelete() if instance.is_active else collection.soft_delete()
+
+
+class CollectionReferenceUtils():
+    @classmethod
+    def get_all_related_mappings(cls, expressions, collection):
+        all_related_mappings = []
+        unversioned_mappings = concept_expressions = []
+
+        for expression in expressions:
+            if cls.is_mapping(expression):
+                unversioned_mappings.append(cls.drop_version(expression))
+            elif cls.is_concept(expression):
+                concept_expressions.append(expression)
+
+        for concept_expression in concept_expressions:
+            ref = CollectionReference(expression=expression)
+            try:
+                collection.validate(ref, expression)
+                related_mappings = cls.get_related_mappings(concept_expression, unversioned_mappings)
+                all_related_mappings += related_mappings
+
+            except Exception:
+                continue
+
+        return all_related_mappings
+
+    @classmethod
+    def get_related_mappings(cls, expression, existing_unversioned_mappings):
+        mappings = []
+        concept_id = cls.get_concept_id_by_version_information(expression)
+        related_mappings = Concept.objects.get(id=concept_id).get_unidirectional_mappings()
+
+        for mapping in related_mappings:
+            if mapping.url not in existing_unversioned_mappings:
+                mappings.append(mapping.url)
+
+        return mappings
+
+    @classmethod
+    def get_concept_id_by_version_information(cls, expression):
+        if CollectionReference.version_specified(expression):
+            return ConceptVersion.objects.get(uri=expression).versioned_object_id
+        else:
+            return Concept.objects.get(uri=expression).id
+
+    @classmethod
+    def drop_version(cls, expression):
+        expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
+        return expression_parts_without_version
+
+    @classmethod
+    def is_concept(cls, expression):
+        return 'concepts' in expression
+
+    @classmethod
+    def is_mapping(cls, expression):
+        return 'mappings' in expression

@@ -213,7 +213,7 @@ class Mapping(MappingValidationMixin, BaseModel):
             source_version = SourceVersion.get_head_of(obj.parent)
             obj.save(**kwargs)
 
-            prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True);
+            prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True)
             prev_latest_version.is_latest_version = False
 
             new_latest_version  = MappingVersion.for_mapping(obj)

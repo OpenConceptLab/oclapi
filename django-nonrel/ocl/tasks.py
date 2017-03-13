@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
@@ -7,6 +8,7 @@ os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
 # order of imports seems to matter. Do the django-configuration
 # import first
 from configurations import importer
+
 importer.install()
 
 from celery import Celery
@@ -16,7 +18,7 @@ from concepts.models import ConceptVersion, Concept
 from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
-from collection.models import CollectionVersion, CollectionReference
+from collection.models import CollectionVersion, CollectionReference, CollectionReferenceUtils
 from concepts.views import ConceptVersionListView
 from mappings.views import MappingListView
 
@@ -115,7 +117,7 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
 
 
 @celery.task
-def add_references(SerializerClass, user, data, parent_resource, host_url):
+def add_references(SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])
@@ -152,6 +154,11 @@ def add_references(SerializerClass, user, data, parent_resource, host_url):
         expressions.extend(mapping_expressions)
 
     expressions = set(expressions)
+
+    if cascade_mappings:
+        all_related_mappings = CollectionReferenceUtils.get_all_related_mappings(expressions, parent_resource)
+        expressions = expressions.union(set(all_related_mappings))
+
     prev_refs = parent_resource.references
     save_kwargs = {
         'force_update': True, 'expressions': expressions, 'user': user
