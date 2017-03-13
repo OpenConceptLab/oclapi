@@ -435,9 +435,9 @@ class CollectionReferenceUtils():
                 concept_expressions.append(expression)
 
         for concept_expression in concept_expressions:
-            ref = CollectionReference(expression=expression)
+            ref = CollectionReference(expression=concept_expression)
             try:
-                collection.validate(ref, expression)
+                collection.validate(ref, concept_expression)
                 related_mappings = cls.get_related_mappings(concept_expression, unversioned_mappings)
                 all_related_mappings += related_mappings
 
