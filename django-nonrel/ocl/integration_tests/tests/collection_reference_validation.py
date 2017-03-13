@@ -14,16 +14,7 @@ from mappings.models import MappingVersion, Mapping
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user, create_concept, create_collection, create_mapping
 
-
-class AddReferenceBaseTest(ConceptBaseTest):
-    def create_source_and_user_fixture(self, custom_validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS):
-        user = create_user()
-        source_with_open_mrs = create_source(user, validation_schema=custom_validation_schema,
-                                             organization=self.org1)
-        self.client.login(username=user.username, password=user.password)
-        return source_with_open_mrs, user
-
-class AddCollectionReferenceAPITest(AddReferenceBaseTest):
+class AddCollectionReferenceAPITest(ConceptBaseTest):
     def test_add_concept_without_version_information_should_return_info_and_versioned_reference(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
         (concept, errors) = create_concept(mnemonic='concept12', user=user, source=source_with_open_mrs)
@@ -87,9 +78,9 @@ class AddCollectionReferenceAPITest(AddReferenceBaseTest):
                           [{'added': True, 'expression': updated_collection.current_references()[0],
                             'message': HEAD_OF_MAPPING_ADDED_TO_COLLECTION}])
 
-    def create_source_and_user_fixture(self):
+    def create_source_and_user_fixture(self, custom_validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS):
         user = create_user()
-        source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
+        source_with_open_mrs = create_source(user, validation_schema=custom_validation_schema,
                                              organization=self.org1)
         self.client.login(username=user.username, password=user.password)
         return source_with_open_mrs, user
@@ -520,7 +511,7 @@ class AddCollectionReferenceAPITest(AddReferenceBaseTest):
             }
         })
 
-        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+        response = self.client.put(reverse('collection-references', kwargs=kwargs) + "?cascade=sourcemappings", data,
                                    content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -558,7 +549,7 @@ class AddCollectionReferenceAPITest(AddReferenceBaseTest):
             }
         })
 
-        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+        response = self.client.put(reverse('collection-references', kwargs=kwargs) + '?cascade=sourcemappings', data,
                                    content_type='application/json')
 
         expected_response = [{'added': True, 'expression': from_concept.get_latest_version.url, 'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION},
@@ -635,8 +626,6 @@ class AddCollectionReferenceAPITest(AddReferenceBaseTest):
                                               ])
         self.assertEquals(len(response.data), 2)
 
-class AddRelatedMappingsTest(AddReferenceBaseTest):
-
     def test_should_not_add_related_mapping_if_another_version_is_present_in_collection(self):
         source, user = self.create_source_and_user_fixture(custom_validation_schema=None)
         collection = create_collection(user)
@@ -657,7 +646,6 @@ class AddRelatedMappingsTest(AddReferenceBaseTest):
 
         errors = Mapping.persist_changes(mapping, updated_by=user, update_comment="--")
         mapping_head_version = MappingVersion.get_latest_version_of(mapping)
-
 
 
         data = json.dumps({
@@ -685,14 +673,72 @@ class AddRelatedMappingsTest(AddReferenceBaseTest):
             "added": True,
             "expression": from_concept.get_latest_version.url}]))
 
+    def test_when_add_a_concept_reference_should_not_add_multiple_related_mappings_when_cascade_none(self):
+        source, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')
+        ])
 
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')
+        ])
 
+        (to_concept2, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='fr', type='FULLY_SPECIFIED')
+        ])
 
+        create_mapping(user, source, from_concept, to_concept)
+        create_mapping(user, source, from_concept, to_concept2)
 
+        kwargs = {'user': user.username, 'collection': collection.name}
 
+        data = json.dumps({
+            'data': {
+                'expressions': [from_concept.url],
+            }
+        })
 
+        response = self.client.put(reverse('collection-references', kwargs=kwargs) + '?cascade=none', data,
+                                   content_type='application/json')
 
+        expected_response = [{'added': True, 'expression': from_concept.get_latest_version.url, 'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION}]
 
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertItemsEqual(response.data, expected_response)
 
+    def test_when_add_a_concept_reference_should_not_add_multiple_related_mappings_when_cascade_not_specified(self):
+        source, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
 
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')
+        ])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='en', type='None')
+        ])
+
+        (to_concept2, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='User', locale='fr', type='FULLY_SPECIFIED')
+        ])
+
+        create_mapping(user, source, from_concept, to_concept)
+        create_mapping(user, source, from_concept, to_concept2)
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        data = json.dumps({
+            'data': {
+                'expressions': [from_concept.url],
+            }
+        })
+
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
+                                   content_type='application/json')
+
+        expected_response = [{'added': True, 'expression': from_concept.get_latest_version.url, 'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION}]
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertItemsEqual(response.data, expected_response)

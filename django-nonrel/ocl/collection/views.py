@@ -119,19 +119,28 @@ class CollectionReferencesView(CollectionBaseView,
         expressions = data.get('expressions', [])
         concept_expressions = data.get('concepts', [])
         mapping_expressions = data.get('mappings', [])
+        cascade_mappings_flag = request.QUERY_PARAMS.get('cascade', 'none')
+
+        cascade_mappings_flag_resolver = {
+            'none': False,
+            'sourcemappings': True
+        }
+
+        cascade_mappings = cascade_mappings_flag_resolver.get(cascade_mappings_flag.lower(), False)
+
         host_url = request.META['wsgi.url_scheme'] + '://' + request.get_host()
 
         adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
         if adding_all:
             add_references.delay(
-                self.serializer_class, self.request.user, data, self.parent_resource, host_url
+                self.serializer_class, self.request.user, data, self.parent_resource, host_url, cascade_mappings
             )
 
             return Response([], status=status.HTTP_202_ACCEPTED)
 
         (added_references, errors) = add_references(
-            self.serializer_class, self.request.user, data, self.parent_resource, host_url
+            self.serializer_class, self.request.user, data, self.parent_resource, host_url, cascade_mappings
         )
 
         all_expression = expressions + concept_expressions + mapping_expressions

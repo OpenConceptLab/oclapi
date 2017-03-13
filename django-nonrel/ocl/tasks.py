@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
@@ -17,7 +18,7 @@ from concepts.models import ConceptVersion, Concept
 from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
 from sources.models import SourceVersion
-from collection.models import CollectionVersion, CollectionReference
+from collection.models import CollectionVersion, CollectionReference, CollectionReferenceUtils
 from concepts.views import ConceptVersionListView
 from mappings.views import MappingListView
 
@@ -115,37 +116,8 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     cv.save()
 
 
-def get_related_mappings(expressions):
-    mapping_expressions_without_version = \
-        [drop_version(expression) for expression in expressions if 'mappings' in expression]
-    mappings = []
-
-    for expression in expressions:
-        if expression.__contains__('concepts'):
-            concept_id = get_concept_id_by_version_information(expression)
-            concept_related_mappings = Mapping.objects.filter(from_concept_id=concept_id)
-
-            for mapping in concept_related_mappings:
-                if mapping.url not in mapping_expressions_without_version:
-                    mappings.append(mapping.url)
-
-    return mappings
-
-
-def get_concept_id_by_version_information(expression):
-    if CollectionReference.version_specified(expression):
-        return ConceptVersion.objects.get(uri=expression).versioned_object_id
-    else:
-        return Concept.objects.get(uri=expression).id
-
-
-def drop_version(expression):
-    expression_parts_without_version = '/'.join(expression.split('/')[0:7]) + '/'
-    return expression_parts_without_version
-
-
 @celery.task
-def add_references(SerializerClass, user, data, parent_resource, host_url):
+def add_references(SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])
@@ -183,20 +155,9 @@ def add_references(SerializerClass, user, data, parent_resource, host_url):
 
     expressions = set(expressions)
 
-    valid_expressions = []
-
-    for expression in expressions:
-        ref = CollectionReference(expression=expression)
-        try:
-            parent_resource.validate(ref, expression)
-            valid_expressions.append(expression)
-        except Exception:
-            continue
-
-    mappings = get_related_mappings(valid_expressions)
-
-    expressions = expressions.union(set(mappings))
-
+    if cascade_mappings:
+        all_related_mappings = CollectionReferenceUtils.get_all_related_mappings(expressions, parent_resource)
+        expressions = expressions.union(set(all_related_mappings))
 
     prev_refs = parent_resource.references
     save_kwargs = {
