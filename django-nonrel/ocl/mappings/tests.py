@@ -1087,3 +1087,20 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
 
         self.assertTrue(
             OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS in errors["__all__"])
+
+    def test_edit_mapping_after_creation(self):
+        user = create_user()
+
+        source1 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+        source2 = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (concept1, _) = create_concept(user, source1)
+        (concept2, _) = create_concept(user, source2)
+
+        mapping = create_mapping(user, source1, concept1, concept2, "Same As")
+
+        mapping.map_type = "Different"
+
+        errors = Mapping.persist_changes(mapping, user)
+
+        self.assertEqual(len(errors), 0)
