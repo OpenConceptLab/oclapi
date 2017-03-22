@@ -45,6 +45,28 @@ Also you will need to sync these values to Solr:
 docker-compose exec ocl_api python manage.py update_index
 ````
 
+### Docker Environment Settings
+
+Docker `.env` file should be located on `oclapi/django-nonrel/ocl` folder. On development environment you don't need this file.
+
+#### .env file details
+
+`SETTINGS=` Python module for environment
+
+`CONFIG=` Class name for environment
+
+`AWS_ACCESS_KEY_ID=` Amazon Web Services access key.
+
+`AWS_SECRET_ACCESS_KEY=` Amazon Web Services secret key.
+
+`AWS_STORAGE_BUCKET_NAME=` Amazon Web Services bucket name.
+
+`ROOT_PWD=` API root user password.
+
+`DATA_ROOT=` Mongo DB and Apache Solr data directory.
+
+`NEW_RELIC_API_KEY=` NewRelic API key.
+
 ### Running commands in a container
 
 You can run any command in a container. Open up a new terminal and run for example:
@@ -112,7 +134,7 @@ In Pycharm IDE open oclapi project and go to `settings-> project: oclapi -> Proj
 
 click on gear icon and choose `Add Remote` option
 
-Configure interpreter with SSH credentials as in the image (password is `Root123`):
+Configure interpreter with SSH credentials as in the image (default password is `Root123`):
 
 ![alt](remote_interpreter_config.png)
 
