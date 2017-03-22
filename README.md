@@ -61,13 +61,32 @@ docker exec -it ocl_ocl_1 python manage.py syncdb
 ### Running tests in a container
 You can run tests in a container as any other command (see above for explanation).
 
-On Linux:
+#### On Linux
+
+##### Unit Tests
+
 ````sh
-docker-compose run ocl python manage.py test
+docker-compose run ocl_api python manage.py run_test --configuration=Dev
 ````
-On Windows:
+
+##### Integration Tests
+
 ````sh
-docker exec -it ocl_ocl_1 python manage.py test
+docker-compose run ocl_api python manage.py test integration_tests --configuration=Dev
+````
+
+#### On Windows
+
+##### Unit Tests
+
+````sh
+docker exec -it ocl_ocl_1 python manage.py run_test --configuration=Dev
+````
+
+##### Integration Tests
+
+````sh
+docker exec -it ocl_ocl_1 python manage.py test integration_tests --configuration=Dev
 ````
 
 ### Debugging in container
