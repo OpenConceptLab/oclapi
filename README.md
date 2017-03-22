@@ -259,7 +259,8 @@ Before you can run the server, you will need to execute the following steps:
 ## Data Import Before Concept Creation
 We need to have data before we go on creating a concept. 
 
-The dropdowns that require preloaded data are Concept Class, Datatype, Name/Description Type, Locale. 
+The dropdowns that require preloaded data are Concept Class, Datatype, Name/Description Type, Locale, Map Type. 
+
 
 ### How to import Data
 1. Create a new org `OCL`. 
@@ -268,7 +269,7 @@ The dropdowns that require preloaded data are Concept Class, Datatype, Name/Desc
 
 Follow https://github.com/OpenConceptLab/oclapi/wiki/Bulk-Importing#how-to-import to know how to import concepts in a source.
 
-Proceed in same fashion for rest of the dropdown fields. Create sources `Datatypes`, `NameTypes`, `DescriptionTypes`, `Locales` under org `OCL`. 
+Proceed in same fashion for rest of the dropdown fields. Create sources `Datatypes`, `NameTypes`, `DescriptionTypes`, `Locales`, `MapTypes` under org `OCL`. 
 
 Refer to following files for data: 
 
@@ -279,6 +280,8 @@ NameTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_NameType
 DescriptionTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_DescriptionTypes/description_types.json
 
 Locales: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_Locales/locales.json
+
+MapTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_MapTypes/maptypes_fixed.json
 
 
 ---------------------------------------------------------------------
