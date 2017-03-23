@@ -14,6 +14,7 @@ from mappings.models import MappingVersion, Mapping
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user, create_concept, create_collection, create_mapping
 
+
 class AddCollectionReferenceAPITest(ConceptBaseTest):
     def test_add_concept_without_version_information_should_return_info_and_versioned_reference(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
@@ -511,15 +512,12 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
             }
         })
 
-        response = self.client.put(reverse('collection-references', kwargs=kwargs) + "?cascade=sourcemappings", data,
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
                                    content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertItemsEqual(response.data, [{'added': True, 'expression': from_concept.get_latest_version.url,
-                                               'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION},
-                                              {'added': True, 'expression': mapping.get_latest_version.url,
-                                               'message': HEAD_OF_MAPPING_ADDED_TO_COLLECTION}
-                                              ])
+                                               'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION}])
 
     def test_when_add_concept_as_a_reference_should_add_multiple_related_mappings(self):
         source, user = self.create_source_and_user_fixture()
@@ -549,12 +547,10 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
             }
         })
 
-        response = self.client.put(reverse('collection-references', kwargs=kwargs) + '?cascade=sourcemappings', data,
+        response = self.client.put(reverse('collection-references', kwargs=kwargs), data,
                                    content_type='application/json')
 
-        expected_response = [{'added': True, 'expression': from_concept.get_latest_version.url, 'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION},
-                             {'added': True, 'expression': mapping.get_latest_version.url, 'message': HEAD_OF_MAPPING_ADDED_TO_COLLECTION},
-                             {'added': True, 'expression': mapping2.get_latest_version.url, 'message': HEAD_OF_MAPPING_ADDED_TO_COLLECTION}]
+        expected_response = [{'added': True, 'expression': from_concept.get_latest_version.url, 'message': HEAD_OF_CONCEPT_ADDED_TO_COLLECTION}]
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertItemsEqual(response.data, expected_response)
@@ -646,7 +642,6 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
         errors = Mapping.persist_changes(mapping, updated_by=user, update_comment="--")
         mapping_head_version = MappingVersion.get_latest_version_of(mapping)
-
 
         data = json.dumps({
             'data': {
