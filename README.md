@@ -1,6 +1,10 @@
 oclapi [![Build Status](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master/build_image)](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master)
 ======
 
+## What you'll need:
+* git
+* docker-compose
+
 Source for the Open Concept Lab APIs
 
 ## Docker Environment Setup (preferred)
