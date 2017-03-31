@@ -140,13 +140,13 @@ click on gear icon and choose `Add Remote` option
 
 Configure interpreter with SSH credentials as in the image (default password is `Root123`):
 
-![alt](remote_interpreter_config.png)
+![alt](img/remote_interpreter_config.png)
 
 there will be warnings about unknown host etc. but don't don't worry, just confirm.
 
 Setup django debug configuration as in the image (Path mapping should be `absolute path to project directory=/code`):
 
-![alt](docker_debug_config.png)
+![alt](img/docker_debug_config.png)
 
 Run your configuration! Debugging server will run on [http://0.0.0.0:8001/](http://0.0.0.0:8001/)
 
