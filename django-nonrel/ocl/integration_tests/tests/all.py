@@ -675,7 +675,6 @@ class ConceptCreateViewTest(ConceptBaseTest):
         for concept in content:
             self.assertTrue(concept['version'] in source_head_concepts)
 
-
     def test_remove_names_on_edit_concept_should_fail(self):
         (concept, _) = create_concept(mnemonic='concept', user=self.user1, source=self.source1)
         self.client.login(username='user1', password='user1')
@@ -689,9 +688,8 @@ class ConceptCreateViewTest(ConceptBaseTest):
             "names": None
         })
 
-
         response = self.client.put(reverse('concept-detail', kwargs=kwargs), data,
-                                         content_type='application/json')
+                                   content_type='application/json')
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(response.data['names'], [BASIC_NAMES_CANNOT_BE_EMPTY])
@@ -2564,13 +2562,15 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         kwargs = {
             'user': 'user1',
-            'collection': collection.mnemonic
+            'collection': collection.mnemonic,
         }
 
         c = Client()
-        path = reverse('collection-references', kwargs=kwargs)
-        data = json.dumps({'references': [concept1.get_latest_version.url]})
-        response = c.delete(path, data, 'application/json')
+        data = json.dumps({'references': [concept1.get_latest_version.url],
+                           'cascade': 'none'
+                           })
+        response = self.client.delete(reverse('collection-references', kwargs=kwargs), data,
+                                      content_type='application/json')
         self.assertEquals(response.status_code, 200)
         self.assertJSONEqual(response.content, {'message': 'ok!'})
         collection = Collection.objects.get(id=collection.id)

@@ -14,6 +14,7 @@ from mappings.models import MappingVersion, Mapping
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import create_source, create_user, create_concept, create_collection, create_mapping
 
+
 class AddCollectionReferenceAPITest(ConceptBaseTest):
     def test_add_concept_without_version_information_should_return_info_and_versioned_reference(self):
         source_with_open_mrs, user = self.create_source_and_user_fixture()
@@ -647,7 +648,6 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
         errors = Mapping.persist_changes(mapping, updated_by=user, update_comment="--")
         mapping_head_version = MappingVersion.get_latest_version_of(mapping)
 
-
         data = json.dumps({
             'data': {
                 'expressions': [mapping_first_version.url]
@@ -742,3 +742,77 @@ class AddCollectionReferenceAPITest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertItemsEqual(response.data, expected_response)
+
+    def test_when_delete_concept_inside_of_collection_then_related_mappings_should_be_deleted(self):
+        source, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name', locale='en', type='Fully Specified')
+        ])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name 2', locale='en', type='Fully Specified')
+        ])
+
+        related_mapping = create_mapping(user, source, from_concept, to_concept)
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        data = json.dumps({
+            'data': {
+                'expressions': [from_concept.url],
+            }
+        })
+
+        self.client.put(reverse('collection-references', kwargs=kwargs) + "?cascade=sourcemappings", data,
+                        content_type='application/json')
+
+        data = json.dumps({
+            'references': [from_concept.get_latest_version.url],
+            'cascade':'sourcemappings'
+        })
+
+        response = self.client.delete(reverse('collection-references', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(Collection.objects.get(id=collection.id).current_references()), 0)
+
+    def test_when_delete_concept_inside_of_collection_then_related_mappings_should_not_be_deleted(self):
+        source, user = self.create_source_and_user_fixture()
+        collection = create_collection(user, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
+
+        (from_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name', locale='en', type='Fully Specified')
+        ])
+
+        (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
+            create_localized_text(name='Non Unique Name', locale_preferred=True, locale='en', type='None'),
+            create_localized_text(name='Any Name 2', locale='en', type='Fully Specified')
+        ])
+
+        related_mapping = create_mapping(user, source, from_concept, to_concept)
+
+        kwargs = {'user': user.username, 'collection': collection.name}
+
+        data = json.dumps({
+            'data': {
+                'expressions': [from_concept.url],
+            }
+        })
+
+        self.client.put(reverse('collection-references', kwargs=kwargs) + "?cascade=none", data,
+                        content_type='application/json')
+
+        data = json.dumps({
+            'references': [from_concept.get_latest_version.url],
+            'cascade':'sourcemappings'
+        })
+
+        response = self.client.delete(reverse('collection-references', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(Collection.objects.get(id=collection.id).current_references()), 0)
