@@ -4,7 +4,7 @@ from django.db import IntegrityError
 
 from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
     HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT
-from collection.models import Collection, CollectionVersion, CollectionReference
+from collection.models import Collection, CollectionVersion, CollectionReference, CollectionReferenceUtils
 from collection.serializers import CollectionDetailSerializer, CollectionListSerializer, CollectionCreateSerializer, \
     CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, \
     CollectionVersionUpdateSerializer, \
@@ -121,12 +121,7 @@ class CollectionReferencesView(CollectionBaseView,
         mapping_expressions = data.get('mappings', [])
         cascade_mappings_flag = request.QUERY_PARAMS.get('cascade', 'none')
 
-        cascade_mappings_flag_resolver = {
-            'none': False,
-            'sourcemappings': True
-        }
-
-        cascade_mappings = cascade_mappings_flag_resolver.get(cascade_mappings_flag.lower(), False)
+        cascade_mappings = self.cascade_mapping_resolver(cascade_mappings_flag)
 
         host_url = request.META['wsgi.url_scheme'] + '://' + request.get_host()
 
@@ -201,14 +196,47 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         references = request.DATA.get("references")
+        cascade_mappings_flag = request.DATA.get('cascade')
 
         if not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+        if self.cascade_mapping_resolver(cascade_mappings_flag):
+            references += self.get_related_mappings_with_version_information(cascade_mappings_flag, references)
+
         unreferenced_concepts, unreferenced_mappings = self.parent_resource.delete_references(references)
         delete_resources_from_collection_in_solr.delay(self.parent_resource.get_head().id, unreferenced_concepts,
                                                        unreferenced_mappings)
+
         return Response({'message': 'ok!'}, status=status.HTTP_200_OK)
+
+    def get_related_mappings_with_version_information(self, cascade_mappings_flag, references):
+        related_mappings = []
+
+        for reference in references:
+            if CollectionReferenceUtils.is_concept(reference):
+                concept_id = CollectionReferenceUtils.get_concept_id_by_version_information(reference)
+                related_mappings += Concept.objects.get(id=concept_id).get_unidirectional_mappings()
+
+        return self.get_version_information_of_related_mappings(related_mappings)
+
+    def get_version_information_of_related_mappings(self, related_mappings):
+        related_mappings_with_version = []
+
+        for reference in self.parent_resource.references:
+            for related_mapping in related_mappings:
+                if related_mapping.url in reference.expression:
+                    related_mappings_with_version += [reference.expression]
+
+        return related_mappings_with_version
+
+    def cascade_mapping_resolver(self,cascade_mappings_flag):
+        cascade_mappings_flag_resolver = {
+            'none': False,
+            'sourcemappings': True
+        }
+
+        return cascade_mappings_flag_resolver.get(cascade_mappings_flag.lower(), False)
 
     def select_update_message(self, expression):
         adding_head_version = not CollectionReference.version_specified(expression)
