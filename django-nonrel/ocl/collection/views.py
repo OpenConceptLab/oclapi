@@ -196,7 +196,7 @@ class CollectionReferencesView(CollectionBaseView,
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
         references = request.DATA.get("references")
-        cascade_mappings_flag = request.DATA.get('cascade')
+        cascade_mappings_flag = request.DATA.get('cascade', 'none')
 
         if not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
@@ -230,7 +230,7 @@ class CollectionReferencesView(CollectionBaseView,
 
         return related_mappings_with_version
 
-    def cascade_mapping_resolver(self,cascade_mappings_flag):
+    def cascade_mapping_resolver(self, cascade_mappings_flag):
         cascade_mappings_flag_resolver = {
             'none': False,
             'sourcemappings': True
