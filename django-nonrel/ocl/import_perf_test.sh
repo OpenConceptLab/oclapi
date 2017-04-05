@@ -12,7 +12,7 @@ yes | python manage.py rebuild_index -a 1 -k 5
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import concepts"
-if [ $runtime -ge 120 ];
+if [ $runtime -ge 250 ];
 then
 	echo >&2 "It has taken longer to import concepts"
 	exit 1;
@@ -24,7 +24,7 @@ yes | python manage.py rebuild_index -a 1 -k 5
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to complete import mappings"
-if [ $runtime -ge 420 ];
+if [ $runtime -ge 550 ];
 then
 	echo >&2 "It has taken longer to import mappings"
 	exit 1;
@@ -36,7 +36,7 @@ python manage.py import_concepts_to_source --source $SOURCE --token PERF_TEST_TO
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to diff import concepts"
-if [ $runtime -ge 30 ];
+if [ $runtime -ge 60 ];
 then
 	echo >&2 "It has taken longer to re-import concepts"
 	exit 1;
@@ -47,7 +47,7 @@ python manage.py import_mappings_to_source --source $SOURCE --token PERF_TEST_TO
 end=`date +%s`
 runtime=$((end-start))
 echo "Took ${runtime} sec to diff import mappings"
-if [ $runtime -ge 120 ];
+if [ $runtime -ge 60 ];
 then
 	echo >&2 "It has taken longer to re-import mappings"
 	exit 1;
