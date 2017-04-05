@@ -1,6 +1,8 @@
 db.concepts_concept.remove({});
 db.concepts_conceptversion.remove({});
 db.mappings_mapping.remove({});
+db.mappings_mappingversion.remove({});
+
 var user_object = {first_name: 'Perf', 
 					last_name: 'Test', 
 					is_staff: true, 
