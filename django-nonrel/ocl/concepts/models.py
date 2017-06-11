@@ -58,6 +58,10 @@ class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin)
     descriptions = ListField(EmbeddedModelField(LocalizedText), null=True, blank=True)
     retired = models.BooleanField(default=False)
 
+    version = models.TextField(null=True, blank=True)
+    forked_from_url = models.TextField(null=True, blank=True)
+    forked_concept_version = models.TextField(null=True, blank=True)
+
     objects = MongoDBManager()
 
 
@@ -226,6 +230,9 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     version_created_by = models.TextField()
     update_comment = models.TextField(null=True, blank=True)
 
+    forked_from_url = models.TextField(null=True, blank=True)
+    forked_concept_version = models.TextField(null=True, blank=True)
+
     objects = MongoDBManager()
 
     def clone(self):
@@ -376,6 +383,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
             version_created_by=concept.created_by,
             created_by=concept.created_by,
             updated_by=concept.updated_by,
+            forked_from_url=concept.forked_from_url,
+            forked_concept_version=concept.forked_concept_version
         )
 
     @classmethod
@@ -519,3 +528,4 @@ def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
                 concept_version.public_access = instance.public_access
                 concept_version.save()
             concept.save()
+

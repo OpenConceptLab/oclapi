@@ -102,6 +102,7 @@ class CollectionReferencesView(CollectionBaseView,
     serializer_class = CollectionDetailSerializer
 
     def initialize(self, request, path_info_segment, **kwargs):
+
         if request.method in ['GET', 'HEAD']:
             self.permission_classes = (CanViewConceptDictionary,)
         else:
@@ -112,6 +113,7 @@ class CollectionReferencesView(CollectionBaseView,
         return 1
 
     def update(self, request, *args, **kwargs):
+
         if not self.parent_resource:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -162,6 +164,7 @@ class CollectionReferencesView(CollectionBaseView,
         message = self.select_update_message(expression)
 
         references = filter(lambda reference: reference.startswith(expression), added_references)
+
         if len(references) < 1:
             return
 
@@ -211,6 +214,7 @@ class CollectionReferencesView(CollectionBaseView,
         return Response({'message': 'ok!'}, status=status.HTTP_200_OK)
 
     def get_related_mappings_with_version_information(self, cascade_mappings_flag, references):
+
         related_mappings = []
 
         for reference in references:
@@ -248,6 +252,7 @@ class CollectionReferencesView(CollectionBaseView,
             return self.adding_to_head_message_by_type(resource_type)
 
         resource_name = expression_parts[6]
+
         return self.version_added_message_by_type(resource_name, self.parent_resource.name, resource_type)
 
     def adding_to_head_message_by_type(self, resource_type):

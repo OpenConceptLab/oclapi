@@ -8,6 +8,9 @@ from rest_framework.generics import (RetrieveAPIView, get_object_or_404, UpdateA
                                      DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView,
                                      ListCreateAPIView, ListAPIView)
 from rest_framework.response import Response
+
+from collection.models import Collection, CollectionVersion, CollectionReference, CollectionReferenceUtils
+
 from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilter, LimitCollectionVersionFilter
 from concepts.models import Concept, ConceptVersion, LocalizedText
 from concepts.permissions import CanViewParentDictionary, CanEditParentDictionary
@@ -109,7 +112,7 @@ class ConceptVersionListAllView(BaseAPIView, ConceptVersionCSVFormatterMixin, Li
     model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
     filter_backends = [PublicConceptsSearchFilter]
-    queryset = ConceptVersion.objects.filter(is_active=True)
+
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
@@ -173,6 +176,43 @@ class ConceptCreateView(ConceptBaseView,
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        if serializer.is_valid():
+            self.pre_save(serializer.object)
+            save_kwargs = {
+                'force_insert': True,
+                'parent_resource': self.parent_resource,
+                'child_list_attribute': self.child_list_attribute
+            }
+            self.object = serializer.save(**save_kwargs)
+            if serializer.is_valid():
+                self.post_save(self.object, created=True)
+                headers = self.get_success_headers(serializer.data)
+                latest_version = ConceptVersion.get_latest_version_of(self.object)
+                serializer = ConceptVersionDetailSerializer(latest_version)
+                return Response(serializer.data, status=status.HTTP_201_CREATED,
+                                headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConceptForkView(ConceptBaseView,
+                        mixins.CreateModelMixin):
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        if request.method != 'POST':
+            delegate_view = ConceptVersionListView.as_view()
+            return delegate_view(request, *args, **kwargs)
+        return super(ConceptForkView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.permission_classes = (CanEditParentDictionary,)
+        self.serializer_class = ConceptDetailSerializer
+        return self.create(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
         if serializer.is_valid():
             self.pre_save(serializer.object)
             save_kwargs = {

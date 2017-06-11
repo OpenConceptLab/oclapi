@@ -14,6 +14,7 @@ from django.db import transaction
 
 
 class SourceListSerializer(serializers.Serializer):
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     short_code = serializers.CharField(required=True, source='mnemonic')
     name = serializers.CharField(required=True)
     url = serializers.CharField()
@@ -44,6 +45,7 @@ class SourceCreateOrUpdateSerializer(serializers.Serializer):
         source.supported_locales = attrs.get('supported_locales').split(',') if attrs.get('supported_locales') else source.supported_locales
         source.extras = attrs.get('extras', source.extras)
         source.external_id = attrs.get('external_id', source.external_id)
+        source.allow_forking = attrs.get('allow_forking', source.allow_forking)
         return source
 
     def get_active_concepts(self, obj):
@@ -121,6 +123,7 @@ class SourceDetailSerializer(SourceCreateOrUpdateSerializer):
     updated_by = serializers.CharField(read_only=True)
     extras = serializers.WritableField(required=False)
     external_id = serializers.CharField(required=False)
+    allow_forking = serializers.BooleanField(required=True)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
@@ -165,6 +168,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     external_id = serializers.CharField(required=False)
     active_mappings = serializers.IntegerField(required=False)
     active_concepts = serializers.IntegerField(required=False)
+    allow_forking = serializers.BooleanField(required=True)
 
     class Meta:
         model = SourceVersion
@@ -188,6 +192,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
         if obj._ocl_processing:
             ret['_ocl_processing'] = True
         return ret
+
 
 class SourceVersionExportSerializer(ResourceVersionSerializer):
     type = serializers.CharField(required=True, source='resource_type')

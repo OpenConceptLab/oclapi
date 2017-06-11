@@ -221,6 +221,7 @@ CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
 LOOKUP_CONCEPT_CLASSES = ['Concept Class', 'Datatype', 'NameType', 'DescriptionType', 'MapType', 'Locale']
 LOOKUP_SOURCES = ['Classes', 'Datatypes', 'NameTypes', 'DescriptionTypes', 'MapTypes', 'Locales']
 
+
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
@@ -230,6 +231,7 @@ class ConceptContainerModel(SubResourceBaseModel):
     description = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
+    allow_forking = models.BooleanField(default=False)
 
     class Meta(SubResourceBaseModel.Meta):
         abstract = True
@@ -378,6 +380,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
+    allow_forking = models.BooleanField(default=False)
 
     class Meta(ResourceVersionModel.Meta):
         abstract = True

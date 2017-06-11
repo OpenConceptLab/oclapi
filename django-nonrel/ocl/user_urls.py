@@ -1,5 +1,8 @@
 from django.conf.urls import patterns, url, include
-from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView, ConceptExtrasView, ConceptExtraRetrieveUpdateDestroyView, ConceptMappingsView
+from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, \
+    ConceptVersionsView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, \
+    ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView, ConceptExtrasView, \
+    ConceptExtraRetrieveUpdateDestroyView, ConceptMappingsView, ConceptForkView
 from mappings.views import MappingListView, MappingDetailView, MappingVersionDetailView, MappingVersionsListView
 from orgs.views import OrganizationListView
 from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView
@@ -15,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^orgs/$', OrganizationListView.as_view(), extra_kwargs, name='user-organization-list'),
     url(r'^sources/$', SourceListView.as_view(), extra_kwargs, name='user-source-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/$', SourceRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-source-detail'),
+    url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/forking/$', ConceptForkView.as_view(), extra_kwargs, name='concept-fork'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/$', ConceptCreateView.as_view(), name='concept-list'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
     url(r'^sources/(?P<source>[a-zA-Z0-9\-\.]+)/concepts/(?P<concept>[a-zA-Z0-9\-\.]+)/descriptions/$', ConceptDescriptionListCreateView.as_view(), name='concept-descriptions'),
