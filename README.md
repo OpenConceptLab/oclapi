@@ -25,6 +25,9 @@ Go to:
 cd oclapi/django-nonrel/ocl
 ````
 
+For Windows only you need to patch docker-compose: git apply --check fix_for_windows.patch
+
+
 Fire up containers:
 ````sh
 docker-compose up

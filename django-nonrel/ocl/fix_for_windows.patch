@@ -1,0 +1,44 @@
+From 571aee1400b311a7dc48d9bc5ae90af5d3da36ee Mon Sep 17 00:00:00 2001
+From: Rafal Korytkowski <rafal.korytkowski@gmail.com>
+Date: Tue, 25 Jul 2017 13:22:57 +0200
+Subject: [PATCH] Modify docker-compose for Windows
+
+---
+ django-nonrel/ocl/docker-compose.yml | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/django-nonrel/ocl/docker-compose.yml b/django-nonrel/ocl/docker-compose.yml
+index c390c6f..2c6bfe1 100644
+--- a/django-nonrel/ocl/docker-compose.yml
++++ b/django-nonrel/ocl/docker-compose.yml
+@@ -7,7 +7,8 @@ services:
+       - "27017:27017"
+     volumes:
+       # https://docs.docker.com/compose/compose-file/#variable-substitution
+-      - ${DATA_ROOT-.}/data/ocl/mongo:/data/db
++      #- ${DATA_ROOT-.}/data/ocl/mongo:/data/db
++	  - mongo-data:/data/db
+   redis:
+     container_name: ocl_redis
+     image: redis
+@@ -78,8 +79,10 @@ services:
+       - .:/code
+     environment:
+       - C_FORCE_ROOT=1
+-networks:
+-  default:
+-    ipam:
+-      config:
+-        - subnet: 172.18.0.0/16
+\ No newline at end of file
++#networks:
++#  default:
++#    ipam:
++#      config:
++#        - subnet: 172.18.0.0/16
++volumes:
++  mongo-data: 
+\ No newline at end of file
+-- 
+2.10.1.windows.1
+
