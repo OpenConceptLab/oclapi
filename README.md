@@ -331,8 +331,7 @@ We used imp in python (seen in mappings/models.py) because it was not able to lo
 
 (
 Specifically this line -
-```concept = imp.load_source('concepts.models',
-                          ‘<path to models file>’)``` # will vary based on path in system
+```concept = imp.load_source('concepts.models', ‘<path to models file>’)``` # will vary based on path in system
 )
 
 Added some exception handling in mapping/importer.py. (This was done to skip the mappings which used to fail and continue with the remaining mappings in the mappings.json file.)
