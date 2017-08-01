@@ -309,6 +309,31 @@ Locales: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_Locales/lo
 
 MapTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_MapTypes/maptypes_fixed.json
 
+---------------------------------------------------------------------------
+### Edits (Steps done differently) made for successful installation and import
+---------------------------------------------------------------------------
+installed a django nonrel from github link - https://github.com/django-nonrel/djangotoolbox.
+pip install -r requirements.txt didn't work the first time that is why the above was installed separatley if other packages were not installed successfully then please comment it out from requirements.txt and install separately.
+the files customform.py and custommodels.py was created and used in the project for overriding the ListField and DictField we were gettting an error otherwise - no widget to view ListField and DictField otherwise.
+made an edit in the oclapi/models.py file to indicate the overriding of ListField and DictField.
+also edited the source/models.py file in the end where we added a few lines to register Source and Source Versions so it can be seen in the api.
+We used imp in python (seen in mappings/models.py) because it was not able to locate file path properly.
+(
+Specifically this line -
+concept = imp.load_source('concepts.models',
+                          ‘<path to models file>’) # will vary based on path in system
+)
+added some exception handling in mapping/importer.py
+also we added specific source version (HEAD) and sources for the demo-data import to work more detailed explanation given in this talk - https://talk.openmrs.org/t/ocl-core-api-installation/12679?u=reucherian.
+list of organisations created were CIEL,3BT,WICC,PIH,Regenstrief,HL7
+Note above is required for mappings and concepts to be imported successfully from demo data.
+import was successfully done using this line -
+./manage.py import_concepts_to_source --source  --token <source_id>  <path_to_concepts.json_file>
+
+-----------------------------------------------------------------------------
+
+
+
 
 ---------------------------------------------------------------------
 Copyright (C) 2016 Open Concept Lab. Use of this software is subject
