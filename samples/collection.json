@@ -1,0 +1,78 @@
+{
+	"collections": [
+		{
+			"id": "1234",
+			"uuid": "99j398736mdu4V2AEB3GfB98a",
+			"url": "http://api.openconceptlab.org/rest/collection/99j398736mdu4V2AEB3GfB98a",
+			"name": "Community Antenatal Care Rwanda",
+			"description": "Based on the Rwanda RapidSMS program",
+			"createdOn": "2012-11-15 15:03:01",
+			"lastUpdated": "2013-01-01 09:45:22",
+			"active": "true",
+			"owner": "paynejd",
+			"publicAccess": "none",
+			"sharedUsers": [
+				{
+					"uid": "mfreytsis",
+					"access": "view",
+				},
+				{
+					"uid": "jdoe",
+					"access": "edit",
+				}
+			],
+			"concepts": [
+				"ciel_7128",
+				"ciel_122635",
+				"pih_3",
+				"ampath_1000"
+			],
+			"annotations": {
+				"ciel_7128": [
+					{
+						"uid":"paynejd",
+						"value": "Annotation for concept 7128 is kickin it yo",
+					},
+				],
+				"pih_3": [
+					{
+						"uid":"mfreytsis",
+						"value":"anemia annotation"
+					}
+				]
+			},
+			"properties": {
+				"externalResources": [
+					{
+						"type": "report",
+						"url": "http://url/to/external/resource"
+					}
+				]
+			}
+		},
+		{
+			"id": "4569",
+			"uuid": "h73jdg3gJ89f5hYj9o0PkeavGd",
+			"url": "http://api.openconceptlab.org/rest/collection/h73jdg3gJ89f5hYj9o0PkeavGd",
+			"name": "Oncology Starter Set",
+			"description": "Under review - please provide your feedback!",
+			"createdOn": "2012-11-15 15:03:01",
+			"lastUpdated": "2013-01-01 09:45:22",
+			"active": "true",
+			"owner": "jdoe",
+			"publicAccess": "view",
+			"concepts": [
+				"ciel_160459",
+				"ampath_8053"
+			],
+			"annotations": {
+				"ampath_8053": [
+					{
+						"uid":"jdoe",
+						"value":"I really love this annotation feature!"
+					}
+				]
+			}
+		}
+	]
+}

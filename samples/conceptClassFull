@@ -1,0 +1,621 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=67AA048DF5557CADE984513337133F32; Path=/openmrs-standalone
+ETag: "00e9120cf6a6b639f1a5381ddfa0a3714"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 11896
+Date: Thu, 11 Apr 2013 22:18:08 GMT
+
+{
+    "results": [
+        {
+            "uuid": "8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Test",
+            "name": "Test",
+            "description": "Acq. during patient encounter (vitals, labs, etc.)",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d490bf4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Procedure",
+            "name": "Procedure",
+            "description": "Describes a clinical procedure",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d490bf4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d490dfc-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Drug",
+            "name": "Drug",
+            "description": "Drug",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d490dfc-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4918b0-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Diagnosis",
+            "name": "Diagnosis",
+            "description": "Conclusion drawn through findings",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4918b0-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d491a9a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Finding",
+            "name": "Finding",
+            "description": "Practitioner observation/finding",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491a9a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d491c7a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Anatomy",
+            "name": "Anatomy",
+            "description": "Anatomic sites / descriptors",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491c7a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d491e50-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Question",
+            "name": "Question",
+            "description": "Question (eg, patient history, SF36 items)",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491e50-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492026-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "LabSet",
+            "name": "LabSet",
+            "description": "Term to describe laboratory sets",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492026-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d4923b4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "MedSet",
+            "name": "MedSet",
+            "description": "Term to describe medication sets",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-02-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4923b4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492594-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "ConvSet",
+            "name": "ConvSet",
+            "description": "Term to describe convenience sets",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492594-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492774-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Misc",
+            "name": "Misc",
+            "description": "Terms which don't fit other categories",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-03-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492774-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492954-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Symptom",
+            "name": "Symptom",
+            "description": "Patient-reported observation",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-10-04T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492954-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492b2a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Symptom/Finding",
+            "name": "Symptom/Finding",
+            "description": "Observation that can be reported from patient or found on exam",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-10-04T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492b2a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492d0a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Specimen",
+            "name": "Specimen",
+            "description": "Body or fluid specimen",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2004-12-02T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492d0a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "8d492ee0-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Misc Order",
+            "name": "Misc Order",
+            "description": "Orderable items which aren't tests or drugs",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2005-02-17T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492ee0-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "1edca11a-768a-102f-83f4-12313b04a615",
+            "display": "Workflow",
+            "name": "Workflow",
+            "description": "Workflow class",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2011-01-17T15:27:43.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca11a-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "1edca23c-768a-102f-83f4-12313b04a615",
+            "display": "State",
+            "name": "State",
+            "description": "Workflow state",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2011-01-17T15:44:10.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca23c-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "1edca368-768a-102f-83f4-12313b04a615",
+            "display": "Program",
+            "name": "Program",
+            "description": "Program concept",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2011-01-18T01:53:56.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca368-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "801e5b58-a14e-4a71-859d-23310b0f2f91",
+            "display": "Aggregate Measurement",
+            "name": "Aggregate Measurement",
+            "description": "A field used to capture an aggregate number used as a measurement.",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2012-06-11T16:01:24.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/801e5b58-a14e-4a71-859d-23310b0f2f91",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "896d8b8c-603b-421f-959e-8d305cbeeb82",
+            "display": "Indicator",
+            "name": "Indicator",
+            "description": "An indicator calculated from certain measures.",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2012-06-11T16:01:45.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/896d8b8c-603b-421f-959e-8d305cbeeb82",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        },
+        {
+            "uuid": "99ac2869-6615-4466-810b-8eb54544486a",
+            "display": "Health Care Monitoring Topics",
+            "name": "Health Care Monitoring Topics",
+            "description": "Used for tagging content",
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2012-06-25T13:23:33.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/99ac2869-6615-4466-810b-8eb54544486a",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.8"
+        }
+    ]
+}

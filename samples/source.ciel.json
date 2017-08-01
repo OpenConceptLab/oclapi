@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "ciel",
+    "url": "http://api.openconceptlab.org/rest/source/ciel",
+    "name": "CIEL Concept Dictionary",
+    "type": "dictionary",
+    "version": "1.1.2",
+    "active" : "true",
+    "properties": {
+      "omrsVersion": "1.6.5",
+      "lastUpdated": "2013-02-13",
+      "owner": "Columbia University International eHealth Laboratory"
+    }
+  }
+}

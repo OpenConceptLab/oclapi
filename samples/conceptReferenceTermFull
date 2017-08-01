@@ -1,0 +1,2518 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=FD440DF26E0486E9ED1F9F595460B236; Path=/openmrs-standalone
+ETag: "02a4544c1eac5fc054c38fd2294f9fa58"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 50360
+Date: Mon, 15 Apr 2013 20:34:40 GMT
+
+{
+    "results": [
+        {
+            "uuid": "86b1889c-6599-3962-8d21-b8672ae0d49d",
+            "display": "SNOMED CT: 14584002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "14584002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/86b1889c-6599-3962-8d21-b8672ae0d49d",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "6e8e2bdb-634e-3a6a-9eee-396905380b4a",
+            "display": "SNOMED CT: 22383006",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "22383006",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/6e8e2bdb-634e-3a6a-9eee-396905380b4a",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "5a04cc62-f6cb-3932-ae24-7c0e43544a9f",
+            "display": "SNOMED CT: 93825008",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "93825008",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/5a04cc62-f6cb-3932-ae24-7c0e43544a9f",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "6f4fc032-55bb-30d9-8516-3d0b5a710b2c",
+            "display": "SNOMED CT: 201738001",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "201738001",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/6f4fc032-55bb-30d9-8516-3d0b5a710b2c",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "3fe9a0d2-afb2-31ea-8be8-1761f270ef90",
+            "display": "SNOMED CT: 93934004",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "93934004",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/3fe9a0d2-afb2-31ea-8be8-1761f270ef90",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "39ead40f-8fea-322e-99f4-2bb2ca817e13",
+            "display": "SNOMED CT: 93880001",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "93880001",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/39ead40f-8fea-322e-99f4-2bb2ca817e13",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "3bf8152c-c716-3451-980f-b42ce587d1bf",
+            "display": "SNOMED CT: 23812009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "23812009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/3bf8152c-c716-3451-980f-b42ce587d1bf",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "4c255221-2c61-332d-959d-dba065f2c708",
+            "display": "SNOMED CT: 29596007",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "29596007",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/4c255221-2c61-332d-959d-dba065f2c708",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "9ac599a6-4138-39a2-81a4-d49c47025c82",
+            "display": "SNOMED CT: 390834004",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "390834004",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/9ac599a6-4138-39a2-81a4-d49c47025c82",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "e75a2c37-904d-387b-ab62-36a8482176e1",
+            "display": "SNOMED CT: 35425004",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "35425004",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/e75a2c37-904d-387b-ab62-36a8482176e1",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "3062f3c2-b260-30f0-a1ad-4deab313cdca",
+            "display": "SNOMED CT: 426599002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "426599002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/3062f3c2-b260-30f0-a1ad-4deab313cdca",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "17b0caab-5d87-3f2e-b22e-53ac0e295ebb",
+            "display": "SNOMED CT: 92387002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "92387002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/17b0caab-5d87-3f2e-b22e-53ac0e295ebb",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "81131fbb-acf1-313d-bf72-fbba56be8d01",
+            "display": "SNOMED CT: 252991009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "252991009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/81131fbb-acf1-313d-bf72-fbba56be8d01",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "3dc5ac29-bf8c-3ec6-b131-e5096feb2e98",
+            "display": "SNOMED CT: 420120006",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "420120006",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/3dc5ac29-bf8c-3ec6-b131-e5096feb2e98",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "1acbe1c1-7276-3fe2-87b9-c457a6e191e1",
+            "display": "SNOMED CT: 413665004",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "413665004",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/1acbe1c1-7276-3fe2-87b9-c457a6e191e1",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "131b788f-2277-3b96-9537-3125c5130e3c",
+            "display": "SNOMED CT: 31367003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "31367003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/131b788f-2277-3b96-9537-3125c5130e3c",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "c40e8847-2340-3f4a-ac56-e49bc7b1050b",
+            "display": "SNOMED CT: 397337004",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "397337004",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/c40e8847-2340-3f4a-ac56-e49bc7b1050b",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "7f3c8e49-c9e5-3570-ad4a-0b887ea32d9e",
+            "display": "SNOMED CT: 128836009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "128836009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/7f3c8e49-c9e5-3570-ad4a-0b887ea32d9e",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "383ddd73-0121-38fa-859a-3f692ae39fe5",
+            "display": "SNOMED CT: 389078002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "389078002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/383ddd73-0121-38fa-859a-3f692ae39fe5",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "377df737-5fbb-3308-bdb8-8f738ce7a91b",
+            "display": "SNOMED CT: 109747007",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109747007",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/377df737-5fbb-3308-bdb8-8f738ce7a91b",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "537d95f6-145c-3538-a0c8-67ad7fe760f3",
+            "display": "SNOMED CT: 109678002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109678002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/537d95f6-145c-3538-a0c8-67ad7fe760f3",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "2dceee61-c34b-36af-baf5-df1ddd4b7647",
+            "display": "SNOMED CT: 109679005",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109679005",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/2dceee61-c34b-36af-baf5-df1ddd4b7647",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "29097165-fb4d-3abe-8785-246bdb07be62",
+            "display": "SNOMED CT: 109798001",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109798001",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/29097165-fb4d-3abe-8785-246bdb07be62",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "fd756d44-3b64-3359-af20-80186597882a",
+            "display": "SNOMED CT: 109799009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109799009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/fd756d44-3b64-3359-af20-80186597882a",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "d1f88424-89be-3b42-bfed-92f9481178ba",
+            "display": "SNOMED CT: 109728009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109728009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/d1f88424-89be-3b42-bfed-92f9481178ba",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "18fd4e69-49fa-3388-b723-9f529d6a2df9",
+            "display": "SNOMED CT: 109735001",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109735001",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/18fd4e69-49fa-3388-b723-9f529d6a2df9",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "d6956a74-6ab2-39b3-a40a-7b4ab1360f30",
+            "display": "SNOMED CT: 109729001",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109729001",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/d6956a74-6ab2-39b3-a40a-7b4ab1360f30",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "783c8ce9-d11e-3aee-85ef-020ae47611ab",
+            "display": "SNOMED CT: 109730006",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "109730006",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/783c8ce9-d11e-3aee-85ef-020ae47611ab",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "92cf0663-62a3-31ab-bae4-57593924d96e",
+            "display": "SNOMED CT: 34282009",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "34282009",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/92cf0663-62a3-31ab-bae4-57593924d96e",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "39a06688-6c84-353e-8a61-ad26d44df1e8",
+            "display": "SNOMED CT: 95361005",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "95361005",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/39a06688-6c84-353e-8a61-ad26d44df1e8",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "fc1aa91e-5a8f-32b0-8647-a632edf42784",
+            "display": "SNOMED CT: 428092007",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "428092007",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/fc1aa91e-5a8f-32b0-8647-a632edf42784",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "fad4ba5a-d26a-3c36-a980-7e8b03d60385",
+            "display": "SNOMED CT: 427913003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "427913003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/fad4ba5a-d26a-3c36-a980-7e8b03d60385",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "2b50a53d-2387-333d-8d6d-34c8ca706374",
+            "display": "SNOMED CT: 427783000",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "427783000",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/2b50a53d-2387-333d-8d6d-34c8ca706374",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "6a8e0299-3a8d-37bd-b04b-e92463f5eddb",
+            "display": "SNOMED CT: 277597005",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "277597005",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/6a8e0299-3a8d-37bd-b04b-e92463f5eddb",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "c8dd20e4-3c13-335b-b242-7b534fb3afdc",
+            "display": "SNOMED CT: 307651005",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "307651005",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/c8dd20e4-3c13-335b-b242-7b534fb3afdc",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "8be43514-cb1b-36b4-9c8d-9a0888d5b0e9",
+            "display": "SNOMED CT: 430961002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "430961002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/8be43514-cb1b-36b4-9c8d-9a0888d5b0e9",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "f2fed8e5-d98e-3cb7-8dab-2b06358ce938",
+            "display": "SNOMED CT: 430974008",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "430974008",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/f2fed8e5-d98e-3cb7-8dab-2b06358ce938",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "dd3c599e-f69b-3ba2-91cb-10c5723e1b7e",
+            "display": "SNOMED CT: 95634003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "95634003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/dd3c599e-f69b-3ba2-91cb-10c5723e1b7e",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "cc1d5cd2-9fc5-3c8f-92b4-6f31f908e046",
+            "display": "SNOMED CT: 431335002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "431335002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/cc1d5cd2-9fc5-3c8f-92b4-6f31f908e046",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "ee71f2be-1355-31b0-b107-13abf9e3db68",
+            "display": "SNOMED CT: 206576006",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "206576006",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/ee71f2be-1355-31b0-b107-13abf9e3db68",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "8399a15f-6106-30a4-b897-90b53342ccce",
+            "display": "SNOMED CT: 433083002",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "433083002",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/8399a15f-6106-30a4-b897-90b53342ccce",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "d80f63b9-8897-37d2-8e5b-7fc2750f012c",
+            "display": "SNOMED CT: 254902007",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "254902007",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/d80f63b9-8897-37d2-8e5b-7fc2750f012c",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "54509c67-4486-309d-b3fb-3d027d5bf826",
+            "display": "SNOMED CT: 27214003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "27214003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/54509c67-4486-309d-b3fb-3d027d5bf826",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "9f8b03b1-3a71-344f-9fae-0b9cd1ce4499",
+            "display": "SNOMED CT: 162213003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "162213003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/9f8b03b1-3a71-344f-9fae-0b9cd1ce4499",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "d794b699-6d72-363e-b1e8-3692943a0804",
+            "display": "SNOMED CT: 432519008",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "432519008",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/d794b699-6d72-363e-b1e8-3692943a0804",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "eff4288a-18c9-3a6f-a1e0-a52377efa032",
+            "display": "SNOMED CT: 439776006",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "439776006",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/eff4288a-18c9-3a6f-a1e0-a52377efa032",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "7b522f53-1a46-3181-b643-c4933f83d27b",
+            "display": "SNOMED CT: 28975000",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "28975000",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/7b522f53-1a46-3181-b643-c4933f83d27b",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "7a2b2a57-bebf-3711-87b3-3a141d9ec242",
+            "display": "SNOMED CT: 303011007",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "303011007",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/7a2b2a57-bebf-3711-87b3-3a141d9ec242",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "0aabad35-0908-34fa-918c-66f30d7464a9",
+            "display": "SNOMED CT: 430478003",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "430478003",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/0aabad35-0908-34fa-918c-66f30d7464a9",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "uuid": "f23f2d48-4b07-3334-bc24-7e2aa8c16e29",
+            "display": "SNOMED CT: 408379005",
+            "name": null,
+            "conceptSource": {
+                "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                "display": "SNOMED CT",
+                "name": "SNOMED CT",
+                "description": "SNOMED Preferred mapping",
+                "hl7Code": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.8"
+            },
+            "description": null,
+            "code": "408379005",
+            "version": null,
+            "retired": false,
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T00:00:00.000+0300",
+                "changedBy": null,
+                "dateChanged": null
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/f23f2d48-4b07-3334-bc24-7e2aa8c16e29",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        }
+    ],
+    "links": [
+        {
+            "uri": "http://127.0.0.1:8081/openmrs-standalone/ws/rest/v1/conceptreferenceterm?v=full&startIndex=50",
+            "rel": "next"
+        }
+    ]
+}

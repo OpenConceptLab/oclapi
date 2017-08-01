@@ -1,0 +1,27 @@
+# Basics
+*.py[cod]
+*.pyc
+__pycache__
+
+# Translations
+*.mo
+*.pot
+
+# Pycharm
+.idea
+*.iml
+
+# Vim
+*~
+*.swp
+*.swo
+
+
+logs
+# Ours
+*.sublime-*
+testdata
+.DS_Store
+env/
+
+*.log.*

@@ -1,0 +1,216 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=4FFD147D0DA467732EF6D328BF957A8B; Path=/openmrs-standalone
+ETag: "03daeafc05a87b49c927caf892c5b8b25"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 4475
+Date: Thu, 11 Apr 2013 20:33:55 GMT
+
+{
+   "uuid":"5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "display":"WEIGHT (KG)",
+   "name":{
+      "display":"WEIGHT (KG)",
+      "uuid":"2191BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "name":"WEIGHT (KG)",
+      "locale":"en",
+      "localePreferred":false,
+      "conceptNameType":"FULLY_SPECIFIED",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/2191BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "rel":"self"
+         },
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/2191BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+            "rel":"full"
+         }
+      ],
+      "resourceVersion":"1.9"
+   },
+   "datatype":{
+      "uuid":"8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+      "display":"Numeric",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+            "rel":"self"
+         }
+      ]
+   },
+   "conceptClass":{
+      "uuid":"8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+      "display":"Test",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+            "rel":"self"
+         }
+      ]
+   },
+   "set":false,
+   "version":"",
+   "retired":false,
+   "names":[
+      {
+         "uuid":"106886BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"ክብደት ብ ኪሎግራም",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/106886BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"107812BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"peso (kg)",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/107812BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"107913BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"Ibiro (Kg)",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/107913BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"2192BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"POIDS (KG)",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/2192BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"2191BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"WEIGHT (KG)",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/2191BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"87033BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"WT",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/87033BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"2193BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"Uzito katika kilogram",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/2193BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"87034BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"uzito",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/87034BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "descriptions":[
+      {
+         "uuid":"1714FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+         "display":"Patient's weight in kilograms.",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/description/1714FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "mappings":[
+      {
+         "uuid":"144391ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"PIH Malawi: 5089",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/144391ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"135317ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"AMPATH: 5089",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/135317ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"143738ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"org.openmrs.module.mdrtb: WEIGHT",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/143738ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"133227ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"SNOMED CT: 27113001",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/133227ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"143579ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"PIH: 5089",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/143579ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "answers":[
+
+   ],
+   "setMembers":[
+
+   ],
+   "links":[
+      {
+         "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+         "rel":"self"
+      },
+      {
+         "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/5089AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA?v=full",
+         "rel":"full"
+      }
+   ],
+   "resourceVersion":"1.9"

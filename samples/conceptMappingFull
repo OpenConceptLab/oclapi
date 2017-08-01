@@ -1,0 +1,450 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=4B3EAAD847BD1A21D1695201B76ABFDF; Path=/openmrs-standalone
+ETag: "0185ba0e0eef850bdf75b0a593a24b0d8"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 9151
+Date: Mon, 22 Apr 2013 16:10:00 GMT
+
+{
+    "results": [
+        {
+            "display": "AMPATH: 462",
+            "uuid": "134249ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "ea2739a5-3f9f-324d-85e2-c0e76ec204da",
+                "display": "AMPATH: 462",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                    "display": "AMPATH",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "462",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/ea2739a5-3f9f-324d-85e2-c0e76ec204da",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/ea2739a5-3f9f-324d-85e2-c0e76ec204da?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-10-24T13:09:59.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134249ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "AMPATH: 120",
+            "uuid": "133983ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "58a5bab8-3a03-3bad-bc8d-336d0e80b656",
+                "display": "AMPATH: 120",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                    "display": "AMPATH",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "120",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/58a5bab8-3a03-3bad-bc8d-336d0e80b656",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/58a5bab8-3a03-3bad-bc8d-336d0e80b656?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-10-24T13:09:59.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/133983ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "ICD-10-WHO: L20.0",
+            "uuid": "94448ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "eeeb7965-0241-361c-9c64-f50f0f9feff1",
+                "display": "ICD-10-WHO: L20.0",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "3f65bd34-26fe-102b-80cb-0017a47871b2",
+                    "display": "ICD-10-WHO",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/3f65bd34-26fe-102b-80cb-0017a47871b2",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "L20.0",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/eeeb7965-0241-361c-9c64-f50f0f9feff1",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/eeeb7965-0241-361c-9c64-f50f0f9feff1?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T11:39:31.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/94448ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "PIH: 3701",
+            "uuid": "132732ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "dd867350-3234-354d-80c8-084dfb380156",
+                "display": "PIH: 3701",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "fb9aaaf1-65e2-4c18-b53c-16b575f2f385",
+                    "display": "PIH",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/fb9aaaf1-65e2-4c18-b53c-16b575f2f385",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "3701",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/dd867350-3234-354d-80c8-084dfb380156",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/dd867350-3234-354d-80c8-084dfb380156?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-08-23T15:49:10.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/132732ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "SNOMED CT: 24079001",
+            "uuid": "70449ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "9ba31047-d39b-3e26-9474-b3e07cdb37b7",
+                "display": "SNOMED CT: 24079001",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                    "display": "SNOMED CT",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/1ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "24079001",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/9ba31047-d39b-3e26-9474-b3e07cdb37b7",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/9ba31047-d39b-3e26-9474-b3e07cdb37b7?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-04-25T11:29:41.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/70449ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        },
+        {
+            "display": "AMPATH: 663",
+            "uuid": "134374ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "conceptReferenceTerm": {
+                "uuid": "2f69d636-e1cb-39c8-8d61-70df01d359d6",
+                "display": "AMPATH: 663",
+                "name": null,
+                "conceptSource": {
+                    "uuid": "13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                    "display": "AMPATH",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/13ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "description": null,
+                "code": "663",
+                "version": null,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/2f69d636-e1cb-39c8-8d61-70df01d359d6",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptreferenceterm/2f69d636-e1cb-39c8-8d61-70df01d359d6?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "conceptMapType": {
+                "uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                "display": "SAME-AS",
+                "name": "SAME-AS",
+                "description": null,
+                "isHidden": false,
+                "retired": false,
+                "links": [
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+                        "rel": "self"
+                    },
+                    {
+                        "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptmaptype/35543629-7d8c-11e1-909d-c80aa9edcf4e?v=full",
+                        "rel": "full"
+                    }
+                ],
+                "resourceVersion": "1.9"
+            },
+            "auditInfo": {
+                "creator": {
+                    "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "display": "admin",
+                    "links": [
+                        {
+                            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                            "rel": "self"
+                        }
+                    ]
+                },
+                "dateCreated": "2010-10-24T13:09:59.000+0300"
+            },
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/concept/120AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134374ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                    "rel": "self"
+                }
+            ],
+            "resourceVersion": "1.9"
+        }
+    ]
+}

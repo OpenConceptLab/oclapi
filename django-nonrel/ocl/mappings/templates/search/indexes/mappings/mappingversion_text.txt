@@ -1,0 +1,1 @@
+{{ object.id}} {{ object.external_id}} {{ object.mnemonic }} {{ object.from_source_shorthand }} {{ object.from_concept_shorthand }} {{ object.from_concept_code }} {{ object.from_concept_name }} {{ object.to_source_shorthand }} {{ object.get_to_concept_code }} {{ object.get_to_concept_name }} {{ object.to_concept_shorthand }}

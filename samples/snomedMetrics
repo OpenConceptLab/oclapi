@@ -1,0 +1,93 @@
+HTTP/1.1 200 OK
+Date: Sat, 13 Apr 2013 08:01:18 GMT
+Server: Apache/2.2.13 (Red Hat)
+Accept-Ranges: bytes
+Content-Length: 1134
+Connection: close
+Content-Type: application/json;charset=UTF-8
+
+{
+    "success": {
+        "accessedResource": "/bioportal/ontologies/metrics/46896",
+        "accessDate": "2013-04-13 01:00:39.203 PDT",
+        "data": [
+            {
+                "ontologyMetricsBean": {
+                    "id": 46896,
+                    "numberOfAxioms": 0,
+                    "numberOfClasses": 395036,
+                    "numberOfIndividuals": 0,
+                    "numberOfProperties": 41,
+                    "maximumDepth": 32,
+                    "maximumNumberOfSiblings": 20010,
+                    "averageNumberOfSiblings": 1,
+                    "classesWithOneSubclass": [
+                        {
+                            "string": [
+                                10026001,
+                                10035008,
+                                10036009,
+                                10042008,
+                                10047002,
+                                10048007,
+                                9901000,
+                                9907001,
+                                9951005,
+                                996007,
+                                9970000,
+                                997003,
+                                9977002,
+                                998008,
+                                9984005,
+                                9994000
+                            ]
+                        }
+                    ],
+                    "classesWithMoreThanXSubclasses": [
+                        {
+                            "entry": [
+                                {
+                                    "string": [
+                                        91175000,
+                                        30
+                                    ]
+                                },
+                                {
+                                    "string": [
+                                        48537004,
+                                        39
+                                    ]
+                                },
+                                {
+                                    "string": [
+                                        49130001,
+                                        30
+                                    ]
+                                },
+                                {
+                                    "string": [
+                                        118856009,
+                                        34
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "classesWithNoDocumentation": [
+                        {
+                            "string": "limitpassed:394352"
+                        }
+                    ],
+                    "classesWithNoAuthor": [
+                        {
+                            "string": "limitpassed:395036"
+                        }
+                    ],
+                    "classesWithMoreThanOnePropertyValue": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,132 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=2A0D6988ABA60ACD10030EFCC3A7360B; Path=/openmrs-standalone
+ETag: "0c383240bb649921f3b93da30c685f219"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 2204
+Date: Mon, 15 Apr 2013 16:57:50 GMT
+
+{
+    "results": [
+        {
+            "uuid": "8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Numeric",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4488-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a48b6-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Coded",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a48b6-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a4ab4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Text",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4ab4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "N/A",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a4e74-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Document",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4e74-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a505e-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Date",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a505e-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a591e-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Time",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a591e-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a5af4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Datetime",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5af4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a5cca-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Boolean",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5cca-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a5e96-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Rule",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a5e96-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a606c-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Structured Numeric",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a606c-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4a6242-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Complex",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a6242-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        }
+    ]
+}

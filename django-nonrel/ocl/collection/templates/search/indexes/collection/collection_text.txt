@@ -1,0 +1,7 @@
+{{ object.name }}
+{% if object.full_name %}
+  {{ object.full_name }}
+{% endif %}
+{% if object.description %}
+  {{ object.description }}
+{% endif %}

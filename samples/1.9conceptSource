@@ -1,0 +1,38 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=971102ADA15B790866E6DD00B7E9A6C6; Path=/openmrs-standalone
+ETag: "0b6c644587909d8b8e437672052c2dd91"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 608
+Date: Mon, 15 Apr 2013 20:44:15 GMT
+
+{
+    "uuid": "16ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+    "display": "MVP Amazon Server 174",
+    "name": "MVP Amazon Server 174",
+    "description": "The production server for MVP",
+    "hl7Code": "MVPAWS174",
+    "retired": false,
+    "auditInfo": {
+        "creator": {
+            "uuid": "3c023ab8-82ff-11e2-96ef-f0def12f7061",
+            "display": "admin",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/user/3c023ab8-82ff-11e2-96ef-f0def12f7061",
+                    "rel": "self"
+                }
+            ]
+        },
+        "dateCreated": "2012-03-26T14:51:12.000+0300",
+        "changedBy": null,
+        "dateChanged": null
+    },
+    "links": [
+        {
+            "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptsource/16ADDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+            "rel": "self"
+        }
+    ],
+    "resourceVersion": "1.8"
+}

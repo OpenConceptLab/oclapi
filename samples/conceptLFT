@@ -1,0 +1,157 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=4FFD147D0DA467732EF6D328BF957A8B; Path=/openmrs-standalone
+ETag: "03daeafc05a87b49c927caf892c5b8b25"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 4475
+Date: Thu, 11 Apr 2013 20:33:55 GMT
+
+{
+   "uuid":"953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "display":"LIVER FUNCTION TESTS",
+   "name":{
+      "display":"LIVER FUNCTION TESTS",
+      "uuid":"1001BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "name":"LIVER FUNCTION TESTS",
+      "locale":"en",
+      "localePreferred":false,
+      "conceptNameType":"FULLY_SPECIFIED",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/1001BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "rel":"self"
+         },
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/1001BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB?v=full",
+            "rel":"full"
+         }
+      ],
+      "resourceVersion":"1.9"
+   },
+   "datatype":{
+      "uuid":"8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+      "display":"N/A",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/conceptdatatype/8d4a4c94-c2cc-11de-8d13-0010c6dffd0f",
+            "rel":"self"
+         }
+      ]
+   },
+   "conceptClass":{
+      "uuid":"8d492026-c2cc-11de-8d13-0010c6dffd0f",
+      "display":"LabSet",
+      "links":[
+         {
+            "uri":"NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492026-c2cc-11de-8d13-0010c6dffd0f",
+            "rel":"self"
+         }
+      ]
+   },
+   "set":true,
+   "version":"",
+   "retired":false,
+   "names":[
+      {
+         "uuid":"94073BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"LIVER PANEL",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/94073BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"92818BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"HFP",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/92818BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"93955BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"LFTS",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/93955BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"1001BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"LIVER FUNCTION TESTS",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/name/1001BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "descriptions":[
+      {
+         "uuid":"956FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+         "display":"Laboratory set of tests of liver function.",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/description/956FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "mappings":[
+      {
+         "uuid":"133792ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"SNOMED CT: 26958001",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/133792ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"134629ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"AMPATH: 953",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134629ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      },
+      {
+         "uuid":"134367ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+         "display":"AMPATH: 652",
+         "links":[
+            {
+               "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/mapping/134367ABBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+               "rel":"self"
+            }
+         ]
+      }
+   ],
+   "answers":[
+
+   ],
+   "setMembers":[
+
+   ],
+   "links":[
+      {
+         "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+         "rel":"self"
+      },
+      {
+         "uri":"NEED-TO-CONFIGURE/ws/rest/v1/concept/953AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA?v=full",
+         "rel":"full"
+      }
+   ],
+   "resourceVersion":"1.9"
+}

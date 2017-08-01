@@ -1,0 +1,3 @@
+[MASTER]
+rcfile=/Users/jonathanpayne/.pylintrc
+init-hook=import sys; sys.path.insert(0, '/Users/jonathanpayne/Dropbox/dev/oclapi/django-nonrel/ocl/');

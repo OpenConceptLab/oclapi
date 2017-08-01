@@ -1,0 +1,222 @@
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Set-Cookie: JSESSIONID=6344BA8D35F4AA79AFD394C953FF5398; Path=/openmrs-standalone
+ETag: "0fe3610f23f2330c9738318f98105f784"
+Content-Type: application/json;charset=UTF-8
+Content-Length: 3836
+Date: Thu, 11 Apr 2013 22:02:47 GMT
+
+{
+    "results": [
+        {
+            "uuid": "8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Test",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4907b2-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d490bf4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Procedure",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d490bf4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d490dfc-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Drug",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d490dfc-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4918b0-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Diagnosis",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4918b0-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d491a9a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Finding",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491a9a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d491c7a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Anatomy",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491c7a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d491e50-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Question",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d491e50-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492026-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "LabSet",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492026-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d4923b4-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "MedSet",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d4923b4-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492594-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "ConvSet",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492594-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492774-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Misc",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492774-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492954-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Symptom",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492954-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492b2a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Symptom/Finding",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492b2a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492d0a-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Specimen",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492d0a-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "8d492ee0-c2cc-11de-8d13-0010c6dffd0f",
+            "display": "Misc Order",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/8d492ee0-c2cc-11de-8d13-0010c6dffd0f",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "1edca11a-768a-102f-83f4-12313b04a615",
+            "display": "Workflow",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca11a-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "1edca23c-768a-102f-83f4-12313b04a615",
+            "display": "State",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca23c-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "1edca368-768a-102f-83f4-12313b04a615",
+            "display": "Program",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/1edca368-768a-102f-83f4-12313b04a615",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "801e5b58-a14e-4a71-859d-23310b0f2f91",
+            "display": "Aggregate Measurement",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/801e5b58-a14e-4a71-859d-23310b0f2f91",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "896d8b8c-603b-421f-959e-8d305cbeeb82",
+            "display": "Indicator",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/896d8b8c-603b-421f-959e-8d305cbeeb82",
+                    "rel": "self"
+                }
+            ]
+        },
+        {
+            "uuid": "99ac2869-6615-4466-810b-8eb54544486a",
+            "display": "Health Care Monitoring Topics",
+            "links": [
+                {
+                    "uri": "NEED-TO-CONFIGURE/ws/rest/v1/conceptclass/99ac2869-6615-4466-810b-8eb54544486a",
+                    "rel": "self"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,288 @@
+<?xml version="1.0" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<schema name="default" version="1.4">
+  <types>
+    <fieldtype name="string"  class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true"/>
+    <fieldtype name="binary" class="solr.BinaryField"/>
+
+    <!-- Numeric field types that manipulate the value into
+         a string value that isn't human-readable in its internal form,
+         but with a lexicographic ordering the same as the numeric ordering,
+         so that range queries work correctly. -->
+    <fieldType name="int" class="solr.TrieIntField" precisionStep="0" omitNorms="true" sortMissingLast="true" positionIncrementGap="0"/>
+    <fieldType name="float" class="solr.TrieFloatField" precisionStep="0" omitNorms="true" sortMissingLast="true" positionIncrementGap="0"/>
+    <fieldType name="long" class="solr.TrieLongField" precisionStep="0" omitNorms="true" sortMissingLast="true" positionIncrementGap="0"/>
+    <fieldType name="double" class="solr.TrieDoubleField" precisionStep="0" omitNorms="true" sortMissingLast="true" positionIncrementGap="0"/>
+
+    <fieldType name="tint" class="solr.TrieIntField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="tfloat" class="solr.TrieFloatField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="tlong" class="solr.TrieLongField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+
+    <fieldType name="date" class="solr.TrieDateField" omitNorms="true" precisionStep="0" positionIncrementGap="0"/>
+    <!-- A Trie based date field for faster date range queries and date faceting. -->
+    <fieldType name="tdate" class="solr.TrieDateField" omitNorms="true" precisionStep="6" positionIncrementGap="0"/>
+
+    <fieldType name="point" class="solr.PointType" dimension="2" subFieldSuffix="_d"/>
+    <fieldType name="location" class="solr.LatLonType" subFieldSuffix="_coordinate"/>
+    <fieldtype name="geohash" class="solr.GeoHashField"/>
+
+    <fieldType name="lowercase" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory" />
+        <filter class="solr.TrimFilterFactory" />
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+        <!-- in this example, we will only use synonyms at query time
+        <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
+        -->
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+        <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="stopwords_en.txt"
+                enablePositionIncrements="true"
+                />
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+        <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
+          <filter class="solr.EnglishMinimalStemFilterFactory"/>
+        -->
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="stopwords_en.txt"
+                enablePositionIncrements="true"
+                />
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+        <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
+          <filter class="solr.EnglishMinimalStemFilterFactory"/>
+        -->
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_ws" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="ngram" class="solr.TextField" >
+      <analyzer type="index">
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.NGramFilterFactory" minGramSize="3" maxGramSize="15" />
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="edge_ngram" class="solr.TextField" positionIncrementGap="1">
+      <analyzer type="index">
+        <tokenizer class="solr.WhitespaceTokenizerFactory" />
+        <filter class="solr.LowerCaseFilterFactory" />
+        <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+        <filter class="solr.EdgeNGramFilterFactory" minGramSize="2" maxGramSize="15"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.WhitespaceTokenizerFactory" />
+        <filter class="solr.LowerCaseFilterFactory" />
+        <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+      </analyzer>
+    </fieldType>
+  </types>
+
+  <fields>
+    <!-- general -->
+    <field name="id" type="string" indexed="true" stored="true" multiValued="false" required="true"/>
+    <field name="django_ct" type="string" indexed="true" stored="true" multiValued="false"/>
+    <field name="django_id" type="string" indexed="true" stored="true" multiValued="false"/>
+
+    <dynamicField name="*_i"  type="int"    indexed="true"  stored="true"/>
+    <dynamicField name="*_s"  type="string"  indexed="true"  stored="true"/>
+    <dynamicField name="*_l"  type="long"   indexed="true"  stored="true"/>
+    <dynamicField name="*_t"  type="text_en"    indexed="true"  stored="true"/>
+    <dynamicField name="*_b"  type="boolean" indexed="true"  stored="true"/>
+    <dynamicField name="*_f"  type="float"  indexed="true"  stored="true"/>
+    <dynamicField name="*_d"  type="double" indexed="true"  stored="true"/>
+    <dynamicField name="*_dt" type="date" indexed="true" stored="true"/>
+    <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
+    <dynamicField name="*_coordinate"  type="tdouble" indexed="true"  stored="false"/>
+
+
+    <field name="username" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="location" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="text" type="text_en" indexed="true" stored="true" multiValued="false" />
+
+    <field name="company" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="is_active" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="dateJoined" type="date" indexed="true" stored="true" multiValued="false" />
+
+    <field name="lastUpdate" type="date" indexed="true" stored="true" multiValued="false" />
+
+    <field name="name" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="sourceType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="locale_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="locale" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="owner_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="sourceType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="ownerType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="ownerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="full_name" type="text_en" indexed="true" stored="true" multiValued="false" />
+
+    <field name="owner" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptClass" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="num_stars" type="long" indexed="true" stored="true" multiValued="false" />
+
+    <field name="retired" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptClass_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="public_can_view" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="datatype" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="retired_exact" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="source_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="source_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="source" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="collection_version" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="collection_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="collection" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="is_latest_version" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="datatype_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="language" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="last_update" type="date" indexed="true" stored="true" multiValued="false" />
+
+    <field name="collection_type" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="concept" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="toConceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="concept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptSource_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptSource_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptOwner_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="mapType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConcept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="mapType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptSource" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptOwner" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConcept_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptOwnerType" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptSource" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConcept" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="toConcept" type="lowercase" indexed="true" stored="true" multiValued="true" />
+
+    <field name="toConceptOwner_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="toConceptOwner" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptSource" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="conceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptSource_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="conceptOwner_exact" type="string" indexed="true" stored="true" multiValued="true" />
+
+    <field name="fromConceptOwner" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="fromConceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
+    <field name="external_id" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+  </fields>
+
+  <!-- field to use to determine and enforce document uniqueness. -->
+  <uniqueKey>id</uniqueKey>
+
+  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
+  <defaultSearchField>text</defaultSearchField>
+
+  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
+  <solrQueryParser defaultOperator="AND"/>
+</schema>
+

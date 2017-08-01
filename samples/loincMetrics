@@ -1,0 +1,75 @@
+HTTP/1.1 200 OK
+Date: Sat, 13 Apr 2013 09:17:51 GMT
+Server: Apache/2.2.13 (Red Hat)
+Accept-Ranges: bytes
+Content-Length: 151502
+Connection: close
+Content-Type: application/json;charset=UTF-8
+
+{
+    "success": {
+        "accessedResource": "/bioportal/ontologies/metrics/47637",
+        "accessDate": "2013-04-13 02:17:51.928 PDT",
+        "data": [
+            {
+                "ontologyMetricsBean": {
+                    "id": 47637,
+                    "numberOfAxioms": 0,
+                    "numberOfClasses": 171399,
+                    "numberOfIndividuals": 0,
+                    "numberOfProperties": 62,
+                    "maximumDepth": 16,
+                    "maximumNumberOfSiblings": 10284,
+                    "averageNumberOfSiblings": 1,
+                    "classesWithOneSubclass": [
+                        {
+                            "string": [
+                                "LP100000-1",
+                                "LP100009-2",
+                                "LP100010-0",
+                                "MTHU000241"
+                            ]
+                        }
+                    ],
+                    "classesWithMoreThanXSubclasses": [
+                        {
+                            "entry": [
+                                {
+                                    "string": [
+                                        "LP14259-3",
+                                        41
+                                    ]
+                                },
+                                {
+                                    "string": [
+                                        "LP31618-9",
+                                        34
+                                    ]
+                                },
+                                {
+                                    "string": [
+                                        "LP68771-2",
+                                        36
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "classesWithNoDocumentation": [
+                        {
+                            "string": "limitpassed:171399"
+                        }
+                    ],
+                    "classesWithNoAuthor": [
+                        {
+                            "string": "limitpassed:171399"
+                        }
+                    ],
+                    "classesWithMoreThanOnePropertyValue": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,6 @@
+version: '2'
+services:
+  ocl:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy

@@ -1,0 +1,2 @@
+// run this on web
+// insert into users_user (date_joined, is_staff, last_login, password, is_superuser, username, first_name, last_name, email, is_active) values (now(), false, now(), 'pbkdf2_sha256$12000$TlUPEsVbp7Fy$SqYES20FFCeukBV6gxVogSFnlZpVUb9mjvGoZprSK9I=', true, 'root', 'admin', 'admin', 'Paynejd@gmail.com', true);

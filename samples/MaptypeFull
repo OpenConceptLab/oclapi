@@ -1,0 +1,45 @@
+{
+    "__type__": "MapType",
+	"uuid": "35543629-7d8c-11e1-909d-c80aa9edcf4e",
+    "url": "/rest/v1/maptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+    "display": "SAME AS",
+    "displayLocale": "en",
+    "names": [
+        {
+            "name": "SAME AS",
+            "locale": "en",
+            "preferred": "True"
+        }
+    ],
+    "descriptions": [
+        {
+            "description": "equal to",
+            "locale": "en",
+            "preferred": "True"
+        }
+    ],
+    "sources": [
+    	"ciel",
+    	"pih"
+    ],
+    "retired": "false",
+    "isHidden": "false",
+    "properties": {
+    	"omrsVersion": "1.9"
+    },
+    "links": [
+        {
+            "uri": "/rest/v1/maptype/35543629-7d8c-11e1-909d-c80aa9edcf4e",
+            "rel": "self"
+        }
+    ],
+    "auditInfo": [
+        {
+            "creator": "admin",
+            "dateCreated": "2005-02-17T00:00:00.000+0300",
+            "changedBy": "",
+            "dateChanged": ""
+        }
+    ],
+    "resourceVersion": "1.9"
+}

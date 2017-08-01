@@ -1,0 +1,66 @@
+version: '2'
+services:
+  mongo:
+    container_name: ocl_mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+  redis:
+    container_name: ocl_redis
+    image: redis
+    ports:
+      - "6379:6379"
+  solr:
+    build:
+      context: ../../
+      dockerfile: ./django-nonrel/ocl/Dockerfile.solr
+    container_name: ocl_solr
+    ports:
+      - "8983:8983"
+  ocl_api:
+    container_name: ocl_api
+    extends:
+      file: docker-deploy-common.yml
+      service: ocl
+    command: bash startup.sh ${SETTINGS} ${CONFIG} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME} ${ROOT_PWD}
+    depends_on:
+      - mongo
+      - solr
+      - redis
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+    ports:
+      - "8000:8000"
+  ocl_worker:
+    container_name: ocl_worker
+    extends:
+      file: docker-deploy-common.yml
+      service: ocl
+    command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
+    depends_on:
+      - mongo
+      - solr
+      - redis
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+  ocl_flower:
+    container_name: ocl_flower
+    extends:
+      file: docker-deploy-common.yml
+      service: ocl
+    command: bash run_flower.sh
+    depends_on:
+      - redis
+      - ocl_worker
+    links:
+      - "redis:redis.openconceptlab.org"
+    ports:
+      - "5555:5555"
+    environment:
+      - C_FORCE_ROOT=1

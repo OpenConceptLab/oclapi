@@ -1,0 +1,3 @@
+{{ object.name }}
+{% for name in object.all_names %}{{ name }} {% endfor %}
+{% for desc in object.descriptions_for_default_locale %}{{ description }} {% endfor %}
