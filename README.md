@@ -312,22 +312,40 @@ MapTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_MapTypes/
 ---------------------------------------------------------------------------
 ### Edits (Steps done differently) made for successful installation and import
 ---------------------------------------------------------------------------
-installed a django nonrel from github link - https://github.com/django-nonrel/djangotoolbox.
-pip install -r requirements.txt didn't work the first time that is why the above was installed separatley if other packages were not installed successfully then please comment it out from requirements.txt and install separately.
-the files customform.py and custommodels.py was created and used in the project for overriding the ListField and DictField we were gettting an error otherwise - no widget to view ListField and DictField otherwise.
-made an edit in the oclapi/models.py file to indicate the overriding of ListField and DictField.
-also edited the source/models.py file in the end where we added a few lines to register Source and Source Versions so it can be seen in the api.
-We used imp in python (seen in mappings/models.py) because it was not able to locate file path properly.
+pip install -r requirements.txt.
+
+If it doesn't work then install the following packages seperately:
+
+installed a django nonrel from github link - https://github.com/django-nonrel/django.
+
+installed djangotoolbox from github link - https://github.com/django-nonrel/djangotoolbox.
+
+The files customform.py and custommodels.py (found in oclapi directory) was created and used in the project for overriding the ListField and DictField from djangotoolbox as we were gettting an error - "no widget to view ListField and DictField" otherwise.
+
+Made an edit in all the files to indicate the overriding of ListField and DictField.
+
+Also edited the source/models.py file in the end where we added a few lines to register Source and Source Versions so it can be seen in the django admin for creating new sources (which is much easier than creating a source from api).
+
+We used imp in python (seen in mappings/models.py) because it was not able to locate file path properly.(Import issues)
+
 (
 Specifically this line -
 concept = imp.load_source('concepts.models',
                           ‘<path to models file>’) # will vary based on path in system
 )
-added some exception handling in mapping/importer.py
-also we added specific source version (HEAD) and sources for the demo-data import to work more detailed explanation given in this talk - https://talk.openmrs.org/t/ocl-core-api-installation/12679?u=reucherian.
+
+Added some exception handling in mapping/importer.py. (This was done to skip the mappings which used to fail and continue with the remaining mappings in the mappings.json file.)
+
+Note Mappings could fail if that particular source or concepts doesnot exist in your database.
+
+Also we added specific source version (HEAD) and sources for the demo-data import to work more detailed explanation given in this talk - https://talk.openmrs.org/t/ocl-core-api-installation/12679?u=reucherian.
+
 list of organisations created were CIEL,3BT,WICC,PIH,Regenstrief,HL7
-Note above is required for mappings and concepts to be imported successfully from demo data.
+
+Note above is required for mappings and concepts to be imported successfully from demo data/json files.
+
 import was successfully done using this line -
+
 ./manage.py import_concepts_to_source --source  --token <source_id>  <path_to_concepts.json_file>
 
 -----------------------------------------------------------------------------
