@@ -312,7 +312,8 @@ MapTypes: https://github.com/OpenConceptLab/ocl_import/blob/master/OCL_MapTypes/
 ---------------------------------------------------------------------------
 ### Edits (Steps done differently) made for successful installation and import
 ---------------------------------------------------------------------------
-pip install -r requirements.txt.
+Install the requirements for the project:
+```pip install -r requirements.txt.```
 
 If it doesn't work then install the following packages seperately:
 
@@ -330,8 +331,8 @@ We used imp in python (seen in mappings/models.py) because it was not able to lo
 
 (
 Specifically this line -
-concept = imp.load_source('concepts.models',
-                          ‘<path to models file>’) # will vary based on path in system
+```concept = imp.load_source('concepts.models',
+                          ‘<path to models file>’)``` # will vary based on path in system
 )
 
 Added some exception handling in mapping/importer.py. (This was done to skip the mappings which used to fail and continue with the remaining mappings in the mappings.json file.)
@@ -340,13 +341,13 @@ Note Mappings could fail if that particular source or concepts doesnot exist in 
 
 Also we added specific source version (HEAD) and sources for the demo-data import to work more detailed explanation given in this talk - https://talk.openmrs.org/t/ocl-core-api-installation/12679?u=reucherian.
 
-list of organisations created were CIEL,3BT,WICC,PIH,Regenstrief,HL7
+list of organisations created were `CIEL`,`3BT`,`WICC`,`PIH`,`Regenstrief`,`HL7`
 
 Note above is required for mappings and concepts to be imported successfully from demo data/json files.
 
 import was successfully done using this line -
 
-./manage.py import_concepts_to_source --source  --token <source_id>  <path_to_concepts.json_file>
+```./manage.py import_concepts_to_source --source  --token <source_id>  <path_to_concepts.json_file>```
 
 -----------------------------------------------------------------------------
 
