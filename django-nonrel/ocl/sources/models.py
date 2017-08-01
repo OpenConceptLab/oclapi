@@ -1,13 +1,17 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+
 from django.contrib import admin
+
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from oclapi.custommodel import ListOverrideField, DictOverrideField
+
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class
 
@@ -56,12 +60,15 @@ SOURCE_VERSION_TYPE = 'Source Version'
 class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
+
     concepts = ListOverrideField()
     mappings = ListOverrideField()
+
     retired = models.BooleanField(default=False)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
     _ocl_processing = models.BooleanField(default=False)
+
     source_snapshot = DictOverrideField(null=True, blank=True)
 
     def update_concept_version(self, concept_version):
@@ -218,6 +225,7 @@ def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     for source in Source.objects.filter(parent_id=instance.id, parent_type=ContentType.objects.get_for_model(sender)):
         if instance.is_active != source.is_active:
             source.undelete() if instance.is_active else source.soft_delete()
+
 
 
 admin.site.register(Source)

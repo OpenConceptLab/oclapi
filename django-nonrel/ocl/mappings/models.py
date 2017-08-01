@@ -1,10 +1,13 @@
 from django.contrib.contenttypes.models import ContentType
+
 from django.contrib import admin
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 import imp
 from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
@@ -12,6 +15,7 @@ from sources.models import Source, SourceVersion
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
+
 
 concept = imp.load_source('concepts.models',
                           '/home/rishabh/Developer/ccbd_internship/OCL/oclapi/django-nonrel/ocl/concepts/models.py')
@@ -22,6 +26,7 @@ class Mapping(MappingValidationMixin, BaseModel):
     map_type = models.TextField()
     from_concept = models.ForeignKey(concept.Concept, related_name='mappings_from')
     to_concept = models.ForeignKey(concept.Concept, null=True, blank=True, related_name='mappings_to', db_index=False)
+
     to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to', db_index=False)
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
@@ -175,19 +180,25 @@ class Mapping(MappingValidationMixin, BaseModel):
     def retire(cls, mapping, user, update_comment=None):
         if mapping.retired:
             return False
+
         latest_version = MappingVersion.get_latest_version_of(mapping)
         prev_latest_version = MappingVersion.objects.get(id=latest_version.id, is_latest_version=True);
         retired_version = latest_version.clone()
+
         retired_version.retired = True
         if update_comment:
             retired_version.update_comment = update_comment
         else:
             retired_version.update_comment = 'Mapping was retired'
+
         errors = MappingVersion.persist_clone(retired_version, user, prev_latest_version)
+
         if not errors:
             mapping.retired = True
             mapping.save()
         return errors
+
+
 
     @staticmethod
     def get_version_model():
@@ -219,7 +230,9 @@ class Mapping(MappingValidationMixin, BaseModel):
             prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True)
             prev_latest_version.is_latest_version = False
 
+
             new_latest_version = MappingVersion.for_mapping(obj)
+
             new_latest_version.previous_version = prev_latest_version
             new_latest_version.update_comment = update_comment
             new_latest_version.mnemonic = int(prev_latest_version.mnemonic) + 1
@@ -227,6 +240,8 @@ class Mapping(MappingValidationMixin, BaseModel):
 
             source_version.update_mapping_version(new_latest_version)
             prev_latest_version.save()
+
+
 
             persisted = True
         finally:
@@ -277,10 +292,12 @@ class Mapping(MappingValidationMixin, BaseModel):
 
         errored_action = 'saving mapping'
         persisted = False
+
         initial_version = None
         try:
             obj.save(**kwargs)
             # mapping version save start
+
             initial_version = MappingVersion.for_mapping(obj)
             initial_version.mnemonic = 1
             initial_version.save()
@@ -348,8 +365,10 @@ class Mapping(MappingValidationMixin, BaseModel):
 class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     parent = models.ForeignKey(Source, related_name='mappings_version_from')
     map_type = models.TextField()
+
     from_concept = models.ForeignKey(concept.Concept, related_name='mappings_version_from')
     to_concept = models.ForeignKey(concept.Concept, null=True, blank=True, related_name='mappings_version_to', db_index=False)
+
     to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to', db_index=False)
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
@@ -361,7 +380,9 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     def clone(self):
         return MappingVersion(
             mnemonic='--TEMP--',
+
             parent=self.parent,
+
             map_type=self.map_type,
             from_concept=self.from_concept,
             to_concept=self.to_concept,
@@ -601,6 +622,7 @@ def propagate_owner_status(sender, instance=None, created=False, **kwargs):
     for mapping in Mapping.objects.filter(parent_id=instance.id):
         if (instance.is_active and not mapping.is_active) or (mapping.is_active and not instance.is_active):
             mapping.save()
+
 
 
 admin.site.register(Mapping)

@@ -9,10 +9,12 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from djangotoolbox.fields import DictField, ListField
 from rest_framework.authtoken.models import Token
+
 from .custommodel import DictOverrideField, ListOverrideField
 
 from .utils import reverse_resource, reverse_resource_version
 from .settings.common import Common
+
 from django.db.models import get_model
 
 HEAD = 'HEAD'
@@ -38,7 +40,9 @@ class BaseModel(models.Model):
     created_by = models.TextField()
     updated_by = models.TextField()
     is_active = models.BooleanField(default=True)
+
     extras = DictOverrideField(null=True, blank=True, default={})
+
     uri = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -226,7 +230,9 @@ class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     default_locale = models.TextField(default=Common.DEFAULT_LOCALE, blank=True)
+
     supported_locales = ListOverrideField(null=True, blank=True)
+
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
@@ -375,7 +381,9 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     name = models.TextField()
     full_name = models.TextField(null=True, blank=True)
     default_locale = models.TextField(default=Common.DEFAULT_LOCALE, blank=True)
+
     supported_locales = ListOverrideField(null=True, blank=True)
+
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)

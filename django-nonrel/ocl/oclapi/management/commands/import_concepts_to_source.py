@@ -3,6 +3,8 @@ from concepts.importer import ConceptsImporter, ValidationLogger
 from oclapi.management.commands import ImportCommand
 
 
+
+
 class Command(ImportCommand):
     """ Command to import JSON lines concept file into OCL """
     help = 'Import concepts from a JSON file into a source'

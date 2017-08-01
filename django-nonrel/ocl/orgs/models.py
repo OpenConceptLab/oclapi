@@ -2,10 +2,12 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
+
 # from djangotoolbox.fields import ListField
 from collection.models import Collection
 from oclapi.models import BaseResourceModel, ACCESS_TYPE_NONE
 from oclapi.custommodel import ListOverrideField
+
 from sources.models import Source
 
 ORG_OBJECT_TYPE = 'Organization'
@@ -16,7 +18,9 @@ class Organization(BaseResourceModel):
     company = models.TextField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
+
     members = ListOverrideField(null=True, blank=True)
+
 
     def __unicode__(self):
         return self.mnemonic

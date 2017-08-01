@@ -6,7 +6,9 @@ import json
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand, CommandError
 from rest_framework.authtoken.models import Token
+
 from ....users.models import UserProfile
+
 
 class Command(BaseCommand):
     help = 'Create initial user data for new installation, output the tokens required for the web'
@@ -100,4 +102,3 @@ class Command(BaseCommand):
 
         else:
             self.print_tokens()
-

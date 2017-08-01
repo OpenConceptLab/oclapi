@@ -61,7 +61,9 @@ class MappingsImporter(object):
         # Load the JSON file line by line and import each line
         self.mapping_ids = set(self.source_version.mappings)
         self.count = 0
+
         concepts_for_uris = Concept.objects.filter(parent_id=self.source.id).order_by("id")
+
         self.concepts_cache = dict((x.uri, x) for x in concepts_for_uris)
         for line in self.mappings_file:
 
@@ -91,14 +93,16 @@ class MappingsImporter(object):
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
-                #code by rishabh
+
+                #code to skip the error mappings and continue with others
                 except Exception as e:
                     str_log = 'Mapping doesnot Exists!\n%s\n%s\n' % (e, data)
-                    with open('/home/rishabh/Developer/ccbd_internship/OCL/oclapi/django-nonrel/ocl/demo-data/out.txt', 'a') as fp:
-                        fp.write(str_log)
+                    # with open('out.txt', 'w+') as fp:     #Write skipped mappings to file
+                    #     fp.write(str_log)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+
 
             # Simple progress bars
             if (self.count % 10) == 0:
@@ -229,7 +233,7 @@ class MappingsImporter(object):
         kwargs = {'parent_resource': self.source}
         if self.test_mode:
             mapping.save=lambda x: None
-        
+
         errors = Mapping.persist_new(mapping, self.user, **kwargs)
         if errors:
             raise IllegalInputException(

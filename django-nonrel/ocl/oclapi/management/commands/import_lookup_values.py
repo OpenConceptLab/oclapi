@@ -6,10 +6,12 @@ from django.core.management import BaseCommand
 from django.core.management.base import OutputWrapper
 from haystack.management.commands import update_index
 
+
 from ....concepts.importer import ConceptsImporter
 from ....oclapi.management.commands import ImportActionHelper
 from ....orgs.models import Organization
 from ....sources.models import Source
+
 
 
 class Command(BaseCommand):

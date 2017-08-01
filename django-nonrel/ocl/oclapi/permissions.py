@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
+
 from .models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+
 from orgs.models import Organization
 from users.models import UserProfile
 from django.contrib.auth.models import User
@@ -101,4 +103,3 @@ class CanEditConceptDictionaryVersion(HasAccessToVersionedObject):
         if ACCESS_TYPE_EDIT == obj.public_access:
             return True
         return super(CanEditConceptDictionaryVersion, self).has_object_permission(request, view, obj)
-

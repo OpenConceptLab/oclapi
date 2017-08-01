@@ -35,4 +35,3 @@ class MappingValidationMixin:
                 custom_validator.validate()
         except Source.DoesNotExist as err:
             raise ValidationError("There's no Source")
-

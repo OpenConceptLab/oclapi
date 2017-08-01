@@ -62,7 +62,9 @@ class Common(Configuration):
     # Example: "/home/media/media.lawrence.com/static/"
     STATIC_ROOT = ''
     # In the deployment environment, comment out the above line, and uncomment the one below
+
     # STATIC_ROOT = '/usr/local/wsgi/static/'
+
 
     # URL prefix for static files.
     # Example: "http://media.lawrence.com/static/"
@@ -85,7 +87,9 @@ class Common(Configuration):
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+
         #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+
     )
 
     # Make this unique, and don't share it with anybody.
@@ -95,7 +99,9 @@ class Common(Configuration):
     TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
+
         #     'django.template.loaders.eggs.Loader',
+
     )
 
     MIDDLEWARE_CLASSES = (
@@ -124,13 +130,16 @@ class Common(Configuration):
         'django.contrib.staticfiles',
         # Uncomment the next line to enable the admin:
         'django.contrib.admin',
+
         'djangotoolbox',
+
         'corsheaders',
         # Uncomment the next line to enable admin documentation:
         # 'django.contrib.admindocs',
         # Core OCL app
         'oclapi',
         # Third-party apps:
+
         'django_mongodb_engine',
         'rest_framework',
         'rest_framework.authtoken',
@@ -173,27 +182,33 @@ class Common(Configuration):
         # Use Django's standard `django.contrib.auth` permissions,
         # or allow read-only access for unauthenticated users.
         'DEFAULT_PERMISSION_CLASSES': [
+
             # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
             'rest_framework.permissions.IsAuthenticated',
         ],
         'PAGINATE_BY': 10,  # Default to 10
         'PAGINATE_BY_PARAM': 'limit',  # Allow client to override, using `?limit=xxx`.
         'MAX_PAGINATE_BY': 100  # Maximum limit allowed when using `?limit=xxx`.
+
     }
 
     HAYSTACK_CONNECTIONS = {
         'default': {
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
+
             # 'URL': 'http://solr.openconceptlab.org:8983/solr/collection1'
             # ...or for multicore...
             'URL': 'http://127.0.0.1:8983/solr/collection1'
+
         },
     }
 
     DATABASES = {
         'default': {
             'ENGINE': 'django_mongodb_engine',
-            'HOST': 'mongodb://127.0.0.1',
+
+            'HOST': 'mongo.openconceptlab.org',
+
             'NAME': 'ocl',
         }
     }
@@ -222,9 +237,11 @@ class Common(Configuration):
     # Celery settings
     CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'
     # Set these in your postactivate hook if you use virtualenvwrapper
+
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+
 
     # Model that stores auxiliary user profile attributes.
     # A user must have a profile in order to access the system.
@@ -253,6 +270,7 @@ class Common(Configuration):
                 'filters': ['require_debug_false'],
                 'class': 'django.utils.log.AdminEmailHandler'
             },
+
             'null': {
                 'class': 'django.utils.log.NullHandler',
             },
@@ -266,6 +284,7 @@ class Common(Configuration):
                 'when': 'midnight',
                 'filename': os.path.join(BASE_DIR, 'ocl_api.log'),
                 'formatter': 'normal',
+
             },
         },
 

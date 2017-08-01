@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
+
 from .validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY, BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 
@@ -47,6 +48,7 @@ class ValidatorSpecifier:
         return self
 
     def with_reference_values(self):
+
         from ..orgs.models import Organization
         from ..sources.models import Source
 
@@ -70,7 +72,9 @@ class ValidatorSpecifier:
         return self
 
     def _get_reference_values(self, reference_value_source):
+
         from ..concepts.models import Concept
+
         reference_concepts = list(Concept.objects.filter(retired=False, is_active=True, parent_id=reference_value_source.id).all())
         names_in_concepts = map(lambda value: value.names, reference_concepts)
         return [name_object.name for names in names_in_concepts for name_object in names]

@@ -1,3 +1,4 @@
+
 from collection.models import *
 from django.contrib.auth.models import User
 from oclapi.models import BaseResourceModel
@@ -6,6 +7,7 @@ from oclapi.custommodel import ListOverrideField
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.contrib import admin
+
 
 USER_OBJECT_TYPE = 'User'
 ORG_OBJECT_TYPE = 'Organization'
@@ -18,7 +20,9 @@ class UserProfile(BaseResourceModel):
     company = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.TextField(null=True, blank=True)
+
     organizations = ListOverrideField()
+
 
     def __unicode__(self):
         return self.mnemonic

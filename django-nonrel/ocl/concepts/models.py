@@ -16,6 +16,7 @@ from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
+
 from oclapi.custommodel import ListOverrideField, DictOverrideField
 from sources.models import SourceVersion, Source
 
@@ -56,8 +57,10 @@ class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin)
     external_id = models.TextField(null=True, blank=True)
     concept_class = models.TextField(null=False, blank=False)
     datatype = models.TextField(null=False, blank=False)
+
     names = ListOverrideField(EmbeddedModelField(LocalizedText))
     descriptions = ListOverrideField(EmbeddedModelField(LocalizedText), null=True, blank=True)
+
     retired = models.BooleanField(default=False)
 
     objects = MongoDBManager()
@@ -522,5 +525,5 @@ def propagate_parent_attributes(sender, instance=None, created=False, **kwargs):
                 concept_version.save()
             concept.save()
 
-#admin.site.register(Concept)
-#admin.site.register(ConceptVersion)
+admin.site.register(Concept)
+admin.site.register(ConceptVersion)

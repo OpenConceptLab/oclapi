@@ -103,5 +103,3 @@ class ConceptValidationMixin:
 
         for validator in validators:
             validator.validate(self)
-
-
