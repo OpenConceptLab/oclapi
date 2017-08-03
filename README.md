@@ -14,6 +14,16 @@ Fork the repo on github and clone your fork:
 git clone https://github.com/{youruser}/oclapi
 ````
 
+Go to:
+````sh
+cd oclapi
+````
+
+For Windows only you need to patch docker-compose: 
+````sh
+git apply --check fix_for_windows.patch
+````
+
 Add a remote repo to upstream in order to be able to fetch updates:
 ````sh
 git remote add upstream https://github.com/OpenConceptLab/oclapi
@@ -24,9 +34,6 @@ Go to:
 ````sh
 cd oclapi/django-nonrel/ocl
 ````
-
-For Windows only you need to patch docker-compose: git apply --check fix_for_windows.patch
-
 
 Fire up containers:
 ````sh
