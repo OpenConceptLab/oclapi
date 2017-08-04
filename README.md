@@ -21,7 +21,7 @@ cd oclapi
 
 For Windows only you need to patch docker-compose: 
 ````sh
-git apply --check fix_for_windows.patch
+git apply fix_for_windows.patch
 ````
 
 Add a remote repo to upstream in order to be able to fetch updates:
