@@ -1,4 +1,4 @@
-oclapi [![Build Status](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master/build_image)](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master)
+oclapi
 ======
 
 ## What you'll need:
