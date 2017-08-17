@@ -1,8 +1,12 @@
+import logging
+
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
 from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY, BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+logger = logging.getLogger('oclapi')
 
 
 def message_with_name_details(message, name):
@@ -106,6 +110,8 @@ class BasicConceptValidator(BaseConceptValidator):
     def validate_concept_based(self, concept):
         self.description_cannot_be_null(concept)
         self.must_have_at_least_one_name(concept)
+        self.custom_attribute_key_must_be_encoded(concept)
+
 
     def validate_source_based(self, concept):
         pass
@@ -127,3 +133,21 @@ class BasicConceptValidator(BaseConceptValidator):
 
         if len(empty_descriptions):
             raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
+
+    def custom_attribute_key_must_be_encoded(self, concept):
+        logger.debug('extras:' + str(concept.extras))
+        if concept.extras is not None and concept.extras_are_encoded is False:
+            encoded_extras = {}
+            extras = concept.extras
+            for old_key in extras:
+                logger.debug(old_key)
+                key = old_key
+                key = key.replace('%', '%25')
+                key = key.replace('.','%2E')
+                value = extras.get(old_key)
+                logger.debug(key)
+                encoded_extras[key] = value
+            concept.extras = encoded_extras
+            concept.extras_are_encoded = True
+        return
+

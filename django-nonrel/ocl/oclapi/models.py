@@ -1,3 +1,4 @@
+import logging
 import re
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
@@ -13,6 +14,8 @@ from rest_framework.authtoken.models import Token
 from oclapi.utils import reverse_resource, reverse_resource_version
 from oclapi.settings.common import Common
 from django.db.models import get_model
+
+logger = logging.getLogger('oclapi')
 
 HEAD = 'HEAD'
 
@@ -38,6 +41,7 @@ class BaseModel(models.Model):
     updated_by = models.TextField()
     is_active = models.BooleanField(default=True)
     extras = DictField(null=True, blank=True)
+    extras_are_encoded = False
     uri = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -74,6 +78,26 @@ class BaseModel(models.Model):
         }
         return self._default_view_name % format_kwargs
 
+    def encode_extras(self):
+        return
+
+    def decode_extras(self):
+        logger.debug("decoding extras")
+        if self.extras is not None and self.extras_are_encoded is True:
+            decoded_extras = {}
+            extras = self.extras
+            for old_key in extras:
+                logger.debug(old_key)
+                key = old_key
+                key = key.replace('%25', '%')
+                key = key.replace('%2E', '.')
+                value = extras.get(old_key)
+                logger.debug(key)
+                decoded_extras[key] = value
+            self.extras = decoded_extras
+            self.extras_are_encoded = False
+            logger.debug("extras decoded")
+        return
 
 class BaseResourceModel(BaseModel):
     """
