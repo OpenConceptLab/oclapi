@@ -1,0 +1,40 @@
+# Basics
+*.py[cod]
+*.pyc
+__pycache__
+
+# Logs
+*.log*
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+*.pot
+
+# Pycharm
+.idea
+
+# Visual Studio
+.vscode
+
+# Vim
+*~
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
+ocl.db
+
+pylintrc
+nohup*
+env 
+
+# Git
+.git

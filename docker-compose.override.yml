@@ -1,0 +1,41 @@
+version: '2.1'
+services:
+  mongo:
+    ports:
+      - "27017:27017"
+  redis:
+    ports:
+      - "6379:6379"
+  solr:
+    build:
+      context: ./solr
+    ports:
+      - "8983:8983"
+    volumes:
+      - ./solr/config:/opt/solr/server/solr/
+  api:
+    build:
+      context: ./ocl
+      dockerfile: Dockerfile-dev 
+    ports:
+      #ports for debugging
+      - "8001:8001"
+      - "2000:22"
+    volumes:
+      - ./ocl:/code
+    environment:
+      - ENVIRONMENT=local
+  celery:
+    build:
+      context: ./ocl
+      dockerfile: Dockerfile-dev 
+    volumes:
+      - ./ocl:/code
+  flower:
+    build:
+      context: ./ocl
+      dockerfile: Dockerfile-dev
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./ocl:/code

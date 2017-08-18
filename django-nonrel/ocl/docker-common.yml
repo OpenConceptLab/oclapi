@@ -1,8 +1,0 @@
-version: '2.1'
-services:
-  ocl:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - .:/code
