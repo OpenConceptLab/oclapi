@@ -79,6 +79,20 @@ class BaseModel(models.Model):
         return self._default_view_name % format_kwargs
 
     def encode_extras(self):
+        logger.debug('extras:' + str(self.extras))
+        if self.extras is not None and self.extras_are_encoded is False:
+            encoded_extras = {}
+            extras = self.extras
+            for old_key in extras:
+                logger.debug(old_key)
+                key = old_key
+                key = key.replace('%', '%25')
+                key = key.replace('.','%2E')
+                value = extras.get(old_key)
+                logger.debug(key)
+                encoded_extras[key] = value
+            self.extras = encoded_extras
+            self.extras_are_encoded = True
         return
 
     def decode_extras(self):

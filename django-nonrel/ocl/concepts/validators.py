@@ -135,19 +135,6 @@ class BasicConceptValidator(BaseConceptValidator):
             raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
 
     def custom_attribute_key_must_be_encoded(self, concept):
-        logger.debug('extras:' + str(concept.extras))
-        if concept.extras is not None and concept.extras_are_encoded is False:
-            encoded_extras = {}
-            extras = concept.extras
-            for old_key in extras:
-                logger.debug(old_key)
-                key = old_key
-                key = key.replace('%', '%25')
-                key = key.replace('.','%2E')
-                value = extras.get(old_key)
-                logger.debug(key)
-                encoded_extras[key] = value
-            concept.extras = encoded_extras
-            concept.extras_are_encoded = True
+        concept.encode_extras()
         return
 
