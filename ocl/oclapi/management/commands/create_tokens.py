@@ -7,15 +7,16 @@ from django.contrib.auth.models import User
 from django.core.management import BaseCommand, CommandError
 from rest_framework.authtoken.models import Token
 from users.models import UserProfile
+from orgs.models import Organization
 
 class Command(BaseCommand):
-    help = 'Create initial user data for new installation, output the tokens required for the web'
+    help = 'Create initial user data for new installation, output the tokens required for the web.'
     option_list = BaseCommand.option_list + (
         make_option('--password',
                     action='store',
                     dest='pwd',
                     default=None,
-                    help='Password for admin users.'),
+                    help='Password for root user.'),
         make_option('--test',
                     action='store_true',
                     dest='test_mode',
@@ -25,7 +26,12 @@ class Command(BaseCommand):
                     action='store_true',
                     dest='create_mode',
                     default=False,
-                    help='Create admin and anon users.'),
+                    help='Create root user.'),
+        make_option('--token',
+                    action='store',
+                    dest='token',
+                    default=None,
+                    help='Set root user token.')
     )
 
     def print_users(self):
@@ -67,36 +73,29 @@ class Command(BaseCommand):
 
         create_mode = options['create_mode']
         pwd = options['pwd']
+        token = options['token']
+
         if create_mode:
             if pwd is None:
                 raise CommandError('--password is required.')
+            
+            superusers = User.objects.filter(username='root')
 
-            # step 1, create superuser
-            User.objects.create_superuser('admin', 'admin@openconceptlab.org',
-                                          password=pwd)
+            if not superusers:
+                UserProfile.objects.create(
+                    user=User.objects.create_superuser('root', 'root@openconceptlab.org', password=pwd),
+                    organizations=map(lambda o: o.id, Organization.objects.filter(created_by='root')),
+                    mnemonic='root')
+                superusers = User.objects.filter(username='root')
 
-            # first user is super user
-            t = Token.objects.all()[0]
-            auth_token = t.key
-            print 'auth token:', auth_token
+            superuser = superusers[0]
 
-            # now create anon user
-            h = {'Authorization': 'Token %s' % t.key,
-                 'Content-Type': 'application/json'}
-            d = {
-                'username': 'anonymous',
-                'name': 'API Anonymous User',
-                'email': 'admin@openconceptlab.org',
-                }
+            superuser.set_password(pwd)
+            superuser.save()
 
-            results = requests.post('http://localhost:9000/users/', data=json.dumps(d),
-                                   headers=h)
-            if results.status_code != 201:
-                print results.text
-
-            t = Token.objects.all()[1]
-            anon_token = t.key
-            print 'anon token:', anon_token
+            if token:
+                Token.objects.filter(user=superuser).delete()
+                Token.objects.create(user=superuser, key=token)
 
         else:
             self.print_tokens()

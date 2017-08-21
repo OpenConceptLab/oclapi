@@ -13,7 +13,8 @@ fi;
 
 if [ -z $ROOT_PASSWORD ]; then ROOT_PASSWORD=Root123; fi;
 
-echo "from django.contrib.auth.models import User; from users.models import UserProfile; from orgs.models import Organization; UserProfile.objects.create(user=User.objects.create_superuser('root', 'root@example.com', '$ROOT_PASSWORD'), organizations=map(lambda o: o.id, Organization.objects.filter(created_by='root')), mnemonic='root')" | python manage.py shell
+python manage.py create_tokens --password="$ROOT_PASSWORD" --token="$OCL_API_TOKEN" --create
+
 echo "Settings for: $SETTINGS"
 echo "Configurations for: $CONFIG"
 
