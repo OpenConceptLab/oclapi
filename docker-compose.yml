@@ -5,14 +5,20 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: always
+    healthcheck:
+      test: "exit 0"
   redis:
     image: redis:3.2
     restart: always
+    healthcheck:
+      test: "exit 0"
   solr:
     image: openconceptlab/oclsolr:${ENVIRONMENT-production}
     volumes:
       - solr_data:/opt/solr/server/solr/collection1/data
     restart: always
+    healthcheck:
+      test: "exit 0"
   api:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     depends_on:
@@ -55,6 +61,8 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_STORAGE_BUCKET_NAME
     restart: always
+    healthcheck:
+      test: "exit 0"
   flower:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_flower.sh
@@ -66,6 +74,8 @@ services:
     environment:
       - C_FORCE_ROOT=1
     restart: always
+    healthcheck:
+      test: "exit 0"
 volumes:
   mongo_data:
   solr_data:
