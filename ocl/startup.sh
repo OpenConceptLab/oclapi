@@ -14,14 +14,18 @@ fi
 
 ./setup_newrelic.sh $NEW_RELIC_API_KEY
 
-if [ -z $ENVIRONMENT ]; 
+if [ -z $ENVIRONMENT ]
 then 
-export SETTINGS=local; 
-export CONFIG=Local; 
+export SETTINGS=local
+export CONFIG=Local
+elif [ "$ENVIRONMENT" = "latest" ]
+then
+export SETTINGS=local
+export CONFIG=Local
 else
-export SETTINGS=$ENVIRONMENT;
-export CONFIG=${ENVIRONMENT^};
-fi;
+export SETTINGS=$ENVIRONMENT
+export CONFIG=${ENVIRONMENT^}
+fi
 
 echo "Settings for: $SETTINGS"
 echo "Configurations for: $CONFIG"
