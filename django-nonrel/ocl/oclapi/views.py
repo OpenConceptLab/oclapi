@@ -331,6 +331,10 @@ class ResourceVersionMixin(BaseAPIView, PathWalkerMixin):
         queryset = super(ResourceVersionMixin, self).get_queryset()
         versioned_object_type = ContentType.objects.get_for_model(self.versioned_object)
         queryset = queryset.filter(versioned_object_type__pk=versioned_object_type.id, versioned_object_id=self.versioned_object.id)
+
+        print 'ResourceVersionMixin versioned_object_type: ', versioned_object_type
+        print 'ResourceVersionMixin queryset: ', queryset
+
         return queryset
 
 

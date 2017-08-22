@@ -23,6 +23,7 @@ class Mapping(MappingValidationMixin, BaseModel):
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
+    is_internal_or_external = models.TextField()
 
     class Meta:
         unique_together = (
@@ -43,6 +44,7 @@ class Mapping(MappingValidationMixin, BaseModel):
             to_concept_name=self.to_concept_name,
             retired=self.retired,
             external_id=self.external_id,
+            is_internal_or_external = self.is_internal_or_external,
         )
 
     @property
@@ -355,6 +357,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
+    is_internal_or_external = models.TextField()
 
     def clone(self):
         return MappingVersion(
@@ -373,7 +376,8 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
             previous_version=self,
             parent_version=self.parent_version,
             is_latest_version=self.is_latest_version,
-            extras=self.extras
+            extras=self.extras,
+            is_internal_or_external = self.is_internal_or_external
         )
 
     class Meta:

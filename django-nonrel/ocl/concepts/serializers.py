@@ -44,12 +44,16 @@ class ConceptDetailSerializer(serializers.Serializer):
     created_on = serializers.DateTimeField(source='created_at', read_only=True)
     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
     extras = serializers.WritableField(required=False)
+    version = serializers.CharField(required=False)
+    forked_concept_version = serializers.CharField(required=False)
+    forked_from_url = serializers.CharField(required=False)
 
     class Meta:
         model = Concept
         lookup_field = 'mnemonic'
 
     def restore_object(self, attrs, instance=None):
+        print 'ConceptDetailSerializer attrs:  ', attrs
         concept = instance if instance else Concept()
         concept.mnemonic = attrs.get(self.Meta.lookup_field, concept.mnemonic)
         concept.external_id = attrs.get('external_id', concept.external_id)
@@ -58,6 +62,9 @@ class ConceptDetailSerializer(serializers.Serializer):
         concept.extras = attrs.get('extras', concept.extras)
         concept.retired = attrs.get('retired', concept.retired)
 
+        concept.forked_from_url = attrs.get('forked_from_url', concept.forked_from_url)
+        concept.forked_concept_version = attrs.get('version', concept.version)
+
         # Is this desired behavior??
         concept.names = attrs.get('names', concept.names)
 
@@ -65,6 +72,7 @@ class ConceptDetailSerializer(serializers.Serializer):
         concept.descriptions = attrs.get('descriptions', concept.descriptions)
 
         concept.extras = attrs.get('extras', concept.extras)
+
         return concept
 
     def save_object(self, obj, **kwargs):
@@ -72,6 +80,58 @@ class ConceptDetailSerializer(serializers.Serializer):
         errors = Concept.persist_new(obj, request_user, **kwargs)
         self._errors.update(errors)
 
+
+# class ConceptForkDetailSerializer(ResourceVersionSerializer):
+#     id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+#     external_id = serializers.CharField(required=False)
+#     concept_class = serializers.CharField(required=False)
+#     datatype = serializers.CharField(required=False)
+#     display_name = serializers.CharField(read_only=True)
+#     display_locale = serializers.CharField(read_only=True)
+#     names = LocalizedTextListField(required=False)
+#     descriptions = LocalizedTextListField(required=False, name_override='description')
+#     retired = serializers.BooleanField(required=False)
+#     url = serializers.URLField(read_only=True)
+#     source = serializers.CharField(source='parent_resource', read_only=True)
+#     owner = serializers.CharField(source='owner_name', read_only=True)
+#     owner_type = serializers.CharField(read_only=True)
+#     owner_url = serializers.URLField(read_only=True)
+#     created_on = serializers.DateTimeField(source='created_at', read_only=True)
+#     updated_on = serializers.DateTimeField(source='updated_at', read_only=True)
+#     extras = serializers.WritableField(required=False)
+#     version = serializers.CharField(source='mnemonic')
+#     forked_concept_version = serializers.CharField(required=False)
+#     forked_from_url = serializers.CharField(required=False)
+#
+#     class Meta:
+#         model = ConceptVersion
+#         lookup_field = 'mnemonic'
+#
+#     def restore_object(self, attrs, instance=None):
+#         print 'ConceptForkDetailSerializer attrs:  ', attrs
+#         concept = instance if instance else ConceptVersion()
+#         concept.mnemonic = attrs.get(self.Meta.lookup_field, concept.mnemonic)
+#         concept.external_id = attrs.get('external_id', concept.external_id)
+#         concept.concept_class = attrs.get('concept_class', concept.concept_class)
+#         concept.datatype = attrs.get('datatype', concept.datatype)
+#         concept.extras = attrs.get('extras', concept.extras)
+#         concept.retired = attrs.get('retired', concept.retired)
+#         concept.forked_concept_version = concept.mnemonic
+#         concept.forked_from_url = attrs.get('forked_from_url', concept.forked_from_url)
+#
+#         # Is this desired behavior??
+#         concept.names = attrs.get('names', concept.names)
+#
+#         # Is this desired behavior??
+#         concept.descriptions = attrs.get('descriptions', concept.descriptions)
+#
+#         concept.extras = attrs.get('extras', concept.extras)
+#         return concept
+#
+#     def save_object(self, obj, **kwargs):
+#         request_user = self.context['request'].user
+#         errors = Concept.persist_new(obj, request_user, **kwargs)
+#         self._errors.update(errors)
 
 
 class ConceptVersionsSerializer(serializers.Serializer):
@@ -102,6 +162,8 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
     mappings = MappingListField(read_only=True)
     is_latest_version = serializers.CharField()
     locale = serializers.SerializerMethodField(method_name='get_locale')
+    forked_concept_version = serializers.CharField()
+    forked_from_url = serializers.CharField()
 
     class Meta:
         model = ConceptVersion
@@ -120,7 +182,6 @@ class ConceptVersionListSerializer(ResourceVersionSerializer):
             mappings_field.source = 'get_unidirectional_mappings'
         else:
             mappings_field.source = 'get_empty_mappings'
-
 
 
 class ConceptVersionDetailSerializer(ResourceVersionSerializer):
@@ -150,6 +211,8 @@ class ConceptVersionDetailSerializer(ResourceVersionSerializer):
     mappings = MappingListField(read_only=True)
     is_latest_version = serializers.CharField()
     locale = serializers.SerializerMethodField(method_name='get_locale')
+    forked_from_url = serializers.CharField()
+    forked_concept_version = serializers.CharField()
 
     class Meta:
         model = ConceptVersion

@@ -425,6 +425,7 @@ def propagate_owner_status(sender, instance=None, created=False, **kwargs):
 class CollectionReferenceUtils():
     @classmethod
     def get_all_related_mappings(cls, expressions, collection):
+
         all_related_mappings = []
         unversioned_mappings = concept_expressions = []
 

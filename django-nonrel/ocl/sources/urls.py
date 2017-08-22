@@ -1,12 +1,16 @@
 from django.conf.urls import patterns, url, include
+from concepts.views import ConceptForkView, ConceptCreateView
 from sources.feeds import SourceFeed
-from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView, SourceExtrasView, SourceExtraRetrieveUpdateDestroyView, SourceVersionExportView
+from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, \
+    SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView, SourceExtrasView, \
+    SourceExtraRetrieveUpdateDestroyView, SourceVersionExportView
 
 __author__ = 'misternando'
 
 urlpatterns = patterns('',
     url(r'^$', SourceListView.as_view(), name='source-list'),
     url(r'^(?P<source>[a-zA-Z0-9\-\.]+)/$', SourceRetrieveUpdateDestroyView.as_view(), name='source-detail'),
+    url(r'^(?P<source>[a-zA-Z0-9\-\.]+)/forking/$', ConceptForkView.as_view(), name='concept-fork'),
     url(r'^(?P<source>[a-zA-Z0-9\-\.]+)/atom/$', SourceFeed()),
     url(r'^(?P<source>[a-zA-Z0-9\-\.]+)/versions/$', SourceVersionListView.as_view(), name='sourceversion-list'),
     url(r'^(?P<source>[a-zA-Z0-9\-\.]+)/latest/$', SourceVersionRetrieveUpdateView.as_view(), {'is_latest': True}, name='sourceversion-latest-detail'),

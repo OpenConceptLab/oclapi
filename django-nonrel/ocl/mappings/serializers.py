@@ -23,6 +23,8 @@ class MappingBaseSerializer(serializers.Serializer):
         mapping.to_concept_name = attrs.get('to_concept_name', mapping.to_concept_name)
         mapping.to_concept_code = attrs.get('to_concept_code', mapping.to_concept_code)
         mapping.external_id = attrs.get('external_id', mapping.external_id)
+        mapping.is_internal_or_external = attrs.get('is_internal_or_external',
+                                                            mapping.is_internal_or_external)
         return mapping
 
     class Meta:
@@ -45,6 +47,8 @@ class MappingVersionBaseSerializer(serializers.Serializer):
         mapping_version.to_concept_name = attrs.get('to_concept_name', mapping_version.to_concept_name)
         mapping_version.to_concept_code = attrs.get('to_concept_code', mapping_version.to_concept_code)
         mapping_version.external_id = attrs.get('external_id', mapping_version.external_id)
+        mapping_version.is_internal_or_external = attrs.get('is_internal_or_external',
+                                                            mapping_version.is_internal_or_external)
         return mapping_version
 
     class Meta:
@@ -57,6 +61,7 @@ class MappingDetailSerializer(MappingBaseSerializer):
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
     map_type = serializers.CharField(required=True)
+    is_internal_or_external = serializers.CharField(required=True)
 
     from_source_owner = serializers.CharField(read_only=True)
     from_source_owner_type = serializers.CharField(read_only=True)
@@ -95,6 +100,7 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
     map_type = serializers.CharField(required=True)
+    is_internal_or_external = serializers.CharField(required=True)
 
     from_source_owner = serializers.CharField(read_only=True)
     from_source_owner_type = serializers.CharField(read_only=True)
@@ -139,6 +145,7 @@ class MappingListSerializer(MappingBaseSerializer):
     to_concept_code = serializers.CharField(source='get_to_concept_code')
     to_concept_name = serializers.CharField(source='get_to_concept_name')
     url = serializers.CharField(read_only=True)
+    is_internal_or_external = serializers.CharField(required=True)
 
 
 class MappingVersionListSerializer(ResourceVersionSerializer):
@@ -194,6 +201,7 @@ class MappingCreateSerializer(MappingBaseSerializer):
     to_concept_code = serializers.CharField(required=False)
     to_concept_name = serializers.CharField(required=False)
     external_id = serializers.CharField(required=False)
+    is_internal_or_external = serializers.CharField(required=True)
 
     def save_object(self, obj, **kwargs):
         request_user = self.context['request'].user
