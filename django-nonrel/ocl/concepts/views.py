@@ -37,6 +37,7 @@ LIMIT_PARAM = 'limit'
 
 
 class ConceptBaseView(ChildResourceMixin):
+
     lookup_field = 'concept'
     pk_field = 'mnemonic'
     model = Concept
@@ -109,6 +110,7 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
 
 
 class ConceptVersionListAllView(BaseAPIView, ConceptVersionCSVFormatterMixin, ListWithHeadersMixin):
+
     model = ConceptVersion
     permission_classes = (CanViewParentDictionary,)
     filter_backends = [PublicConceptsSearchFilter]
@@ -233,6 +235,7 @@ class ConceptForkView(ConceptBaseView,
 
 
 class ConceptVersionsView(ConceptDictionaryMixin, ListWithHeadersMixin):
+
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
 
@@ -320,6 +323,7 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
 
 
 class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, RetrieveAPIView):
+
     lookup_field = 'concept_version'
     serializer_class = ConceptVersionDetailSerializer
     permission_classes = (CanViewParentDictionary,)
@@ -330,6 +334,7 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
         super(ConceptVersionRetrieveView, self).initialize(request, path_info_segment, **kwargs)
 
     def get_serializer_context(self):
+
         context = {'request': self.request}
         if self.request.GET.get('verbose'):
             context.update({'verbose': True})
@@ -340,6 +345,7 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
         return context
 
     def get_object(self, queryset=None):
+
         if self.versioned_object:
             concept_version_identifier = self.kwargs.get(self.lookup_field)
             if not concept_version_identifier:
@@ -352,6 +358,7 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
 
 
 class ConceptMappingsView(ConceptBaseView, ListAPIView):
+
     serializer_class = MappingListSerializer
     filter_backends = [HaystackSearchFilter,]
     queryset = Mapping.objects.filter(is_active=True)
