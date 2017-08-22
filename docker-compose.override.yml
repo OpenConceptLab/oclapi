@@ -14,6 +14,7 @@ services:
     volumes:
       - ./solr/config:/opt/solr/server/solr/
   api:
+    image: openconceptlab/oclapi:dev
     build:
       context: ./ocl
       dockerfile: Dockerfile-dev 
@@ -25,16 +26,17 @@ services:
       - ./ocl:/code
     environment:
       - ENVIRONMENT=local
+      - SSH=true
   celery:
-    build:
-      context: ./ocl
-      dockerfile: Dockerfile-dev 
+    image: openconceptlab/oclapi:dev
+    depends_on:
+      - api
     volumes:
       - ./ocl:/code
   flower:
-    build:
-      context: ./ocl
-      dockerfile: Dockerfile-dev
+    image: openconceptlab/oclapi:dev
+    depends_on:
+      - api
     ports:
       - "5555:5555"
     volumes:

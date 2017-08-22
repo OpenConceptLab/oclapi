@@ -14,25 +14,14 @@ Fork the repo on github and clone your fork:
 git clone https://github.com/{youruser}/oclapi
 ````
 
-Go to:
-````sh
-cd oclapi
-````
-
-For Windows only you need to patch docker-compose: 
-````sh
-git apply fix_for_windows.patch
-````
-
 Add a remote repo to upstream in order to be able to fetch updates:
 ````sh
 git remote add upstream https://github.com/OpenConceptLab/oclapi
 ````
 
-
 Go to:
 ````sh
-cd oclapi/django-nonrel/ocl
+cd oclapi
 ````
 
 Fire up containers:
@@ -40,34 +29,17 @@ Fire up containers:
 docker-compose up
 ````
 
-Open up [http://0.0.0.0:8000/admin/authtoken/token/](http://0.0.0.0:8000/admin/authtoken/token/) in a browser and login with username 'root' and password 'Root123'. Note down
-the key, which you will need later to access REST resources.
+You can access the API at http://localhost:8000
 
-Note that when using the docker quickstart on Windows, you need to check docker machine IP and replace 0.0.0.0 with the actual IP address. Run:
-````sh
-docker-machine ip
-````
-
-In order to initialize look up values to MongoDB you should run the following:
-
-````sh
-docker-compose exec ocl_api python manage.py import_lookup_values --configuration=Dev
-````
-
-Also you will need to sync these values to Solr:
-````sh
-docker-compose exec ocl_api python manage.py update_index
-````
+The root password and the API token can be found in docker-compose.yml under api/environment.
 
 ### Docker Environment Settings
 
-Docker `.env` file should be located on `oclapi/django-nonrel/ocl` folder. On development environment you don't need this file.
+Docker `.env` file should be located under the root project folder. On development environment you don't need this file.
 
 #### .env file details
 
-`SETTINGS=` Python module for environment
-
-`CONFIG=` Class name for environment
+`ENVIRONMENT=` Python module for environment, e.g. production, staging, local, showcase
 
 `AWS_ACCESS_KEY_ID=` Amazon Web Services access key.
 
@@ -75,9 +47,9 @@ Docker `.env` file should be located on `oclapi/django-nonrel/ocl` folder. On de
 
 `AWS_STORAGE_BUCKET_NAME=` Amazon Web Services bucket name.
 
-`ROOT_PWD=` API root user password.
+`ROOT_PASSWORD=` API root user password.
 
-`DATA_ROOT=` Mongo DB and Apache Solr data directory.
+`OCL_API_TOKEN=` API root token.
 
 `NEW_RELIC_API_KEY=` NewRelic API key.
 
@@ -107,30 +79,17 @@ docker-compose run ocl_api python manage.py test integration_tests --configurati
 
 To setup debugging PyCharm Professional Edition is required.
 
-Go to:
-````sh
-cd oclapi/django-nonrel/ocl
-````
+Docker-compose up starts the server in a development mode by default. It exposes all services on the host machine as well as enables SSH to the API service.
 
-create `ocl_ocl` image (you have to do this only first time, or in case of any changes in Dockerfile)
-````sh
-docker build --tag ocl_ocl .
-````
-fire up dev compose configuration
-````sh
-docker-compose -f docker-compose.dev.yml up
-````
-(You can add `--build` flag to ensure that dev image is created)
+In Pycharm IDE open oclapi project and go to `Settings-> Project: oclapi -> Project Interpreter`
 
-In Pycharm IDE open oclapi project and go to `settings-> project: oclapi -> Project Interpreter`
-
-click on gear icon and choose `Add Remote` option
+Click on gear icon and choose `Add Remote` option
 
 Configure interpreter with SSH credentials as in the image (default password is `Root123`):
 
 ![alt](img/remote_interpreter_config.png)
 
-there will be warnings about unknown host etc. but don't don't worry, just confirm.
+There will be warnings about unknown host etc. but don't don't worry, just confirm.
 
 Setup django debug configuration as in the image (Path mapping should be `absolute path to project directory=/code`):
 
@@ -150,11 +109,11 @@ for example replace:
 
 With:
 
-    virtualenv ocl
+    virtualenv oclenv
 
 And then run:
 
-    source ocl/bin/activate
+    source oclenv/bin/activate
 
 ### Mongo
 
@@ -185,7 +144,7 @@ This should enable you to run `$OCLAPI_ROOT/run_solr.sh`, which starts Solr in a
 
 ### The Django Project
 
-Clone this repository, and `cd` into the `django/ocl` directory.
+Clone this repository, and `cd` into the `ocl` directory.
 Before you can run the server, you will need to execute the following steps:
 
 1. Install the project dependencies:

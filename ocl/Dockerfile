@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:2.7.13
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
@@ -14,4 +14,4 @@ RUN echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sourc
 
 EXPOSE 8000
 
-CMD bash startup.sh ${SETTINGS} ${CONFIG} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME} ${ROOT_PWD}
+CMD bash startup.sh

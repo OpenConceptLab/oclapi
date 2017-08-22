@@ -1,4 +1,4 @@
-FROM solr:5.5
+FROM solr:5.5.4
 USER root
 COPY config /opt/solr/server/solr
 RUN chmod -R 777 /opt/solr/server/solr
