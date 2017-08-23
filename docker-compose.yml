@@ -1,7 +1,7 @@
 version: '2.1'
 services:
   mongo:
-    image: mongo:3.5.11
+    image: mongo:3.2.11
     volumes:
       - mongo_data:/data/db
     restart: always
