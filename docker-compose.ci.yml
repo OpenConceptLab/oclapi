@@ -1,0 +1,12 @@
+version: '2.1'
+services:
+  solr:
+    image: ${OCLSOLR_IMAGE_ID}
+  api:
+    image: ${OCLAPI_IMAGE_ID}
+    environment:
+      - ENVIRONMENT=local
+  celery:
+    image: ${OCLAPI_IMAGE_ID}
+  flower:
+    image: ${OCLAPI_IMAGE_ID}
