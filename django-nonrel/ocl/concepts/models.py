@@ -13,7 +13,7 @@ from djangotoolbox.fields import ListField, EmbeddedModelField
 from uuidfield import UUIDField
 
 from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
-from oclapi.models import (SubResourceBaseModel, ResourceVersionModel,
+from oclapi.models import (ConceptBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
 
@@ -50,7 +50,8 @@ class LocalizedText(models.Model):
 CONCEPT_TYPE = 'Concept'
 
 
-class Concept(ConceptValidationMixin, SubResourceBaseModel, DictionaryItemMixin):
+class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
+
     external_id = models.TextField(null=True, blank=True)
     concept_class = models.TextField(null=False, blank=False)
     datatype = models.TextField(null=False, blank=False)

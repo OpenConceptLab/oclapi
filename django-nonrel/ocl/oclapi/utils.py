@@ -47,7 +47,8 @@ def reverse_resource(resource, viewname, args=None, kwargs=None, request=None, f
             return NoReverseMatch('Cannot get URL kwarg for %s' % resource)
         kwargs.update({parent.get_url_kwarg(): parent.mnemonic})
         parent = parent.parent if hasattr(parent, 'parent') else None
-    return reverse(viewname, args, kwargs, request, format, **extra)
+    rval = reverse(viewname, args, kwargs, request, format, **extra)
+    return rval
 
 
 def reverse_resource_version(resource, viewname, args=None, kwargs=None, request=None, format=None, **extra):

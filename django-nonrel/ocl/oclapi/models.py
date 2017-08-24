@@ -16,7 +16,10 @@ from django.db.models import get_model
 
 HEAD = 'HEAD'
 
-NAMESPACE_REGEX = re.compile(r'^[a-zA-Z0-9\-\.]+$')
+NAMESPACE_PATTERN = '[a-zA-Z0-9\-\.]+'
+CONCEPT_ID_PATTERN = '[a-zA-Z0-9\-\.\_]+'
+NAMESPACE_REGEX = re.compile(r'^' + NAMESPACE_PATTERN + '$')
+CONCEPT_ID_REGEX = re.compile(r'^' + CONCEPT_ID_PATTERN + '$')
 
 ACCESS_TYPE_VIEW = 'View'
 ACCESS_TYPE_EDIT = 'Edit'
@@ -119,6 +122,38 @@ class SubResourceBaseModel(BaseModel):
     @property
     def parent_resource_type(self):
         return self.parent.resource_type
+
+
+class ConceptBaseModel(BaseModel):
+    """
+    Similar to SubResourceBaseModel, with a different mnemonic validator
+    It pains me to duplicate code in this way, but I cannot find a more
+        elegant way to do this.
+    """
+    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=CONCEPT_ID_REGEX)])
+    parent_type = models.ForeignKey(ContentType, db_index=False)
+    parent_id = models.TextField()
+    parent = generic.GenericForeignKey('parent_type', 'parent_id')
+
+    class Meta:
+        abstract = True
+        unique_together = ('mnemonic', 'parent_id')
+
+    def __unicode__(self):
+        return self.mnemonic
+
+    @property
+    def parent_url(self):
+        return self.parent.url
+
+    @property
+    def parent_resource(self):
+        return self.parent.mnemonic
+
+    @property
+    def parent_resource_type(self):
+        return self.parent.resource_type
+
 
 VERSION_TYPE = 'Version'
 
