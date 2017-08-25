@@ -1,19 +1,6 @@
 FROM python:2.7.13
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir /code
-ADD . /code/
-WORKDIR /code
-
-RUN pip install -r requirements.txt
-
-RUN echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list.d/newrelic.list && \
-    wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add - && \
-    apt-get update  && \
-    apt-get install newrelic-sysmond
-
-EXPOSE 8000
-
 RUN apt-get update --fix-missing
 RUN apt-get install -y openssh-server
 RUN apt-get install -y sudo
@@ -40,5 +27,18 @@ RUN echo "cd /code" >> /root/.bash_profile
 
 RUN mkdir /root/.ssh/
 RUN touch /root/.ssh/environment
+
+RUN echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list.d/newrelic.list && \
+    wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add - && \
+    apt-get update  && \
+    apt-get install newrelic-sysmond
+
+RUN mkdir /code
+ADD . /code/
+WORKDIR /code
+
+RUN pip install -r requirements.txt
+
+EXPOSE 8000
 
 CMD bash startup.sh
