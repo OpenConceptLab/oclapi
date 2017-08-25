@@ -18,6 +18,7 @@ nosetests.xml
 
 # Pycharm
 .idea
+.pycharm_helpers
 
 # Visual Studio
 .vscode
