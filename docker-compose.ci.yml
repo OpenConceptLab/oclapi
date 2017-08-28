@@ -1,12 +1,12 @@
 version: '2.1'
 services:
   solr:
-    image: openconceptlab/oclsolr@${OCLSOLR_IMAGE_ID}
+    image: ${OCLSOLR_IMAGE_ID}
   api:
-    image: openconceptlab/oclapi@${OCLAPI_IMAGE_ID}
+    image: ${OCLAPI_IMAGE_ID}
     environment:
       - ENVIRONMENT=local
   celery:
-    image: openconceptlab/oclapi@${OCLAPI_IMAGE_ID}
+    image: ${OCLAPI_IMAGE_ID}
   flower:
-    image: openconceptlab/oclapi@${OCLAPI_IMAGE_ID}
+    image: ${OCLAPI_IMAGE_ID}
