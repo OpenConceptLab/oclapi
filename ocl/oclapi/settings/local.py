@@ -12,6 +12,8 @@ class Local(Common):
     INSTALLED_APPS = Common.INSTALLED_APPS
     INTERNAL_IPS = ('localhost',)
 
+    DEBUG = True
+    TEMPLATE_DEBUG = DEBUG
 
 class Dev(Local):
     """

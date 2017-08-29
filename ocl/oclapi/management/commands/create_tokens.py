@@ -93,6 +93,8 @@ class Command(BaseCommand):
             superuser.set_password(pwd)
             superuser.save()
 
+            print "OCL_API_TOKEN='%s'" % token
+
             if token:
                 Token.objects.filter(user=superuser).delete()
                 Token.objects.create(user=superuser, key=token)

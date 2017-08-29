@@ -3,9 +3,11 @@ services:
   mongo:
     ports:
       - "27017:27017"
+    restart: "no"
   redis:
     ports:
       - "6379:6379"
+    restart: "no"
   solr:
     build:
       context: ./solr
@@ -13,6 +15,7 @@ services:
       - "8983:8983"
     volumes:
       - ./solr/config:/opt/solr/server/solr/
+    restart: "no"
   api:
     image: openconceptlab/oclapi:dev
     build:
@@ -28,12 +31,14 @@ services:
     environment:
       - ENVIRONMENT=local
       - SSH=true
+    restart: "no"
   celery:
     image: openconceptlab/oclapi:dev
     depends_on:
       - api
     volumes:
       - ./ocl:/code
+    restart: "no"
   flower:
     image: openconceptlab/oclapi:dev
     depends_on:
@@ -42,3 +47,4 @@ services:
       - "5555:5555"
     volumes:
       - ./ocl:/code
+    restart: "no"

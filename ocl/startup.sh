@@ -18,10 +18,6 @@ if [ -z $ENVIRONMENT ]
 then 
 export SETTINGS=local
 export CONFIG=Local
-elif [ "$ENVIRONMENT" = "qa" ]
-then
-export SETTINGS=local
-export CONFIG=Local
 else
 export SETTINGS=$ENVIRONMENT
 export CONFIG=${ENVIRONMENT^}
