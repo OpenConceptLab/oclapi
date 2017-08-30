@@ -36,7 +36,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT-production}
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
-      - SECRET_KEY=${SECRET_KEY-s3owRP0sLI2opDDI6qIgG3iD57}
+      - SECRET_KEY
       - EMAIL_HOST_PASSWORD
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
@@ -60,6 +60,7 @@ services:
       - "solr:solr.openconceptlab.org"
     environment:
       - C_FORCE_ROOT=1
+      - SECRET_KEY
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_STORAGE_BUCKET_NAME
@@ -76,6 +77,7 @@ services:
       - "redis:redis.openconceptlab.org"
     environment:
       - C_FORCE_ROOT=1
+      - SECRET_KEY
     restart: always
     healthcheck:
       test: "exit 0"
