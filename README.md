@@ -39,7 +39,7 @@ Docker `.env` file should be located under the root project folder. On developme
 
 #### .env file details
 
-`ENVIRONMENT=` Python module for environment, e.g. production, staging, local, showcase
+`ENVIRONMENT=` Python module for environment, e.g. production, staging, local, qa
 
 `AWS_ACCESS_KEY_ID=` Amazon Web Services access key.
 
@@ -51,7 +51,9 @@ Docker `.env` file should be located under the root project folder. On developme
 
 `OCL_API_TOKEN=` API root token.
 
-`NEW_RELIC_API_KEY=` NewRelic API key.
+`SECRET_KEY=` DJANGO secret key.
+
+`EMAIL_HOST_PASSWORD=` no-reply@openconceptlab.org password.
 
 ### Running commands in a container
 
