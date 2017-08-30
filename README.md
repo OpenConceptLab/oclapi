@@ -59,7 +59,7 @@ Docker `.env` file should be located under the root project folder. On developme
 
 You can run any command in a running container. Open up a new terminal and run for example:
 ````sh
-docker-compose exec ocl_api python manage.py syncdb
+docker-compose exec api python manage.py syncdb
 ````
 
 ### Running tests in a container
@@ -68,13 +68,13 @@ You can run tests in a container as any other command.
 #### Unit Tests
 
 ````sh
-docker-compose run ocl_api python manage.py run_test --configuration=Dev
+docker-compose run api python manage.py run_test --configuration=Dev
 ````
 
 #### Integration Tests
 
 ````sh
-docker-compose run ocl_api python manage.py test integration_tests --configuration=Dev
+docker-compose run api python manage.py test integration_tests --configuration=Dev
 ````
 
 ### Debugging in container
