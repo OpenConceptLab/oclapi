@@ -3,6 +3,7 @@ from configurations import values
 
 
 class Local(Common):
+    SECRET_KEY = values.SecretValue(environ_name='SECRET_KEY', environ_prefix='', default='s3owRP0sLI2opDDI6qIgG3iD57')
 
     # DEBUG = False
     EMAIL_HOST = "localhost"

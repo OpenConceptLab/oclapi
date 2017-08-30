@@ -1,5 +1,5 @@
 import os
-from configurations import Configuration
+from configurations import Configuration, values
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -15,9 +15,17 @@ class Common(Configuration):
 
     MANAGERS = ADMINS
 
-    DEFAULT_FROM_EMAIL = 'no-reply@openconceptlab.org'
-    EMAIL_HOST = 'openconceptlab.org'
-    EMAIL_SUBJECT_PREFIX = '[openconceptlab.org] '
+    ########## EMAIL CONFIGURATION
+    EMAIL_BACKEND = values.Value('django.core.mail.backends.smtp.EmailBackend')
+    DEFAULT_FROM_EMAIL = values.Value('openconceptlab <noreply@openconceptlab.org>')
+    EMAIL_HOST = values.Value(environ_name="EMAIL_HOST", environ_prefix="")
+    EMAIL_HOST_PASSWORD = values.SecretValue(environ_name="EMAIL_HOST_PASSWORD", environ_prefix="", default="")
+    EMAIL_HOST_USER = values.Value(environ_name="EMAIL_HOST_USER", environ_prefix="")
+    EMAIL_PORT = values.IntegerValue(environ_name="EMAIL_PORT", environ_prefix="", default=587)
+    EMAIL_USE_TLS = values.BooleanValue(environ_name="EMAIL_USE_TLS", environ_prefix="", default=True)
+    EMAIL_USE_SSL = values.BooleanValue(environ_name="EMAIL_USE_SSL", environ_prefix="", default=False)
+    EMAIL_SUBJECT_PREFIX = values.Value('[openconceptlab.org] ')
+    ########## END EMAIL CONFIGURATION
 
     # Hosts/domain names that are valid for this site; required if DEBUG is False
     # See https://docs.djangoproject.com/en/1.3/ref/settings/#allowed-hosts
@@ -89,7 +97,7 @@ class Common(Configuration):
     )
 
     # Make this unique, and don't share it with anybody.
-    SECRET_KEY = '+p+lx2*o3ywq+z)%f7929b6)93)^mcc9-0eu9ynq77gc+pe=ck'
+    SECRET_KEY = values.SecretValue(environ_name='SECRET_KEY', environ_prefix='')
 
     # List of callables that know how to import templates from various sources.
     TEMPLATE_LOADERS = (
