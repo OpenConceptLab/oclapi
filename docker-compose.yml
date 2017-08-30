@@ -32,7 +32,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - WAIT_FOR="mongo.openconceptlab.org:27017 redis.openconceptlab.org:6379 solr.openconceptlab.org:8983"
+      - WAIT_FOR="mongo.openconceptlab.org:27017,redis.openconceptlab.org:6379,solr.openconceptlab.org:8983"
       - ENVIRONMENT=${ENVIRONMENT-production}
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}

@@ -7,7 +7,8 @@ fi
 
 if [ ! -z "$WAIT_FOR" ] 
 then
-for WAIT in ${(z)WAIT_FOR}; do
+for WAIT in ${WAIT_FOR//,/ } 
+do
     ./wait-for-it.sh $WAIT
 done
 fi
