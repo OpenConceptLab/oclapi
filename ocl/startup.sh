@@ -12,8 +12,6 @@ for WAIT in ${(z)WAIT_FOR}; do
 done
 fi
 
-./setup_newrelic.sh $NEW_RELIC_API_KEY
-
 if [ -z $ENVIRONMENT ]
 then 
 export SETTINGS=local
