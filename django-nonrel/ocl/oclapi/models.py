@@ -1,5 +1,6 @@
 import logging
 import re
+import ast
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -40,12 +41,28 @@ class BaseModel(models.Model):
     created_by = models.TextField()
     updated_by = models.TextField()
     is_active = models.BooleanField(default=True)
+    is_being_saved = False
     extras = DictField(null=True, blank=True)
     extras_are_encoded = False
+    extras_are_decoded = False
     uri = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True
+
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.is_being_saved = True
+        self.encode_extras()
+        super(BaseModel, self).save(force_insert, force_update, using, update_fields)
+        self.is_being_saved = False
+
+
+    def __setattr__(self, attrname, val):
+        if("extras" == attrname and val is not None and self.is_being_saved == False and self.extras_are_decoded == False):
+            val = self.decode_extras(val)
+            self.extras_are_decoded = True
+        super(BaseModel, self).__setattr__(attrname, val)
 
     @property
     def url(self):
@@ -79,39 +96,28 @@ class BaseModel(models.Model):
         return self._default_view_name % format_kwargs
 
     def encode_extras(self):
-        logger.debug('extras:' + str(self.extras))
-        if self.extras is not None and self.extras_are_encoded is False:
+        if self.extras is not None and self.extras_are_encoded == False:
             encoded_extras = {}
             extras = self.extras
             for old_key in extras:
-                logger.debug(old_key)
                 key = old_key
                 key = key.replace('%', '%25')
                 key = key.replace('.','%2E')
                 value = extras.get(old_key)
-                logger.debug(key)
                 encoded_extras[key] = value
             self.extras = encoded_extras
             self.extras_are_encoded = True
         return
 
-    def decode_extras(self):
-        logger.debug("decoding extras")
-        if self.extras is not None and self.extras_are_encoded is True:
-            decoded_extras = {}
-            extras = self.extras
-            for old_key in extras:
-                logger.debug(old_key)
-                key = old_key
-                key = key.replace('%25', '%')
-                key = key.replace('%2E', '.')
-                value = extras.get(old_key)
-                logger.debug(key)
-                decoded_extras[key] = value
-            self.extras = decoded_extras
-            self.extras_are_encoded = False
-            logger.debug("extras decoded")
-        return
+    def decode_extras(self, extras):
+        decoded_extras = {}
+        for old_key in extras:
+            key = old_key
+            key = key.replace('%25', '%')
+            key = key.replace('%2E', '.')
+            value = extras.get(old_key)
+            decoded_extras[key] = value
+        return decoded_extras
 
 class BaseResourceModel(BaseModel):
     """

@@ -1,4 +1,5 @@
 import json
+import logging
 from urlparse import urlparse
 
 from django.core.urlresolvers import reverse
@@ -24,6 +25,7 @@ from sources.tests import SourceBaseTest
 from tasks import update_collection_in_solr
 from test_helper.base import create_user, create_source, create_organization, create_concept
 
+logger = logging.getLogger('oclapi')
 
 def update_haystack_index():
     update_index.Command().handle()
@@ -2998,3 +3000,30 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue('To delete this source, you must first delete all linked mappings and references and try again.' in message)
+
+    def test_insert_of_extras_with_period_in_key_should_work(self):
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+        logger.info("***********************************************")
+

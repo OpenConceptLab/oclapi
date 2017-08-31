@@ -306,8 +306,6 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
             if not concept_version_identifier:
                 concept = self.versioned_object
                 conceptVersion = ConceptVersion.get_latest_version_of(concept)
-                conceptVersion.extras_are_encoded = True
-                conceptVersion.decode_extras()
                 return conceptVersion
             queryset = self.get_queryset()
             filter_kwargs = {'versioned_object_id': self.versioned_object.id,
