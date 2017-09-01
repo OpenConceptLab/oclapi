@@ -456,6 +456,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     supported_locales = ListField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    version_external_id = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
 
     class Meta(ResourceVersionModel.Meta):
