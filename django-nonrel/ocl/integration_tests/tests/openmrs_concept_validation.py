@@ -31,6 +31,31 @@ def open_mrs_concept_template(update=None):
 
     return template
 
+def underscore_concept_template(update=None):
+    template = {
+        "id": "My_Underscore_Concept",
+        "concept_class": "Diagnosis",
+        "names": [{
+            "name": "Underscore Concept",
+            "locale": 'en',
+            "name_type": "Short"
+        }, {
+            "name": "My Underscore Concept (FS)",
+            "locale": 'en',
+            "name_type": "FULLY_SPECIFIED",
+            "locale_preferred": True
+
+        }],
+        "descriptions": [
+            {"description": "description", "locale": "en", "description_type": "None"}
+        ],
+        "datatype": "None"}
+
+    if update:
+        template.update(update)
+
+    return template
+
 
 class OpenMRSConceptCreateTest(ConceptBaseTest):
     def test_concept_should_have_exactly_one_preferred_name_per_locale_positive(self):
@@ -40,6 +65,18 @@ class OpenMRSConceptCreateTest(ConceptBaseTest):
         self.client.login(username=user.username, password=user.password)
         kwargs = {'org': self.org1.mnemonic, 'source': source_with_open_mrs.mnemonic}
         data = json.dumps(open_mrs_concept_template())
+
+        response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_concept_id_should_allow_underscore_positive(self):
+        user = create_user()
+        source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
+                                             organization=self.org1)
+        self.client.login(username=user.username, password=user.password)
+        kwargs = {'org': self.org1.mnemonic, 'source': source_with_open_mrs.mnemonic}
+        data = json.dumps(underscore_concept_template())
 
         response = self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
 
