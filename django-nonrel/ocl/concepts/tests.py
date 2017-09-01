@@ -106,6 +106,22 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
 
+    def test_create_concept_positive__mnemonic_with_underscore(self):
+        (concept, errors) = create_concept(
+            mnemonic='concept_1',
+            user=self.user1,
+            source=self.source1,
+            names=[self.name]
+        )
+
+        self.assertTrue(Concept.objects.filter(mnemonic='concept_1').exists())
+        self.assertFalse(concept.retired)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
+        self.assertEquals(1, concept.num_versions)
+
     def test_create_concept_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):
             concept = Concept(
