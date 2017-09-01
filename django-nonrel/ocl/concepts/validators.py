@@ -110,7 +110,6 @@ class BasicConceptValidator(BaseConceptValidator):
     def validate_concept_based(self, concept):
         self.description_cannot_be_null(concept)
         self.must_have_at_least_one_name(concept)
-        self.custom_attribute_key_must_be_encoded(concept)
 
 
     def validate_source_based(self, concept):
@@ -133,8 +132,4 @@ class BasicConceptValidator(BaseConceptValidator):
 
         if len(empty_descriptions):
             raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
-
-    def custom_attribute_key_must_be_encoded(self, concept):
-        concept.encode_extras()
-        return
 
