@@ -101,6 +101,28 @@ Run your configuration! Debugging server will run on [http://0.0.0.0:8001/](http
 
 In case of any problems with `.pycharm_helpers` just delete remote interpreter and create new with same configuration, it will write pycharm helpers in Your ocl container again.
 
+## Continuous Integration
+
+The project is built by CI at https://ci.openmrs.org/browse/OCL
+
+You can see 3 plans there:
+* OCL API
+* OCL WEB
+* OCL QA UI Tests
+
+OCL API and OCL WEB are triggered by commits to respective repos. First docker images are built and pushed with a nightly tag to dockerhub at https://hub.docker.com/u/openconceptlab/dashboard/. Next unit and integration tests are being run. Finally a qa tag is being pushed to dockerhub and deployed to https://ocl-qa.openmrs.org/. On each deployment data is wiped out of the qa environment. You can login to the server using username 'admin' and password 'Admin123'.
+
+### Deplying to staging and production
+
+If you want to deploy to staging or production, you need to be logged in to Bamboo. Please request access via helpdesk@openmrs.org
+
+1. Go to https://ci.openmrs.org/browse/OCL and click the cloud icon next to the project you want to deploy.
+2. Click the related deployment plan.
+3. Click the cloud icon next in the actions column for the chosen environment.
+4. Choose whether to create a new release from build result or redeploy an existing release. You will choose the latter when promoting a release from staging to production or downgrading to a previous release.
+5. When creating a new release, choose the build result, which you want to deploy (usually the latest successful build). Leave the release title unchanged and click the Start deployment button.
+6. Wait for the release to complete.
+
 ## Manual Environment Setup (on a Mac)
 
 Follow this [guide](http://docs.python-guide.org/en/latest/starting/install/osx/) to install Python 2.7
