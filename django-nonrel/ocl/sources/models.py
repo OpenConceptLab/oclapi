@@ -207,7 +207,6 @@ class SourceVersion(ConceptContainerVersionModel):
             updated_by=source.updated_by,
             external_id=source.external_id,
             extras=source.extras,
-            version_external_id=version_external_id
 
         )
 
