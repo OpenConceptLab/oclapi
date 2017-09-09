@@ -405,7 +405,6 @@ class CollectionVersion(ConceptContainerVersionModel):
             created_by=collection.created_by,
             updated_by=collection.updated_by,
             external_id=collection.external_id,
-            version_external_id=version_external_id,
         )
 
 
