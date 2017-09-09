@@ -1810,6 +1810,47 @@ class CollectionViewTest(CollectionBaseTest):
 
 
 class SourceVersionViewTest(SourceBaseTest):
+    def test_version_external_id(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        version = 'version1'
+        version_ext_id = "versionExternalId1"
+
+        source_version = SourceVersion(
+            name=version,
+            mnemonic=version,
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            version_external_id=version_ext_id,
+        )
+        source_version.full_clean()
+        source_version.save()
+
+        self.client.login(username='user1', password='user1')
+
+        response = self.client.get(
+            reverse('sourceversion-latest-detail', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}))
+        self.assertEquals(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEquals(result['version_external_id'], version_ext_id)
+
     def test_latest_version(self):
         source = Source(
             name='source',
@@ -1836,6 +1877,7 @@ class SourceVersionViewTest(SourceBaseTest):
                 released=True,
                 created_by=self.user1,
                 updated_by=self.user1,
+                version_external_id=version,
             )
             source_version.full_clean()
             source_version.save()
@@ -2807,6 +2849,44 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
 
 class CollectionVersionViewTest(SourceBaseTest):
+    def test_version_external_id(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        version = 'version1'
+        version_ext_id = 'versionExtId1'
+
+        collection_version = CollectionVersion(
+            name=version,
+            mnemonic=version,
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            version_external_id = version_ext_id,
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        self.client.login(username='user1', password='user1')
+
+        response = self.client.get(reverse('collectionversion-latest-detail',
+                                           kwargs={'org': self.org1.mnemonic, 'collection': collection.mnemonic}))
+        self.assertEquals(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEquals(result['version_external_id'], version_ext_id)
+        self.assertEquals(result['released'], True)
+
     def test_latest_version(self):
         collection = Collection(
             name='collection',
