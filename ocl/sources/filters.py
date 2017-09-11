@@ -1,11 +1,11 @@
 __author__ = 'misternando'
 
-from oclapi.filters import SimpleHaystackSearchFilter
+from oclapi.filters import HaystackSearchFilter
 
 __author__ = 'misternando'
 
 
-class SourceSearchFilter(SimpleHaystackSearchFilter):
+class SourceSearchFilter(HaystackSearchFilter):
     def get_filters(self, request, view):
         filters = super(SourceSearchFilter, self).get_filters(request, view)
         if view.parent_resource:

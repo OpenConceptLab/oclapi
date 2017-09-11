@@ -136,11 +136,6 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
         return queryset
 
 
-class SimpleHaystackSearchFilter(BaseHaystackSearchFilter):
-    def filter_queryset(self, request, queryset, view):
-        return self._filter_queryset(request, queryset, view, SearchQuerySet())
-
-
 class HaystackSearchFilter(BaseHaystackSearchFilter):
     def filter_queryset(self, request, queryset, view):
-        return self._filter_queryset(request, queryset, view, RelatedSearchQuerySet())
+        return self._filter_queryset(request, queryset, view, SearchQuerySet())

@@ -1,4 +1,4 @@
-from oclapi.filters import HaystackSearchFilter, SimpleHaystackSearchFilter
+from oclapi.filters import HaystackSearchFilter, HaystackSearchFilter
 from collection.models import Collection, CollectionVersion
 LATEST = 'latest'
 

@@ -313,7 +313,7 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
 
 class ConceptMappingsView(ConceptBaseView, ListAPIView):
     serializer_class = MappingListSerializer
-    filter_backends = [HaystackSearchFilter,]
+    filter_backends = [HaystackSearchFilter, ]
     queryset = Mapping.objects.filter(is_active=True)
     concept = None
     include_inverse_mappings = False

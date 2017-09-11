@@ -1,4 +1,4 @@
-from oclapi.filters import SimpleHaystackSearchFilter
+from oclapi.filters import HaystackSearchFilter
 from collection.models import Collection, CollectionVersion
 
 LATEST = 'latest'
@@ -6,7 +6,7 @@ LATEST = 'latest'
 __author__ = 'misternando'
 
 
-class ConceptSearchFilter(SimpleHaystackSearchFilter):
+class ConceptSearchFilter(HaystackSearchFilter):
     def get_filters(self, request, view):
         filters = super(ConceptSearchFilter, self).get_filters(request, view)
         if view.updated_since:
