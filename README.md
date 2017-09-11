@@ -1,4 +1,4 @@
-oclapi [![Build Status](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master/build_image)](https://app.snap-ci.com/OpenConceptLab/oclapi/branch/master)
+oclapi
 ======
 
 ## What you'll need:
@@ -14,6 +14,16 @@ Fork the repo on github and clone your fork:
 git clone https://github.com/{youruser}/oclapi
 ````
 
+Go to:
+````sh
+cd oclapi
+````
+
+For Windows only you need to patch docker-compose: 
+````sh
+git apply fix_for_windows.patch
+````
+
 Add a remote repo to upstream in order to be able to fetch updates:
 ````sh
 git remote add upstream https://github.com/OpenConceptLab/oclapi
@@ -24,9 +34,6 @@ Go to:
 ````sh
 cd oclapi/django-nonrel/ocl
 ````
-
-For Windows only you need to patch docker-compose: git apply --check fix_for_windows.patch
-
 
 Fire up containers:
 ````sh
@@ -76,46 +83,24 @@ Docker `.env` file should be located on `oclapi/django-nonrel/ocl` folder. On de
 
 ### Running commands in a container
 
-You can run any command in a container. Open up a new terminal and run for example:
+You can run any command in a running container. Open up a new terminal and run for example:
 ````sh
-docker-compose run ocl python manage.py syncdb
+docker-compose exec ocl_api python manage.py syncdb
 ````
-, where OCL is the service name.
-On Windows run this instead:
-````sh
-docker exec -it ocl_ocl_1 python manage.py syncdb
-````
-, where ocl_ocl_1 is a container ID, which is printed out when starting docker-compose up.
 
 ### Running tests in a container
-You can run tests in a container as any other command (see above for explanation).
+You can run tests in a container as any other command.
 
-#### On Linux
-
-##### Unit Tests
+#### Unit Tests
 
 ````sh
 docker-compose run ocl_api python manage.py run_test --configuration=Dev
 ````
 
-##### Integration Tests
+#### Integration Tests
 
 ````sh
 docker-compose run ocl_api python manage.py test integration_tests --configuration=Dev
-````
-
-#### On Windows
-
-##### Unit Tests
-
-````sh
-docker exec -it ocl_ocl_1 python manage.py run_test --configuration=Dev
-````
-
-##### Integration Tests
-
-````sh
-docker exec -it ocl_ocl_1 python manage.py test integration_tests --configuration=Dev
 ````
 
 ### Debugging in container

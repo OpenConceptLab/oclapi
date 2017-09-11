@@ -17,7 +17,7 @@ index c390c6f..2c6bfe1 100644
        # https://docs.docker.com/compose/compose-file/#variable-substitution
 -      - ${DATA_ROOT-.}/data/ocl/mongo:/data/db
 +      #- ${DATA_ROOT-.}/data/ocl/mongo:/data/db
-+	  - mongo-data:/data/db
++      - mongo-data:/data/db
    redis:
      container_name: ocl_redis
      image: redis
@@ -37,7 +37,7 @@ index c390c6f..2c6bfe1 100644
 +#      config:
 +#        - subnet: 172.18.0.0/16
 +volumes:
-+  mongo-data: 
++  mongo-data:
 \ No newline at end of file
 -- 
 2.10.1.windows.1

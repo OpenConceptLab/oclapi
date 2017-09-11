@@ -43,6 +43,7 @@ services:
       - .:/code
     environment:
       - NEW_RELIC_API_KEY=${NEW_RELIC_API_KEY}
+    restart: on-failure
   ocl_worker:
     container_name: ocl_worker
     extends:
