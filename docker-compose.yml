@@ -32,7 +32,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - WAIT_FOR="mongo.openconceptlab.org:27017,redis.openconceptlab.org:6379,solr.openconceptlab.org:8983"
+      - WAIT_FOR=mongo.openconceptlab.org:27017,redis.openconceptlab.org:6379,solr.openconceptlab.org:8983
       - ENVIRONMENT=${ENVIRONMENT-production}
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
@@ -51,9 +51,7 @@ services:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
     depends_on:
-      - mongo
-      - solr
-      - redis
+      - api
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -71,13 +69,26 @@ services:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_flower.sh
     depends_on:
-      - redis
       - celery
     links:
       - "redis:redis.openconceptlab.org"
     environment:
       - C_FORCE_ROOT=1
       - SECRET_KEY
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  backup:
+    image: openmrs/cron-backup
+    depends_on:
+      - api
+    volumes:
+      - mongo_data:/mongo_data
+      - solr_data:/solr_data
+      - ${BACKUP_DIR-./backups}:/backup
+    environment:
+      - DIRS=/mongo_data:mongo,/solr_data:solr
+      - SCHEDULE=0 0 * * *
     restart: always
     healthcheck:
       test: "exit 0"
