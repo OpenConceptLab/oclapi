@@ -207,6 +207,7 @@ class SourceVersion(ConceptContainerVersionModel):
             updated_by=source.updated_by,
             external_id=source.external_id,
             extras=source.extras,
+
         )
 
 @receiver(post_save)
