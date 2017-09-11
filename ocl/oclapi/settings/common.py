@@ -164,7 +164,10 @@ class Common(Configuration):
         ),
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
-            'rest_framework.renderers.BrowsableAPIRenderer',
+            # Disabling Browsable API due to performance issue, which can lead to taking the server down. It is caused
+            # by the use of ConceptURLField in mappings.serializers.MappingCreateSerializer, which loads all concepts
+            # from the database when displying the create form. See https://github.com/OpenConceptLab/oclapi/issues/532
+            #'rest_framework.renderers.BrowsableAPIRenderer',
             'oclapi.renderers.ZippedJSONRenderer',
         ),
         'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'oclapi.negotiation.OptionallyCompressContentNegotiation',
