@@ -5,6 +5,7 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 
+import logging
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
@@ -19,6 +20,7 @@ from concepts.views import ConceptVersionListView
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
 
+logger = logging.getLogger('oclapi')
 
 class ConceptBaseTest(OclApiBaseTestCase):
     def setUp(self):
@@ -105,6 +107,26 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
+
+    def test_create_concept_positive__extras_with_period_in_name(self):
+        logger.debug('Starting extras with period in name test')
+        (concept, errors) = create_concept(
+            mnemonic='extras-concept1',
+            user=self.user1,
+            source=self.source1,
+            names=[self.name],
+            extras={"This.should.work": "Attribute with periods in key"}
+        )
+
+        self.assertTrue(Concept.objects.filter(mnemonic='extras-concept1').exists())
+        self.assertFalse(concept.retired)
+        self.assertEquals(self.name.name, concept.display_name)
+        self.assertEquals(self.name.locale, concept.display_locale)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
+        self.assertEquals(1, concept.num_versions)
+        self.assertEquals({"This.should.work": "Attribute with periods in key"}, concept.extras)
+        logger.debug('Done with extras with period in name test')
 
     def test_create_concept_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):

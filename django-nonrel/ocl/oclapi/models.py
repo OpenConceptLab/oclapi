@@ -43,8 +43,8 @@ class BaseModel(models.Model):
     is_active = models.BooleanField(default=True)
     is_being_saved = False
     extras = DictField(null=True, blank=True)
-    extras_are_encoded = False
-    extras_are_decoded = False
+    extras_have_been_encoded = False
+    extras_have_been_decoded = False
     uri = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -59,9 +59,9 @@ class BaseModel(models.Model):
 
 
     def __setattr__(self, attrname, val):
-        if("extras" == attrname and val is not None and self.is_being_saved == False and self.extras_are_decoded == False):
+        if("extras" == attrname and val is not None and self.is_being_saved == False and self.extras_have_been_decoded == False):
             val = self.decode_extras(val)
-            self.extras_are_decoded = True
+            self.extras_have_been_decoded = True
         super(BaseModel, self).__setattr__(attrname, val)
 
     @property
@@ -96,7 +96,7 @@ class BaseModel(models.Model):
         return self._default_view_name % format_kwargs
 
     def encode_extras(self):
-        if self.extras is not None and self.extras_are_encoded == False:
+        if self.extras is not None and self.extras_have_been_encoded == False:
             encoded_extras = {}
             extras = self.extras
             for old_key in extras:
@@ -106,7 +106,7 @@ class BaseModel(models.Model):
                 value = extras.get(old_key)
                 encoded_extras[key] = value
             self.extras = encoded_extras
-            self.extras_are_encoded = True
+            self.extras_have_been_encoded = True
         return
 
     def decode_extras(self, extras):
