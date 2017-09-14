@@ -118,6 +118,8 @@ class ConceptTest(ConceptBaseTest):
             extras={"This.should.work": "Attribute with periods in key"}
         )
 
+        concept = Concept.objects.get(mnemonic='extras-concept1')
+
         self.assertTrue(Concept.objects.filter(mnemonic='extras-concept1').exists())
         self.assertFalse(concept.retired)
         self.assertEquals(self.name.name, concept.display_name)
