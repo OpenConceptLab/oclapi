@@ -84,24 +84,19 @@ class DictionaryItemMixin(object):
 
 class ConceptValidationMixin:
     def clean(self):
-        from concepts.models import Concept
-
         if os.environ.get('DISABLE_VALIDATION'):
             return
 
-        validators = [BasicConceptValidator()]
-        other_concepts = list(Concept.objects.filter(parent_id=self.parent_source.id, is_active=True, retired=False).values_list('id', flat=True))
-
         schema = self.parent_source.custom_validation_schema
-        if schema:
-            custom_validator = ValidatorSpecifier()\
-                .with_validation_schema(schema)\
-                .with_repo(self.parent_source)\
-                .with_reference_values()\
-                .get()
-            validators.append(custom_validator)
+        if not schema:
+            schema = 'None'
 
-        for validator in validators:
-            validator.validate(self)
+        custom_validator = ValidatorSpecifier()\
+            .with_validation_schema(schema)\
+            .with_repo(self.parent_source)\
+            .with_reference_values()\
+            .get()
+
+        custom_validator.validate(self)
 
 
