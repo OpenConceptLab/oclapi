@@ -29,17 +29,18 @@ class ValidatorSpecifier:
 
     def with_repo(self, repo):
         from concepts.models import Concept
-        concepts_in_source = Concept.objects.filter(parent_id=repo.id, is_active=True, retired=False).all()
+        #Use .values to load only fields needed for the name_registry
+        concepts_in_source = Concept.objects.filter(parent_id=repo.id, is_active=True, retired=False).values('id', 'names')
 
         name_registry = dict()
 
         for concept in concepts_in_source:
-            for name in concept.names:
-                if name.is_short:
+            for name in concept['names']:
+                if name[1].get('is_short', False):
                     continue
-                name_key = u"{}{}".format(name.locale, name.name)
+                name_key = u"{}{}".format(name[1]['locale'], name[1]['name'])
                 ids = name_registry.get(name_key, [])
-                ids.append(concept.id)
+                ids.append(concept['id'])
                 name_registry[name_key] = ids
 
         self.name_registry = name_registry
