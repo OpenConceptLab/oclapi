@@ -86,6 +86,7 @@ class ConceptsImporter(object):
 
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
         haystack.signal_processor = haystack.signals.BaseSignalProcessor
+        import_start_time = datetime.now()
 
         self.action_count = {}
         self.test_mode = test_mode
@@ -104,7 +105,11 @@ class ConceptsImporter(object):
         update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
 
         if update_index_required:
-            update_index.Command().handle(age=1, workers=12)
+            import_end_time = datetime.now()
+            diff = import_end_time - import_start_time
+            diff_hours = diff.seconds / 3600 + 1
+            self.info('Indexing objects updated in the last {} hours'.format(diff_hours))
+            update_index.Command().handle(age=diff_hours, workers=12)
 
         self.output_unhandled_concept_version_ids()
         self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
