@@ -54,7 +54,8 @@ class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
             concept = self.get_object()
             kwargs.update({'versioned_object': concept})
             delegate_view = ConceptVersionRetrieveView.as_view()
-            return delegate_view(request, *args, **kwargs)
+            rtn = delegate_view(request, *args, **kwargs)
+            return rtn
         return super(ConceptRetrieveUpdateDestroyView, self).dispatch(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -303,7 +304,9 @@ class ConceptVersionRetrieveView(ConceptVersionMixin, ResourceVersionMixin, Retr
         if self.versioned_object:
             concept_version_identifier = self.kwargs.get(self.lookup_field)
             if not concept_version_identifier:
-                return ConceptVersion.get_latest_version_of(self.versioned_object)
+                concept = self.versioned_object
+                conceptVersion = ConceptVersion.get_latest_version_of(concept)
+                return conceptVersion
             queryset = self.get_queryset()
             filter_kwargs = {'versioned_object_id': self.versioned_object.id,
                              self.pk_field: concept_version_identifier}
