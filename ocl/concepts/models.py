@@ -59,10 +59,8 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
     descriptions = ListField(EmbeddedModelField(LocalizedText), null=True, blank=True)
     retired = models.BooleanField(default=False)
 
-    class MongoMeta:
-        indexes = [ [('parent_id', 1), ('is_active', 1), ('retired', 1)] ]
-
     objects = MongoDBManager()
+
 
     @property
     def display_name(self):

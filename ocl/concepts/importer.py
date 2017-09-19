@@ -11,8 +11,6 @@ from concepts.models import Concept, ConceptVersion
 from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSerializer
 from oclapi.management.commands import MockRequest, ImportActionHelper
 from sources.models import SourceVersion
-from haystack.management.commands import update_index
-import haystack
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
@@ -85,8 +83,6 @@ class ConceptsImporter(object):
             self.stderr.flush()
 
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
-        haystack.signal_processor = haystack.signals.BaseSignalProcessor
-
         self.action_count = {}
         self.test_mode = test_mode
         self.info('Import concepts to source...')
@@ -98,14 +94,6 @@ class ConceptsImporter(object):
 
         self.create_concept_versions_map()
         lines_handled = self.handle_lines_in_input_file(total)
-
-        actions = self.action_count
-        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
-        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
-
-        if update_index_required:
-            update_index.Command().handle(age=1, workers=12)
-
         self.output_unhandled_concept_version_ids()
         self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
         self.output_summary(lines_handled, total)
