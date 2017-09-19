@@ -130,7 +130,7 @@ def create_collection(user, validation_schema=None, name=None):
 
 
 def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None,
-                   force=False):
+                   force=False, extras=None):
     suffix = generate_random_string()
 
     if not names and not force:
@@ -149,6 +149,7 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
         concept_class=concept_class if concept_class else 'Diagnosis',
         names=names,
         descriptions=descriptions,
+        extras=extras
     )
 
     if source is not None:
