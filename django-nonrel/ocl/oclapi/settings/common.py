@@ -142,7 +142,7 @@ class Common(Configuration):
         'concepts',
         'collection',
         'mappings',
-        'integration_tests',
+        'integration_tests'
     )
 
     # Django Rest Framework configuration
@@ -242,7 +242,7 @@ class Common(Configuration):
 
         'formatters': {
             'normal': {
-                'format': "[%(asctime)s] %(levelname)-8s: %(message)s",
+                'format': "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s",
                 'datefmt': "%Y/%m/%d %H:%M:%S"
             },
         },

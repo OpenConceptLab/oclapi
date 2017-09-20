@@ -1,8 +1,12 @@
+import logging
+
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
 from concepts.validation_messages import  BASIC_DESCRIPTION_CANNOT_BE_EMPTY, BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
+
+logger = logging.getLogger('oclapi')
 
 
 def message_with_name_details(message, name):
@@ -107,6 +111,7 @@ class BasicConceptValidator(BaseConceptValidator):
         self.description_cannot_be_null(concept)
         self.must_have_at_least_one_name(concept)
 
+
     def validate_source_based(self, concept):
         pass
 
@@ -127,3 +132,4 @@ class BasicConceptValidator(BaseConceptValidator):
 
         if len(empty_descriptions):
             raise ValidationError({'descriptions': [BASIC_DESCRIPTION_CANNOT_BE_EMPTY]})
+
