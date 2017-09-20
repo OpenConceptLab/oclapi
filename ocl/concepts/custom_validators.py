@@ -12,7 +12,7 @@ from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 class OpenMRSConceptValidator(BaseConceptValidator):
     def __init__(self, **kwargs):
-        self.name_registry = kwargs.pop('name_registry')
+        self.repo = kwargs.pop('repo')
         self.reference_values = kwargs.pop('reference_values')
 
     def validate_concept_based(self, concept):
@@ -69,8 +69,22 @@ class OpenMRSConceptValidator(BaseConceptValidator):
                 'names': [message_with_name_details(error_message, name)]})
 
     def no_other_record_has_same_name(self, name, self_id):
-        key = name.locale + name.name
-        return key not in self.name_registry or self.name_registry[key] == [self_id]
+        if not self.repo:
+            return True
+
+        from concepts.models import Concept
+        from django_mongodb_engine.query import A
+        conceptsQuery = Concept.objects.filter(parent_id=self.repo.id, is_active=True, retired=False, names=A('name', name.name)).filter(
+            names=A('locale', name.locale)).exclude(id=self_id)
+
+        concepts = conceptsQuery.exclude(names=A('type', 'SHORT'))
+        if concepts:
+            #Could not get it to work with one query with 2 'A' excludes for names thus querying twice
+            concepts = conceptsQuery.exclude(names=A('type', 'Short'))
+
+        isEmpty = not concepts
+
+        return isEmpty
 
     def short_name_cannot_be_marked_as_locale_preferred(self, concept):
         short_preferred_names_in_concept = filter(

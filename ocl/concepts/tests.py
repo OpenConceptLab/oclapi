@@ -1359,42 +1359,6 @@ class OpenMRSConceptValidationTest(ConceptBaseTest):
 
 
 class ValidatorSpecifierTest(ConceptBaseTest):
-    def test_specifier_should_initialize_openmrs_validator_with_name_registry(self):
-        user = create_user()
-        source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)
-
-        diabetes_en_1 = create_localized_text('Diabetes', locale='en', type='None')
-        diabetes_en_2 = create_localized_text('Diabetes', locale='en', type='None')
-        diabetes_es = create_localized_text('Diabetes', locale='es', type='Fully Specified')
-        flu_es = create_localized_text('Flu', locale='es', type='Fully Specified')
-        flu_fr = create_localized_text('Flu', locale='fr', locale_preferred=True)
-        flu_en = create_localized_text('Flu', locale='en', locale_preferred=True)
-
-        concept_1, errors1 = create_concept(user=user, source=source, names=[diabetes_en_1, diabetes_es])
-        concept_2, errors2 = create_concept(user=user, source=source, names=[diabetes_en_2, flu_es])
-        concept_3, _ = create_concept(user=user, source=source, names=[flu_en, flu_fr])
-
-        expected_name_registry = {
-            u'enDiabetes': [concept_1.id, concept_2.id],
-            u'frFlu': [concept_3.id],
-            u'enFlu': [concept_3.id],
-            u'esDiabetes': [concept_1.id],
-            u'esFlu': [concept_2.id]
-        }
-
-        validator = ValidatorSpecifier() \
-            .with_validation_schema(CUSTOM_VALIDATION_SCHEMA_OPENMRS) \
-            .with_repo(source) \
-            .get()
-
-        actual_name_registry = validator.name_registry
-
-        self.assertItemsEqual(expected_name_registry[u'enDiabetes'], actual_name_registry[u'enDiabetes'])
-        self.assertItemsEqual(expected_name_registry[u'frFlu'], actual_name_registry[u'frFlu'])
-        self.assertItemsEqual(expected_name_registry[u'enFlu'], actual_name_registry[u'enFlu'])
-        self.assertItemsEqual(expected_name_registry[u'esDiabetes'], actual_name_registry[u'esDiabetes'])
-        self.assertItemsEqual(expected_name_registry[u'esFlu'], actual_name_registry[u'esFlu'])
-
     def test_specifier_should_initialize_openmrs_validator_with_reference_values(self):
         user = create_user()
         source = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS)

@@ -25,29 +25,14 @@ class ValidatorSpecifier:
             CUSTOM_VALIDATION_SCHEMA_OPENMRS: OpenMRSConceptValidator
         }
         self.reference_values = dict()
-        self.name_registry = dict()
+        self.repo = None
 
     def with_validation_schema(self, schema):
         self.validation_schema = schema
         return self
 
     def with_repo(self, repo):
-        from concepts.models import Concept
-        #Use .values to load only fields needed for the name_registry
-        concepts_in_source = Concept.objects.filter(parent_id=repo.id, is_active=True, retired=False).values('id', 'names')
-
-        name_registry = dict()
-
-        for concept in concepts_in_source:
-            for name in concept['names']:
-                if name[1].get('is_short', False):
-                    continue
-                name_key = u"{}{}".format(name[1]['locale'], name[1]['name'])
-                ids = name_registry.get(name_key, [])
-                ids.append(concept['id'])
-                name_registry[name_key] = ids
-
-        self.name_registry = name_registry
+        self.repo = repo
 
         return self
 
@@ -84,7 +69,7 @@ class ValidatorSpecifier:
         validator_class = self.validator_map.get(self.validation_schema, BasicConceptValidator)
 
         kwargs = {
-            'name_registry': self.name_registry,
+            'repo': self.repo,
             'reference_values': self.reference_values
         }
 
