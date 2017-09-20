@@ -119,7 +119,6 @@ class ConceptTest(ConceptBaseTest):
         self.assertTrue(Concept.objects.filter(mnemonic='concept_1').exists())
 
     def test_create_concept_positive__extras_with_period_in_name(self):
-        logger.debug('Starting extras with period in name test')
         (concept, errors) = create_concept(
             mnemonic='extras-concept1',
             user=self.user1,
@@ -138,7 +137,6 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(1, concept.num_versions)
         self.assertEquals({"This.should.work": "Attribute with periods in key"}, concept.extras)
-        logger.debug('Done with extras with period in name test')
 
     def test_create_concept_negative__no_mnemonic(self):
         with self.assertRaises(ValidationError):

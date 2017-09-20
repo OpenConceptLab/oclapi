@@ -16,8 +16,6 @@ class Command(BaseCommand):
     help = 'import lookup values'
 
     def handle(self, *args, **options):
-        haystack.signal_processor = haystack.signals.BaseSignalProcessor
-
         user = User.objects.filter(username='root').get()
 
         org = self.create_organization(user)
@@ -33,21 +31,12 @@ class Command(BaseCommand):
             {'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
         ]
 
-        update_index_required = False
-
         for conf in importer_confs:
             file = open(conf['file'], 'rb')
             source = conf['source']
 
             importer = ConceptsImporter(source, file, user, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), save_validation_errors=False)
             importer.import_concepts(**options)
-
-            actions = importer.action_count
-            update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
-            update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
-
-        if update_index_required:
-            update_index.Command().handle(age=1, workers=4)
 
     def create_organization(self, user):
         org = None

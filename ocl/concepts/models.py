@@ -62,7 +62,8 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
     objects = MongoDBManager()
 
     class MongoMeta:
-        indexes = [[('parent_id', 1), ('is_active', 1), ('retired', 1), ('names.name', 1), ('names.locale', 1), ('names.type', 1), ('id', 1)]]
+        indexes = [[('parent_id', 1), ('is_active', 1), ('retired', 1), ('names.name', 1), ('names.locale', 1), ('names.type', 1), ('id', 1)],
+                   [ ('parent_id', 1), ('mnemonic', 1)]]
 
     @property
     def display_name(self):
@@ -228,6 +229,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     is_latest_version = models.BooleanField(default=True)
     version_created_by = models.TextField()
     update_comment = models.TextField(null=True, blank=True)
+
+    class MongoMeta:
+        indexes = [[('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)]]
+
 
     objects = MongoDBManager()
 

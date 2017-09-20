@@ -12,6 +12,9 @@ from concepts.serializers import ConceptDetailSerializer, ConceptVersionUpdateSe
 from oclapi.management.commands import MockRequest, ImportActionHelper
 from sources.models import SourceVersion
 
+from haystack.management.commands import update_index
+import haystack
+
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
@@ -83,6 +86,10 @@ class ConceptsImporter(object):
             self.stderr.flush()
 
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
+        haystack.signal_processor = haystack.signals.BaseSignalProcessor
+        import_start_time = datetime.now()
+        self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+
         self.action_count = {}
         self.test_mode = test_mode
         self.info('Import concepts to source...')
@@ -97,6 +104,16 @@ class ConceptsImporter(object):
         self.output_unhandled_concept_version_ids()
         self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
         self.output_summary(lines_handled, total)
+
+        actions = self.action_count
+        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
+        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+
+        if update_index_required:
+            self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1, workers=8, batchsize=250)
+
+        haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs

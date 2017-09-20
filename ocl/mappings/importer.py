@@ -1,6 +1,9 @@
 """ Mappings importer module """
 import json
 import logging
+
+import haystack
+from datetime import datetime
 from django.core.management import CommandError
 from django.db.models import Q
 from mappings.models import Mapping
