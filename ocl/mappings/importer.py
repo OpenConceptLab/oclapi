@@ -167,7 +167,7 @@ class MappingsImporter(object):
         if update_index_required:
             logger.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
             update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1,
-                                          workers=8, batchsize=250)
+                                          workers=8, batchsize=100)
 
         haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
 
