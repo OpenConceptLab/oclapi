@@ -143,7 +143,7 @@ class MappingTest(MappingBaseTest):
             parent=self.source1,
             map_type='Same As',
             from_concept=self.concept1,
-            to_concept=self.concept2,
+            to_concept=self.concept3,
             external_id='mapping1',
         )
         mapping.full_clean()
@@ -157,14 +157,14 @@ class MappingTest(MappingBaseTest):
         self.assertEquals(self.source1, mapping.parent)
         self.assertEquals('Same As', mapping.map_type)
         self.assertEquals(self.concept1, mapping.from_concept)
-        self.assertEquals(self.concept2, mapping.to_concept)
+        self.assertEquals(self.concept3, mapping.to_concept)
         self.assertEquals(self.source1, mapping.from_source)
         self.assertEquals(self.source1.owner_name, mapping.from_source_owner)
         self.assertEquals(self.source1.mnemonic, mapping.from_source_name)
         self.assertEquals(self.source1, mapping.get_to_source())
         self.assertEquals(self.source1.owner_name, mapping.to_source_owner)
-        self.assertEquals(self.concept2.mnemonic, mapping.get_to_concept_code())
-        self.assertEquals(self.concept2.display_name, mapping.get_to_concept_name())
+        self.assertEquals(self.concept3.mnemonic, mapping.get_to_concept_code())
+        self.assertEquals(self.concept3.display_name, mapping.get_to_concept_name())
 
     def test_create_mapping_negative__no_created_by(self):
         with self.assertRaises(ValidationError):
@@ -359,7 +359,7 @@ class MappingTest(MappingBaseTest):
             parent=self.source1,
             map_type='Same As',
             from_concept=self.concept1,
-            to_concept=self.concept2,
+            to_concept=self.concept4,
             public_access=public_access,
             external_id='mapping1',
         )
