@@ -161,8 +161,8 @@ class MappingTest(MappingBaseTest):
         self.assertEquals(self.source1, mapping.from_source)
         self.assertEquals(self.source1.owner_name, mapping.from_source_owner)
         self.assertEquals(self.source1.mnemonic, mapping.from_source_name)
-        self.assertEquals(self.source1, mapping.get_to_source())
-        self.assertEquals(self.source1.owner_name, mapping.to_source_owner)
+        self.assertEquals(self.source2, mapping.get_to_source())
+        self.assertEquals(self.source2.owner_name, mapping.to_source_owner)
         self.assertEquals(self.concept3.mnemonic, mapping.get_to_concept_code())
         self.assertEquals(self.concept3.display_name, mapping.get_to_concept_name())
 

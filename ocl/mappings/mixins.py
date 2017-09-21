@@ -42,6 +42,8 @@ class MappingValidationMixin:
                             basic_errors.append("Parent, map_type, from_concept, to_source, to_concept_code must be unique.")
             except Concept.DoesNotExist:
                 pass #the error was reported earlier
+            except Source.DoesNotExist:
+                pass #the error is reported elsewhere
 
 
 
