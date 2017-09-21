@@ -6,6 +6,8 @@ import haystack
 from datetime import datetime
 from django.core.management import CommandError
 from django.db.models import Q
+from haystack.management.commands import update_index
+
 from mappings.models import Mapping
 from concepts.models import Concept
 from mappings.serializers import MappingCreateSerializer, MappingUpdateSerializer
@@ -43,6 +45,10 @@ class MappingsImporter(object):
         self.action_count = {}
 
     def import_mappings(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
+        haystack.signal_processor = haystack.signals.BaseSignalProcessor
+        import_start_time = datetime.now()
+        logger.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+
         """ Main mapping importer loop """
         logger.info('Import mappings to source...')
         self.test_mode = test_mode
@@ -64,8 +70,6 @@ class MappingsImporter(object):
         # Load the JSON file line by line and import each line
         self.mapping_ids = set(self.source_version.mappings)
         self.count = 0
-        concepts_for_uris = Concept.objects.filter(parent_id=self.source.id)
-        self.concepts_cache = dict((x.uri, x) for x in concepts_for_uris)
         for line in self.mappings_file:
 
             # Load the next JSON line
@@ -155,6 +159,17 @@ class MappingsImporter(object):
             'mappings', self.count, total, self.action_count)
         self.stdout.write(str_log, ending='\r')
         logger.info(str_log)
+
+        actions = self.action_count
+        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
+        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+
+        if update_index_required:
+            logger.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1,
+                                          workers=8, batchsize=250)
+
+        haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
 
     def handle_mapping(self, data):
         """ Handle importing of a single mapping """

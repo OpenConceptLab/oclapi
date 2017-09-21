@@ -53,7 +53,6 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.is_being_saved = True
         self.encode_extras()

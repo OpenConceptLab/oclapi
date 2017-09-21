@@ -63,7 +63,8 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
 
     class MongoMeta:
         indexes = [[('parent_id', 1), ('is_active', 1), ('retired', 1), ('names.name', 1), ('names.locale', 1), ('names.type', 1), ('id', 1)],
-                   [ ('parent_id', 1), ('mnemonic', 1)]]
+                   [ ('parent_id', 1), ('mnemonic', 1)],
+                   [ ('uri', 1) ]]
 
     @property
     def display_name(self):

@@ -24,10 +24,10 @@ class Mapping(MappingValidationMixin, BaseModel):
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
 
-    class Meta:
-        unique_together = (
-            ("parent", "map_type", "from_concept", "to_concept", "to_source", "to_concept_code"),
-        )
+    class MongoMeta:
+        indexes = [[("parent", 1), ("map_type", 1), ("from_concept", 1), ("to_concept", 1), ("to_source", 1), ("to_concept_code", 1)],
+                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
+                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)]]
 
     def clone(self, user):
         return Mapping(
@@ -233,35 +233,30 @@ class Mapping(MappingValidationMixin, BaseModel):
         return errors
 
     @classmethod
-    def persist_new(cls, obj, created_by, **kwargs):
+    def persist_new(cls, mapping, created_by, **kwargs):
         errors = dict()
         non_field_errors = []
 
         # Check for required fields
         if not created_by:
             non_field_errors.append('Must specify a creator')
+
         parent_resource = kwargs.pop('parent_resource', None)
         if not parent_resource:
             non_field_errors.append('Must specify a parent source')
+
         if non_field_errors:
             errors['non_field_errors'] = non_field_errors
             return errors
 
         # Populate required fields and validate
-        obj.created_by = created_by
-        obj.updated_by = created_by
-        obj.parent = parent_resource
-        obj.public_access = parent_resource.public_access
+        mapping.created_by = created_by
+        mapping.updated_by = created_by
+        mapping.parent = parent_resource
+        mapping.public_access = parent_resource.public_access
+
         try:
-            if obj.to_source == None:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_concept"),
-                )
-            else:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_source", "to_concept_code"),
-                )
-            obj.full_clean()
+            mapping.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
             return errors
@@ -270,6 +265,7 @@ class Mapping(MappingValidationMixin, BaseModel):
         parent_resource_version = kwargs.pop('parent_resource_version', None)
         if parent_resource_version is None:
             parent_resource_version = parent_resource.get_version_model().get_head_of(parent_resource)
+
         child_list_attribute = kwargs.pop('mapping_list_attribute', 'mappings')
         initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
 
@@ -277,15 +273,16 @@ class Mapping(MappingValidationMixin, BaseModel):
         persisted = False
         initial_version=None
         try:
-            obj.save(**kwargs)
-            #mapping version save start
-            initial_version = MappingVersion.for_mapping(obj)
+            mapping.save(**kwargs)
+
+            #Initial mapping version
+            initial_version = MappingVersion.for_mapping(mapping)
             initial_version.mnemonic = 1
             initial_version.save()
-            # update URL
-            obj.save()
-            # mapping version save end
-            # Add the mapping to its parent source version
+
+            # Save again to get the correct URL
+            mapping.save()
+
             errored_action = 'associating mapping with parent resource'
             parent_children = getattr(parent_resource_version, child_list_attribute) or []
             parent_children.append(initial_version.id)
@@ -301,8 +298,8 @@ class Mapping(MappingValidationMixin, BaseModel):
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
                 setattr(parent_resource_version, child_list_attribute, initial_parent_children)
                 parent_resource_version.save()
-                if obj.id:
-                    obj.delete()
+                if mapping.id:
+                    mapping.delete()
                 if initial_version and initial_version.id:
                     initial_version.delete()
         return errors

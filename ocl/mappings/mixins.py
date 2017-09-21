@@ -25,12 +25,27 @@ class MappingValidationMixin:
             basic_errors.append(
                 "Must specify either 'to_concept' or 'to_source' & 'to_concept_code'. Cannot specify both.")
 
+        from mappings.models import Mapping
+        if self.to_source == None:
+            mappings = Mapping.objects.filter(parent=self.parent, map_type=self.map_type,
+                                              from_concept=self.from_concept, to_concept=self.to_concept)\
+                .exclude(id = self.id)
+            if mappings:
+                basic_errors.append("Parent, map_type, from_concept, to_concept must be unique.")
+        else:
+            mappings = Mapping.objects.filter(parent=self.parent, map_type=self.map_type,
+                                              from_concept=self.from_concept, to_source=self.to_source,
+                                              to_concept_code=self.to_concept_code) \
+                .exclude(id=self.id)
+            if mappings:
+                basic_errors.append("Parent, map_type, from_concept, to_source, to_concept_code must be unique.")
+
+
         if basic_errors:
             raise ValidationError(' '.join(basic_errors))
 
         if os.environ.get('DISABLE_VALIDATION'):
             return
-
         try:
             if self.parent_source.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
                 custom_validator = OpenMRSMappingValidator(self)

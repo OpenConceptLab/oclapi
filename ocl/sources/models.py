@@ -17,6 +17,9 @@ HEAD = 'HEAD'
 class Source(ConceptContainerModel):
     source_type = models.TextField(blank=True)
 
+    class MongoMeta:
+        indexes = [[('uri', 1)]]
+
     @property
     def concepts_url(self):
         owner = self.owner
@@ -62,6 +65,11 @@ class SourceVersion(ConceptContainerVersionModel):
     active_mappings = models.IntegerField(default=0)
     _ocl_processing = models.BooleanField(default=False)
     source_snapshot = DictField(null=True, blank=True)
+
+    class MongoMeta:
+        indexes = [[('versioned_object_id', 1), ('is_active', 1), ('created_at', 1)],
+                   [('versioned_object_id', 1), ('mappings', 1)],
+                   [('versioned_object_id', 1), ('versioned_object_type', 1), ('concepts', 1)]]
 
     def update_concept_version(self, concept_version):
         previous_version = concept_version.previous_version

@@ -56,11 +56,12 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
         source_version_ids = []
         source = obj.parent
         source_versions = SourceVersion.objects.filter(
-            versioned_object_id=source.id,
-        )
-        for sv in source_versions:
-            if obj.id in sv.mappings:
-                source_version_ids.append(sv.id)
+            versioned_object_id=source.id, mappings__contains=obj.id
+        ).values('id')
+        if source_versions:
+            for source_version in source_versions:
+                source_version_ids.append(source_version['id'])
+
         self.prepared_data['source_version'] = source_version_ids
 
         return self.prepared_data

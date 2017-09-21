@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 
 from mappings.validation_messages import OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS, OPENMRS_INVALID_MAPTYPE
-from oclapi.models import LOOKUP_CONCEPT_CLASSES
 
 class OpenMRSMappingValidator:
     def __init__(self, mapping):
@@ -16,8 +15,7 @@ class OpenMRSMappingValidator:
 
         intersection = Mapping.objects\
             .filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept, to_concept=self.mapping.to_concept, is_active=True, retired=False)\
-            .exclude(id=self.mapping.id)\
-            .count()
+            .exclude(id=self.mapping.id)
 
         if intersection:
             raise ValidationError(OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS)
