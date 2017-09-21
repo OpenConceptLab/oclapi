@@ -820,8 +820,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(1, len(errors))
         self.assertTrue('__all__' in errors)
         non_field_errors = errors['__all__']
-        self.assertEquals(1, len(non_field_errors))
-        self.assertTrue('already exists' in non_field_errors[0])
+        self.assertEquals(2, len(non_field_errors))
+        self.assertTrue('Parent, map_type, from_concept, to_concept must be unique.' in non_field_errors[0])
         self.assertEquals(1, len(source_version.mappings))
 
     def test_persist_new_positive__same_mapping_different_source(self):
