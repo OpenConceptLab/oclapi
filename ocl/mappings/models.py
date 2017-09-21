@@ -195,14 +195,6 @@ class Mapping(MappingValidationMixin, BaseModel):
         errors = dict()
         obj.updated_by = updated_by
         try:
-            if obj.to_source == None:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_concept"),
-                )
-            else:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_source", "to_concept_code"),
-                )
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
@@ -215,6 +207,7 @@ class Mapping(MappingValidationMixin, BaseModel):
 
             prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True)
             prev_latest_version.is_latest_version = False
+            prev_latest_version.save()
 
             new_latest_version  = MappingVersion.for_mapping(obj)
             new_latest_version.previous_version = prev_latest_version
@@ -223,8 +216,6 @@ class Mapping(MappingValidationMixin, BaseModel):
             new_latest_version.save()
 
             source_version.update_mapping_version(new_latest_version)
-            prev_latest_version.save()
-
 
             persisted = True
         finally:
@@ -266,9 +257,6 @@ class Mapping(MappingValidationMixin, BaseModel):
         if parent_resource_version is None:
             parent_resource_version = parent_resource.get_version_model().get_head_of(parent_resource)
 
-        child_list_attribute = kwargs.pop('mapping_list_attribute', 'mappings')
-        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
-
         errored_action = 'saving mapping'
         persisted = False
         initial_version=None
@@ -284,24 +272,17 @@ class Mapping(MappingValidationMixin, BaseModel):
             mapping.save()
 
             errored_action = 'associating mapping with parent resource'
-            parent_children = getattr(parent_resource_version, child_list_attribute) or []
-            parent_children.append(initial_version.id)
-            setattr(parent_resource_version, child_list_attribute, parent_children)
-            parent_resource_version.save()
+            parent_resource_version.add_mapping_version(initial_version)
 
-            # Save the mapping again to trigger the Solr update
-            errored_action = 'saving mapping to trigger Solr update'
-            initial_version.save()
             persisted = True
         finally:
             if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
-                setattr(parent_resource_version, child_list_attribute, initial_parent_children)
-                parent_resource_version.save()
+                if initial_version and initial_version.id:
+                    parent_resource_version.delete_mapping_version(initial_version)
+                    initial_version.delete()
                 if mapping.id:
                     mapping.delete()
-                if initial_version and initial_version.id:
-                    initial_version.delete()
         return errors
 
     @classmethod

@@ -9,7 +9,7 @@ from haystack.management.commands import update_index
 from concepts.importer import ConceptsImporter
 from oclapi.management.commands import ImportActionHelper
 from orgs.models import Organization
-from sources.models import Source
+from sources.models import Source, SourceVersion
 
 
 class Command(BaseCommand):
@@ -30,6 +30,8 @@ class Command(BaseCommand):
             {'source': sources['DescriptionTypes'], 'file': "./description_types.json"},
             {'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
         ]
+
+        SourceVersion.migrate_concepts_and_mappings_field()
 
         for conf in importer_confs:
             file = open(conf['file'], 'rb')

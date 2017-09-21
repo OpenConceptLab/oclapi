@@ -59,16 +59,17 @@ class MappingsImporter(object):
             try:
                 new_version = SourceVersion.for_base_object(
                     self.source, new_version, previous_version=self.source_version)
-                new_version.seed_concepts()
-                new_version.seed_mappings()
                 new_version.full_clean()
                 new_version.save()
+                new_version.seed_concepts()
+                new_version.seed_mappings()
+
                 self.source_version = new_version
             except Exception as exc:
                 raise CommandError('Failed to create new source version due to %s' % exc.args[0])
 
         # Load the JSON file line by line and import each line
-        self.mapping_ids = set(self.source_version.mappings)
+        self.mapping_ids = set(self.source_version.get_mapping_ids())
         self.count = 0
         for line in self.mappings_file:
 
@@ -311,5 +312,6 @@ class MappingsImporter(object):
         result = self.sources_cache.get(source_url)
         if not result:
             result = Source.objects.get(uri=source_url)
+
             self.sources_cache[source_url] = result
         return result

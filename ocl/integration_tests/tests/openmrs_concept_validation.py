@@ -60,6 +60,7 @@ def underscore_concept_template(update=None):
 class OpenMRSConceptCreateTest(ConceptBaseTest):
     def test_concept_should_have_exactly_one_preferred_name_per_locale_positive(self):
         user = create_user()
+
         source_with_open_mrs = create_source(user, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
                                              organization=self.org1)
         self.client.login(username=user.username, password=user.password)

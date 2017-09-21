@@ -129,7 +129,7 @@ class ConceptImporterTest(ConceptBaseTest):
         inserted_concept_version = ConceptVersion.objects.get(versioned_object_id=inserted_concept.id)
         source_version_latest = SourceVersion.get_latest_version_of(self.source1)
 
-        self.assertEquals(source_version_latest.concepts, [inserted_concept_version.id])
+        self.assertEquals(source_version_latest.get_concept_ids(), [inserted_concept_version.id])
 
     def test_import_job_for_change_in_data(self):
         stdout_stub = TestStream()
@@ -171,7 +171,7 @@ class MappingImporterTest(MappingBaseTest):
         inserted_mapping = Mapping.objects.get(to_concept_code='413532003')
         self.assertEquals(inserted_mapping.to_source, self.source1)
         self.assertEquals(inserted_mapping.from_source, self.source2)
-        mapping_ids = SourceVersion.get_latest_version_of(self.source1).mappings
+        mapping_ids = SourceVersion.get_latest_version_of(self.source1).get_mapping_ids()
         mapping_version = MappingVersion.objects.get(versioned_object_id=inserted_mapping.id, is_latest_version=True)
         self.assertEquals(mapping_ids[0], mapping_version.id)
 

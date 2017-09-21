@@ -282,6 +282,7 @@ class CollectionVersion(ConceptContainerVersionModel):
                     result.append(resource_id)
 
             setattr(self, resource_type, result)
+            self.save()
 
     def seed_references(self):
         seed_references_from = self.head_sibling()

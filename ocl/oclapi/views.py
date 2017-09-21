@@ -306,7 +306,7 @@ class VersionedResourceChildMixin(ConceptDictionaryMixin):
             self.parent_resource_version = ResourceVersionModel.get_head_of(self.parent_resource)
 
     def get_queryset(self):
-        all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
+        all_children = self.parent_resource_version.get_concept_ids()
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
         queryset = queryset.filter(id__in=all_children)
         return queryset

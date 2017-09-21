@@ -97,9 +97,8 @@ class ConceptsImporter(object):
 
         # Load the JSON file line by line and import each line
         self.user = User.objects.filter(is_superuser=True)[0]
-        self.concept_version_ids = set(self.source_version.concepts)
+        self.concept_version_ids = set(self.source_version.get_concept_ids())
 
-        self.create_concept_versions_map()
         lines_handled = self.handle_lines_in_input_file(total)
         self.output_unhandled_concept_version_ids()
         self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
@@ -223,10 +222,11 @@ class ConceptsImporter(object):
     def create_new_source_version(self, new_version):
         new_source_version = SourceVersion.for_base_object(
             self.source, new_version, previous_version=self.source_version)
-        new_source_version.seed_concepts()
-        new_source_version.seed_mappings()
         new_source_version.full_clean()
         new_source_version.save()
+        new_source_version.seed_concepts()
+        new_source_version.seed_mappings()
+
         self.source_version = new_source_version
 
     def handle_concept(self, source, data):
@@ -241,7 +241,7 @@ class ConceptsImporter(object):
         # If concept exists, update the concept with the new data (ignoring retired status for now)
         try:
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
-            concept_version = ConceptVersion.objects.get(id=self.concepts_versions_map[concept.id])
+            concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id, is_latest_version=True)
             update_action = self.update_concept_version(concept_version, data)
 
             # Remove ID from the concept version list so that we know concept has been handled
@@ -292,7 +292,7 @@ class ConceptsImporter(object):
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse new concept %s' % data['id'])
         if not self.test_mode:
-            serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
+            serializer.save(force_insert=True, parent_resource=source)
 
             if not serializer.is_valid():
                 raise ValidationError(serializer.errors)
@@ -373,12 +373,3 @@ class ConceptsImporter(object):
             self.action_count[update_action] = 0
 
         self.action_count[update_action] += 1
-
-    def create_concept_versions_map(self):
-        # Create map for all concept ids to concept versions
-        try:
-            versions_list = ConceptVersion.objects.values('id', 'versioned_object_id').filter(
-                id__in=self.concept_version_ids)
-            self.concepts_versions_map = dict((x['versioned_object_id'], x['id']) for x in versions_list)
-        except KeyError:
-            raise InvalidStateException("Map couldn't be created, possible corruption of data")

@@ -178,8 +178,7 @@ class ConceptCreateView(ConceptBaseView,
             self.pre_save(serializer.object)
             save_kwargs = {
                 'force_insert': True,
-                'parent_resource': self.parent_resource,
-                'child_list_attribute': self.child_list_attribute
+                'parent_resource': self.parent_resource
             }
             self.object = serializer.save(**save_kwargs)
             if serializer.is_valid():

@@ -557,16 +557,6 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         if errors:
             return errors
 
-        # Seed concepts from another version, if requested
-        seed_concepts = kwargs.pop('seed_concepts', False)
-        if seed_concepts:
-            obj.seed_concepts()
-
-        # Seed mappings from another version, if requested
-        seed_mappings = kwargs.pop('seed_mappings', False)
-        if seed_mappings:
-            obj.seed_mappings()
-
         # Seed mappings from another version, if requested
         seed_references = kwargs.pop('seed_references', False)
         if seed_references:
@@ -576,7 +566,19 @@ class ConceptContainerVersionModel(ResourceVersionModel):
 
         try:
             persisted = False
+            seed_concepts = kwargs.pop('seed_concepts', False)
+            seed_mappings = kwargs.pop('seed_mappings', False)
+
             obj.save(**kwargs)
+
+            # Seed concepts from another version, if requested
+            if seed_concepts:
+                obj.seed_concepts()
+
+            # Seed mappings from another version, if requested
+            if seed_mappings:
+                obj.seed_mappings()
+
             persisted = True
         finally:
             if not persisted:

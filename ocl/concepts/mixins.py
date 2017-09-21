@@ -44,9 +44,6 @@ class DictionaryItemMixin(object):
             else:
                 parent_resource_version = version_model.get_latest_version_of(parent_resource)
 
-        child_list_attribute = kwargs.pop('child_list_attribute', 'concepts')
-
-        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
         initial_version = None
         errored_action = 'saving concept'
         persisted = False
@@ -59,23 +56,15 @@ class DictionaryItemMixin(object):
 
             # Associate the version with a version of the parent
             errored_action = 'associating dictionary item with parent resource'
-            parent_children = getattr(parent_resource_version, child_list_attribute) or []
-            child_id = initial_version.id if initial_version else obj.id
-            parent_children.append(child_id)
-            setattr(parent_resource_version, child_list_attribute, parent_children)
-            parent_resource_version.save()
-
-            # Save the initial version again to trigger the Solr update
-            if initial_version is not None:
-                initial_version.save()
+            parent_resource_version.add_concept_version(initial_version)
 
             persisted = True
         finally:
             if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
-                setattr(parent_resource_version, child_list_attribute, initial_parent_children)
-                parent_resource_version.save()
+
                 if initial_version:
+                    parent_resource_version.delete_concept_version(initial_version)
                     initial_version.delete()
                 if obj.id:
                     obj.delete()

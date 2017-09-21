@@ -676,7 +676,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -701,8 +701,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(self.concept2.display_name, mapping.get_to_concept_name())
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
     def test_persist_new_version_created_positive(self):
         mapping = Mapping(
@@ -712,7 +712,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -739,8 +739,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(self.concept2.display_name, mapping_version.get_to_concept_name())
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
 
     def test_persist_new_negative__no_creator(self):
@@ -751,7 +751,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -764,7 +764,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
         self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
 
     def test_persist_new_negative__no_parent(self):
         mapping = Mapping(
@@ -774,7 +774,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {}
         errors = Mapping.persist_new(mapping, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
@@ -785,7 +785,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
         self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
 
     def test_persist_new_negative__same_mapping(self):
         mapping = Mapping(
@@ -795,7 +795,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -805,9 +805,9 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
         mapping = Mapping.objects.get(external_id='mapping1')
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
         mv = MappingVersion.objects.get(versioned_object_id=mapping.id)
-        self.assertTrue(mv.id in source_version.mappings)
+        self.assertTrue(mv.id in source_version.get_mapping_ids())
 
         # Repeat with same concepts
         mapping = Mapping(
@@ -821,12 +821,10 @@ class MappingClassMethodsTest(MappingBaseTest):
         }
         errors = Mapping.persist_new(mapping, self.user1, **kwargs)
         self.assertEquals(1, len(errors))
-        self.assertEquals(1, len(errors))
         self.assertTrue('__all__' in errors)
         non_field_errors = errors['__all__']
-        self.assertEquals(2, len(non_field_errors))
         self.assertTrue('Parent, map_type, from_concept, to_concept must be unique.' in non_field_errors[0])
-        self.assertEquals(1, len(source_version.mappings))
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
 
     def test_persist_new_positive__same_mapping_different_source(self):
         mapping = Mapping(
@@ -836,7 +834,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -847,8 +845,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
         # Repeat with same concepts
         mapping = Mapping(
@@ -861,7 +859,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             'parent_resource': self.source2,
         }
         source_version = SourceVersion.get_latest_version_of(self.source2)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         errors = Mapping.persist_new(mapping, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
 
@@ -869,8 +867,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping2')
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
     def test_persist_new_positive__earlier_source_version(self):
         version1 = SourceVersion.get_latest_version_of(self.source1)
@@ -881,7 +879,7 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(0, len(version2.mappings))
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
 
         mapping = Mapping(
             map_type='Same As',
@@ -900,13 +898,13 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
 
         version1 = SourceVersion.objects.get(id=version1.id)
-        self.assertEquals(1, len(version1.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in version1.mappings)
+        self.assertEquals(1, len(version1.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in version1.get_mapping_ids())
 
         version2 = SourceVersion.objects.get(id=version2.id)
-        self.assertEquals(0, len(version2.mappings))
+        self.assertEquals(0, len(version2.get_mapping_ids()))
         latest_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(latest_version.mappings))
+        self.assertEquals(0, len(latest_version.get_mapping_ids()))
 
     def test_persist_persist_changes_positive(self):
         mapping = Mapping(
@@ -916,7 +914,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -925,8 +923,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         to_concept = mapping.to_concept
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
         mapping.to_concept = self.concept3
         errors = Mapping.persist_changes(mapping, self.user1)
@@ -937,9 +935,9 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertNotEquals(to_concept, mapping.to_concept)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
         mv  = MappingVersion.objects.filter(versioned_object_id=mapping.id)
-        self.assertTrue(mv[1].id in source_version.mappings)
+        self.assertEquals(mv[1].id, source_version.get_mapping_ids().pop())
 
     def test_persist_persist_changes_negative__no_updated_by(self):
         mapping = Mapping(
@@ -949,7 +947,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }
@@ -957,8 +955,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         mapping = Mapping.objects.get(external_id='mapping1')
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
         mapping.to_concept = self.concept3
         errors = Mapping.persist_changes(mapping, None)
@@ -966,8 +964,8 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertTrue('updated_by' in errors)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.mappings))
-        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.mappings)
+        self.assertEquals(1, len(source_version.get_mapping_ids()))
+        self.assertTrue(MappingVersion.objects.get(versioned_object_id=mapping.id).id in source_version.get_mapping_ids())
 
     def test_retire_positive(self):
         mapping = Mapping(
@@ -1018,7 +1016,7 @@ class MappingClassMethodsTest(MappingBaseTest):
             external_id='mapping1',
         )
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.mappings))
+        self.assertEquals(0, len(source_version.get_mapping_ids()))
         kwargs = {
             'parent_resource': self.source1,
         }

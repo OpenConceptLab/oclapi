@@ -51,15 +51,7 @@ class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
         return list(locales)
 
     def prepare_source_version(self, obj):
-        source_version_ids = []
-        source = obj.source
-        source_versions = SourceVersion.objects.filter(
-            versioned_object_id=source.id,
-            versioned_object_type=ContentType.objects.get_for_model(Source),
-            concepts__contains=obj.id
-        ).values('id')
-        for source_version in source_versions:
-            source_version_ids.append(source_version['id'])
+        source_version_ids = list(SourceVersion.get_concept_sources(obj.id).values_list('id', flat=True))
         return source_version_ids
 
     def prepare_collection_version(self, obj):
