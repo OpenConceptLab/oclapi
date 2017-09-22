@@ -117,6 +117,10 @@ class MappingBaseTest(OclApiBaseTestCase):
         (self.concept2, errors) = create_concept(mnemonic='concept2', user=self.user1, source=self.source1, names=[self.name], descriptions=[self.name])
         (self.concept3, errors) = create_concept(mnemonic='concept3', user=self.user1, source=self.source2, names=[self.name], descriptions=[self.name])
         (self.concept4, errors) = create_concept(mnemonic='concept4', user=self.user1, source=self.source2, names=[self.name], descriptions=[self.name])
+        (self.concept5, errors) = create_concept(mnemonic='concept5', user=self.user1, source=self.source1,
+                                                 names=[self.name], descriptions=[self.name])
+        (self.concept6, errors) = create_concept(mnemonic='concept6', user=self.user1, source=self.source1,
+                                                 names=[self.name], descriptions=[self.name])
 
 
 class MappingVersionBaseTest(MappingBaseTest):
@@ -441,7 +445,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             parent=self.source1,
             map_type='Same As',
             from_concept=self.concept1,
-            to_concept=self.concept2,
+            to_concept=self.concept5,
             external_id='mappingversion1',
             versioned_object_id=self.mapping1.id,
             mnemonic='tempid',
@@ -458,14 +462,14 @@ class MappingVersionTest(MappingVersionBaseTest):
         self.assertEquals(self.source1, mapping_version.parent)
         self.assertEquals('Same As', mapping_version.map_type)
         self.assertEquals(self.concept1, mapping_version.from_concept)
-        self.assertEquals(self.concept2, mapping_version.to_concept)
+        self.assertEquals(self.concept5, mapping_version.to_concept)
         self.assertEquals(self.source1, mapping_version.from_source)
         self.assertEquals(self.source1.owner_name, mapping_version.from_source_owner)
         self.assertEquals(self.source1.mnemonic, mapping_version.from_source_name)
         self.assertEquals(self.source1, mapping_version.get_to_source())
         self.assertEquals(self.source1.owner_name, mapping_version.to_source_owner)
-        self.assertEquals(self.concept2.mnemonic, mapping_version.get_to_concept_code())
-        self.assertEquals(self.concept2.display_name, mapping_version.get_to_concept_name())
+        self.assertEquals(self.concept5.mnemonic, mapping_version.get_to_concept_code())
+        self.assertEquals(self.concept5.display_name, mapping_version.get_to_concept_name())
 
     def test_create_mapping_negative__no_created_by(self):
         with self.assertRaises(ValidationError):
@@ -571,7 +575,7 @@ class MappingVersionTest(MappingVersionBaseTest):
             parent=self.source1,
             map_type='Same As',
             from_concept=self.concept1,
-            to_concept=self.concept2,
+            to_concept=self.concept6,
             public_access=public_access,
             external_id='mapping1',
             versioned_object_id=self.mapping1.id,
