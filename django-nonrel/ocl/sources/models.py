@@ -175,10 +175,6 @@ class SourceVersion(ConceptContainerVersionModel):
     def resource_type(self):
         return SOURCE_VERSION_TYPE
 
-    @property
-    def is_processing(self):
-        return self._ocl_processing
-
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None, released=False):
         if not Source == type(source):
@@ -213,9 +209,9 @@ class SourceVersion(ConceptContainerVersionModel):
         )
 
     @staticmethod
-    def is_processing(cls, version_id):
+    def is_processing(version_id):
         version = SourceVersion.objects.get(id=version_id)
-        return version.is_processing()
+        return version._ocl_processing
 
 
 @receiver(post_save)

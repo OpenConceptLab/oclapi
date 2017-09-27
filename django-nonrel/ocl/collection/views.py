@@ -463,8 +463,6 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
     def get(self, request, *args, **kwargs):
         version = self.get_object()
         logger.debug('Export requested for collection version %s - Requesting AWS-S3 key' % version)
-        key = version.get_export_key()
-        url, status = None, 204
 
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
@@ -472,6 +470,9 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         if CollectionVersion.is_processing(version.id):
             logger.debug('   Collection Version is processing')
             return HttpResponse(status=409)
+
+        key = version.get_export_key()
+        url, status = None, 204
 
         if key:
             logger.debug('   Key retreived for collection version %s - Generating URL' % version)

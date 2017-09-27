@@ -380,10 +380,6 @@ class CollectionVersion(ConceptContainerVersionModel):
     def resource_type(self):
         return COLLECTION_VERSION_TYPE
 
-    @property
-    def is_processing(self):
-        return self._ocl_processing
-
     @classmethod
     def for_base_object(cls, collection, label, previous_version=None, parent_version=None, released=False):
         if not Collection == type(collection):
@@ -413,9 +409,9 @@ class CollectionVersion(ConceptContainerVersionModel):
         )
 
     @staticmethod
-    def is_processing(cls, version_id):
+    def is_processing(version_id):
         version = CollectionVersion.objects.get(id=version_id)
-        return version.is_processing()
+        return version._ocl_processing
 
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
