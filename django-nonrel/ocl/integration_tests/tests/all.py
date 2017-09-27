@@ -2108,6 +2108,95 @@ class SourceVersionExportViewTest(SourceBaseTest):
         # self.assertEquals(response['Last-Updated-Timezone'], 'America/New_York')
 
     @mock_s3
+    def test_get_version_ocl_processing(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        source_version.full_clean()
+        source_version.save()
+        kwargs = {'parent_resource': source}
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'version1'
+        }
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 409)
+
+    @mock_s3
+    def test_post_version_ocl_processing(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        source_version.full_clean()
+        source_version.save()
+
+        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
+        c = Client()
+        c.post('/api-auth/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'version1'
+        }
+
+        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 409)
+
+
+    @mock_s3
     def test_post_with_same_version_name_in_more_than_one_source(self):
         source1 = Source(
             name='source',
@@ -2286,6 +2375,81 @@ class SourceVersionExportViewTest(SourceBaseTest):
 
 
 class CollectionVersionExportViewTest(CollectionBaseTest):
+    @mock_s3
+    def test_get_version_ocl_processing(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        c = Client()
+        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'version1'
+        }
+        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 409)
+
+    @mock_s3
+    def test_post_version_ocl_processing(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        c = Client()
+        c.post('/api-auth/login/', {'username': 'user1', 'password': 'user1'})
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'version1'
+        }
+        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        self.assertEquals(response.status_code, 409)
+
+
     @mock_s3
     def test_get_invalid_version_404_received(self):
         collection = Collection(
