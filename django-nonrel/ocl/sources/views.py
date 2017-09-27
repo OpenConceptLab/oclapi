@@ -271,6 +271,8 @@ class SourceVersionListView(SourceVersionBaseView,
                     self.post_save(self.object, created=True)
                     headers = self.get_success_headers(serializer.data)
                     serializer = SourceVersionDetailSerializer(self.object, context={'request': request})
+                    version = self.object
+                    export_source.delay(version.id)
                     return Response(serializer.data, status=status.HTTP_201_CREATED,
                                     headers=headers)
             except IntegrityError, e:
@@ -375,6 +377,11 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
+
+        if SourceVersion.is_processing(version.id):
+            logger.debug('   Source Version is processing')
+            return HttpResponse(status=409)
+
         if key:
             logger.debug('   Key retreived for source version %s - Generating URL' % version)
             url, status = key.generate_url(60), 303
@@ -419,6 +426,11 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
         logger.debug('Source Export requested for version %s (post)' % version)
         status = 303
+
+        if SourceVersion.is_processing(version.id):
+            logger.debug('   Source Version is processing')
+            return HttpResponse(status=409)
+
         if not version.has_export():
             status = self.handle_export_source_version()
         else:

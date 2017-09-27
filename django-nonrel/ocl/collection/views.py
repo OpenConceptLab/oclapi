@@ -344,6 +344,8 @@ class CollectionVersionListView(CollectionVersionBaseView,
                 if serializer.is_valid():
                     self.post_save(self.object, created=True)
                     headers = self.get_success_headers(serializer.data)
+                    version = self.object
+                    export_collection.delay(version.id)
                     return Response(serializer.data, status=status.HTTP_201_CREATED,
                                     headers=headers)
             except IntegrityError, e:
@@ -467,6 +469,10 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
 
+        if CollectionVersion.is_processing(version.id):
+            logger.debug('   Collection Version is processing')
+            return HttpResponse(status=409)
+
         if key:
             logger.debug('   Key retreived for collection version %s - Generating URL' % version)
             url, status = key.generate_url(60), 303
@@ -508,10 +514,15 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         self.kwargs = kwargs
         version = self.get_object()
 
+        logger.debug('Collection Export requested for version %s (post)' % version)
+
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)  # export of head version is not allowed
 
-        logger.debug('Collection Export requested for version %s (post)' % version)
+        if CollectionVersion.is_processing(version.id):
+            logger.debug('   Collection Version is processing')
+            return HttpResponse(status=409)
+
         status = 303
         if not version.has_export():
             status = self.handle_export_collection_version()

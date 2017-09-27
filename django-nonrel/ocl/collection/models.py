@@ -252,6 +252,7 @@ class CollectionVersion(ConceptContainerVersionModel):
     retired = models.BooleanField(default=False)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
+    _ocl_processing = models.BooleanField(default=False)
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
 
@@ -379,6 +380,10 @@ class CollectionVersion(ConceptContainerVersionModel):
     def resource_type(self):
         return COLLECTION_VERSION_TYPE
 
+    @property
+    def is_processing(self):
+        return self._ocl_processing
+
     @classmethod
     def for_base_object(cls, collection, label, previous_version=None, parent_version=None, released=False):
         if not Collection == type(collection):
@@ -407,6 +412,10 @@ class CollectionVersion(ConceptContainerVersionModel):
             external_id=collection.external_id,
         )
 
+    @staticmethod
+    def is_processing(cls, version_id):
+        version = CollectionVersion.objects.get(id=version_id)
+        return version.is_processing()
 
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)

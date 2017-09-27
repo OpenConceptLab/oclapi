@@ -175,6 +175,9 @@ class SourceVersion(ConceptContainerVersionModel):
     def resource_type(self):
         return SOURCE_VERSION_TYPE
 
+    @property
+    def is_processing(self):
+        return self._ocl_processing
 
     @classmethod
     def for_base_object(cls, source, label, previous_version=None, parent_version=None, released=False):
@@ -208,6 +211,12 @@ class SourceVersion(ConceptContainerVersionModel):
             external_id=source.external_id,
             extras=source.extras,
         )
+
+    @staticmethod
+    def is_processing(cls, version_id):
+        version = SourceVersion.objects.get(id=version_id)
+        return version.is_processing()
+
 
 @receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
