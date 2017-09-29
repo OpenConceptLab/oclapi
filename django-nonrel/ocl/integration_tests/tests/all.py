@@ -2135,19 +2135,14 @@ class SourceVersionExportViewTest(SourceBaseTest):
             updated_by=self.user1,
             _ocl_processing=True
         )
-        source_version.full_clean()
-        source_version.save()
-        kwargs = {'parent_resource': source}
-        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
-        c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+        SourceVersion.persist_new(source_version, self.user1)
 
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source.mnemonic,
             'version': 'version1'
         }
-        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
+        response = self.client.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 409)
 
     @mock_s3
@@ -2178,13 +2173,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
             updated_by=self.user1,
             _ocl_processing=True
         )
-        source_version.full_clean()
-        source_version.save()
-
-        (concept1, _) = create_concept(mnemonic='concept1', user=self.user1, source=source)
-
-        c = Client()
-        c.post('/api-auth/login/', {'username': 'user1', 'password': 'user1'})
+        SourceVersion.persist_new(source_version, self.user1)
 
         kwargs = {
             'org': self.org1.mnemonic,
@@ -2192,9 +2181,12 @@ class SourceVersionExportViewTest(SourceBaseTest):
             'version': 'version1'
         }
 
-        response = c.get(reverse('sourceversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 409)
+        uri = reverse('sourceversion-export', kwargs=kwargs)
 
+        self.client.login(username=self.user1.username, password=self.user1.password)
+        response = self.client.post(uri)
+
+        self.assertEquals(response.status_code, 409)
 
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_source(self):
@@ -2389,6 +2381,7 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             description='This is the first test collection'
         )
         Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
         collection_version = CollectionVersion(
             name='version1',
             mnemonic='version1',
@@ -2398,18 +2391,14 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             updated_by=self.user1,
             _ocl_processing=True
         )
-        collection_version.full_clean()
-        collection_version.save()
-
-        c = Client()
-        c.post('/login/', {'username': 'user1', 'password': 'user1'})
+        CollectionVersion.persist_new(collection_version, self.user1)
 
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection.mnemonic,
             'version': 'version1'
         }
-        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+        response = self.client.get(reverse('collectionversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 409)
 
     @mock_s3
@@ -2435,18 +2424,19 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             updated_by=self.user1,
             _ocl_processing=True
         )
-        collection_version.full_clean()
-        collection_version.save()
-
-        c = Client()
-        c.post('/api-auth/login/', {'username': 'user1', 'password': 'user1'})
+        CollectionVersion.persist_new(collection_version, self.user1)
 
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection.mnemonic,
             'version': 'version1'
         }
-        response = c.get(reverse('collectionversion-export', kwargs=kwargs))
+
+        uri = reverse('collectionversion-export', kwargs=kwargs)
+
+        self.client.login(username=self.user1.username, password=self.user1.password)
+        response = self.client.post(uri)
+
         self.assertEquals(response.status_code, 409)
 
 
