@@ -119,7 +119,7 @@ If you want to deploy to staging or production, you need to be logged in to Bamb
 1. Go to https://ci.openmrs.org/browse/OCL and click the cloud icon next to the project you want to deploy.
 2. Click the related deployment plan.
 3. Click the cloud icon next in the actions column for the chosen environment.
-4. Choose whether to create a new release from build result or redeploy an existing release. You will choose the latter when promoting a release from staging to production or downgrading to a previous release.
+4. Choose whether to create a new release from build result or redeploy an existing release. You will choose the latter when promoting a release from staging to production, downgrading to a previous release or restarting services.
 5. When creating a new release, choose the build result, which you want to deploy (usually the latest successful build). Leave the release title unchanged and click the Start deployment button.
 6. Wait for the release to complete.
 
