@@ -24,11 +24,6 @@ class Mapping(MappingValidationMixin, BaseModel):
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
 
-    class MongoMeta:
-        indexes = [[("parent", 1), ("map_type", 1), ("from_concept", 1), ("to_concept", 1), ("to_source", 1), ("to_concept_code", 1)],
-                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
-                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)]]
-
     def clone(self, user):
         return Mapping(
             created_by=user,
@@ -333,6 +328,12 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
+
+    class MongoMeta:
+        indexes = [[('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_concept', 1), ('to_source', 1), ('to_concept_code', 1)],
+                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
+                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)],
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)]]
 
     def clone(self):
         return MappingVersion(

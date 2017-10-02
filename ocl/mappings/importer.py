@@ -14,6 +14,8 @@ from mappings.serializers import MappingCreateSerializer, MappingUpdateSerialize
 from oclapi.management.commands import MockRequest, ImportActionHelper
 from sources.models import Source, SourceVersion
 
+from mappings.models import MappingVersion
+
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
 
@@ -54,7 +56,7 @@ class MappingsImporter(object):
         self.test_mode = test_mode
 
         # Retrieve latest source version and, if specified, create a new one
-        self.source_version = SourceVersion.get_latest_version_of(self.source)
+        self.source_version = SourceVersion.get_head_of(self.source)
         if new_version:
             try:
                 new_version = SourceVersion.for_base_object(
@@ -120,11 +122,8 @@ class MappingsImporter(object):
         logger.info(str_log)
 
         # Log remaining unhandled IDs
-        str_log = 'Remaining unhandled mapping IDs:\n'
-        self.stdout.write(str_log, ending='\r')
-        logger.info(str_log)
-        str_log = ','.join(str(el) for el in self.mapping_ids)
-        self.stdout.write(str_log, ending='\r')
+        str_log = 'Remaining %s unhandled mapping IDs\n', len(self.mapping_ids)
+        self.stdout.write(str_log)
         self.stdout.flush()
         logger.info(str_log)
 
@@ -167,7 +166,7 @@ class MappingsImporter(object):
 
         if update_index_required:
             logger.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1,
+            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2,
                                           workers=8, batchsize=128)
 
         haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
@@ -197,17 +196,14 @@ class MappingsImporter(object):
             mapping = Mapping.objects.get(query)
 
             # Mapping exists, but not in this source version
-            if mapping.id not in self.source_version.mappings:
-                raise InvalidStateException(
-                    "Source %s has mapping %s, but source version %s does not. Mapping not updated." %
-                    (self.source.mnemonic, mapping.id, self.source_version.mnemonic))
+            mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id, is_latest_version=True)
 
             # Finish updating the mapping
             update_action = self.update_mapping(mapping, data)
 
             # Remove ID from the mapping list so that we know that mapping has been handled
             try:
-                self.mapping_ids.remove(mapping.id)
+                self.mapping_ids.remove(mapping_version.id)
             except KeyError:
                 str_log = 'Key not found. Could not remove key %s from list of mapping IDs: %s\n' % (mapping.id, data)
                 self.stderr.write(str_log)
@@ -284,7 +280,8 @@ class MappingsImporter(object):
     def remove_mapping(self, mapping_id):
         """ Deactivates a mapping """
         try:
-            mapping = Mapping.objects.get(id=mapping_id)
+            mapping_version = MappingVersion.objects.get(id=mapping_id)
+            mapping = Mapping.objects.get(id = mapping_version.versioned_object_id)
             if mapping.is_active:
                 if not self.test_mode:
                     mapping.is_active = False

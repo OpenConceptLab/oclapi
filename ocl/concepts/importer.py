@@ -66,7 +66,7 @@ class ConceptsImporter(object):
         self.stderr = error_stream
         self.user = user
         # Retrieve latest source version and, if specified, create a new one
-        self.source_version = SourceVersion.get_latest_version_of(self.source)
+        self.source_version = SourceVersion.get_head_of(self.source)
         self.validation_logger = validation_logger
         self.save_validation_errors = save_validation_errors
 
@@ -110,16 +110,13 @@ class ConceptsImporter(object):
 
         if update_index_required:
             self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1, workers=8, batchsize=128)
+            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=8, batchsize=128)
 
         haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
-        self.info('Remaining unhandled concept versions:\n', ending='\r')
-
-        log = ','.join(str(el) for el in self.concept_version_ids)
-        self.info(log, ending='\r', flush=True)
+        self.info('Remaining %s unhandled concept versions' % len(self.concept_version_ids), flush=True)
 
     def handle_new_source_version(self, new_version):
         if not new_version:

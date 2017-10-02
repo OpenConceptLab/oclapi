@@ -232,8 +232,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     update_comment = models.TextField(null=True, blank=True)
 
     class MongoMeta:
-        indexes = [[('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)]]
-
+        indexes = [[ ('uri', 1) ],
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)]]
 
     objects = MongoDBManager()
 
