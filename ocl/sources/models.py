@@ -341,7 +341,7 @@ class SourceVersion(ConceptContainerVersionModel):
 
 class SourceVersionConcept(models.Model):
 
-    source_version = models.ForeignKey(SourceVersion, null=False, blank=False)
+    source_version = models.ForeignKey(SourceVersion, null=False, blank=False, db_index=True)
     concept_version = models.ForeignKey('concepts.ConceptVersion', null=False, blank=False, db_index=True)
 
     class Meta:
@@ -350,7 +350,7 @@ class SourceVersionConcept(models.Model):
 
 class SourceVersionMapping(models.Model):
 
-    source_version = models.ForeignKey(SourceVersion, null=False, blank=False)
+    source_version = models.ForeignKey(SourceVersion, null=False, blank=False, db_index=True)
     mapping_version = models.ForeignKey('mappings.MappingVersion', null=False, blank=False, db_index=True)
 
     class Meta:

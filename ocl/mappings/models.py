@@ -17,12 +17,17 @@ class Mapping(MappingValidationMixin, BaseModel):
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')
-    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to', db_index=False)
-    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to', db_index=False)
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to')
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to')
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
+
+    class MongoMeta:
+        indexes = [[('parent', 1), ('from_concept', 1)],
+                   [('parent'), ('to_concept', 1)],
+                   [('parent', 1), ('retired', 1), ('is_active', 1)]]
 
     def clone(self, user):
         return Mapping(
@@ -320,8 +325,8 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     parent = models.ForeignKey(Source, related_name='mappings_version_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_version_from')
-    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_version_to', db_index=False)
-    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to', db_index=False)
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_version_to')
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to')
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
