@@ -1,3 +1,4 @@
+import logging
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -10,6 +11,7 @@ from sources.models import Source
 USER_OBJECT_TYPE = 'User'
 ORG_OBJECT_TYPE = 'Organization'
 
+logger = logging.getLogger('oclapi')
 
 class UserProfile(BaseResourceModel):
     user = models.OneToOneField(User)
@@ -75,6 +77,15 @@ class UserProfile(BaseResourceModel):
     def collections_url(self):
         return reverse('collection-list', kwargs={'user': self.mnemonic})
 
+    def is_admin_for(self, concept_container):
+        if concept_container.owner_type == UserProfile.resource_type():
+            if concept_container.owner == self:
+                return True
+        else:
+            for org in self.organizations:
+                if org == concept_container.owner:
+                    return True
+        return False
 
     @property
     def num_stars(self):
