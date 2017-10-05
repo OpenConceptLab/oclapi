@@ -5,4 +5,6 @@ class Production(Common):
 
     SECRET_KEY = values.SecretValue(environ_name='SECRET_KEY', environ_prefix='')
 
+    BASE_URL = 'https://api.openconceptlab.org'
+
     USE_X_FORWARDED_HOST = True

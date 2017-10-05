@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.pagination import PaginationSerializer
 from rest_framework.serializers import HyperlinkedModelSerializerOptions
 from oclapi.fields import HyperlinkedVersionedResourceIdentityField, HyperlinkedResourceVersionIdentityField
+from django.conf import settings
 
 
 class HeaderPaginationSerializer(PaginationSerializer):
@@ -34,10 +35,19 @@ class HeaderPaginationSerializer(PaginationSerializer):
         self._headers_and_data['headers']['num_found'] = page_fields['count']
         self._headers_and_data['headers']['num_returned'] = len(results)
         self._headers_and_data['headers']['offset'] = offset
+        self.fix_base_url(page_fields, 'next')
         self._headers_and_data['headers']['next'] = page_fields['next']
+        self.fix_base_url(page_fields, 'previous')
         self._headers_and_data['headers']['previous'] = page_fields['previous']
         self._headers_and_data['data'] = results
 
+    def fix_base_url(self, page_fields, field):
+        if not page_fields[field]:
+            return
+
+        url = page_fields[field].split('/')
+        del url[0:3]
+        page_fields[field] = settings.BASE_URL + '/' + '/'.join(url)
 
 class ResourceVersionSerializerOptions(HyperlinkedModelSerializerOptions):
 
