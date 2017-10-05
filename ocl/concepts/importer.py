@@ -116,7 +116,7 @@ class ConceptsImporter(object):
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
-        self.info('Remaining %s unhandled concept versions' % len(self.concept_version_ids), flush=True)
+        self.info('Remaining %s unhandled concept versions' % len(self.concept_version_ids))
 
     def handle_new_source_version(self, new_version):
         if not new_version:
@@ -161,10 +161,10 @@ class ConceptsImporter(object):
             self.try_import_concept(data)
 
             # Simple progress bar
-            if (lines_handled % 10) == 0:
+            if (lines_handled % 100) == 0:
                 log = ImportActionHelper.get_progress_descriptor(
                     'concepts', lines_handled, total, self.action_count)
-                self.stdout.write(log, ending='\r')
+                self.stdout.write(log)
                 self.stdout.flush()
                 if (lines_handled % 1000) == 0:
                     logger.info(log)
@@ -176,7 +176,7 @@ class ConceptsImporter(object):
         # Import complete - display final progress bar
         log = ImportActionHelper.get_progress_descriptor(
             'concepts', lines_handled, total, self.action_count)
-        self.info(log, ending='\r', flush=True)
+        self.info(log, flush=True)
         return lines_handled
 
     def try_import_concept(self, data):
