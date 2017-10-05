@@ -122,7 +122,7 @@ class MappingsImporter(object):
         logger.info(str_log)
 
         # Log remaining unhandled IDs
-        str_log = 'Remaining %s unhandled mapping IDs\n', len(self.mapping_ids)
+        str_log = 'Remaining %s unhandled mapping IDs\n' % len(self.mapping_ids)
         self.stdout.write(str_log)
         self.stdout.flush()
         logger.info(str_log)
