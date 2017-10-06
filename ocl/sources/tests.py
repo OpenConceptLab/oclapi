@@ -677,7 +677,7 @@ class SourceVersionTest(SourceBaseTest):
         source_version2 = SourceVersion(name='version2', mnemonic='version2', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
         SourceVersion.persist_new(source_version2)
 
-        self.assertEquals(source_version2.get_concept_ids(), self.source1.get_head().get_concept_ids())
+        self.assertItemsEqual(source_version2.get_concept_ids(), self.source1.get_head().get_concept_ids())
 
     def test_head_sibling(self):
         source_version1 = SourceVersion(
@@ -1109,7 +1109,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.previous_version)
-        self.assertEquals(version1.get_concept_ids(), version2.get_concept_ids())
+        self.assertItemsEqual(version1.get_concept_ids(), version2.get_concept_ids())
 
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
@@ -1156,7 +1156,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.parent_version)
-        self.assertEquals(version1.get_concept_ids(), version2.get_concept_ids())
+        self.assertItemsEqual(version1.get_concept_ids(), version2.get_concept_ids())
 
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
         version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
@@ -1211,7 +1211,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
-        self.assertEquals(version1.get_concept_ids(), version3.get_concept_ids())
+        self.assertItemsEqual(version1.get_concept_ids(), version3.get_concept_ids())
 
 class SourceVersionListViewTest(SourceBaseTest):
 

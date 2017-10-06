@@ -4,6 +4,7 @@ import tarfile
 import tempfile
 import gzip
 
+import haystack
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from haystack.utils import loading
@@ -222,6 +223,17 @@ def cd_temp():
     os.chdir(tmpdir)
     return cwd
 
+def update_search_index(object):
+    if haystack.signal_processor == haystack.signals.RealtimeSignalProcessor:
+        objectType = type(object)
+        default_connection = haystack_connections['default']
+        unified_index = default_connection.get_unified_index()
+        index = unified_index.get_index(objectType)
+        backend = default_connection.get_backend()
+
+        #fetch the most recent data from db
+        object = objectType.objects.filter(id = object.id)
+        backend.update(index, object)
 
 def update_all_in_index(model, qs):
     if not qs.exists():

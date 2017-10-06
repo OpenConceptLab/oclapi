@@ -937,7 +937,7 @@ class MappingClassMethodsTest(MappingBaseTest):
         source_version = SourceVersion.objects.get(id=source_version.id)
         self.assertEquals(1, len(source_version.get_mapping_ids()))
         mv  = MappingVersion.objects.filter(versioned_object_id=mapping.id)
-        self.assertEquals(mv[1].id, source_version.get_mapping_ids().pop())
+        self.assertEquals(mv[1].id, source_version.get_mapping_ids()[0])
 
     def test_persist_persist_changes_negative__no_updated_by(self):
         mapping = Mapping(

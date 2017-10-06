@@ -64,7 +64,6 @@ class DictionaryItemMixin(object):
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
 
                 if initial_version:
-                    parent_resource_version.delete_concept_version(initial_version)
                     initial_version.delete()
                 if obj.id:
                     obj.delete()
