@@ -87,7 +87,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             updated_since = parse_updated_since_param(request)
 
         if include_concepts:
-            source_version_concepts = source_version.concepts
+            source_version_concepts = source_version.get_concept_ids()
             queryset = ConceptVersion.objects.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
@@ -99,7 +99,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             data['concepts'] = serializer.data
 
         if include_mappings:
-            all_children = source_version.mappings
+            all_children = source_version.get_mapping_ids()
             queryset = MappingVersion.objects.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
