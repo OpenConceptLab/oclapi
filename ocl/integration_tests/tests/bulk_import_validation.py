@@ -129,7 +129,7 @@ class ConceptImporterTest(ConceptBaseTest):
         inserted_concept_version = ConceptVersion.objects.get(versioned_object_id=inserted_concept.id)
         source_version_latest = SourceVersion.get_latest_version_of(self.source1)
 
-        self.assertEquals(source_version_latest.get_concept_ids(), [inserted_concept_version.id])
+        self.assertItemsEqual(source_version_latest.get_concept_ids(), [inserted_concept_version.id])
 
     def test_import_job_for_change_in_data(self):
         stdout_stub = TestStream()
