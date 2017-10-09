@@ -1,7 +1,7 @@
 """ Concepts importer module """
 import json
 import logging
-from datetime import datetime
+
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -14,6 +14,7 @@ from sources.models import SourceVersion
 
 from haystack.management.commands import update_index
 import haystack
+from datetime import datetime
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
@@ -110,7 +111,7 @@ class ConceptsImporter(object):
 
         if update_index_required:
             self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=8, batchsize=128)
+            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=4, batchsize=100)
 
         haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
 

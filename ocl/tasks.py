@@ -55,10 +55,10 @@ def update_children_for_resource_version(version_id, _type):
     _resource = resource(version_id, _type)
     _resource._ocl_processing = True
     _resource.save()
-    versions = ConceptVersion.objects.filter(id__in=_resource.get_concept_ids())
-    update_all_in_index(ConceptVersion, versions)
-    mappingVersions = MappingVersion.objects.filter(id__in=_resource.get_mapping_ids())
-    update_all_in_index(MappingVersion, mappingVersions)
+    concept_versions = _resource.get_concepts()
+    update_all_in_index(ConceptVersion, concept_versions)
+    mapping_versions = _resource.get_mappings()
+    update_all_in_index(MappingVersion, mapping_versions)
     _resource._ocl_processing = False
     _resource.save()
 

@@ -679,7 +679,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept_version.retired)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals([concept_version.id], source_version.get_concept_ids())
+        self.assertItemsEqual([concept_version.id], source_version.get_concept_ids())
 
         errors = Concept.retire(concept, self.user1)
         self.assertFalse(errors)
@@ -697,7 +697,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.user1.username, concept_version.version_created_by)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals([concept_version.id], source_version.get_concept_ids())
+        self.assertItemsEqual([concept_version.id], source_version.get_concept_ids())
 
         self.assertEquals(
             1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
@@ -1088,7 +1088,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
         source_version.update_concept_version(self.concept_version)
-        self.assertEquals([self.concept_version.id], source_version.get_concept_ids())
+        self.assertItemsEqual([self.concept_version.id], source_version.get_concept_ids())
 
         version2 = self.concept_version.clone()
         errors = ConceptVersion.persist_clone(version2, self.user1)
@@ -1102,7 +1102,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept_version.external_id, version2.external_id)
         self.assertEquals(self.user1.username, version2.version_created_by)
 
-        self.assertEquals([version2.id], source_version.get_concept_ids())
+        self.assertItemsEqual([version2.id], source_version.get_concept_ids())
 
     def test_persist_clone_negative__no_user(self):
         self.assertEquals(2, self.concept1.num_versions)
@@ -1112,7 +1112,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
         source_version.update_concept_version(self.concept_version)
-        self.assertEquals([self.concept_version.id], source_version.get_concept_ids())
+        self.assertItemsEqual([self.concept_version.id], source_version.get_concept_ids())
 
         version2 = self.concept_version.clone()
         errors = ConceptVersion.persist_clone(version2)

@@ -4,11 +4,13 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django_mongodb_engine.contrib import MongoDBManager
 
 from concepts.models import Concept
 from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source, SourceVersion
+from djangotoolbox.fields import SetField
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
@@ -279,7 +281,6 @@ class Mapping(MappingValidationMixin, BaseModel):
             if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
                 if initial_version and initial_version.id:
-                    parent_resource_version.delete_mapping_version(initial_version)
                     initial_version.delete()
                 if mapping.id:
                     mapping.delete()
@@ -333,6 +334,9 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
+    source_version_ids = SetField(db_index=True)
+
+    objects = MongoDBManager()
 
     class MongoMeta:
         indexes = [[('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_concept', 1), ('to_source', 1), ('to_concept_code', 1)],

@@ -87,23 +87,21 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
             updated_since = parse_updated_since_param(request)
 
         if include_concepts:
-            source_version_concepts = source_version.get_concept_ids()
-            queryset = ConceptVersion.objects.filter(is_active=True)
+            queryset = source_version.get_concepts()
+            queryset = queryset.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset.filter(id__in=source_version_concepts)
             queryset = queryset[offset:offset+limit]
             serializer = ConceptVersionDetailSerializer(queryset, many=True)
             data['concepts'] = serializer.data
 
         if include_mappings:
-            all_children = source_version.get_mapping_ids()
-            queryset = MappingVersion.objects.filter(is_active=True)
+            queryset = source_version.get_mappings()
+            queryset = queryset.filter(is_active=True)
             if not include_retired:
                 queryset = queryset.filter(~Q(retired=True))
-            queryset = queryset.filter(id__in=all_children)
             if updated_since:
                 queryset = queryset.filter(updated_at__gte=updated_since)
             queryset = queryset[offset:offset+limit]

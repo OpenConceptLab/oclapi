@@ -68,13 +68,13 @@ You can run tests in a container as any other command.
 #### Unit Tests
 
 ````sh
-docker-compose run api python manage.py run_test --configuration=Dev
+docker-compose run --rm api python manage.py run_test --configuration=Dev
 ````
 
 #### Integration Tests
 
 ````sh
-docker-compose run api python manage.py test integration_tests --configuration=Dev
+docker-compose run --rm api python manage.py test integration_tests --configuration=Dev
 ````
 
 ### Debugging in container

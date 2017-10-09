@@ -194,7 +194,7 @@ class Common(Configuration):
             'ENGINE': 'oclapi.search_backends.OCLSolrEngine',
             'URL': 'http://solr.openconceptlab.org:8983/solr/collection1',
             'TIMEOUT': 300,
-            'BATCH_SIZE': 128
+            'BATCH_SIZE': 100
             # ...or for multicore...
             # 'URL': 'http://127.0.0.1:8983/solr/mysite',
         },
