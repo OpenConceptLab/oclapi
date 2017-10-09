@@ -47,129 +47,131 @@ class MappingsImporter(object):
         self.action_count = {}
 
     def import_mappings(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
-        haystack.signal_processor = haystack.signals.BaseSignalProcessor
-        import_start_time = datetime.now()
-        logger.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+        initial_signal_processor = haystack.signal_processor
+        try:
+            haystack.signal_processor = haystack.signals.BaseSignalProcessor
+            import_start_time = datetime.now()
+            logger.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
 
-        """ Main mapping importer loop """
-        logger.info('Import mappings to source...')
-        self.test_mode = test_mode
+            """ Main mapping importer loop """
+            logger.info('Import mappings to source...')
+            self.test_mode = test_mode
 
-        # Retrieve latest source version and, if specified, create a new one
-        self.source_version = SourceVersion.get_head_of(self.source)
-        if new_version:
-            try:
-                new_version = SourceVersion.for_base_object(
-                    self.source, new_version, previous_version=self.source_version)
-                new_version.full_clean()
-                new_version.save()
-                new_version.seed_concepts()
-                new_version.seed_mappings()
-
-                self.source_version = new_version
-            except Exception as exc:
-                raise CommandError('Failed to create new source version due to %s' % exc.args[0])
-
-        # Load the JSON file line by line and import each line
-        self.mapping_ids = set(self.source_version.get_mapping_ids())
-        self.count = 0
-        for line in self.mappings_file:
-
-            # Load the next JSON line
-            self.count += 1
-            data = None
-            try:
-                data = json.loads(line)
-            except ValueError as exc:
-                str_log = 'Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line)
-                self.stderr.write(str_log)
-                logger.warning(str_log)
-                self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
-
-            # Process the import for the current JSON line
-            if data:
+            # Retrieve latest source version and, if specified, create a new one
+            self.source_version = SourceVersion.get_head_of(self.source)
+            if new_version:
                 try:
-                    update_action = self.handle_mapping(data)
-                    self.count_action(update_action)
-                except IllegalInputException as exc:
-                    str_log = '%s, failed to parse line %s. Skipping it...\n' % (exc.args[0], data)
-                    self.stderr.write(str_log)
-                    logger.warning(str_log)
-                    self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
-                except InvalidStateException as exc:
-                    str_log = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+                    new_version = SourceVersion.for_base_object(
+                        self.source, new_version, previous_version=self.source_version)
+                    new_version.full_clean()
+                    new_version.save()
+                    new_version.seed_concepts()
+                    new_version.seed_mappings()
+
+                    self.source_version = new_version
+                except Exception as exc:
+                    raise CommandError('Failed to create new source version due to %s' % exc.args[0])
+
+            # Load the JSON file line by line and import each line
+            self.mapping_ids = set(self.source_version.get_mapping_ids())
+            self.count = 0
+            for line in self.mappings_file:
+
+                # Load the next JSON line
+                self.count += 1
+                data = None
+                try:
+                    data = json.loads(line)
+                except ValueError as exc:
+                    str_log = 'Skipping invalid JSON line: %s. JSON: %s\n' % (exc.args[0], line)
                     self.stderr.write(str_log)
                     logger.warning(str_log)
                     self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
-            # Simple progress bars
-            if (self.count % 10) == 0:
-                str_log = ImportActionHelper.get_progress_descriptor(
-                    'mappings', self.count, total, self.action_count)
-                self.stdout.write(str_log, ending='\r')
-                self.stdout.flush()
-                if (self.count % 1000) == 0:
-                    logger.info(str_log)
+                # Process the import for the current JSON line
+                if data:
+                    try:
+                        update_action = self.handle_mapping(data)
+                        self.count_action(update_action)
+                    except IllegalInputException as exc:
+                        str_log = '%s, failed to parse line %s. Skipping it...\n' % (exc.args[0], data)
+                        self.stderr.write(str_log)
+                        logger.warning(str_log)
+                        self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
+                    except InvalidStateException as exc:
+                        str_log = 'Source is in an invalid state!\n%s\n%s\n' % (exc.args[0], data)
+                        self.stderr.write(str_log)
+                        logger.warning(str_log)
+                        self.count_action(ImportActionHelper.IMPORT_ACTION_SKIP)
 
-        # Done with the input file, so close it
-        self.mappings_file.close()
-
-        # Import complete - display final progress bar
-        str_log = ImportActionHelper.get_progress_descriptor(
-            'mappings', self.count, total, self.action_count)
-        self.stdout.write(str_log, ending='\r')
-        self.stdout.flush()
-        logger.info(str_log)
-
-        # Log remaining unhandled IDs
-        str_log = 'Remaining %s unhandled mapping IDs\n' % len(self.mapping_ids)
-        self.stdout.write(str_log)
-        self.stdout.flush()
-        logger.info(str_log)
-
-        # Deactivate old records
-        if deactivate_old_records:
-            str_log = 'Deactivating old mappings...\n'
-            self.stdout.write(str_log)
-            logger.info(str_log)
-            for mapping_id in self.mapping_ids:
-                try:
-                    if self.remove_mapping(mapping_id):
-                        self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
-
-                        # Log the mapping deactivation
-                        str_log = 'Deactivated mapping: %s\n' % mapping_id
-                        self.stdout.write(str_log)
+                # Simple progress bars
+                if (self.count % 10) == 0:
+                    str_log = ImportActionHelper.get_progress_descriptor(
+                        'mappings', self.count, total, self.action_count)
+                    self.stdout.write(str_log, ending='\r')
+                    self.stdout.flush()
+                    if (self.count % 1000) == 0:
                         logger.info(str_log)
 
-                except InvalidStateException as exc:
-                    str_log = 'Failed to inactivate mapping on ID %s! %s\n' % (mapping_id, exc.args[0])
-                    self.stderr.write(str_log)
-                    logger.warning(str_log)
-        else:
-            str_log = 'Skipping deactivation loop...\n'
-            self.stdout.write(str_log)
+            # Done with the input file, so close it
+            self.mappings_file.close()
+
+            # Import complete - display final progress bar
+            str_log = ImportActionHelper.get_progress_descriptor(
+                'mappings', self.count, total, self.action_count)
+            self.stdout.write(str_log, ending='\r')
+            self.stdout.flush()
             logger.info(str_log)
 
-        # Display final summary
-        str_log = 'Finished importing mappings!\n'
-        self.stdout.write(str_log)
-        logger.info(str_log)
-        str_log = ImportActionHelper.get_progress_descriptor(
-            'mappings', self.count, total, self.action_count)
-        self.stdout.write(str_log, ending='\r')
-        logger.info(str_log)
+            # Log remaining unhandled IDs
+            str_log = 'Remaining %s unhandled mapping IDs\n' % len(self.mapping_ids)
+            self.stdout.write(str_log)
+            self.stdout.flush()
+            logger.info(str_log)
 
-        actions = self.action_count
-        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
-        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+            # Deactivate old records
+            if deactivate_old_records:
+                str_log = 'Deactivating old mappings...\n'
+                self.stdout.write(str_log)
+                logger.info(str_log)
+                for mapping_id in self.mapping_ids:
+                    try:
+                        if self.remove_mapping(mapping_id):
+                            self.count_action(ImportActionHelper.IMPORT_ACTION_DEACTIVATE)
 
-        if update_index_required:
-            logger.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2,
-                                          workers=4, batchsize=100)
+                            # Log the mapping deactivation
+                            str_log = 'Deactivated mapping: %s\n' % mapping_id
+                            self.stdout.write(str_log)
+                            logger.info(str_log)
 
-        haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
+                    except InvalidStateException as exc:
+                        str_log = 'Failed to inactivate mapping on ID %s! %s\n' % (mapping_id, exc.args[0])
+                        self.stderr.write(str_log)
+                        logger.warning(str_log)
+            else:
+                str_log = 'Skipping deactivation loop...\n'
+                self.stdout.write(str_log)
+                logger.info(str_log)
+
+            # Display final summary
+            str_log = 'Finished importing mappings!\n'
+            self.stdout.write(str_log)
+            logger.info(str_log)
+            str_log = ImportActionHelper.get_progress_descriptor(
+                'mappings', self.count, total, self.action_count)
+            self.stdout.write(str_log, ending='\r')
+            logger.info(str_log)
+
+            actions = self.action_count
+            update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
+            update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+
+            if update_index_required:
+                logger.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+                update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2,
+                                              workers=4, batchsize=100)
+        finally:
+            haystack.signal_processor = initial_signal_processor
 
     def handle_mapping(self, data):
         """ Handle importing of a single mapping """

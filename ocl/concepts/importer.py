@@ -87,33 +87,35 @@ class ConceptsImporter(object):
             self.stderr.flush()
 
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
-        haystack.signal_processor = haystack.signals.BaseSignalProcessor
-        import_start_time = datetime.now()
-        self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+        initial_signal_processor = haystack.signal_processor
+        try:
+            haystack.signal_processor = haystack.signals.BaseSignalProcessor
+            import_start_time = datetime.now()
+            self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
 
-        self.action_count = {}
-        self.test_mode = test_mode
-        self.info('Import concepts to source...')
-        self.handle_new_source_version(new_version)
+            self.action_count = {}
+            self.test_mode = test_mode
+            self.info('Import concepts to source...')
+            self.handle_new_source_version(new_version)
 
-        # Load the JSON file line by line and import each line
-        self.user = User.objects.filter(is_superuser=True)[0]
-        self.concept_version_ids = set(self.source_version.get_concept_ids())
+            # Load the JSON file line by line and import each line
+            self.user = User.objects.filter(is_superuser=True)[0]
+            self.concept_version_ids = set(self.source_version.get_concept_ids())
 
-        lines_handled = self.handle_lines_in_input_file(total)
-        self.output_unhandled_concept_version_ids()
-        self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
-        self.output_summary(lines_handled, total)
+            lines_handled = self.handle_lines_in_input_file(total)
+            self.output_unhandled_concept_version_ids()
+            self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
+            self.output_summary(lines_handled, total)
 
-        actions = self.action_count
-        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
-        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+            actions = self.action_count
+            update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
+            update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
 
-        if update_index_required:
-            self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=4, batchsize=100)
-
-        haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
+            if update_index_required:
+                self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+                update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=4, batchsize=100)
+        finally:
+            haystack.signal_processor = initial_signal_processor
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
