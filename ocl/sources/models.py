@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.db.models import Max
+from django.db.models import Max, datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
@@ -91,11 +91,13 @@ class SourceVersion(ConceptContainerVersionModel):
             concepts = map((lambda x: ObjectId(x)), source_version.concepts)
             from concepts.models import ConceptVersion
             ConceptVersion.objects.raw_update({'_id': {'$in': concepts}}, {'$push': { 'source_version_ids': source_version.id }})
+            ConceptVersion.objects.filter(id__in=source_version.concepts).update(updated_at=datetime.now())
 
             mappings = map((lambda x: ObjectId(x)), source_version.mappings)
             from mappings.models import MappingVersion
             MappingVersion.objects.raw_update({'_id': {'$in': mappings}},
                                               {'$push': {'source_version_ids': source_version.id}})
+            MappingVersion.objects.filter(id__in=source_version.mappings).update(updated_at=datetime.now())
 
             source_version.concepts = []
             source_version.mappings = []
@@ -109,6 +111,7 @@ class SourceVersion(ConceptContainerVersionModel):
             # Using raw query to atomically remove item from the list
             ConceptVersion.objects.raw_update({'_id': ObjectId(concept_previous_version.id)},
                                               {'$pull': {'source_version_ids': self.id}})
+            ConceptVersion.objects.filter(id=concept_previous_version.id).update(updated_at=datetime.now())
             update_search_index(concept_previous_version)
 
         self.add_concept_version(concept_version)
@@ -118,6 +121,7 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
+        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
         update_search_index(concept_version)
 
     def has_concept_version(self, concept_version):
@@ -130,6 +134,7 @@ class SourceVersion(ConceptContainerVersionModel):
             from mappings.models import MappingVersion
             #Using raw query to atomically remove item from the list
             MappingVersion.objects.raw_update({'_id': ObjectId(mapping_previous_version.id)},{'$pull': {'source_version_ids': self.id}})
+            MappingVersion.objects.filter(id=mapping_previous_version.id).update(updated_at=datetime.now())
             update_search_index(mapping_previous_version)
 
         self.add_mapping_version(mapping_version)
@@ -139,6 +144,7 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
+        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
         update_search_index(mapping_version)
 
     def has_mapping_version(self, mapping_version):
