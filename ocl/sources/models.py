@@ -4,13 +4,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.db.models import Max, datetime
+from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
+from datetime import datetime
 
 SOURCE_TYPE = 'Source'
 
