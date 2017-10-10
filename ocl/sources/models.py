@@ -1,17 +1,14 @@
-from bson import ObjectId
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models
 from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
-
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
-from datetime import datetime
+from oclapi.utils import S3ConnectionFactory, get_class
 
 SOURCE_TYPE = 'Source'
 
@@ -61,10 +58,9 @@ SOURCE_VERSION_TYPE = 'Source Version'
 class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
-    retired = models.BooleanField(default=False)
-    #TODO: remove concept and mappings fields after migration on all envs
     concepts = ListField()
     mappings = ListField()
+    retired = models.BooleanField(default=False)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
     _ocl_processing = models.BooleanField(default=False)
@@ -72,106 +68,42 @@ class SourceVersion(ConceptContainerVersionModel):
 
     class MongoMeta:
         indexes = [[('versioned_object_id', 1), ('is_active', 1), ('created_at', 1)],
-                   [('versioned_object_id', 1), ('versioned_object_type', 1)],
-                   [('versioned_object_id', 1), ('mnemonic', 1)],
-                   [('uri', 1)]]
-
-    #TODO: remove once concept and mappings fields are migrated on all envs
-    @classmethod
-    def migrate_concepts_and_mappings_field(cls):
-        source_versions = SourceVersion.objects.all()
-        source_versions_count = SourceVersion.objects.count()
-        source_versions_pos = 0
-        for source_version in source_versions:
-            source_versions_pos = source_versions_pos + 1
-            if len(source_version.concepts) == 0 and len(source_version.mappings) == 0:
-                continue
-
-            print 'Migrating source %s (%s of %s)' % (source_version.mnemonic, source_versions_pos, source_versions_count)
-
-            concepts = map((lambda x: ObjectId(x)), source_version.concepts)
-            from concepts.models import ConceptVersion
-            ConceptVersion.objects.raw_update({'_id': {'$in': concepts}}, {'$push': { 'source_version_ids': source_version.id }})
-            ConceptVersion.objects.filter(id__in=source_version.concepts).update(updated_at=datetime.now())
-
-            mappings = map((lambda x: ObjectId(x)), source_version.mappings)
-            from mappings.models import MappingVersion
-            MappingVersion.objects.raw_update({'_id': {'$in': mappings}},
-                                              {'$push': {'source_version_ids': source_version.id}})
-            MappingVersion.objects.filter(id__in=source_version.mappings).update(updated_at=datetime.now())
-
-            source_version.concepts = []
-            source_version.mappings = []
-            source_version.save()
+                   [('versioned_object_id', 1), ('mappings', 1)],
+                   [('versioned_object_id', 1), ('versioned_object_type', 1), ('concepts', 1)]]
 
     def update_concept_version(self, concept_version):
-        concept_previous_version = concept_version.previous_version
-
-        if concept_previous_version:
-            from concepts.models import ConceptVersion
-            # Using raw query to atomically remove item from the list
-            ConceptVersion.objects.raw_update({'_id': ObjectId(concept_previous_version.id)},
-                                              {'$pull': {'source_version_ids': self.id}})
-            ConceptVersion.objects.filter(id=concept_previous_version.id).update(updated_at=datetime.now())
-            update_search_index(concept_previous_version)
-
-        self.add_concept_version(concept_version)
-
-    def add_concept_version(self, concept_version):
-        from concepts.models import ConceptVersion
-        # Using raw query to atomically add item to the list
-        ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
-                                          {'$push': {'source_version_ids': self.id}})
-        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
-        update_search_index(concept_version)
-
-    def has_concept_version(self, concept_version):
-        return self.id in concept_version.source_version_ids
+        previous_version = concept_version.previous_version
+        save_previous_version = False
+        if previous_version and previous_version.id in self.concepts:
+            save_previous_version = True
+            index = self.concepts.index(previous_version.id)
+            self.concepts[index] = concept_version.id
+        else:
+            self.concepts.append(concept_version.id)
+        self.save()
+        concept_version.save()
+        if save_previous_version:
+            previous_version.save()
 
     def update_mapping_version(self, mapping_version):
-        mapping_previous_version = mapping_version.previous_version
+        previous_version = mapping_version.previous_version
+        save_previous_version = False
+        if previous_version and previous_version.id in self.mappings:
+            save_previous_version = True
+            index = self.mappings.index(previous_version.id)
+            self.mappings[index] = mapping_version.id
+        else:
+            self.mappings.append(mapping_version.id)
+        self.save()
+        mapping_version.save()
+        if save_previous_version:
+            previous_version.save()
 
-        if mapping_previous_version:
-            from mappings.models import MappingVersion
-            #Using raw query to atomically remove item from the list
-            MappingVersion.objects.raw_update({'_id': ObjectId(mapping_previous_version.id)},{'$pull': {'source_version_ids': self.id}})
-            MappingVersion.objects.filter(id=mapping_previous_version.id).update(updated_at=datetime.now())
-            update_search_index(mapping_previous_version)
-
-        self.add_mapping_version(mapping_version)
-
-    def add_mapping_version(self, mapping_version):
-        from mappings.models import MappingVersion
-        # Using raw query to atomically add item to the list
-        MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
-                                          {'$push': {'source_version_ids': self.id}})
-        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
-        update_search_index(mapping_version)
-
-    def has_mapping_version(self, mapping_version):
-        return self.id in mapping_version.source_version_ids
-
-    def get_concepts(self):
-        from concepts.models import ConceptVersion
-        return ConceptVersion.objects.filter(source_version_ids__contains=self.id)
-
-    def get_concept_ids(self):
-        from concepts.models import ConceptVersion
-        return ConceptVersion.objects.filter(source_version_ids__contains=self.id).values_list('id', flat=True)
-
-    def get_mappings(self):
-        from mappings.models import MappingVersion
-        return MappingVersion.objects.filter(source_version_ids__contains=self.id)
-
-    def get_mapping_ids(self):
-        from mappings.models import MappingVersion
-        return MappingVersion.objects.filter(source_version_ids__contains=self.id).values_list('id', flat=True)
 
     def seed_concepts(self):
         seed_concepts_from = self.head_sibling()
         if seed_concepts_from:
-            from concepts.models import ConceptVersion
-            ConceptVersion.objects.raw_update({'source_version_ids': seed_concepts_from.id}, {'$push': { 'source_version_ids': self.id }})
+            self.concepts = list(seed_concepts_from.concepts)
 
     def head_sibling(self):
         try:
@@ -182,11 +114,11 @@ class SourceVersion(ConceptContainerVersionModel):
     def seed_mappings(self):
         seed_mappings_from = self.previous_version or self.parent_version
         if seed_mappings_from:
-            from mappings.models import MappingVersion
-            MappingVersion.objects.raw_update({'source_version_ids': seed_mappings_from.id},
-                                              {'$push': {'source_version_ids': self.id}})
+            self.mappings = list(seed_mappings_from.mappings)
+
 
     def update_version_data(self, obj=None):
+
         if obj:
             self.description = obj.description
         else:
@@ -227,15 +159,21 @@ class SourceVersion(ConceptContainerVersionModel):
 
     @property
     def last_concept_update(self):
-        concepts = self.get_concepts()
-        if not concepts.exists():
+        if not self.concepts:
             return None
-        agg = concepts.aggregate(Max('updated_at'))
+        klass = get_class('concepts.models.ConceptVersion')
+        versions = klass.objects.filter(id__in=self.concepts)
+        if not versions.exists():
+            return None
+        agg = versions.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
     @property
     def last_mapping_update(self):
-        mappings = self.get_mappings()
+        if not self.mappings:
+            return None
+        klass = get_class('mappings.models.MappingVersion')
+        mappings = klass.objects.filter(id__in=self.mappings)
         if not mappings.exists():
             return None
         agg = mappings.aggregate(Max('updated_at'))
@@ -282,6 +220,13 @@ class SourceVersion(ConceptContainerVersionModel):
     def is_processing(version_id):
         version = SourceVersion.objects.get(id=version_id)
         return version._ocl_processing
+
+    @staticmethod
+    def clear_processing(version_id):
+        version = SourceVersion.objects.get(id=version_id)
+        version._ocl_processing = False
+        version.save()
+        return version
 
 @receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):

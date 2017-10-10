@@ -1726,6 +1726,73 @@ class MappingViewsTest(MappingBaseTest):
 
 
 class SourceViewTest(SourceBaseTest):
+    def test_user_is_admin(self):
+        source = Source(
+            name='source1',
+            mnemonic='source1',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source = Source(
+            name='source2',
+            mnemonic='source2',
+            full_name='Source Two',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the second test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.userprofile2
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source = Source(
+            name='source3',
+            mnemonic='source3',
+            full_name='Source Three',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the third test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source1 = Source.objects.get(mnemonic='source1')
+        source2 = Source.objects.get(mnemonic='source2')
+        source3 = Source.objects.get(mnemonic='source3')
+
+        self.userprofile2.organizations.append(self.org1)
+
+        self.assertEquals(self.userprofile1.is_admin_for(source1), True)
+        self.assertEquals(self.userprofile1.is_admin_for(source2), False)
+        self.assertEquals(self.userprofile1.is_admin_for(source3), False)
+
+        self.assertEquals(self.userprofile2.is_admin_for(source1), False)
+        self.assertEquals(self.userprofile2.is_admin_for(source2), True)
+        self.assertEquals(self.userprofile2.is_admin_for(source3), True)
+
+
     def test_update_source_head(self):
         source = Source(
             name='source',
@@ -1930,6 +1997,59 @@ class SourceVersionViewTest(SourceBaseTest):
             reverse('sourceversion-list', kwargs={'org': self.org1.mnemonic, 'source': source.mnemonic}), data)
         self.assertEquals(response.status_code, 409)
 
+class SourceVersionProcessingViewTest(SourceBaseTest):
+    @mock_s3
+    def test_get_version_ocl_processing(self):
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        SourceVersion.persist_new(source_version, self.user1)
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': source.mnemonic,
+            'version': 'version1'
+        }
+
+        uri = reverse('sourceversion-processing', kwargs=kwargs)
+        response = self.client.get(uri)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.content, 'True')
+
+        #response = self.client.post(uri)
+        #self.assertEquals(response.status_code, 403)
+
+        #logged_in = self.client.login(username='superuser', password='superuser')
+
+        response = self.client.post(uri)
+        self.assertEquals(response.status_code, 200)
+
+        response = self.client.get(uri)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.content, 'False')
 
 class SourceVersionExportViewTest(SourceBaseTest):
     @mock_s3
@@ -2179,8 +2299,14 @@ class SourceVersionExportViewTest(SourceBaseTest):
 
         self.client.login(username=self.user1.username, password=self.user1.password)
         response = self.client.post(uri)
-
         self.assertEquals(response.status_code, 409)
+
+        # Clear OCL Processing flag
+        self.client.post(reverse('sourceversion-processing', kwargs=kwargs))
+
+        response = self.client.post(uri)
+        self.assertEquals(response.status_code, 202)
+
 
     @mock_s3
     def test_post_with_same_version_name_in_more_than_one_source(self):
@@ -2356,6 +2482,50 @@ class SourceVersionExportViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 405)
 
 
+class CollectionVersionProcessingViewTest(CollectionBaseTest):
+    @mock_s3
+    def test_get_version_ocl_processing(self):
+        collection = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(collection, self.user1, parent_resource=self.org1)
+
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+            _ocl_processing=True
+        )
+        CollectionVersion.persist_new(collection_version, self.user1)
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'collection': collection.mnemonic,
+            'version': 'version1'
+        }
+        uri = reverse('collectionversion-processing', kwargs=kwargs)
+        response = self.client.get(uri)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.content, 'True')
+
+        response = self.client.post(uri)
+        self.assertEquals(response.status_code, 200)
+
+        response = self.client.get(uri)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.content, 'False')
+
 class CollectionVersionExportViewTest(CollectionBaseTest):
     @mock_s3
     def test_get_version_ocl_processing(self):
@@ -2416,19 +2586,23 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         )
         CollectionVersion.persist_new(collection_version, self.user1)
 
+        self.client.login(username=self.user1.username, password=self.user1.password)
+
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection.mnemonic,
             'version': 'version1'
         }
-
         uri = reverse('collectionversion-export', kwargs=kwargs)
 
-        self.client.login(username=self.user1.username, password=self.user1.password)
         response = self.client.post(uri)
-
         self.assertEquals(response.status_code, 409)
 
+        # Clear OCL Processing flag
+        self.client.post(reverse('collectionversion-processing', kwargs=kwargs))
+
+        response = self.client.post(uri)
+        self.assertEquals(response.status_code, 202)
 
     @mock_s3
     def test_get_invalid_version_404_received(self):

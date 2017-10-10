@@ -453,6 +453,35 @@ class CollectionVersionReferenceListView(CollectionVersionBaseView,
         self.object_list = references if sort == 'ASC' else list(reversed(references))
         return self.list(request, *args, **kwargs)
 
+class CollectionVersionProcessingView(ResourceAttributeChildMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = CollectionVersion
+    permission_classes = (CanViewConceptDictionaryVersion,)
+
+    def get(self, request, *args, **kwargs):
+        version = self.get_object()
+        logger.debug('Processing flag requested for collection version %s' % version)
+
+        response = HttpResponse(status=200)
+        response.content = CollectionVersion.is_processing(version.id)
+        return response
+
+    def post(self, request, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        user = request.user
+
+        #if not (user.is_staff or user.is_superuser):
+        #    return HttpResponseForbidden()
+
+        version = self.get_object()
+        logger.debug('Processing flag clearance requested for collection version %s' % version)
+
+        CollectionVersion.clear_processing(version.id)
+
+        response = HttpResponse(status=200)
+        return response
 
 class CollectionVersionExportView(ResourceAttributeChildMixin):
     lookup_field = 'version'
@@ -513,15 +542,15 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
     def post(self, request, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        version = self.get_object()
 
+        version = self.get_object()
         logger.debug('Collection Export requested for version %s (post)' % version)
 
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)  # export of head version is not allowed
 
         if CollectionVersion.is_processing(version.id):
-            logger.debug('   Collection Version is processing')
+            logger.debug('   Collection Version is processing, action prohibited')
             return HttpResponse(status=409)
 
         status = 303
@@ -531,12 +560,20 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
             response = HttpResponse(status=status)
             response['URL'] = self.resource_version_path_info + 'export/'
             return response
+
         return HttpResponse(status=status)
 
     def delete(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return HttpResponseForbidden()
+        user = request.user
+        userprofile = UserProfile.objects.get(mnemonic=user.username)
         version = self.get_object()
+
+        permitted = user.is_staff or \
+                    user.is_superuser or \
+                    userprofile.is_admin_for(version.versioned_object)
+
+        if not permitted:
+            return HttpResponseForbidden()
         if version.has_export():
             key = version.get_export_key()
             if key:

@@ -361,6 +361,36 @@ class SourceVersionChildListView(ResourceAttributeChildMixin, ListWithHeadersMix
         return queryset.filter(parent_version=self.resource_version, is_active=True)
 
 
+class SourceVersionProcessingView(ResourceAttributeChildMixin):
+    lookup_field = 'version'
+    pk_field = 'mnemonic'
+    model = SourceVersion
+    permission_classes = (CanViewConceptDictionaryVersion,)
+
+    def get(self, request, *args, **kwargs):
+        version = self.get_object()
+        logger.debug('Processing flag requested for source version %s' % version)
+
+        response = HttpResponse(status=200)
+        response.content = SourceVersion.is_processing(version.id)
+        return response
+
+    def post(self, request, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        user = request.user
+
+        #if not (user.is_staff or user.is_superuser):
+        #    return HttpResponseForbidden()
+
+        version = self.get_object()
+        logger.debug('Processing flag clearance requested for source version %s' % version)
+
+        SourceVersion.clear_processing(version.id)
+
+        response = HttpResponse(status=200)
+        return response
+
 class SourceVersionExportView(ResourceAttributeChildMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
@@ -438,9 +468,16 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         return HttpResponse(status=status)
 
     def delete(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return HttpResponseForbidden()
+        user = request.user
+        userprofile = UserProfile.objects.get(mnemonic=user.username)
         version = self.get_object()
+
+        permitted = user.is_staff or \
+                    user.is_superuser or \
+                    userprofile.is_admin_for(version.versioned_object)
+
+        if not permitted:
+            return HttpResponseForbidden()
         if version.has_export():
             key = version.get_export_key()
             if key:
