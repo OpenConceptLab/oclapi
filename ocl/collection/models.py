@@ -413,6 +413,13 @@ class CollectionVersion(ConceptContainerVersionModel):
         version = CollectionVersion.objects.get(id=version_id)
         return version._ocl_processing
 
+    @staticmethod
+    def clear_processing(version_id):
+        version = CollectionVersion.objects.get(id=version_id)
+        version._ocl_processing = False
+        version.save()
+        return version
+
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
 

@@ -221,6 +221,12 @@ class SourceVersion(ConceptContainerVersionModel):
         version = SourceVersion.objects.get(id=version_id)
         return version._ocl_processing
 
+    @staticmethod
+    def clear_processing(version_id):
+        version = SourceVersion.objects.get(id=version_id)
+        version._ocl_processing = False
+        version.save()
+        return version
 
 @receiver(post_save)
 def propagate_owner_status(sender, instance=None, created=False, **kwargs):
