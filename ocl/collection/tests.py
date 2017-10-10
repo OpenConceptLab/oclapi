@@ -33,9 +33,19 @@ class CollectionBaseTest(OclApiBaseTestCase):
             first_name='User',
             password='user2'
         )
+        self.superuser = User.objects.create(
+            username='superuser',
+            password='superuser',
+            email='superuser@test.com',
+            last_name='Super',
+            first_name='User',
+            is_superuser=True,
+            is_active=True,
+        )
 
         self.userprofile1 = UserProfile.objects.create(user=self.user1, mnemonic='user1')
         self.userprofile2 = UserProfile.objects.create(user=self.user2, mnemonic='user2')
+        self.superuserprofile = UserProfile.objects.create(user=self.superuser, mnemonic='superuser')
 
         self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
         self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
