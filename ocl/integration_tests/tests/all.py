@@ -55,7 +55,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(1, len(content))
-        source_head_concepts = SourceVersion.objects.get(mnemonic='HEAD', versioned_object_id=self.source1.id).concepts
+        source_head_concepts = SourceVersion.objects.get(mnemonic='HEAD', versioned_object_id=self.source1.id).get_concept_ids()
         self.assertEquals(1, len(source_head_concepts))
         self.assertEquals(content[0]['version'], source_head_concepts[0])
 
@@ -672,7 +672,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(response.status_code, 200)
         content = json.loads(response.content)
         self.assertEquals(2, len(content))
-        source_head_concepts = SourceVersion.objects.get(mnemonic='HEAD', versioned_object_id=self.source1.id).concepts
+        source_head_concepts = SourceVersion.objects.get(mnemonic='HEAD', versioned_object_id=self.source1.id).get_concept_ids()
         self.assertEquals(2, len(source_head_concepts))
         for concept in content:
             self.assertTrue(concept['version'] in source_head_concepts)

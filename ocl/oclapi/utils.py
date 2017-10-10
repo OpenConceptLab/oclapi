@@ -4,6 +4,7 @@ import tarfile
 import tempfile
 import gzip
 
+import haystack
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from haystack.utils import loading
@@ -134,7 +135,11 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         for start in range(0, active_concepts, batch_size):
             end = min(start + batch_size, active_concepts)
             logger.info('Serializing concepts %d - %d...' % (start+1, end))
-            concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+            if resource_type == 'collection':
+                concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+            else:
+                concept_versions = version.get_concepts().filter(is_active=True)[start:end]
+            logger.info('Fetching %s concepts...' % concept_versions.count())
             concept_serializer = concept_serializer_class(concept_versions, many=True)
             concept_data = concept_serializer.data
             concept_string = json.dumps(concept_data, cls=encoders.JSONEncoder)
@@ -158,7 +163,11 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         for start in range(0, active_mappings, batch_size):
             end = min(start + batch_size, active_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
-            mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+            if resource_type == 'collection':
+                mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+            else:
+                mappings = version.get_mappings().filter(is_active=True)[start:end]
+            logger.info('Fetching %s mappings...' % mappings.count())
             mapping_serializer = mapping_serializer_class(mappings, many=True)
             mapping_data = mapping_serializer.data
             mapping_string = json.dumps(mapping_data, cls=encoders.JSONEncoder)
@@ -222,6 +231,17 @@ def cd_temp():
     os.chdir(tmpdir)
     return cwd
 
+def update_search_index(object):
+    if haystack.signal_processor == haystack.signals.RealtimeSignalProcessor:
+        objectType = type(object)
+        default_connection = haystack_connections['default']
+        unified_index = default_connection.get_unified_index()
+        index = unified_index.get_index(objectType)
+        backend = default_connection.get_backend()
+
+        #fetch the most recent data from db
+        object = objectType.objects.filter(id = object.id)
+        backend.update(index, object)
 
 def update_all_in_index(model, qs):
     if not qs.exists():

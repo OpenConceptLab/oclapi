@@ -52,17 +52,7 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
         self.prepared_data['fromConceptOwnerType'] = obj.from_source_owner_type
         self.prepared_data['toConceptOwnerType'] = obj.to_source_owner_type
         self.prepared_data['conceptOwnerType'] = [obj.from_source_owner_type, obj.to_source_owner_type]
-
-        source_version_ids = []
-        source = obj.parent
-        source_versions = SourceVersion.objects.filter(
-            versioned_object_id=source.id, mappings__contains=obj.id
-        ).values('id')
-        if source_versions:
-            for source_version in source_versions:
-                source_version_ids.append(source_version['id'])
-
-        self.prepared_data['source_version'] = source_version_ids
+        self.prepared_data['source_version'] = list(obj.source_version_ids)
 
         return self.prepared_data
 

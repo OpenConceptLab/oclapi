@@ -256,6 +256,16 @@ class CollectionVersion(ConceptContainerVersionModel):
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
 
+    class MongoMeta:
+        indexes = [[('concepts', 1)],
+                   [('mappings', 1)]]
+        
+    def get_concept_ids(self):
+        return self.concepts
+
+    def get_mapping_ids(self):
+        return self.mappings
+
     def fill_data_for_reference(self, a_reference):
         if a_reference.concepts:
             self.concepts = self.concepts + list([concept.id for concept in a_reference.concepts])
@@ -283,6 +293,7 @@ class CollectionVersion(ConceptContainerVersionModel):
                     result.append(resource_id)
 
             setattr(self, resource_type, result)
+            self.save()
 
     def seed_references(self):
         seed_references_from = self.head_sibling()

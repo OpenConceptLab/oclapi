@@ -505,7 +505,7 @@ class ConceptBasicValidationTest(ConceptBaseTest):
 class ConceptClassMethodsTest(ConceptBaseTest):
     def test_persist_new_positive(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
 
         self.assertEquals(0, len(errors))
@@ -522,13 +522,13 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(1, len(source_version.get_concept_ids()))
+        self.assertTrue(concept_version.id in source_version.get_concept_ids())
         self.assertEquals(concept_version.mnemonic, concept_version.id)
 
     def test_persist_new_negative__no_owner(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=None, source=self.source1)
 
@@ -539,11 +539,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(0, concept.num_versions)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
     def test_persist_new_negative__no_parent(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=None)
 
@@ -554,11 +554,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(0, concept.num_versions)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
     def test_persist_new_negative_repeated_mnemonic(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
 
@@ -575,8 +575,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         concept_version = ConceptVersion.get_latest_version_of(concept)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(1, len(source_version.get_concept_ids()))
+        self.assertTrue(concept_version.id in source_version.get_concept_ids())
 
         # Repeat with same mnemonic
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
@@ -586,11 +586,11 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(0, concept.num_versions)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.concepts))
+        self.assertEquals(1, len(source_version.get_concept_ids()))
 
     def test_persist_new_positive__repeated_mnemonic(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
 
@@ -608,12 +608,12 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(1, len(source_version.get_concept_ids()))
+        self.assertTrue(concept_version.id in source_version.get_concept_ids())
 
         # Repeat with same mnemonic, different parent
         source_version = SourceVersion.get_latest_version_of(self.source2)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source2, names=[self.name])
 
@@ -631,8 +631,8 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(concept_version, concept_version.root_version)
 
         source_version = SourceVersion.objects.get(id=source_version.id)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertTrue(concept_version.id in source_version.concepts)
+        self.assertEquals(1, len(source_version.get_concept_ids()))
+        self.assertTrue(concept_version.id in source_version.get_concept_ids())
 
     def test_persist_new_positive__earlier_source_version(self):
         version1 = SourceVersion.get_latest_version_of(self.source1)
@@ -657,16 +657,16 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(concept_version, concept_version.root_version)
 
         version1 = SourceVersion.objects.get(id=version1.id)
-        self.assertEquals(1, len(version1.concepts))
-        self.assertTrue(concept_version.id in version1.concepts)
+        self.assertEquals(1, len(version1.get_concept_ids()))
+        self.assertTrue(concept_version.id in version1.get_concept_ids())
 
         version2 = SourceVersion.objects.get(id=version2.id)
-        self.assertEquals(0, len(version2.concepts))
-        self.assertFalse(concept_version.id in version2.concepts)
+        self.assertEquals(0, len(version2.get_concept_ids()))
+        self.assertFalse(concept_version.id in version2.get_concept_ids())
 
     def test_retire_positive(self):
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(source_version.concepts))
+        self.assertEquals(0, len(source_version.get_concept_ids()))
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
 
         self.assertEquals(0, len(errors))
@@ -679,8 +679,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertFalse(concept_version.retired)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertEquals(concept_version.id, source_version.concepts[0])
+        self.assertItemsEqual([concept_version.id], source_version.get_concept_ids())
 
         errors = Concept.retire(concept, self.user1)
         self.assertFalse(errors)
@@ -698,8 +697,7 @@ class ConceptClassMethodsTest(ConceptBaseTest):
         self.assertEquals(self.user1.username, concept_version.version_created_by)
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertEquals(concept_version.id, source_version.concepts[0])
+        self.assertItemsEqual([concept_version.id], source_version.get_concept_ids())
 
         self.assertEquals(
             1, ConceptVersion.objects.filter(versioned_object_id=concept.id, retired=True).count())
@@ -1090,8 +1088,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
         source_version.update_concept_version(self.concept_version)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertEquals(self.concept_version.id, source_version.concepts[0])
+        self.assertItemsEqual([self.concept_version.id], source_version.get_concept_ids())
 
         version2 = self.concept_version.clone()
         errors = ConceptVersion.persist_clone(version2, self.user1)
@@ -1105,9 +1102,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         self.assertEquals(self.concept_version.external_id, version2.external_id)
         self.assertEquals(self.user1.username, version2.version_created_by)
 
-        source_version.update_concept_version(version2)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertEquals(version2.id, source_version.concepts[0])
+        self.assertItemsEqual([version2.id], source_version.get_concept_ids())
 
     def test_persist_clone_negative__no_user(self):
         self.assertEquals(2, self.concept1.num_versions)
@@ -1117,8 +1112,7 @@ class ConceptVersionStaticMethodsTest(ConceptBaseTest):
         source_version = SourceVersion.get_latest_version_of(self.source1)
 
         source_version.update_concept_version(self.concept_version)
-        self.assertEquals(1, len(source_version.concepts))
-        self.assertEquals(self.concept_version.id, source_version.concepts[0])
+        self.assertItemsEqual([self.concept_version.id], source_version.get_concept_ids())
 
         version2 = self.concept_version.clone()
         errors = ConceptVersion.persist_clone(version2)
@@ -1147,7 +1141,6 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         view = ConceptVersionListView()
         view.kwargs = {}
         view.parent_resource_version = self.source1.get_head()
-        view.child_list_attribute = 'concepts'
         csv_rows = view.get_csv_rows()
         self.assertEquals(len(csv_rows), 1)
         self.assertEquals(csv_rows[0].get('Retired'), False)

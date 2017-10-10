@@ -681,16 +681,13 @@ class SourceVersionTest(SourceBaseTest):
 
         self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
         self.assertTrue(Concept.objects.filter(mnemonic='concept2').exists())
-        self.assertEquals(len(SourceVersion.objects.get(id=head.id).concepts), 2)
-        self.assertEquals(len(SourceVersion.objects.get(mnemonic=version1.mnemonic).concepts), 1)
+        self.assertEquals(len(SourceVersion.objects.get(id=head.id).get_concept_ids()), 2)
+        self.assertEquals(len(SourceVersion.objects.get(mnemonic=version1.mnemonic).get_concept_ids()), 1)
 
         source_version2 = SourceVersion(name='version2', mnemonic='version2', versioned_object=self.source1, released=True, created_by=self.user1, updated_by=self.user1)
         SourceVersion.persist_new(source_version2)
 
-        source_version2.seed_concepts()
-
-
-        self.assertEquals(source_version2.concepts, self.source1.get_head().concepts)
+        self.assertItemsEqual(source_version2.get_concept_ids(), self.source1.get_head().get_concept_ids())
 
     def test_head_sibling(self):
         source_version1 = SourceVersion(
@@ -1079,9 +1076,9 @@ class SourceVersionClassMethodTest(SourceBaseTest):
 
     def test_persist_changes_positive__seed_from_previous(self):
         version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
-        version1.concepts = [1]
         version1.full_clean()
         version1.save()
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1, source_version=version1)
 
         version2 = SourceVersion.for_base_object(self.source1, 'version2')
         version2.full_clean()
@@ -1108,7 +1105,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.previous_version)
-        self.assertEquals([], version2.concepts)
+        self.assertEquals(0, len(version2.get_concept_ids()))
         # self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -1122,13 +1119,13 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.previous_version)
-        self.assertEquals([1], version2.concepts)
+        self.assertItemsEqual(version1.get_concept_ids(), version2.get_concept_ids())
 
     def test_persist_changes_positive__seed_from_parent(self):
         version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
-        version1.concepts = [2]
         version1.full_clean()
         version1.save()
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1, source_version=version1)
 
         version2 = SourceVersion.for_base_object(self.source1, 'version1')
         version2.full_clean()
@@ -1155,7 +1152,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.parent_version)
-        self.assertEquals([], version2.concepts)
+        self.assertEquals(0, len(version2.get_concept_ids()))
         # self.assertNotEquals(mnemonic, version2.mnemonic)
         self.assertNotEquals(released, version2.released)
         self.assertNotEquals(description, version2.description)
@@ -1169,18 +1166,18 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(2, self.source1.num_versions)
         self.assertEquals(version2, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version2.parent_version)
-        self.assertEquals([2], version2.concepts)
+        self.assertItemsEqual(version1.get_concept_ids(), version2.get_concept_ids())
 
     def test_persist_changes_positive__seed_from_previous_over_parent(self):
         version1 = SourceVersion.for_base_object(self.source1, 'INITIAL')
-        version1.concepts = [1]
         version1.full_clean()
         version1.save()
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1, source_version=version1)
 
         version2 = SourceVersion.for_base_object(self.source1, 'version2')
-        version2.concepts = [2]
         version2.full_clean()
         version2.save()
+        create_concept(mnemonic='concept2', user=self.user1, source=self.source1, source_version=version2)
         self.assertIsNone(version2.previous_version)
 
         version3 = SourceVersion.for_base_object(self.source1, 'version3')
@@ -1209,7 +1206,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version1, version3.previous_version)
         self.assertEquals(version2, version3.parent_version)
-        self.assertEquals([], version3.concepts)
+        self.assertEquals(0, len(version3.get_concept_ids()))
         # self.assertNotEquals(mnemonic, version3.mnemonic)
         self.assertNotEquals(released, version3.released)
         self.assertNotEquals(description, version3.description)
@@ -1224,7 +1221,7 @@ class SourceVersionClassMethodTest(SourceBaseTest):
         self.assertEquals(version3, SourceVersion.get_latest_version_of(self.source1))
         self.assertEquals(version2, version3.parent_version)
         self.assertEquals(version1, version3.previous_version)
-        self.assertEquals([1], version3.concepts)
+        self.assertItemsEqual(version1.get_concept_ids(), version3.get_concept_ids())
 
 class SourceVersionListViewTest(SourceBaseTest):
 

@@ -3,6 +3,8 @@ from configurations import values
 
 
 class Local(Common):
+    BASE_URL = 'http://localhost:8000'
+
     SECRET_KEY = values.Value(environ_name='SECRET_KEY', environ_prefix='', default='s3owRP0sLI2opDDI6qIgG3iD57')
 
     # DEBUG = False

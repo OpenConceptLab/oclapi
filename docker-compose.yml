@@ -68,6 +68,8 @@ services:
   flower:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_flower.sh
+    ports:
+      - "5555:5555"
     depends_on:
       - celery
     links:
@@ -75,13 +77,12 @@ services:
     environment:
       - C_FORCE_ROOT=1
       - SECRET_KEY
+      - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
     restart: always
     healthcheck:
       test: "exit 0"
   backup:
     image: openmrs/cron-backup
-    depends_on:
-      - api
     volumes:
       - mongo_data:/mongo_data
       - solr_data:/solr_data

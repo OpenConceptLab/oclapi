@@ -129,7 +129,7 @@ def create_collection(user, validation_schema=None, name=None):
     return Collection.objects.get(id=collection.id)
 
 
-def create_concept(user, source, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None,
+def create_concept(user, source, source_version=None, names=None, mnemonic=None, descriptions=None, concept_class=None, datatype=None,
                    force=False, extras=None):
     suffix = generate_random_string()
 
@@ -156,6 +156,9 @@ def create_concept(user, source, names=None, mnemonic=None, descriptions=None, c
         kwargs = {
             'parent_resource': source,
         }
+        if source_version is not None:
+            kwargs['parent_resource_version'] = source_version
+
         errors = Concept.persist_new(concept, user, **kwargs)
     else:
         errors = Concept.persist_new(concept, user)

@@ -291,5 +291,6 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
             errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
             if errors:
                 self._errors.update(errors)
-            else:
-                update_children_for_resource_version.delay(obj.id, 'source')
+
+        if not errors:
+         update_children_for_resource_version.delay(obj.id, 'source')

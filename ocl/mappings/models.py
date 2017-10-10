@@ -4,11 +4,13 @@ from django.db import models
 from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django_mongodb_engine.contrib import MongoDBManager
 
 from concepts.models import Concept
 from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source, SourceVersion
+from djangotoolbox.fields import SetField
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
@@ -17,17 +19,17 @@ class Mapping(MappingValidationMixin, BaseModel):
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')
-    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to', db_index=False)
-    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to', db_index=False)
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_to')
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_to')
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
 
     class MongoMeta:
-        indexes = [[("parent", 1), ("map_type", 1), ("from_concept", 1), ("to_concept", 1), ("to_source", 1), ("to_concept_code", 1)],
-                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
-                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)]]
+        indexes = [[('parent', 1), ('from_concept', 1)],
+                   [('parent'), ('to_concept', 1)],
+                   [('parent', 1), ('retired', 1), ('is_active', 1)]]
 
     def clone(self, user):
         return Mapping(
@@ -195,14 +197,6 @@ class Mapping(MappingValidationMixin, BaseModel):
         errors = dict()
         obj.updated_by = updated_by
         try:
-            if obj.to_source == None:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_concept"),
-                )
-            else:
-                obj._meta.unique_together = (
-                    ("parent", "map_type", "from_concept", "to_source", "to_concept_code"),
-                )
             obj.full_clean()
         except ValidationError as e:
             errors.update(e.message_dict)
@@ -215,6 +209,7 @@ class Mapping(MappingValidationMixin, BaseModel):
 
             prev_latest_version = MappingVersion.objects.get(versioned_object_id=obj.id, is_latest_version=True)
             prev_latest_version.is_latest_version = False
+            prev_latest_version.save()
 
             new_latest_version  = MappingVersion.for_mapping(obj)
             new_latest_version.previous_version = prev_latest_version
@@ -223,8 +218,6 @@ class Mapping(MappingValidationMixin, BaseModel):
             new_latest_version.save()
 
             source_version.update_mapping_version(new_latest_version)
-            prev_latest_version.save()
-
 
             persisted = True
         finally:
@@ -266,9 +259,6 @@ class Mapping(MappingValidationMixin, BaseModel):
         if parent_resource_version is None:
             parent_resource_version = parent_resource.get_version_model().get_head_of(parent_resource)
 
-        child_list_attribute = kwargs.pop('mapping_list_attribute', 'mappings')
-        initial_parent_children = getattr(parent_resource_version, child_list_attribute) or []
-
         errored_action = 'saving mapping'
         persisted = False
         initial_version=None
@@ -284,24 +274,16 @@ class Mapping(MappingValidationMixin, BaseModel):
             mapping.save()
 
             errored_action = 'associating mapping with parent resource'
-            parent_children = getattr(parent_resource_version, child_list_attribute) or []
-            parent_children.append(initial_version.id)
-            setattr(parent_resource_version, child_list_attribute, parent_children)
-            parent_resource_version.save()
+            parent_resource_version.add_mapping_version(initial_version)
 
-            # Save the mapping again to trigger the Solr update
-            errored_action = 'saving mapping to trigger Solr update'
-            initial_version.save()
             persisted = True
         finally:
             if not persisted:
                 errors['non_field_errors'] = ['An error occurred while %s.' % errored_action]
-                setattr(parent_resource_version, child_list_attribute, initial_parent_children)
-                parent_resource_version.save()
-                if mapping.id:
-                    mapping.delete()
                 if initial_version and initial_version.id:
                     initial_version.delete()
+                if mapping.id:
+                    mapping.delete()
         return errors
 
     @classmethod
@@ -344,14 +326,24 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     parent = models.ForeignKey(Source, related_name='mappings_version_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_version_from')
-    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_version_to', db_index=False)
-    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to', db_index=False)
+    to_concept = models.ForeignKey(Concept, null=True, blank=True, related_name='mappings_version_to')
+    to_source = models.ForeignKey(Source, null=True, blank=True, related_name='mappings_version_to')
     to_concept_code = models.TextField(null=True, blank=True)
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
+    source_version_ids = SetField()
+
+    objects = MongoDBManager()
+
+    class MongoMeta:
+        indexes = [[('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_concept', 1), ('to_source', 1), ('to_concept_code', 1)],
+                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
+                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)],
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)],
+                   [('source_version_ids', 1)]]
 
     def clone(self):
         return MappingVersion(

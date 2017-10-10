@@ -1,7 +1,7 @@
 """ Concepts importer module """
 import json
 import logging
-from datetime import datetime
+
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -14,6 +14,7 @@ from sources.models import SourceVersion
 
 from haystack.management.commands import update_index
 import haystack
+from datetime import datetime
 
 __author__ = 'misternando,paynejd'
 logger = logging.getLogger('batch')
@@ -66,7 +67,7 @@ class ConceptsImporter(object):
         self.stderr = error_stream
         self.user = user
         # Retrieve latest source version and, if specified, create a new one
-        self.source_version = SourceVersion.get_latest_version_of(self.source)
+        self.source_version = SourceVersion.get_head_of(self.source)
         self.validation_logger = validation_logger
         self.save_validation_errors = save_validation_errors
 
@@ -86,41 +87,39 @@ class ConceptsImporter(object):
             self.stderr.flush()
 
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
-        haystack.signal_processor = haystack.signals.BaseSignalProcessor
-        import_start_time = datetime.now()
-        self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+        initial_signal_processor = haystack.signal_processor
+        try:
+            haystack.signal_processor = haystack.signals.BaseSignalProcessor
+            import_start_time = datetime.now()
+            self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
 
-        self.action_count = {}
-        self.test_mode = test_mode
-        self.info('Import concepts to source...')
-        self.handle_new_source_version(new_version)
+            self.action_count = {}
+            self.test_mode = test_mode
+            self.info('Import concepts to source...')
+            self.handle_new_source_version(new_version)
 
-        # Load the JSON file line by line and import each line
-        self.user = User.objects.filter(is_superuser=True)[0]
-        self.concept_version_ids = set(self.source_version.concepts)
+            # Load the JSON file line by line and import each line
+            self.user = User.objects.filter(is_superuser=True)[0]
+            self.concept_version_ids = set(self.source_version.get_concept_ids())
 
-        self.create_concept_versions_map()
-        lines_handled = self.handle_lines_in_input_file(total)
-        self.output_unhandled_concept_version_ids()
-        self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
-        self.output_summary(lines_handled, total)
+            lines_handled = self.handle_lines_in_input_file(total)
+            self.output_unhandled_concept_version_ids()
+            self.handle_deactivation__of_old_records(deactivate_old_records)  # Display final summary
+            self.output_summary(lines_handled, total)
 
-        actions = self.action_count
-        update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
-        update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
+            actions = self.action_count
+            update_index_required = actions.get(ImportActionHelper.IMPORT_ACTION_ADD, 0) > 0
+            update_index_required |= actions.get(ImportActionHelper.IMPORT_ACTION_UPDATE, 0) > 0
 
-        if update_index_required:
-            self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
-            update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=1, workers=8, batchsize=128)
-
-        haystack.signal_processor = haystack.signals.RealtimeSignalProcessor
+            if update_index_required:
+                self.info('Indexing objects updated since {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
+                update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=4, batchsize=100)
+        finally:
+            haystack.signal_processor = initial_signal_processor
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
-        self.info('Remaining unhandled concept versions:\n', ending='\r')
-
-        log = ','.join(str(el) for el in self.concept_version_ids)
-        self.info(log, ending='\r', flush=True)
+        self.info('Remaining %s unhandled concept versions' % len(self.concept_version_ids))
 
     def handle_new_source_version(self, new_version):
         if not new_version:
@@ -165,10 +164,10 @@ class ConceptsImporter(object):
             self.try_import_concept(data)
 
             # Simple progress bar
-            if (lines_handled % 10) == 0:
+            if (lines_handled % 100) == 0:
                 log = ImportActionHelper.get_progress_descriptor(
                     'concepts', lines_handled, total, self.action_count)
-                self.stdout.write(log, ending='\r')
+                self.stdout.write(log)
                 self.stdout.flush()
                 if (lines_handled % 1000) == 0:
                     logger.info(log)
@@ -180,7 +179,7 @@ class ConceptsImporter(object):
         # Import complete - display final progress bar
         log = ImportActionHelper.get_progress_descriptor(
             'concepts', lines_handled, total, self.action_count)
-        self.info(log, ending='\r', flush=True)
+        self.info(log, flush=True)
         return lines_handled
 
     def try_import_concept(self, data):
@@ -223,10 +222,11 @@ class ConceptsImporter(object):
     def create_new_source_version(self, new_version):
         new_source_version = SourceVersion.for_base_object(
             self.source, new_version, previous_version=self.source_version)
-        new_source_version.seed_concepts()
-        new_source_version.seed_mappings()
         new_source_version.full_clean()
         new_source_version.save()
+        new_source_version.seed_concepts()
+        new_source_version.seed_mappings()
+
         self.source_version = new_source_version
 
     def handle_concept(self, source, data):
@@ -241,7 +241,7 @@ class ConceptsImporter(object):
         # If concept exists, update the concept with the new data (ignoring retired status for now)
         try:
             concept = Concept.objects.get(parent_id=source.id, mnemonic=mnemonic)
-            concept_version = ConceptVersion.objects.get(id=self.concepts_versions_map[concept.id])
+            concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id, is_latest_version=True)
             update_action = self.update_concept_version(concept_version, data)
 
             # Remove ID from the concept version list so that we know concept has been handled
@@ -292,7 +292,7 @@ class ConceptsImporter(object):
         if not serializer.is_valid():
             raise IllegalInputException('Could not parse new concept %s' % data['id'])
         if not self.test_mode:
-            serializer.save(force_insert=True, parent_resource=source, child_list_attribute='concepts')
+            serializer.save(force_insert=True, parent_resource=source)
 
             if not serializer.is_valid():
                 raise ValidationError(serializer.errors)
@@ -373,12 +373,3 @@ class ConceptsImporter(object):
             self.action_count[update_action] = 0
 
         self.action_count[update_action] += 1
-
-    def create_concept_versions_map(self):
-        # Create map for all concept ids to concept versions
-        try:
-            versions_list = ConceptVersion.objects.values('id', 'versioned_object_id').filter(
-                id__in=self.concept_version_ids)
-            self.concepts_versions_map = dict((x['versioned_object_id'], x['id']) for x in versions_list)
-        except KeyError:
-            raise InvalidStateException("Map couldn't be created, possible corruption of data")

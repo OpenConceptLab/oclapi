@@ -9,7 +9,7 @@ from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_mongodb_engine.contrib import MongoDBManager
-from djangotoolbox.fields import ListField, EmbeddedModelField
+from djangotoolbox.fields import SetField, ListField, EmbeddedModelField
 from uuidfield import UUIDField
 
 from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
@@ -230,10 +230,12 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     is_latest_version = models.BooleanField(default=True)
     version_created_by = models.TextField()
     update_comment = models.TextField(null=True, blank=True)
+    source_version_ids = SetField()
 
     class MongoMeta:
-        indexes = [[('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)]]
-
+        indexes = [[ ('uri', 1) ],
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)],
+                   [('source_version_ids', 1)]]
 
     objects = MongoDBManager()
 
