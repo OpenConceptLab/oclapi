@@ -334,7 +334,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     external_id = models.TextField(null=True, blank=True)
     is_latest_version = models.BooleanField(default=True)
     update_comment = models.TextField(null=True, blank=True)
-    source_version_ids = SetField(db_index=True)
+    source_version_ids = SetField()
 
     objects = MongoDBManager()
 

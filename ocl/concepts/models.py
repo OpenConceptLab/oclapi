@@ -230,7 +230,7 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     is_latest_version = models.BooleanField(default=True)
     version_created_by = models.TextField()
     update_comment = models.TextField(null=True, blank=True)
-    source_version_ids = SetField(db_index=True)
+    source_version_ids = SetField()
 
     class MongoMeta:
         indexes = [[ ('uri', 1) ],
