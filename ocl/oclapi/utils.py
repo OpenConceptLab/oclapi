@@ -135,7 +135,10 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         for start in range(0, active_concepts, batch_size):
             end = min(start + batch_size, active_concepts)
             logger.info('Serializing concepts %d - %d...' % (start+1, end))
-            concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+            if resource_type == 'collection':
+                concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+            else:
+                concept_versions = version.get_concepts().filter(is_active=True)[start:end]
             concept_serializer = concept_serializer_class(concept_versions, many=True)
             concept_data = concept_serializer.data
             concept_string = json.dumps(concept_data, cls=encoders.JSONEncoder)
@@ -159,7 +162,10 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         for start in range(0, active_mappings, batch_size):
             end = min(start + batch_size, active_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
-            mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+            if resource_type == 'collection':
+                mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+            else:
+                mappings = version.get_mappings().filter(is_active=True)[start:end]
             mapping_serializer = mapping_serializer_class(mappings, many=True)
             mapping_data = mapping_serializer.data
             mapping_string = json.dumps(mapping_data, cls=encoders.JSONEncoder)
