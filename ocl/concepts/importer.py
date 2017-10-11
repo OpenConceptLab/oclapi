@@ -89,6 +89,7 @@ class ConceptsImporter(object):
     def import_concepts(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
         initial_signal_processor = haystack.signal_processor
         try:
+            haystack.signal_processor.teardown()
             haystack.signal_processor = haystack.signals.BaseSignalProcessor
             import_start_time = datetime.now()
             self.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
@@ -116,6 +117,7 @@ class ConceptsImporter(object):
                 update_index.Command().handle(start_date=import_start_time.strftime("%Y-%m-%dT%H:%M:%S"), verbosity=2, workers=4, batchsize=100)
         finally:
             haystack.signal_processor = initial_signal_processor
+            haystack.signal_processor.setup()
 
     def output_unhandled_concept_version_ids(self):
         # Log remaining unhandled IDs
