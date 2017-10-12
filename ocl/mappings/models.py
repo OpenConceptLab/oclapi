@@ -442,7 +442,11 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
 
     @property
     def to_mapping_url(self):
-        return self.versioned_object.uri
+        try:
+            return self.versioned_object.uri
+        except Exception as err:
+            err.message = err.message + ' missing mapping id for ' + self.id
+            raise
 
     @property
     def to_source_owner(self):
