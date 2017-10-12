@@ -180,9 +180,12 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
 
 
     def get_url(self, obj):
-        if obj.is_latest_version:
-            return Mapping.objects.get(id=obj.versioned_object_id).url
-        return obj.url
+        try:
+            if obj.is_latest_version:
+                return Mapping.objects.get(id=obj.versioned_object_id).url
+            return obj.url
+        except:
+            raise Exception('Mapping %s does not exist' % obj.versioned_object_id)
 
 
 

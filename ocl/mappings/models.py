@@ -444,9 +444,9 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     def to_mapping_url(self):
         try:
             return self.versioned_object.uri
-        except Exception as err:
-            err.message = err.message + ' missing mapping id for ' + self.id
-            raise
+        except:
+            raise Exception('Mapping %s does not exist' % self.id)
+
 
     @property
     def to_source_owner(self):
