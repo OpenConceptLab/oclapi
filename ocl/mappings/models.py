@@ -445,6 +445,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
         try:
             return self.versioned_object.uri
         except:
+            self.delete()
             raise Exception('Mapping %s does not exist' % self.id)
 
 

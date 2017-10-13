@@ -185,6 +185,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
                 return Mapping.objects.get(id=obj.versioned_object_id).url
             return obj.url
         except:
+            obj.delete()
             raise Exception('Mapping %s does not exist' % obj.versioned_object_id)
 
 
