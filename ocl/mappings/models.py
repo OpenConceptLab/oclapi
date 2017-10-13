@@ -442,12 +442,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
 
     @property
     def to_mapping_url(self):
-        try:
-            return self.versioned_object.uri
-        except:
-            self.delete()
-            raise Exception('Mapping %s does not exist' % self.id)
-
+        return self.versioned_object.uri
 
     @property
     def to_source_owner(self):
