@@ -10,12 +10,15 @@ from concepts.importer import ConceptsImporter
 from oclapi.management.commands import ImportActionHelper
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
+from collection.models import Collection, CollectionVersion
 
 
 class Command(BaseCommand):
     help = 'import lookup values'
 
     def handle(self, *args, **options):
+        self.clear_ocl_processing_flags()
+
         user = User.objects.filter(username='root').get()
 
         org = self.create_organization(user)
@@ -71,3 +74,7 @@ class Command(BaseCommand):
 
 
         return sources
+
+    def clear_ocl_processing_flags(self):
+        SourceVersion.objects.filter(_ocl_processing=True).update(_ocl_processing=False)
+        CollectionVersion.objects.filter(_ocl_processing=True).update(_ocl_processing=False)
