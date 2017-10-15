@@ -9,15 +9,14 @@ class Common(Configuration):
     TEMPLATE_DEBUG = DEBUG
 
     ADMINS = (
-        ('Jon Payne', 'paynejd@gmail.com'),
-        ('PK Shiu', 'pk@pkshiu.com'),
+        ('Jon Payne', 'errors@openconceptlab.org')
     )
 
     MANAGERS = ADMINS
 
     ########## EMAIL CONFIGURATION
     EMAIL_BACKEND = values.Value('django.core.mail.backends.smtp.EmailBackend')
-    DEFAULT_FROM_EMAIL = values.Value('openconceptlab <noreply@openconceptlab.org>')
+    DEFAULT_FROM_EMAIL = values.Value('openconceptlab <no-reply@openconceptlab.org>')
     EMAIL_HOST = values.Value(environ_name="EMAIL_HOST", environ_prefix="")
     EMAIL_HOST_PASSWORD = values.Value(environ_name="EMAIL_HOST_PASSWORD", environ_prefix="", default="")
     EMAIL_HOST_USER = values.Value(environ_name="EMAIL_HOST_USER", environ_prefix="")
@@ -247,12 +246,12 @@ class Common(Configuration):
         'filters': {
             'require_debug_false': {
                 '()': 'django.utils.log.RequireDebugFalse'
-            }
+            },
         },
 
         'formatters': {
             'normal': {
-                'format': "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s",
+                'format': "%(levelname)s %(asctime)s [%(filename)s:%(lineno)s %(funcName)s()] %(message)s",
                 'datefmt': "%Y/%m/%d %H:%M:%S"
             },
         },
@@ -263,33 +262,31 @@ class Common(Configuration):
                 'filters': ['require_debug_false'],
                 'class': 'django.utils.log.AdminEmailHandler'
             },
-        'null': {
-            'class': 'django.utils.log.NullHandler',
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'normal',
             },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'normal',
-            },
-        'logfile': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'when': 'midnight',
-            'filename': os.path.join(BASE_DIR, 'ocl_api.log'),
-            'formatter': 'normal',
+            'logfile': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'when': 'midnight',
+                'filename': os.path.join(BASE_DIR, 'ocl_api.log'),
+                'formatter': 'normal',
             },
         },
 
         'loggers': {
             'django.request': {
-                'handlers': ['mail_admins'],
-                'level': 'ERROR',
+                'handlers': ['mail_admins', 'console', 'logfile'],
+                'level': 'DEBUG',
                 'propagate': True,
             },
             'oclapi': {
                 'handlers': ['console', 'logfile'],
                 'level': 'DEBUG',
             },
-            'request_logger': {
+            '': {
                 'handlers': ['console', 'logfile'],
                 'level': 'INFO',
             },

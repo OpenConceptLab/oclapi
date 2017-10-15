@@ -1726,6 +1726,73 @@ class MappingViewsTest(MappingBaseTest):
 
 
 class SourceViewTest(SourceBaseTest):
+    def test_user_is_admin(self):
+        source = Source(
+            name='source1',
+            mnemonic='source1',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.userprofile1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source = Source(
+            name='source2',
+            mnemonic='source2',
+            full_name='Source Two',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the second test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.userprofile2
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source = Source(
+            name='source3',
+            mnemonic='source3',
+            full_name='Source Three',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the third test source',
+            is_active=True
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        source1 = Source.objects.get(mnemonic='source1')
+        source2 = Source.objects.get(mnemonic='source2')
+        source3 = Source.objects.get(mnemonic='source3')
+
+        self.userprofile2.organizations.append(self.org1)
+
+        self.assertEquals(self.userprofile1.is_admin_for(source1), True)
+        self.assertEquals(self.userprofile1.is_admin_for(source2), False)
+        self.assertEquals(self.userprofile1.is_admin_for(source3), False)
+
+        self.assertEquals(self.userprofile2.is_admin_for(source1), False)
+        self.assertEquals(self.userprofile2.is_admin_for(source2), True)
+        self.assertEquals(self.userprofile2.is_admin_for(source3), True)
+
+
     def test_update_source_head(self):
         source = Source(
             name='source',

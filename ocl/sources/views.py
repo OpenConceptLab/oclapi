@@ -468,9 +468,16 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         return HttpResponse(status=status)
 
     def delete(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return HttpResponseForbidden()
+        user = request.user
+        userprofile = UserProfile.objects.get(mnemonic=user.username)
         version = self.get_object()
+
+        permitted = user.is_staff or \
+                    user.is_superuser or \
+                    userprofile.is_admin_for(version.versioned_object)
+
+        if not permitted:
+            return HttpResponseForbidden()
         if version.has_export():
             key = version.get_export_key()
             if key:

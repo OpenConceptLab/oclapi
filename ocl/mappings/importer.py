@@ -49,6 +49,7 @@ class MappingsImporter(object):
     def import_mappings(self, new_version=False, total=0, test_mode=False, deactivate_old_records=False, **kwargs):
         initial_signal_processor = haystack.signal_processor
         try:
+            haystack.signal_processor.teardown()
             haystack.signal_processor = haystack.signals.BaseSignalProcessor
             import_start_time = datetime.now()
             logger.info('Started import at {}'.format(import_start_time.strftime("%Y-%m-%dT%H:%M:%S")))
@@ -172,6 +173,7 @@ class MappingsImporter(object):
                                               workers=4, batchsize=100)
         finally:
             haystack.signal_processor = initial_signal_processor
+            haystack.signal_processor.setup()
 
     def handle_mapping(self, data):
         """ Handle importing of a single mapping """

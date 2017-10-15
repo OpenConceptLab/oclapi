@@ -29,8 +29,8 @@ services:
       - ./ocl:/code
       - ./ocl/.pycharm_helpers:/root/.pycharm_helpers
     environment:
-      - ENVIRONMENT=local
       - SSH=true
+      - ENVIRONMENT=local
     restart: "no"
   celery:
     image: openconceptlab/oclapi:dev
