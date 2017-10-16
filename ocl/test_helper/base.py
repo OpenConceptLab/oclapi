@@ -49,7 +49,7 @@ def create_localized_text(name, locale='en', type='FULLY_SPECIFIED', locale_pref
 def create_user():
     suffix = generate_random_string()
 
-    user = User.objects.create(
+    user = User.objects.create_user(
         username="test{0}".format(suffix),
         password="test{0}".format(suffix),
         email='user{0}@test.com'.format(suffix),
@@ -57,6 +57,9 @@ def create_user():
         last_name='User'
     )
     create_user_profile(user)
+
+    # set password again as create_user hashed it
+    user.password = "test{0}".format(suffix)
 
     return user
 

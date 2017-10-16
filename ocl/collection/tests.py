@@ -19,29 +19,33 @@ from test_helper.base import *
 class CollectionBaseTest(OclApiBaseTestCase):
     def setUp(self):
         super(CollectionBaseTest, self).setUp()
-        self.user1 = User.objects.create(
+        self.user1 = User.objects.create_user(
             username='user1',
             email='user1@test.com',
             last_name='One',
             first_name='User',
             password='user1'
         )
-        self.user2 = User.objects.create(
+        # set password again as create_user hashed it
+        self.user1.password = "user1"
+
+        self.user2 = User.objects.create_user(
             username='user2',
             email='user2@test.com',
             last_name='Two',
             first_name='User',
             password='user2'
         )
-        self.superuser = User.objects.create(
+        self.user2.password = 'user2'
+
+        self.superuser = User.objects.create_superuser(
             username='superuser',
             password='superuser',
             email='superuser@test.com',
             last_name='Super',
-            first_name='User',
-            is_superuser=True,
-            is_active=True,
+            first_name='User'
         )
+        self.superuser.password = 'superuser'
 
         self.userprofile1 = UserProfile.objects.create(user=self.user1, mnemonic='user1')
         self.userprofile2 = UserProfile.objects.create(user=self.user2, mnemonic='user2')

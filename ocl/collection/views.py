@@ -18,7 +18,7 @@ from mappings.models import Mapping
 from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, \
-    CanEditConceptDictionaryVersion
+    CanEditConceptDictionaryVersion, HasOwnership
 from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, \
     ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, \
@@ -468,12 +468,7 @@ class CollectionVersionProcessingView(ResourceAttributeChildMixin):
         return response
 
     def post(self, request, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        user = request.user
-
-        #if not (user.is_staff or user.is_superuser):
-        #    return HttpResponseForbidden()
+        self.permission_classes = (HasOwnership,)
 
         version = self.get_object()
         logger.debug('Processing flag clearance requested for collection version %s' % version)

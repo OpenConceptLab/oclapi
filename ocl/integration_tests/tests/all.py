@@ -2034,15 +2034,12 @@ class SourceVersionProcessingViewTest(SourceBaseTest):
             'version': 'version1'
         }
 
+        self.client.login(username=self.user1.username, password=self.user1.password)
+
         uri = reverse('sourceversion-processing', kwargs=kwargs)
         response = self.client.get(uri)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.content, 'True')
-
-        #response = self.client.post(uri)
-        #self.assertEquals(response.status_code, 403)
-
-        #logged_in = self.client.login(username='superuser', password='superuser')
 
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 200)
@@ -2256,7 +2253,9 @@ class SourceVersionExportViewTest(SourceBaseTest):
             'source': source.mnemonic,
             'version': 'version1'
         }
+
         self.client.login(username=self.user1.username, password=self.user1.password)
+
         response = self.client.get(reverse('sourceversion-export', kwargs=kwargs))
         self.assertEquals(response.status_code, 409)
 
@@ -2290,19 +2289,20 @@ class SourceVersionExportViewTest(SourceBaseTest):
         )
         SourceVersion.persist_new(source_version, self.user1)
 
+        self.client.login(username=self.user1.username, password=self.user1.password)
+
         kwargs = {
             'org': self.org1.mnemonic,
             'source': source.mnemonic,
             'version': 'version1'
         }
         uri = reverse('sourceversion-export', kwargs=kwargs)
-
-        self.client.login(username=self.user1.username, password=self.user1.password)
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 409)
 
         # Clear OCL Processing flag
-        self.client.post(reverse('sourceversion-processing', kwargs=kwargs))
+        response = self.client.post(reverse('sourceversion-processing', kwargs=kwargs))
+        self.assertEquals(response.status_code, 200)
 
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 202)
@@ -2509,6 +2509,8 @@ class CollectionVersionProcessingViewTest(CollectionBaseTest):
         )
         CollectionVersion.persist_new(collection_version, self.user1)
 
+        self.client.login(username=self.user1.username, password=self.user1.password)
+
         kwargs = {
             'org': self.org1.mnemonic,
             'collection': collection.mnemonic,
@@ -2594,7 +2596,6 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             'version': 'version1'
         }
         uri = reverse('collectionversion-export', kwargs=kwargs)
-
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 409)
 

@@ -16,7 +16,8 @@ from concepts.serializers import ConceptVersionDetailSerializer
 from mappings.models import MappingVersion
 from mappings.serializers import MappingVersionDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
-from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, CanViewConceptDictionaryVersion, CanEditConceptDictionary
+from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, \
+    CanViewConceptDictionaryVersion, CanEditConceptDictionary, HasOwnership
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
 from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
@@ -376,12 +377,7 @@ class SourceVersionProcessingView(ResourceAttributeChildMixin):
         return response
 
     def post(self, request, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        user = request.user
-
-        #if not (user.is_staff or user.is_superuser):
-        #    return HttpResponseForbidden()
+        self.permission_classes = (HasOwnership,)
 
         version = self.get_object()
         logger.debug('Processing flag clearance requested for source version %s' % version)

@@ -12,6 +12,8 @@ class HasOwnership(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
+        if request.user.is_superuser:
+            return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             userprofile = request.user.get_profile()
             if isinstance(obj, UserProfile):
