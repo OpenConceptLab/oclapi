@@ -387,6 +387,22 @@ class SourceVersionProcessingView(ResourceAttributeChildMixin):
         response = HttpResponse(status=200)
         return response
 
+    def get_queryset(self):
+        owner = self.get_owner(self.kwargs)
+        queryset = super(SourceVersionProcessingView, self).get_queryset()
+        return queryset.filter(versioned_object_id=Source.objects.get(parent_id=owner.id, mnemonic=self.kwargs['source']).id,
+                                            mnemonic=self.kwargs['version'])
+    def get_owner(self, kwargs):
+        owner = None
+        if 'user' in kwargs:
+            owner_id = kwargs['user']
+            owner = UserProfile.objects.get(mnemonic=owner_id)
+        elif 'org' in kwargs:
+            owner_id = kwargs['org']
+            owner = Organization.objects.get(mnemonic=owner_id)
+        return owner
+
+
 class SourceVersionExportView(ResourceAttributeChildMixin):
     lookup_field = 'version'
     pk_field = 'mnemonic'
