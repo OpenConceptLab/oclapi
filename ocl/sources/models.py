@@ -180,7 +180,7 @@ class SourceVersion(ConceptContainerVersionModel):
             return None
 
     def seed_mappings(self):
-        seed_mappings_from = self.previous_version or self.parent_version
+        seed_mappings_from = self.head_sibling()
         if seed_mappings_from:
             from mappings.models import MappingVersion
             MappingVersion.objects.raw_update({'source_version_ids': seed_mappings_from.id},
