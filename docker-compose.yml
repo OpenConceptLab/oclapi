@@ -37,6 +37,7 @@ services:
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
       - SECRET_KEY
+      - SENTRY_DSN_KEY
       - EMAIL_HOST_PASSWORD
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
@@ -59,6 +60,7 @@ services:
     environment:
       - C_FORCE_ROOT=1
       - SECRET_KEY
+      - SENTRY_DSN_KEY
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_STORAGE_BUCKET_NAME

@@ -55,6 +55,8 @@ Docker `.env` file should be located under the root project folder. On developme
 
 `EMAIL_HOST_PASSWORD=` no-reply@openconceptlab.org password.
 
+`SENTRY_DSN=` Sentry unique URL for the given environment.
+
 ### Running commands in a container
 
 You can run any command in a running container. Open up a new terminal and run for example:

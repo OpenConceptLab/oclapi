@@ -1,4 +1,5 @@
 import os
+import raven
 from configurations import Configuration, values
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -146,7 +147,8 @@ class Common(Configuration):
         'concepts',
         'collection',
         'mappings',
-        'integration_tests'
+        'integration_tests',
+        'raven.contrib.django.raven_compat', #used to push logs to sentry.io/openconceptlab
     )
 
     # Django Rest Framework configuration
@@ -257,6 +259,11 @@ class Common(Configuration):
         },
 
         'handlers': {
+            'sentry': {
+                'level': 'ERROR',
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+                'tags': {'custom-tag': 'x'},
+            },
             'mail_admins': {
                 'level': 'ERROR',
                 'filters': ['require_debug_false'],
@@ -278,16 +285,16 @@ class Common(Configuration):
 
         'loggers': {
             'django.request': {
-                'handlers': ['mail_admins', 'console', 'logfile'],
+                'handlers': ['mail_admins', 'console', 'logfile', 'sentry'],
                 'level': 'DEBUG',
                 'propagate': True,
             },
             'oclapi': {
-                'handlers': ['console', 'logfile'],
+                'handlers': ['console', 'logfile', 'sentry'],
                 'level': 'DEBUG',
             },
             '': {
-                'handlers': ['console', 'logfile'],
+                'handlers': ['console', 'logfile', 'sentry'],
                 'level': 'INFO',
             },
         }
