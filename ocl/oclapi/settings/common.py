@@ -242,6 +242,11 @@ class Common(Configuration):
     # (A profile is created automatically for any user created using the 'POST /users' endpoint.)
     AUTH_PROFILE_MODULE = 'users.UserProfile'
 
+    def ignore_404_and_401_errors(record):
+        if ' 404' in record.message or ' 401' in record.message:
+            return False
+        return True
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -249,6 +254,10 @@ class Common(Configuration):
             'require_debug_false': {
                 '()': 'django.utils.log.RequireDebugFalse'
             },
+            'ignore_404_errors': {
+                '()': 'django.utils.log.CallbackFilter',
+                'callback': ignore_404_and_401_errors
+            }
         },
 
         'formatters': {
@@ -261,6 +270,7 @@ class Common(Configuration):
         'handlers': {
             'sentry': {
                 'level': 'ERROR',
+                'filters': ['ignore_404_errors', 'require_debug_false'],
                 'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
                 'tags': {'custom-tag': 'x'},
             },
