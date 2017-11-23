@@ -181,12 +181,28 @@ class MappingsImporter(object):
 
         # If mapping exists, update the mapping with the new data
         try:
-            from_concept = self.get_concept(data['from_concept_url'])
+            try:
+                from_concept = self.get_concept(data['from_concept_url'])
+            except Concept.DoesNotExist:
+                str_log = 'from_concept_url %s does not exist' % (data['from_concept_url'])
+                self.stderr.write(str_log)
+                logger.warning(str_log)
+                update_action = ImportActionHelper.IMPORT_ACTION_SKIP
+                return update_action
+
             data['from_concept'] = from_concept
             query = Q(parent_id=self.source.id, map_type=data['map_type'],
                       from_concept_id=from_concept.id)
             if data.get('to_concept_url'):  # Internal mapping
-                to_concept = self.get_concept(data['to_concept_url'])
+                try:
+                    to_concept = self.get_concept(data['to_concept_url'])
+                except Concept.DoesNotExist:
+                    str_log = 'to_concept_url %s does not exist' % (data['to_concept_url'])
+                    self.stderr.write(str_log)
+                    logger.warning(str_log)
+                    update_action = ImportActionHelper.IMPORT_ACTION_SKIP
+                    return update_action
+
                 data['to_concept'] = to_concept
                 query = query & Q(to_concept_id=to_concept.id)
             else:   # External mapping
