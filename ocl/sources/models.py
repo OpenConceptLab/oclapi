@@ -1,4 +1,5 @@
 from bson import ObjectId
+from celery.result import AsyncResult
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -281,12 +282,15 @@ class SourceVersion(ConceptContainerVersionModel):
     @staticmethod
     def is_processing(version_id):
         version = SourceVersion.objects.get(id=version_id)
-        return version._ocl_processing
-
+        if version._ocl_processing:
+            res = AsyncResult(version._ocl_processing)
+            return not (res.successful() or res.failed())
+        else:
+            return False
     @staticmethod
     def clear_processing(version_id):
         version = SourceVersion.objects.get(id=version_id)
-        version._ocl_processing = False
+        version._ocl_processing = None
         version.save()
         return version
 

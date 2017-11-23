@@ -50,11 +50,12 @@ def export_collection(version_id):
     logger.info('Export complete!')
 
 
-@celery.task
-def update_children_for_resource_version(version_id, _type):
+@celery.task(bind = True)
+def update_children_for_resource_version(self, version_id, _type):
     _resource = resource(version_id, _type)
-    _resource._ocl_processing = True
+    _resource._ocl_processing = self.request.id
     _resource.save()
+
     if _type == 'source':
         concept_versions = _resource.get_concepts()
         mapping_versions = _resource.get_mappings()
@@ -66,7 +67,9 @@ def update_children_for_resource_version(version_id, _type):
     update_all_in_index(ConceptVersion, concept_versions)
     logger.info('Indexing %s mappings...' % mapping_versions.count())
     update_all_in_index(MappingVersion, mapping_versions)
-    _resource._ocl_processing = False
+
+    _resource = resource(version_id, _type)
+    _resource._ocl_processing = None
     _resource.save()
 
 
@@ -77,10 +80,10 @@ def resource(version_id, type):
         return CollectionVersion.objects.get(id=version_id)
 
 
-@celery.task
-def update_collection_in_solr(version_id, references):
+@celery.task(bind = True)
+def update_collection_in_solr(self, version_id, references):
     cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = True
+    cv._ocl_processing = self.request.id
     cv.save()
     concepts, mappings = [], [],
 
@@ -99,7 +102,8 @@ def update_collection_in_solr(version_id, references):
     if len(mapping_versions) > 0:
         update_all_in_index(MappingVersion, mapping_versions)
 
-    cv._ocl_processing = False
+    cv = CollectionVersion.objects.get(id=version_id)
+    cv._ocl_processing = None
     cv.save()
 
 
@@ -107,10 +111,10 @@ def _get_version_ids(resources, klass):
     return map(lambda c: c.get_latest_version.id if type(c).__name__ == klass else c.id, resources)
 
 
-@celery.task
-def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
+@celery.task(bind = True)
+def delete_resources_from_collection_in_solr(self, version_id, concepts, mappings):
     cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = True
+    cv._ocl_processing = self.request.id
     cv.save()
 
     if len(concepts) > 0:
@@ -119,7 +123,8 @@ def delete_resources_from_collection_in_solr(version_id, concepts, mappings):
     if len(mappings) > 0:
         index_resource(mappings, Mapping, MappingVersion, 'id__in')
 
-    cv._ocl_processing = False
+    cv = CollectionVersion.objects.get(id=version_id)
+    cv._ocl_processing = None
     cv.save()
 
 
