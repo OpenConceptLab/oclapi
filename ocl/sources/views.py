@@ -415,6 +415,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
 
+        if SourceVersion.is_processing(version.id):
+            logger.debug('   Source Version is processing')
+            return HttpResponse(status=409)
+
         key = version.get_export_key()
         url, status = None, 204
 
@@ -462,6 +466,10 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
 
         logger.debug('Source Export requested for version %s (post)' % version)
         status = 303
+
+        if SourceVersion.is_processing(version.id):
+            logger.debug('   Source Version is processing')
+            return HttpResponse(status=409)
 
         if not version.has_export():
             status = self.handle_export_source_version()

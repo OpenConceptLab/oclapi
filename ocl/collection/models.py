@@ -1,5 +1,4 @@
 from bson import ObjectId
-from celery.result import AsyncResult
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -423,16 +422,12 @@ class CollectionVersion(ConceptContainerVersionModel):
     @staticmethod
     def is_processing(version_id):
         version = CollectionVersion.objects.get(id=version_id)
-        if version._ocl_processing:
-            res = AsyncResult(version._ocl_processing)
-            return not (res.successful() or res.failed())
-        else:
-            return False
+        return version._ocl_processing
 
     @staticmethod
     def clear_processing(version_id):
         version = CollectionVersion.objects.get(id=version_id)
-        version._ocl_processing = None
+        version._ocl_processing = False
         version.save()
         return version
 

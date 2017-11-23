@@ -509,6 +509,10 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
 
+        if CollectionVersion.is_processing(version.id):
+            logger.debug('   Collection Version is processing')
+            return HttpResponse(status=409)
+
         key = version.get_export_key()
         url, status = None, 204
 
@@ -557,6 +561,10 @@ class CollectionVersionExportView(ResourceAttributeChildMixin):
 
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)  # export of head version is not allowed
+
+        if CollectionVersion.is_processing(version.id):
+            logger.debug('   Collection Version is processing, action prohibited')
+            return HttpResponse(status=409)
 
         status = 303
         if not version.has_export():
