@@ -210,6 +210,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     references = CollectionReferenceSerializer(many=True)
     active_concepts = serializers.IntegerField(required=False)
     active_mappings = serializers.IntegerField(required=False)
+    is_processing = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = CollectionVersion

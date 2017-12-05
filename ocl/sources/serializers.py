@@ -166,6 +166,7 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
     external_id = serializers.CharField(required=False)
     active_mappings = serializers.IntegerField(required=False)
     active_concepts = serializers.IntegerField(required=False)
+    is_processing = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = SourceVersion
@@ -183,12 +184,6 @@ class SourceVersionDetailSerializer(ResourceVersionSerializer):
             }
         )
         return default_fields
-
-    def to_native(self, obj):
-        ret = super(SourceVersionDetailSerializer, self).to_native(obj)
-        if obj._ocl_processing:
-            ret['_ocl_processing'] = True
-        return ret
 
 class SourceVersionExportSerializer(ResourceVersionSerializer):
     type = serializers.CharField(required=True, source='resource_type')
@@ -224,12 +219,6 @@ class SourceVersionExportSerializer(ResourceVersionSerializer):
             }
         )
         return default_fields
-
-    def to_native(self, obj):
-        ret = super(SourceVersionExportSerializer, self).to_native(obj)
-        if obj._ocl_processing:
-            ret['_ocl_processing'] = True
-        return ret
 
 
 class SourceVersionCreateOrUpdateSerializer(serializers.Serializer):

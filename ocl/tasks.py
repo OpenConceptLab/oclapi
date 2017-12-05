@@ -32,45 +32,50 @@ logger = get_task_logger('celery.worker')
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 
 
-@celery.task(base=QueueOnce)
-def export_source(version_id):
+@celery.task(base=QueueOnce, bind=True)
+def export_source(self, version_id):
     logger.info('Finding source version...')
     version = SourceVersion.objects.get(id=version_id)
-    logger.info('Found source version %s.  Beginning export...' % version.mnemonic)
-    write_export_file(version, 'source', 'sources.serializers.SourceVersionExportSerializer', logger)
-    logger.info('Export complete!')
+    version.add_processing(self.request.id)
+    try:
+        logger.info('Found source version %s.  Beginning export...' % version.mnemonic)
+        write_export_file(version, 'source', 'sources.serializers.SourceVersionExportSerializer', logger)
+        logger.info('Export complete!')
+    finally:
+        version.remove_processing(self.request.id)
 
 
-@celery.task(base=QueueOnce)
-def export_collection(version_id):
+@celery.task(base=QueueOnce, bind=True)
+def export_collection(self, version_id):
     logger.info('Finding collection version...')
     version = CollectionVersion.objects.get(id=version_id)
-    logger.info('Found collection version %s.  Beginning export...' % version.mnemonic)
-    write_export_file(version, 'collection', 'collection.serializers.CollectionVersionExportSerializer', logger)
-    logger.info('Export complete!')
-
+    version.add_processing(self.request.id)
+    try:
+        logger.info('Found collection version %s.  Beginning export...' % version.mnemonic)
+        write_export_file(version, 'collection', 'collection.serializers.CollectionVersionExportSerializer', logger)
+        logger.info('Export complete!')
+    finally:
+        version.remove_processing(self.request.id)
 
 @celery.task(bind = True)
 def update_children_for_resource_version(self, version_id, _type):
     _resource = resource(version_id, _type)
-    _resource._ocl_processing = self.request.id
-    _resource.save()
+    _resource.add_processing(self.request.id)
+    try:
+        if _type == 'source':
+            concept_versions = _resource.get_concepts()
+            mapping_versions = _resource.get_mappings()
+        else:
+            concept_versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
+            mapping_versions = MappingVersion.objects.filter(id__in=_resource.mappings)
 
-    if _type == 'source':
-        concept_versions = _resource.get_concepts()
-        mapping_versions = _resource.get_mappings()
-    else:
-        concept_versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
-        mapping_versions = MappingVersion.objects.filter(id__in=_resource.mappings)
+        logger.info('Indexing %s concepts...' % concept_versions.count())
+        update_all_in_index(ConceptVersion, concept_versions)
+        logger.info('Indexing %s mappings...' % mapping_versions.count())
+        update_all_in_index(MappingVersion, mapping_versions)
 
-    logger.info('Indexing %s concepts...' % concept_versions.count())
-    update_all_in_index(ConceptVersion, concept_versions)
-    logger.info('Indexing %s mappings...' % mapping_versions.count())
-    update_all_in_index(MappingVersion, mapping_versions)
-
-    _resource = resource(version_id, _type)
-    _resource._ocl_processing = None
-    _resource.save()
+    finally:
+        _resource.remove_processing(self.request.id)
 
 
 def resource(version_id, type):
@@ -82,29 +87,27 @@ def resource(version_id, type):
 
 @celery.task(bind = True)
 def update_collection_in_solr(self, version_id, references):
-    cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = self.request.id
-    cv.save()
-    concepts, mappings = [], [],
+    version = CollectionVersion.objects.get(id=version_id)
+    version.add_processing(self.request.id)
+    try:
+        concepts, mappings = [], [],
 
-    for ref in references:
-        if len(ref.concepts) > 0:
-            concepts += ref.concepts
-        if ref.mappings and len(ref.mappings) > 0:
-            mappings += ref.mappings
+        for ref in references:
+            if len(ref.concepts) > 0:
+                concepts += ref.concepts
+            if ref.mappings and len(ref.mappings) > 0:
+                mappings += ref.mappings
 
-    concept_versions = ConceptVersion.objects.filter(mnemonic__in=_get_version_ids(concepts, 'Concept'))
-    mapping_versions = MappingVersion.objects.filter(id__in=_get_version_ids(mappings, 'Mapping'))
+        concept_versions = ConceptVersion.objects.filter(mnemonic__in=_get_version_ids(concepts, 'Concept'))
+        mapping_versions = MappingVersion.objects.filter(id__in=_get_version_ids(mappings, 'Mapping'))
 
-    if len(concept_versions) > 0:
-        update_all_in_index(ConceptVersion, concept_versions)
+        if len(concept_versions) > 0:
+            update_all_in_index(ConceptVersion, concept_versions)
 
-    if len(mapping_versions) > 0:
-        update_all_in_index(MappingVersion, mapping_versions)
-
-    cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = None
-    cv.save()
+        if len(mapping_versions) > 0:
+            update_all_in_index(MappingVersion, mapping_versions)
+    finally:
+        version.remove_processing(self.request.id)
 
 
 def _get_version_ids(resources, klass):
@@ -113,19 +116,16 @@ def _get_version_ids(resources, klass):
 
 @celery.task(bind = True)
 def delete_resources_from_collection_in_solr(self, version_id, concepts, mappings):
-    cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = self.request.id
-    cv.save()
+    version = CollectionVersion.objects.get(id=version_id)
+    version.add_processing(self.request.id)
+    try:
+        if len(concepts) > 0:
+            index_resource(concepts, Concept, ConceptVersion, 'mnemonic__in')
 
-    if len(concepts) > 0:
-        index_resource(concepts, Concept, ConceptVersion, 'mnemonic__in')
-
-    if len(mappings) > 0:
-        index_resource(mappings, Mapping, MappingVersion, 'id__in')
-
-    cv = CollectionVersion.objects.get(id=version_id)
-    cv._ocl_processing = None
-    cv.save()
+        if len(mappings) > 0:
+            index_resource(mappings, Mapping, MappingVersion, 'id__in')
+    finally:
+        version.remove_processing(self.request.id)
 
 
 @celery.task

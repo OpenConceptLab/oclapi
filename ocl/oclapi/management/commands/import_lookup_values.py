@@ -8,6 +8,7 @@ from haystack.management.commands import update_index
 
 from concepts.importer import ConceptsImporter
 from oclapi.management.commands import ImportActionHelper
+from oclapi.models import ConceptContainerVersionModel
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from collection.models import Collection, CollectionVersion
@@ -17,7 +18,7 @@ class Command(BaseCommand):
     help = 'import lookup values'
 
     def handle(self, *args, **options):
-        self.clear_ocl_processing_flags()
+        self.clear_all_processing()
 
         user = User.objects.filter(username='root').get()
 
@@ -75,6 +76,6 @@ class Command(BaseCommand):
 
         return sources
 
-    def clear_ocl_processing_flags(self):
-        SourceVersion.objects.filter(_ocl_processing=True).update(_ocl_processing=False)
-        CollectionVersion.objects.filter(_ocl_processing=True).update(_ocl_processing=False)
+    def clear_all_processing(self):
+        ConceptContainerVersionModel.clear_all_processing(SourceVersion)
+        ConceptContainerVersionModel.clear_all_processing(CollectionVersion)

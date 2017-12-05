@@ -1,6 +1,9 @@
 import logging
 import re
 import ast
+
+from bson import ObjectId
+from celery.result import AsyncResult
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -9,7 +12,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from djangotoolbox.fields import DictField, ListField
+from django_mongodb_engine.contrib import MongoDBManager
+from djangotoolbox.fields import DictField, ListField, SetField
 from rest_framework.authtoken.models import Token
 
 from oclapi.utils import reverse_resource, reverse_resource_version
@@ -49,6 +53,8 @@ class BaseModel(models.Model):
     extras_have_been_encoded = False
     extras_have_been_decoded = False
     uri = models.TextField(null=True, blank=True)
+
+    objects = MongoDBManager()
 
     class Meta:
         abstract = True
@@ -457,6 +463,32 @@ class ConceptContainerVersionModel(ResourceVersionModel):
     description = models.TextField(null=True, blank=True)
     version_external_id = models.TextField(null=True, blank=True)
     external_id = models.TextField(null=True, blank=True)
+    _background_process_ids = SetField()
+
+    # Used to skip saving _background_process_ids,
+    # which is updated using atomic raw queries, see https://stackoverflow.com/a/33225984
+    default_save_fields = None
+
+    def __init__(self, *args, **kwargs):
+        super(ConceptContainerVersionModel, self).__init__(*args, **kwargs)
+        if self.default_save_fields is None:
+            # This block should only get called for the first object loaded
+            default_save_fields = {
+                f.name for f in self._meta.fields
+                if not f.auto_created
+            }
+            default_save_fields.difference_update({
+                '_background_process_ids',
+            })
+            self.__class__.default_save_fields = tuple(default_save_fields)
+
+    def save(self, **kwargs):
+        if self.id is not None and 'update_fields' not in kwargs:
+            # If self.id is None (meaning the object has yet to be saved)
+            # then do a normal update with all fields.
+            # Otherwise, make sure `update_fields` is in kwargs.
+            kwargs['update_fields'] = self.default_save_fields
+        super(ConceptContainerVersionModel, self).save(**kwargs)
 
     class Meta(ResourceVersionModel.Meta):
         abstract = True
@@ -585,6 +617,44 @@ class ConceptContainerVersionModel(ResourceVersionModel):
                 errors['non_field_errors'] = ["Encountered an error while updating version."]
         return errors
 
+    def add_processing(self, process_id):
+        if self.id:
+            # Using raw query to atomically add item to the list
+            self.__class__.objects.raw_update({'_id': ObjectId(self.id)},
+                                             {'$push': {'_background_process_ids': process_id}})
+        # Update the current object
+        self._background_process_ids.add(process_id)
+
+
+    def remove_processing(self, process_id):
+        if self.id:
+            # Using raw query to atomically remove item from the list
+            self.__class__.objects.raw_update({'_id': ObjectId(self.id)},
+                                             {'$pull': {'_background_process_ids': process_id}})
+        # Update the current object
+        self._background_process_ids.remove(process_id)
+
+    @property
+    def is_processing(self):
+        if self._background_process_ids:
+            for process_id in tuple(self._background_process_ids):
+                res = AsyncResult(process_id)
+                if (res.successful() or res.failed()):
+                    self.remove_processing(process_id)
+                else:
+                    return True
+        if self._background_process_ids:
+            return True
+        else:
+            return False
+
+    def clear_processing(self):
+        self._background_process_ids = set()
+        self.save(update_fields=['_background_process_ids'])
+
+    @staticmethod
+    def clear_all_processing(type):
+        type.objects.all().update(_background_process_ids=set())
 
 @receiver(post_save, sender=User)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

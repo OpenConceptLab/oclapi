@@ -284,7 +284,10 @@ class SourceVersionListView(SourceVersionBaseView,
     def get_queryset(self):
         queryset = super(SourceVersionListView, self).get_queryset()
         if self.processing_filter is not None:
-            queryset = queryset.filter(_ocl_processing=self.processing_filter)
+            if self.processing_filter:
+                queryset = queryset.exclude(_background_processing_ids=None)
+            else:
+                queryset = queryset.filter(_background_processing_ids=None)
         if self.released_filter is not None:
             queryset = queryset.filter(released=self.released_filter)
         return queryset.order_by('-created_at')
@@ -373,7 +376,7 @@ class SourceVersionProcessingView(ResourceAttributeChildMixin):
         logger.debug('Processing flag requested for source version %s' % version)
 
         response = HttpResponse(status=200)
-        response.content = SourceVersion.is_processing(version.id)
+        response.content = version.is_processing
         return response
 
     def post(self, request, *args, **kwargs):
@@ -382,7 +385,7 @@ class SourceVersionProcessingView(ResourceAttributeChildMixin):
         version = self.get_object()
         logger.debug('Processing flag clearance requested for source version %s' % version)
 
-        SourceVersion.clear_processing(version.id)
+        version.clear_processing()
 
         response = HttpResponse(status=200)
         return response

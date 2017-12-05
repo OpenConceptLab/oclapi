@@ -1999,7 +1999,7 @@ class SourceVersionViewTest(SourceBaseTest):
 
 class SourceVersionProcessingViewTest(SourceBaseTest):
     @mock_s3
-    def test_get_version_ocl_processing(self):
+    def test_get_source_version_processing(self):
         source = Source(
             name='source',
             mnemonic='source',
@@ -2024,7 +2024,7 @@ class SourceVersionProcessingViewTest(SourceBaseTest):
             released=True,
             created_by=self.user1,
             updated_by=self.user1,
-            _ocl_processing=True
+            _background_process_ids={'mocked_processing_id'}
         )
         SourceVersion.persist_new(source_version, self.user1)
 
@@ -2041,6 +2041,7 @@ class SourceVersionProcessingViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.content, 'True')
 
+        #clear processing flag
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 200)
 
@@ -2219,7 +2220,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 202)
 
     @mock_s3
-    def test_get_version_ocl_processing(self):
+    def test_get_not_exported_source_version(self):
         source = Source(
             name='source',
             mnemonic='source',
@@ -2243,8 +2244,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
             versioned_object=source,
             released=True,
             created_by=self.user1,
-            updated_by=self.user1,
-            _ocl_processing=True
+            updated_by=self.user1
         )
         SourceVersion.persist_new(source_version, self.user1)
 
@@ -2257,10 +2257,10 @@ class SourceVersionExportViewTest(SourceBaseTest):
         self.client.login(username=self.user1.username, password=self.user1.password)
 
         response = self.client.get(reverse('sourceversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 409)
+        self.assertEquals(response.status_code, 204)
 
     @mock_s3
-    def test_post_version_ocl_processing(self):
+    def test_post_export_source_version_twice(self):
         source = Source(
             name='source',
             mnemonic='source',
@@ -2284,8 +2284,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
             versioned_object=source,
             released=True,
             created_by=self.user1,
-            updated_by=self.user1,
-            _ocl_processing=True
+            updated_by=self.user1
         )
         SourceVersion.persist_new(source_version, self.user1)
 
@@ -2298,14 +2297,11 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         uri = reverse('sourceversion-export', kwargs=kwargs)
         response = self.client.post(uri)
-        self.assertEquals(response.status_code, 409)
-
-        # Clear OCL Processing flag
-        response = self.client.post(reverse('sourceversion-processing', kwargs=kwargs))
-        self.assertEquals(response.status_code, 200)
-
-        response = self.client.post(uri)
+        second_response = self.client.post(uri)
         self.assertEquals(response.status_code, 202)
+
+        if second_response.status_code not in (202, 409):
+            self.fail('Second response must be 202 or 409')
 
 
     @mock_s3
@@ -2484,7 +2480,7 @@ class SourceVersionExportViewTest(SourceBaseTest):
 
 class CollectionVersionProcessingViewTest(CollectionBaseTest):
     @mock_s3
-    def test_get_version_ocl_processing(self):
+    def test_get_collection_version_processing(self):
         collection = Collection(
             name='collection',
             mnemonic='collection',
@@ -2505,7 +2501,7 @@ class CollectionVersionProcessingViewTest(CollectionBaseTest):
             released=True,
             created_by=self.user1,
             updated_by=self.user1,
-            _ocl_processing=True
+            _background_process_ids={'mocked_processing_id'}
         )
         CollectionVersion.persist_new(collection_version, self.user1)
 
@@ -2521,6 +2517,7 @@ class CollectionVersionProcessingViewTest(CollectionBaseTest):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.content, 'True')
 
+        #Clear processing
         response = self.client.post(uri)
         self.assertEquals(response.status_code, 200)
 
@@ -2530,7 +2527,7 @@ class CollectionVersionProcessingViewTest(CollectionBaseTest):
 
 class CollectionVersionExportViewTest(CollectionBaseTest):
     @mock_s3
-    def test_get_version_ocl_processing(self):
+    def test_get_non_exported_collection_version(self):
         collection = Collection(
             name='collection',
             mnemonic='collection',
@@ -2550,8 +2547,7 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             versioned_object=collection,
             released=True,
             created_by=self.user1,
-            updated_by=self.user1,
-            _ocl_processing=True
+            updated_by=self.user1
         )
         CollectionVersion.persist_new(collection_version, self.user1)
 
@@ -2561,10 +2557,10 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             'version': 'version1'
         }
         response = self.client.get(reverse('collectionversion-export', kwargs=kwargs))
-        self.assertEquals(response.status_code, 409)
+        self.assertEquals(response.status_code, 204)
 
     @mock_s3
-    def test_post_version_ocl_processing(self):
+    def test_post_export_collection_version_twice(self):
         collection = Collection(
             name='collection',
             mnemonic='collection',
@@ -2584,7 +2580,7 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
             released=True,
             created_by=self.user1,
             updated_by=self.user1,
-            _ocl_processing=True
+            _background_process_ids={'mocked_processing_id'}
         )
         CollectionVersion.persist_new(collection_version, self.user1)
 
@@ -2597,13 +2593,11 @@ class CollectionVersionExportViewTest(CollectionBaseTest):
         }
         uri = reverse('collectionversion-export', kwargs=kwargs)
         response = self.client.post(uri)
-        self.assertEquals(response.status_code, 409)
-
-        # Clear OCL Processing flag
-        self.client.post(reverse('collectionversion-processing', kwargs=kwargs))
-
-        response = self.client.post(uri)
+        second_response = self.client.post(uri)
         self.assertEquals(response.status_code, 202)
+
+        if second_response.status_code not in (202, 409):
+            self.fail('Second response must be 202 or 409')
 
     @mock_s3
     def test_get_invalid_version_404_received(self):

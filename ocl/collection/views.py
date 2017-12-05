@@ -464,7 +464,7 @@ class CollectionVersionProcessingView(ResourceAttributeChildMixin):
         logger.debug('Processing flag requested for collection version %s' % version)
 
         response = HttpResponse(status=200)
-        response.content = CollectionVersion.is_processing(version.id)
+        response.content = version.is_processing
         return response
 
     def post(self, request, *args, **kwargs):
@@ -473,7 +473,7 @@ class CollectionVersionProcessingView(ResourceAttributeChildMixin):
         version = self.get_object()
         logger.debug('Processing flag clearance requested for collection version %s' % version)
 
-        CollectionVersion.clear_processing(version.id)
+        version.clear_processing()
 
         response = HttpResponse(status=200)
         return response

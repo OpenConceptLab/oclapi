@@ -420,22 +420,6 @@ class CollectionVersion(ConceptContainerVersionModel):
             external_id=collection.external_id,
         )
 
-    @staticmethod
-    def is_processing(version_id):
-        version = CollectionVersion.objects.get(id=version_id)
-        if version._ocl_processing:
-            res = AsyncResult(version._ocl_processing)
-            return not (res.successful() or res.failed())
-        else:
-            return False
-
-    @staticmethod
-    def clear_processing(version_id):
-        version = CollectionVersion.objects.get(id=version_id)
-        version._ocl_processing = None
-        version.save()
-        return version
-
 admin.site.register(Collection)
 admin.site.register(CollectionVersion)
 
