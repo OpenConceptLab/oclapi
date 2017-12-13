@@ -266,6 +266,7 @@ class CollectionListView(CollectionBaseView,
                          ListWithHeadersMixin):
     serializer_class = CollectionCreateSerializer
     filter_backends = [CollectionSearchFilter]
+    contains_uri = None
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
@@ -276,7 +277,15 @@ class CollectionListView(CollectionBaseView,
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
-        return self.list(request, *args, **kwargs)
+        self.contains_uri = request.QUERY_PARAMS.get('contains', None)
+        collection_list = self.list(request, *args, **kwargs)
+        return collection_list
+
+    def get_queryset(self):
+        queryset = super(CollectionListView, self).get_queryset()
+        if self.contains_uri != None:
+            queryset = queryset.filter(references__contains=self.contains_uri)
+        return queryset
 
     def get_csv_rows(self, queryset=None):
         if not queryset:

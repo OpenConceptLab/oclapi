@@ -11,4 +11,8 @@ class CollectionSearchFilter(HaystackSearchFilter):
             filters.update({'ownerType': view.parent_resource.resource_type()})
         else:
             filters.update({'public_can_view': True})
+
+        if view.contains_uri != None:
+            filters.update({'references__contains': view.contains_uri})
+
         return filters
