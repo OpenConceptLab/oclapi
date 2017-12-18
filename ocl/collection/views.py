@@ -268,6 +268,7 @@ class CollectionListView(CollectionBaseView,
     serializer_class = CollectionCreateSerializer
     filter_backends = [CollectionSearchFilter]
     contains_uri = None
+    owner_specified = False
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
@@ -277,6 +278,7 @@ class CollectionListView(CollectionBaseView,
     }
 
     def get(self, request, *args, **kwargs):
+        self.owner_specified = (kwargs.__len__() > 0)
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
         # Running the filter_backends seems to reset changes made to the queryset.
@@ -295,7 +297,10 @@ class CollectionListView(CollectionBaseView,
         # TODO correct the behavior of filter_backends, and remove this hack to get around it
         if self.contains_uri != None:
             from django_mongodb_engine.query import A
-            queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+            if self.owner_specified:
+                queryset = queryset.filter(references=A('expression', self.contains_uri))
+            else:
+                queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         return queryset
 
     def get_csv_rows(self, queryset=None):
