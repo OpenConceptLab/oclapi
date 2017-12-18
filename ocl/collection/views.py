@@ -23,6 +23,7 @@ from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, \
     ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, \
     BaseAPIView
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
@@ -278,14 +279,23 @@ class CollectionListView(CollectionBaseView,
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
+        # Running the filter_backends seems to reset changes made to the queryset.
+        # Therefore, remove the filter_backends when the 'contains' parameter is passed, and
+        # apply the appropriate public_access filter in get_queryset
+        # TODO correct the behavior of filter_backends, and remove this hack to get around it
+        if self.contains_uri != None:
+            self.filter_backends=[]
         collection_list = self.list(request, *args, **kwargs)
         return collection_list
 
     def get_queryset(self):
         queryset = super(CollectionListView, self).get_queryset()
+        # If the 'contains' parameter is used, the filter_backends have been cleared to prevent
+        # reset of the queryset.  Therefore, add a public_access filter to the queryset.
+        # TODO correct the behavior of filter_backends, and remove this hack to get around it
         if self.contains_uri != None:
-            queryset = queryset.filter(references__expression='/orgs/TestOrg/sources/MyTestSource/concepts/MyFirstConcept/59ea40632117260061e131bc/')
-            #queryset = queryset.filter(references__concepts='59ea40632117260061e131bc')
+            from django_mongodb_engine.query import A
+            queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         return queryset
 
     def get_csv_rows(self, queryset=None):
