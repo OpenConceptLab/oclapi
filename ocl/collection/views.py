@@ -284,7 +284,8 @@ class CollectionListView(CollectionBaseView,
     def get_queryset(self):
         queryset = super(CollectionListView, self).get_queryset()
         if self.contains_uri != None:
-            queryset = queryset.filter(references__contains=self.contains_uri)
+            queryset = queryset.filter(references__expression='/orgs/TestOrg/sources/MyTestSource/concepts/MyFirstConcept/59ea40632117260061e131bc/')
+            #queryset = queryset.filter(references__concepts='59ea40632117260061e131bc')
         return queryset
 
     def get_csv_rows(self, queryset=None):
