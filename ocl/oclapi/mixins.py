@@ -223,8 +223,9 @@ class ConceptVersionCSVFormatterMixin():
 
     def get_formatted_values(self, items):
         formated_synonym=[]
-        for item in items:
-            formated_synonym.append((item[1].get('name') if 'name' in item[1] else '') + (' [' + item[1].get('type') + ']' if 'type' in item[1] and item[1].get('type') else '')
-                                    + (' [' + item[1].get('locale') + ']' if 'locale' in item[1] and item[1].get('locale') else ''))
+        if items:
+            for item in items:
+                formated_synonym.append((item[1].get('name') if 'name' in item[1] else '') + (' [' + item[1].get('type') + ']' if 'type' in item[1] and item[1].get('type') else '')
+                                        + (' [' + item[1].get('locale') + ']' if 'locale' in item[1] and item[1].get('locale') else ''))
         return ';'.join(formated_synonym)
 
