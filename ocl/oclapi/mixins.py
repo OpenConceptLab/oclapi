@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from oclapi.utils import compact, extract_values
 from users.models import UserProfile
 from oclapi.filters import SearchQuerySetWrapper
+from mappings.models import Mapping
 
 __author__ = 'misternando'
 
@@ -207,9 +208,35 @@ class ConceptVersionCSVFormatterMixin():
             value['Updated By'] = value.pop('created_by')
             value['URI'] = value.pop('uri')
 
+            #Include extras
+            value['Attributes'] = ''
+            if concept_ver.extras:
+                attributes = []
+                for key in concept_ver.extras:
+                    attributes.append(key + ': ' + concept_ver.extras[key])
+
+                value['Attributes'] = '; '.join(attributes)
+
+            #Include mappings
+            value['Mappings'] = ''
+            concept_mappings = Mapping.objects.filter(from_concept=concept_ver.versioned_object)
+            if concept_mappings:
+                mappings = []
+                for mapping in concept_mappings:
+                    row = mapping.owner + ' / ' + mapping.parent.name + ' / ' + mapping.from_concept_code + ' : ' \
+                          + mapping.from_concept_name + ' <' + mapping.map_type +'> ' \
+                          + mapping.to_source_owner_mnemonic + ' / ' + mapping.to_source_name
+                    if (mapping.to_concept):
+                        row = row + ' / ' + mapping.to_concept.mnemonic + ' : ' + mapping.to_concept.display_name + ' [Internal]'
+                    else:
+                        row = row + ' / ' + mapping.to_concept_code + ' : ' + mapping.to_concept_name + ' [External]'
+                    mappings.append(row)
+
+                value['Mappings'] = '; '.join(mappings)
+
 
         values.field_names.extend(['Owner','Source','Concept ID','Preferred Name','Preferred Name Locale','Concept Class','Datatype','Retired','Synonyms','Description'
-                                      ,'External ID','Last Updated','Updated By','URI'])
+                                      ,'External ID','Mappings','Attributes','Last Updated','Updated By','URI'])
         del values.field_names[0:10]
         return values
 
