@@ -1085,7 +1085,7 @@ class CollectionVersionTest(CollectionBaseTest):
         collection_version = CollectionVersion.get_latest_version_of(collection)
         self.assertEquals(collection_version.export_path,
                           "user1/collection_version1." + collection_version.last_child_update.strftime(
-                              '%Y%m%d%H%M%S') + ".tgz")
+                              '%Y%m%d%H%M%S') + ".zip")
 
     def test_last_child_update(self):
         source = Source(

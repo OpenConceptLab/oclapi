@@ -1,8 +1,7 @@
 import json
 import os
-import tarfile
+import zipfile
 import tempfile
-import gzip
 
 import datetime
 import haystack
@@ -185,13 +184,15 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     with open('export.json', 'ab') as out:
         out.write(']}')
 
-    with tarfile.open('export.tgz', 'w:gz') as tar:
-        tar.add('export.json')
+    with zipfile.ZipFile('export.zip', 'w') as zip:
+        zip.write('export.json')
+
+    logger.info(os.path.abspath('export.zip'))
 
     logger.info('Done compressing.  Uploading...')
     k = Key(S3ConnectionFactory.get_export_bucket())
     k.key = version.export_path
-    k.set_contents_from_filename('export.tgz')
+    k.set_contents_from_filename('export.zip')
     logger.info('Uploaded to %s.' % k.key)
     os.chdir(cwd)
 
@@ -200,20 +201,15 @@ def write_csv_to_s3(data, is_owner, **kwargs):
     cwd = cd_temp()
     csv_file = csv_file_for(data, **kwargs)
     csv_file.close()
-    reader = open(os.path.abspath(csv_file.name), 'r')
-    gz = gzip.open(csv_file.name + '.gz', 'wb')
-    lines = reader.readlines()
-    gz.writelines(lines)
-    gz.close()
-    reader.close()
+    zip_file_name = csv_file.name + '.zip'
+    with zipfile.ZipFile(zip_file_name, 'w') as zip:
+        zip.write(csv_file.name)
 
     bucket = S3ConnectionFactory.get_export_bucket()
     k = Key(bucket)
     _dir = 'downloads/creator/' if is_owner else 'downloads/reader/'
-    k.key = _dir + gz.name
-    k.set_metadata('Content-Encoding', 'gzip')
-    k.set_metadata('Content-Type', 'text/csv')
-    k.set_contents_from_filename(gz.name)
+    k.key = _dir + zip_file_name
+    k.set_contents_from_filename(zip_file_name)
 
     os.chdir(cwd)
     return bucket.get_key(k.key).generate_url(expires_in=60)
@@ -221,7 +217,7 @@ def write_csv_to_s3(data, is_owner, **kwargs):
 
 def get_csv_from_s3(filename, is_owner):
     _dir = 'downloads/creator' if is_owner else 'downloads/reader'
-    filename = _dir + filename + '.csv.gz'
+    filename = _dir + filename + '.csv.zip'
     bucket = S3ConnectionFactory.get_export_bucket()
     key = bucket.get_key(filename)
     return key.generate_url(expires_in=600) if key else None

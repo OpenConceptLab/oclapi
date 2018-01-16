@@ -216,7 +216,7 @@ class SourceVersion(ConceptContainerVersionModel):
     def export_path(self):
         last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
         source = self.versioned_object
-        return "%s/%s_%s.%s.tgz" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
+        return "%s/%s_%s.%s.zip" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
 
     @property
     def last_child_update(self):
