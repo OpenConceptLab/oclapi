@@ -288,8 +288,6 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
         snapshot_data = snap_serializer.data
         snapshot_data.pop('references')
         obj.collection_snapshot = snapshot_data
-        obj.active_concepts = snapshot_data.get('active_concepts')
-        obj.active_mappings = snapshot_data.get('active_mappings')
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)

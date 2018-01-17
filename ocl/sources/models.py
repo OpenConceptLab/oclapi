@@ -63,12 +63,6 @@ class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
     retired = models.BooleanField(default=False)
-    #TODO: remove concept and mappings fields after migration on all envs
-    concepts = ListField()
-    mappings = ListField()
-    active_concepts = models.IntegerField(default=0)
-    active_mappings = models.IntegerField(default=0)
-    _ocl_processing = models.BooleanField(default=False)
     source_snapshot = DictField(null=True, blank=True)
 
     class MongoMeta:
@@ -76,34 +70,6 @@ class SourceVersion(ConceptContainerVersionModel):
                    [('versioned_object_id', 1), ('versioned_object_type', 1)],
                    [('versioned_object_id', 1), ('mnemonic', 1)],
                    [('uri', 1)]]
-
-    #TODO: remove once concept and mappings fields are migrated on all envs
-    @classmethod
-    def migrate_concepts_and_mappings_field(cls):
-        source_versions = SourceVersion.objects.all()
-        source_versions_count = SourceVersion.objects.count()
-        source_versions_pos = 0
-        for source_version in source_versions:
-            source_versions_pos = source_versions_pos + 1
-            if len(source_version.concepts) == 0 and len(source_version.mappings) == 0:
-                continue
-
-            print 'Migrating source %s (%s of %s)' % (source_version.mnemonic, source_versions_pos, source_versions_count)
-
-            concepts = map((lambda x: ObjectId(x)), source_version.concepts)
-            from concepts.models import ConceptVersion
-            ConceptVersion.objects.raw_update({'_id': {'$in': concepts}}, {'$push': { 'source_version_ids': source_version.id }})
-            ConceptVersion.objects.filter(id__in=source_version.concepts).update(updated_at=datetime.now())
-
-            mappings = map((lambda x: ObjectId(x)), source_version.mappings)
-            from mappings.models import MappingVersion
-            MappingVersion.objects.raw_update({'_id': {'$in': mappings}},
-                                              {'$push': {'source_version_ids': source_version.id}})
-            MappingVersion.objects.filter(id__in=source_version.mappings).update(updated_at=datetime.now())
-
-            source_version.concepts = []
-            source_version.mappings = []
-            source_version.save()
 
     def update_concept_version(self, concept_version):
         concept_previous_version = concept_version.previous_version
@@ -211,6 +177,16 @@ class SourceVersion(ConceptContainerVersionModel):
 
     def has_export(self):
         return bool(self.get_export_key())
+
+    @property
+    def active_concepts(self):
+        from concepts.models import ConceptVersion
+        return ConceptVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
+
+    @property
+    def active_mappings(self):
+        from mappings.models import MappingVersion
+        return MappingVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
 
     @property
     def export_path(self):

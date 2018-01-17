@@ -33,6 +33,9 @@ if [ -z $ROOT_PASSWORD ]; then ROOT_PASSWORD=Root123; fi;
 
 python manage.py create_tokens --password="$ROOT_PASSWORD" --token="$OCL_API_TOKEN" --create
 
+echo "Run before startup"
+python manage.py run_before_startup --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
+
 echo "Importing Lookup Values"
 python manage.py import_lookup_values --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
 

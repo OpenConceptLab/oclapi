@@ -251,9 +251,6 @@ class CollectionVersion(ConceptContainerVersionModel):
     concepts = ListField()
     mappings = ListField()
     retired = models.BooleanField(default=False)
-    active_concepts = models.IntegerField(default=0)
-    active_mappings = models.IntegerField(default=0)
-    _ocl_processing = models.BooleanField(default=False)
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
 
@@ -321,6 +318,16 @@ class CollectionVersion(ConceptContainerVersionModel):
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
         return last_concept_update or last_mapping_update or self.updated_at
+
+    @property
+    def active_concepts(self):
+        from concepts.models import ConceptVersion
+        return ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
+
+    @property
+    def active_mappings(self):
+        from mappings.models import MappingVersion
+        return MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
 
     @property
     def last_concept_update(self):

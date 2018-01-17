@@ -275,8 +275,6 @@ class SourceVersionCreateSerializer(SourceVersionCreateOrUpdateSerializer):
             request_user = self.context['request'].user
             snap_serializer = SourceDetailSerializer(kwargs['versioned_object'])
             obj.source_snapshot = snap_serializer.data
-            obj.active_concepts = snap_serializer.data.get('active_concepts')
-            obj.active_mappings = snap_serializer.data.get('active_mappings')
             errors = SourceVersion.persist_new(obj, user=request_user, **kwargs)
             if errors:
                 self._errors.update(errors)

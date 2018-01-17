@@ -872,11 +872,11 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_positive__earlier_source_version(self):
         version1 = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(version1.mappings))
+        self.assertEquals(0, len(version1.get_mapping_ids()))
 
         version2 = SourceVersion.for_base_object(self.source1, label='version2')
         version2.save()
-        self.assertEquals(0, len(version2.mappings))
+        self.assertEquals(0, len(version2.get_mapping_ids()))
 
         source_version = SourceVersion.get_latest_version_of(self.source1)
         self.assertEquals(0, len(source_version.get_mapping_ids()))

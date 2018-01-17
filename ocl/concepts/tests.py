@@ -636,10 +636,10 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
     def test_persist_new_positive__earlier_source_version(self):
         version1 = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(version1.concepts))
+        self.assertEquals(0, len(version1.get_concept_ids()))
         version2 = SourceVersion.for_base_object(self.source1, label='version2')
         version2.save()
-        self.assertEquals(0, len(version2.concepts))
+        self.assertEquals(0, len(version2.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
 
