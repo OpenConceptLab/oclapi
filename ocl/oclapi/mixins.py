@@ -229,7 +229,9 @@ class ConceptVersionCSVFormatterMixin():
                     if (mapping.to_concept):
                         row = row + ' / ' + mapping.to_concept.mnemonic + ' : ' + mapping.to_concept.display_name + ' [Internal]'
                     else:
-                        row = row + ' / ' + mapping.to_concept_code + ' : ' + mapping.to_concept_name + ' [External]'
+                        concept_code = mapping.to_concept_code if mapping.to_concept_code else ''
+                        concept_name = mapping.to_concept_name if mapping.to_concept_name else ''
+                        row = row + ' / ' + concept_code + ' : ' + concept_name + ' [External]'
                     mappings.append(row)
 
                 value['Mappings'] = '; '.join(mappings)
