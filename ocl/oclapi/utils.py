@@ -184,7 +184,7 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     with open('export.json', 'ab') as out:
         out.write(']}')
 
-    with zipfile.ZipFile('export.zip', 'w') as zip:
+    with zipfile.ZipFile('export.zip', 'w', zipfile.ZIP_DEFLATED) as zip:
         zip.write('export.json')
 
     logger.info(os.path.abspath('export.zip'))
@@ -202,7 +202,7 @@ def write_csv_to_s3(data, is_owner, **kwargs):
     csv_file = csv_file_for(data, **kwargs)
     csv_file.close()
     zip_file_name = csv_file.name + '.zip'
-    with zipfile.ZipFile(zip_file_name, 'w') as zip:
+    with zipfile.ZipFile(zip_file_name, 'w', zipfile.ZIP_DEFLATED) as zip:
         zip.write(csv_file.name)
 
     bucket = S3ConnectionFactory.get_export_bucket()
