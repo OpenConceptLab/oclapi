@@ -11,7 +11,7 @@ from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
+from oclapi.utils import S3ConnectionFactory, get_class, update_search_index, lazyproperty
 from datetime import datetime
 
 SOURCE_TYPE = 'Source'
@@ -178,23 +178,23 @@ class SourceVersion(ConceptContainerVersionModel):
     def has_export(self):
         return bool(self.get_export_key())
 
-    @property
+    @lazyproperty
     def active_concepts(self):
         from concepts.models import ConceptVersion
         return ConceptVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
 
-    @property
+    @lazyproperty
     def active_mappings(self):
         from mappings.models import MappingVersion
         return MappingVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
 
-    @property
+    @lazyproperty
     def export_path(self):
         last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
         source = self.versioned_object
         return "%s/%s_%s.%s.zip" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
 
-    @property
+    @lazyproperty
     def last_child_update(self):
         last_concept_update = self.last_concept_update
         last_mapping_update = self.last_mapping_update
@@ -202,7 +202,7 @@ class SourceVersion(ConceptContainerVersionModel):
             return max(last_concept_update, last_mapping_update)
         return last_concept_update or last_mapping_update or self.updated_at
 
-    @property
+    @lazyproperty
     def last_concept_update(self):
         concepts = self.get_concepts()
         if not concepts.exists():
@@ -210,7 +210,7 @@ class SourceVersion(ConceptContainerVersionModel):
         agg = concepts.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
-    @property
+    @lazyproperty
     def last_mapping_update(self):
         mappings = self.get_mappings()
         if not mappings.exists():

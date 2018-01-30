@@ -10,6 +10,7 @@ from concepts.models import Concept
 from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
 from sources.models import Source, SourceVersion
+from oclapi.utils import lazyproperty
 from djangotoolbox.fields import SetField
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
@@ -165,7 +166,7 @@ class Mapping(MappingValidationMixin, BaseModel):
     def get_url_kwarg():
         return 'mapping'
 
-    @property
+    @lazyproperty
     def get_latest_version(self):
         return MappingVersion.objects.filter(versioned_object_id=self.id).order_by('-created_at')[:1][0]
 
@@ -482,7 +483,7 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     def resource_type():
         return MAPPING_VERSION_RESOURCE_TYPE
 
-    @property
+    @lazyproperty
     def collection_versions(self):
         return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
 

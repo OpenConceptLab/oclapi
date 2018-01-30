@@ -6,6 +6,7 @@ from djangotoolbox.fields import ListField
 from collection.models import Collection
 from oclapi.models import BaseResourceModel, ACCESS_TYPE_NONE
 from sources.models import Source
+from oclapi.utils import lazyproperty
 
 ORG_OBJECT_TYPE = 'Organization'
 
@@ -28,11 +29,11 @@ class Organization(BaseResourceModel):
     def num_members(self):
         return len(self.members)
 
-    @property
+    @lazyproperty
     def public_collections(self):
         return Collection.objects.filter(~Q(public_access=ACCESS_TYPE_NONE), parent_id=self.id).count()
 
-    @property
+    @lazyproperty
     def public_sources(self):
         return Source.objects.filter(~Q(public_access=ACCESS_TYPE_NONE), parent_id=self.id).count()
 

@@ -16,7 +16,7 @@ from django_mongodb_engine.contrib import MongoDBManager
 from djangotoolbox.fields import DictField, ListField, SetField
 from rest_framework.authtoken.models import Token
 
-from oclapi.utils import reverse_resource, reverse_resource_version
+from oclapi.utils import reverse_resource, reverse_resource_version, lazyproperty
 from oclapi.settings.common import Common
 from django.db.models import get_model
 
@@ -260,12 +260,12 @@ class ResourceVersionModel(BaseModel):
     def parent_url(self):
         return self.versioned_object.parent_url
 
-    @property
+    @lazyproperty
     def collections(self):
         versions = self.collection_versions
         return map(lambda v: v.versioned_object, versions)
 
-    @property
+    @lazyproperty
     def collection_ids(self):
         if self.is_latest_version:
             return list(set(self._collection_ids_for_versioned_object() + self._collection_ids_for_version()))
@@ -283,7 +283,7 @@ class ResourceVersionModel(BaseModel):
         return map(lambda c: c.id,
                    get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
 
-    @property
+    @lazyproperty
     def collection_version_ids(self):
         return map(lambda v: v.id, self.collection_versions)
 
@@ -335,7 +335,7 @@ class ConceptContainerModel(SubResourceBaseModel):
         owner = self.owner.get_profile() if isinstance(self.owner, User) else self.owner
         return owner.url
 
-    @property
+    @lazyproperty
     def num_versions(self):
         return self.get_version_model().objects.filter(versioned_object_id=self.id).count()
 
@@ -634,7 +634,7 @@ class ConceptContainerVersionModel(ResourceVersionModel):
         # Update the current object
         self._background_process_ids.remove(process_id)
 
-    @property
+    @lazyproperty
     def is_processing(self):
         if self._background_process_ids:
             for process_id in tuple(self._background_process_ids):

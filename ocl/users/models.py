@@ -7,6 +7,7 @@ from djangotoolbox.fields import ListField
 from collection.models import Collection
 from oclapi.models import BaseResourceModel
 from sources.models import Source
+from oclapi.utils import lazyproperty
 
 USER_OBJECT_TYPE = 'User'
 ORG_OBJECT_TYPE = 'Organization'
@@ -57,11 +58,11 @@ class UserProfile(BaseResourceModel):
     def orgs(self):
         return len(self.organizations)
 
-    @property
+    @lazyproperty
     def public_collections(self):
         return Collection.objects.filter(parent_id=self.id).count()
 
-    @property
+    @lazyproperty
     def public_sources(self):
         return Source.objects.filter(parent_id=self.id).count()
 
