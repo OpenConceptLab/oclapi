@@ -15,7 +15,6 @@ from uuidfield import UUIDField
 from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (ConceptBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
-from oclapi.utils import lazyproperty
 from sources.models import SourceVersion, Source
 
 class LocalizedText(models.Model):
@@ -215,7 +214,7 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
     def get_version_model():
         return ConceptVersion
 
-    @lazyproperty
+    @property
     def get_latest_version(self):
         return ConceptVersion.objects.filter(versioned_object_id=self.id).order_by('-created_at')[:1][0]
 
@@ -300,7 +299,7 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     def parent_source(self):
         return self.source
 
-    @lazyproperty
+    @property
     def collection_versions(self):
         return get_model('collection', 'CollectionVersion').objects.filter(concepts=self.id)
 

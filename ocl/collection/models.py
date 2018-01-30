@@ -11,7 +11,7 @@ from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
-from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class, compact, lazyproperty
+from oclapi.utils import reverse_resource, S3ConnectionFactory, get_class, compact
 from concepts.models import Concept, ConceptVersion
 from mappings.models import Mapping, MappingVersion
 from django.db.models import Max
@@ -305,13 +305,13 @@ class CollectionVersion(ConceptContainerVersionModel):
     def has_export(self):
         return bool(self.get_export_key())
 
-    @lazyproperty
+    @property
     def export_path(self):
         last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
         collection = self.versioned_object
         return "%s/%s_%s.%s.zip" % (collection.owner_name, collection.mnemonic, self.mnemonic, last_update)
 
-    @lazyproperty
+    @property
     def last_child_update(self):
         last_concept_update = self.last_concept_update
         last_mapping_update = self.last_mapping_update
@@ -319,17 +319,17 @@ class CollectionVersion(ConceptContainerVersionModel):
             return max(last_concept_update, last_mapping_update)
         return last_concept_update or last_mapping_update or self.updated_at
 
-    @lazyproperty
+    @property
     def active_concepts(self):
         from concepts.models import ConceptVersion
         return ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
 
-    @lazyproperty
-    def get_active_mappings(self):
+    @property
+    def active_mappings(self):
         from mappings.models import MappingVersion
         return MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
 
-    @lazyproperty
+    @property
     def last_concept_update(self):
         if not self.concepts:
             return None
@@ -340,7 +340,7 @@ class CollectionVersion(ConceptContainerVersionModel):
         agg = versions.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
-    @lazyproperty
+    @property
     def last_mapping_update(self):
         if not self.mappings:
             return None

@@ -20,17 +20,8 @@ from djqscsv import csv_file_for
 
 __author__ = 'misternando'
 
-def lazyproperty(fn):
-    attr_name = '_lazy_' + fn.__name__
-
-    @property
-    def _lazyproperty(self):
-        if not hasattr(self, attr_name):
-            setattr(self, attr_name, fn(self))
-        return getattr(self, attr_name)
-    return _lazyproperty
-
 haystack_connections = loading.ConnectionHandler(settings.HAYSTACK_CONNECTIONS)
+
 
 class S3ConnectionFactory:
     s3_connection = None
