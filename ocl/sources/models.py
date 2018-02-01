@@ -106,7 +106,7 @@ class SourceVersion(ConceptContainerVersionModel):
         ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
         ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
-        self.save()
+        self.save() #save to update counts
         update_search_index(concept_version)
 
     def has_concept_version(self, concept_version):
@@ -130,7 +130,7 @@ class SourceVersion(ConceptContainerVersionModel):
         MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
         MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
-        self.save()
+        self.save() # save to update counts
         update_search_index(mapping_version)
 
     def has_mapping_version(self, mapping_version):
@@ -157,6 +157,7 @@ class SourceVersion(ConceptContainerVersionModel):
         if seed_concepts_from:
             from concepts.models import ConceptVersion
             ConceptVersion.objects.raw_update({'source_version_ids': seed_concepts_from.id}, {'$push': { 'source_version_ids': self.id }})
+            self.save() #save to update counts
 
     def head_sibling(self):
         try:
@@ -170,6 +171,7 @@ class SourceVersion(ConceptContainerVersionModel):
             from mappings.models import MappingVersion
             MappingVersion.objects.raw_update({'source_version_ids': seed_mappings_from.id},
                                               {'$push': {'source_version_ids': self.id}})
+            self.save() #save to update counts
 
     def update_version_data(self, obj=None):
         if obj:
