@@ -64,12 +64,28 @@ class SourceVersion(ConceptContainerVersionModel):
     custom_validation_schema = models.TextField(blank=True, null=True)
     retired = models.BooleanField(default=False)
     source_snapshot = DictField(null=True, blank=True)
+    active_concepts = models.IntegerField(default=0)
+    active_mappings = models.IntegerField(default=0)
 
     class MongoMeta:
         indexes = [[('versioned_object_id', 1), ('is_active', 1), ('created_at', 1)],
                    [('versioned_object_id', 1), ('versioned_object_type', 1)],
                    [('versioned_object_id', 1), ('mnemonic', 1)],
                    [('uri', 1)]]
+
+    def save(self, **kwargs):
+        self.update_counts()
+        super(SourceVersion, self).save(**kwargs)
+
+    def update_counts(self):
+        #update counts only when editing
+        if self.id:
+            from concepts.models import ConceptVersion
+            self.active_concepts = ConceptVersion.objects.filter(source_version_ids__contains=self.id,
+                                                                 retired=False).count()
+            from mappings.models import MappingVersion
+            self.active_mappings = MappingVersion.objects.filter(source_version_ids__contains=self.id,
+                                                                 retired=False).count()
 
     def update_concept_version(self, concept_version):
         concept_previous_version = concept_version.previous_version
@@ -90,6 +106,7 @@ class SourceVersion(ConceptContainerVersionModel):
         ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
         ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
+        self.save()
         update_search_index(concept_version)
 
     def has_concept_version(self, concept_version):
@@ -113,6 +130,7 @@ class SourceVersion(ConceptContainerVersionModel):
         MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
         MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
+        self.save()
         update_search_index(mapping_version)
 
     def has_mapping_version(self, mapping_version):
@@ -177,16 +195,6 @@ class SourceVersion(ConceptContainerVersionModel):
 
     def has_export(self):
         return bool(self.get_export_key())
-
-    @property
-    def active_concepts(self):
-        from concepts.models import ConceptVersion
-        return ConceptVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
-
-    @property
-    def active_mappings(self):
-        from mappings.models import MappingVersion
-        return MappingVersion.objects.filter(source_version_ids__contains=self.id, retired=False).count()
 
     @property
     def export_path(self):

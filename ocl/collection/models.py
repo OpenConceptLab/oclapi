@@ -253,10 +253,22 @@ class CollectionVersion(ConceptContainerVersionModel):
     retired = models.BooleanField(default=False)
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
+    active_concepts = models.IntegerField(default=0)
+    active_mappings = models.IntegerField(default=0)
 
     class MongoMeta:
         indexes = [[('concepts', 1)],
                    [('mappings', 1)]]
+
+    def save(self, **kwargs):
+        self.update_counts()
+        super(CollectionVersion, self).save(**kwargs)
+
+    def update_counts(self):
+        from concepts.models import ConceptVersion
+        self.active_concepts = ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
+        from mappings.models import MappingVersion
+        self.active_mappings = MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
         
     def get_concept_ids(self):
         return self.concepts
@@ -318,16 +330,6 @@ class CollectionVersion(ConceptContainerVersionModel):
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
         return last_concept_update or last_mapping_update or self.updated_at
-
-    @property
-    def active_concepts(self):
-        from concepts.models import ConceptVersion
-        return ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
-
-    @property
-    def active_mappings(self):
-        from mappings.models import MappingVersion
-        return MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
 
     @property
     def last_concept_update(self):

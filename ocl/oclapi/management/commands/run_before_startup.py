@@ -4,7 +4,6 @@ from django.db import connections
 from oclapi.models import ConceptContainerVersionModel
 from sources.models import SourceVersion
 from collection.models import CollectionVersion
-from concepts.models import ConceptVersion
 
 class Command(BaseCommand):
     help = 'run before startup'
@@ -25,10 +24,11 @@ class Command(BaseCommand):
         print 'Deleting _ocl_processing from CollectionVersion'
         db.get_collection('collection_collectionversion').update({},{'$unset': {'_ocl_processing':1}}, multi=True)
 
-        print 'Deleting active_concepts and active_mappings fields from SourceVersion'
-        db.get_collection('sources_sourceversion').update({},{'$unset': {'active_concepts':1, 'active_mappings':1}}, multi=True)
-        print 'Deleting active_concepts and active_mappings fields from CollectionVersion'
-        db.get_collection('collection_collectionversion').update({},{'$unset': {'active_concepts':1, 'active_mappings':1}}, multi=True)
+        print 'Updating concepts and mappings count on SourceVersions and CollectionVersions'
+        for source_version in SourceVersion.objects.all():
+            source_version.save()
+        for collection_version in CollectionVersion.objects.all():
+            collection_version.save()
 
     def clear_all_processing(self):
         ConceptContainerVersionModel.clear_all_processing(SourceVersion)
