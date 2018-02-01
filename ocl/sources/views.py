@@ -418,8 +418,7 @@ class SourceVersionExportView(ResourceAttributeChildMixin):
         if version.mnemonic == 'HEAD':
             return HttpResponse(status=405)
 
-        #key = version.get_export_key()
-        key = None
+        key = version.get_export_key()
         url, status = None, 204
 
         if key:
