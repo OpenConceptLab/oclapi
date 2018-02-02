@@ -39,5 +39,8 @@ python manage.py run_before_startup --settings="oclapi.settings.$SETTINGS" --con
 echo "Importing Lookup Values"
 python manage.py import_lookup_values --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
 
+echo "Run data integrity checks"
+python manage.py run_data_integrity_checks --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG"
+
 echo "Starting the server"
 python manage.py runserver 0.0.0.0:8000 --settings="oclapi.settings.$SETTINGS" --configuration="$CONFIG" --insecure

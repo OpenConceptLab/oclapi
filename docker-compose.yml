@@ -25,6 +25,7 @@ services:
       - mongo
       - solr
       - redis
+      - celery
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -51,8 +52,6 @@ services:
   celery:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
     command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
-    depends_on:
-      - api
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"

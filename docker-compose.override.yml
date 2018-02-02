@@ -34,15 +34,11 @@ services:
     restart: "no"
   celery:
     image: openconceptlab/oclapi:dev
-    depends_on:
-      - api
     volumes:
       - ./ocl:/code
     restart: "no"
   flower:
     image: openconceptlab/oclapi:dev
-    depends_on:
-      - api
     ports:
       - "5555:5555"
     volumes:

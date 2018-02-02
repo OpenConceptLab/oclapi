@@ -31,6 +31,13 @@ celery.config_from_object('django.conf:settings')
 logger = get_task_logger('celery.worker')
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 
+@celery.task(base=QueueOnce, bind=True)
+def data_integrity_checks(self):
+    logger.info('Updating concepts and mappings count on SourceVersions and CollectionVersions...')
+    for source_version in SourceVersion.objects.all():
+        source_version.save()
+    for collection_version in CollectionVersion.objects.all():
+        collection_version.save()
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):

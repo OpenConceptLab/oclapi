@@ -24,12 +24,6 @@ class Command(BaseCommand):
         print 'Deleting _ocl_processing from CollectionVersion'
         db.get_collection('collection_collectionversion').update({},{'$unset': {'_ocl_processing':1}}, multi=True)
 
-        print 'Updating concepts and mappings count on SourceVersions and CollectionVersions'
-        for source_version in SourceVersion.objects.all():
-            source_version.save()
-        for collection_version in CollectionVersion.objects.all():
-            collection_version.save()
-
     def clear_all_processing(self):
         ConceptContainerVersionModel.clear_all_processing(SourceVersion)
         ConceptContainerVersionModel.clear_all_processing(CollectionVersion)
