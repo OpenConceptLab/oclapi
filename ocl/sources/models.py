@@ -9,10 +9,12 @@ from django.db.models import Max
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
+from django.utils import timezone
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
 from datetime import datetime
+
 
 SOURCE_TYPE = 'Source'
 
@@ -66,6 +68,9 @@ class SourceVersion(ConceptContainerVersionModel):
     source_snapshot = DictField(null=True, blank=True)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
+    last_concept_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_mapping_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_child_update = models.DateTimeField(default=timezone.now)
 
     class MongoMeta:
         indexes = [[('versioned_object_id', 1), ('is_active', 1), ('created_at', 1)],
@@ -74,18 +79,24 @@ class SourceVersion(ConceptContainerVersionModel):
                    [('uri', 1)]]
 
     def save(self, **kwargs):
-        self.update_counts()
+        #update only when editing
+        if self.id:
+            self.update_active_counts()
+            self.update_last_updates()
         super(SourceVersion, self).save(**kwargs)
 
-    def update_counts(self):
-        #update counts only when editing
-        if self.id:
-            from concepts.models import ConceptVersion
-            self.active_concepts = ConceptVersion.objects.filter(source_version_ids__contains=self.id,
-                                                                 retired=False).count()
-            from mappings.models import MappingVersion
-            self.active_mappings = MappingVersion.objects.filter(source_version_ids__contains=self.id,
-                                                                 retired=False).count()
+    def update_active_counts(self):
+        from concepts.models import ConceptVersion
+        self.active_concepts = ConceptVersion.objects.filter(source_version_ids__contains=self.id,
+                                                             retired=False).count()
+        from mappings.models import MappingVersion
+        self.active_mappings = MappingVersion.objects.filter(source_version_ids__contains=self.id,
+                                                             retired=False).count()
+    def update_last_updates(self):
+        self.last_concept_update = self.__get_last_concept_update()
+        self.last_mapping_update = self.__get_last_mapping_update()
+        self.last_child_update = self.__get_last_child_update()
+
 
     def update_concept_version(self, concept_version):
         concept_previous_version = concept_version.previous_version
@@ -204,24 +215,22 @@ class SourceVersion(ConceptContainerVersionModel):
         source = self.versioned_object
         return "%s/%s_%s.%s.zip" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
 
-    @property
-    def last_child_update(self):
+    def __get_last_child_update(self):
         last_concept_update = self.last_concept_update
         last_mapping_update = self.last_mapping_update
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
-        return last_concept_update or last_mapping_update or self.updated_at
+        return last_concept_update or last_mapping_update or self.updated_at or timezone.now()
 
-    @property
-    def last_concept_update(self):
+
+    def __get_last_concept_update(self):
         concepts = self.get_concepts()
         if not concepts.exists():
             return None
         agg = concepts.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
-    @property
-    def last_mapping_update(self):
+    def __get_last_mapping_update(self):
         mappings = self.get_mappings()
         if not mappings.exists():
             return None

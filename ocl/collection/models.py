@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
+from django.utils import timezone
 
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
@@ -255,20 +256,29 @@ class CollectionVersion(ConceptContainerVersionModel):
     custom_validation_schema = models.TextField(blank=True, null=True)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
+    last_concept_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_mapping_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_child_update = models.DateTimeField(default=timezone.now)
 
     class MongoMeta:
         indexes = [[('concepts', 1)],
                    [('mappings', 1)]]
 
     def save(self, **kwargs):
-        self.update_counts()
+        self.update_active_counts()
+        self.update_last_updates()
         super(CollectionVersion, self).save(**kwargs)
 
-    def update_counts(self):
+    def update_active_counts(self):
         from concepts.models import ConceptVersion
         self.active_concepts = ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
         from mappings.models import MappingVersion
         self.active_mappings = MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
+
+    def update_last_updates(self):
+        self.last_concept_update = self.__get_last_concept_update()
+        self.last_mapping_update = self.__get_last_mapping_update()
+        self.last_child_update = self.__get_last_child_update()
         
     def get_concept_ids(self):
         return self.concepts
@@ -323,16 +333,14 @@ class CollectionVersion(ConceptContainerVersionModel):
         collection = self.versioned_object
         return "%s/%s_%s.%s.zip" % (collection.owner_name, collection.mnemonic, self.mnemonic, last_update)
 
-    @property
-    def last_child_update(self):
+    def __get_last_child_update(self):
         last_concept_update = self.last_concept_update
         last_mapping_update = self.last_mapping_update
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
-        return last_concept_update or last_mapping_update or self.updated_at
+        return last_concept_update or last_mapping_update or self.updated_at or timezone.now()
 
-    @property
-    def last_concept_update(self):
+    def __get_last_concept_update(self):
         if not self.concepts:
             return None
         klass = get_class('concepts.models.ConceptVersion')
@@ -342,8 +350,7 @@ class CollectionVersion(ConceptContainerVersionModel):
         agg = versions.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
-    @property
-    def last_mapping_update(self):
+    def __get_last_mapping_update(self):
         if not self.mappings:
             return None
         klass = get_class('mappings.models.MappingVersion')

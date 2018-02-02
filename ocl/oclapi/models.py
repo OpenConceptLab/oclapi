@@ -12,6 +12,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django_mongodb_engine.contrib import MongoDBManager
 from djangotoolbox.fields import DictField, ListField, SetField
 from rest_framework.authtoken.models import Token

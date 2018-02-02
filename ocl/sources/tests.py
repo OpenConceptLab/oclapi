@@ -754,7 +754,8 @@ class SourceVersionTest(SourceBaseTest):
         )
         Source.persist_new(source, self.user1, parent_resource=self.org1)
         source_version = SourceVersion.get_latest_version_of(source)
-        self.assertEquals(source_version.last_child_update, source_version.updated_at)
+        #updated_at will always be a couple of microseconds away
+        self.assertEquals(source_version.last_child_update.replace(second=0,microsecond=0), source_version.updated_at.replace(second=0,microsecond=0))
 
 class SourceVersionClassMethodTest(SourceBaseTest):
 
