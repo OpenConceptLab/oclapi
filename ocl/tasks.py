@@ -39,21 +39,21 @@ def data_integrity_checks(self):
     for collection_version in CollectionVersion.objects.all():
         collection_version.save()
 
-    mapping_ids_query = Mapping.objects.only('id').all()
-    mapping_ids = []
-    for mapping_id in mapping_ids_query:
-        mapping_ids.append(mapping_id.id)
-    mapping_versions = MappingVersion.objects.raw_query({'versioned_object_id': {'$nin': mapping_ids} })
-    for mapping_version in mapping_versions:
-        logger.error('Mapping(%s) referenced by Mapping Version(%s) does not exist!' % mapping_version.versioned_object_id, mapping_version.id)
+    #mapping_ids_query = Mapping.objects.only('id').all()
+    #mapping_ids = []
+    #for mapping_id in mapping_ids_query:
+    #    mapping_ids.append(mapping_id.id)
+    #mapping_versions = MappingVersion.objects.raw_query({'versioned_object_id': {'$nin': mapping_ids} })
+    #for mapping_version in mapping_versions:
+    #    logger.error('Mapping(%s) referenced by Mapping Version(%s) does not exist!' % mapping_version.versioned_object_id, mapping_version.id)
 
-    concept_ids_query = Concept.objects.only('id').all()
-    concept_ids = []
-    for concept_id in concept_ids_query:
-        concept_ids.append(concept_id.id)
-    concept_versions = ConceptVersion.objects.raw_query({'versioned_object_id': {'$nin': concept_ids} })
-    for concept_version in concept_versions:
-        logger.error('Concept(%s) referenced by Concept Version(%s) does not exist!' % concept_version.versioned_object_id, concept_version.id)
+    #concept_ids_query = Concept.objects.only('id').all()
+    #concept_ids = []
+    #for concept_id in concept_ids_query:
+    #    concept_ids.append(concept_id.id)
+    #concept_versions = ConceptVersion.objects.raw_query({'versioned_object_id': {'$nin': concept_ids} })
+    #for concept_version in concept_versions:
+    #    logger.error('Concept(%s) referenced by Concept Version(%s) does not exist!' % concept_version.versioned_object_id, concept_version.id)
 
 
 
