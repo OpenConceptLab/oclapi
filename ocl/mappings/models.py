@@ -442,8 +442,6 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
 
     @property
     def to_mapping_url(self):
-        if self.versioned_object is None:
-            raise Mapping.DoesNotExist('Mapping for MappingVersion with id %s does not exist' % self.id)
         return self.versioned_object.uri
 
     @property
