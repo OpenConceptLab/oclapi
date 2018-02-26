@@ -39,12 +39,12 @@ def data_integrity_checks(self):
         try:
             source_version.save()
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error('Failed to update SourceVersion(%s) due to %s' % source_version.id, traceback.format_exc())
     for collection_version in CollectionVersion.objects.all():
         try:
             collection_version.save()
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error('Failed to update CollectionVersion(%s) due to %s' % collection_version.id, traceback.format_exc())
 
     #mapping_ids_query = Mapping.objects.only('id').all()
     #mapping_ids = []
