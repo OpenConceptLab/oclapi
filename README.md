@@ -79,6 +79,13 @@ docker-compose run --rm api python manage.py run_test --configuration=Dev
 docker-compose run --rm api python manage.py test integration_tests --configuration=Dev
 ````
 
+#### Rebuilding SOLR index
+
+If the SOLR index gets out of sync, you can run the following command:
+````sh
+docker-compose exec api python manage.py rebuild_index --batch-size 100 --workers 4 --verbosity 2
+````
+
 ### Debugging in container
 
 To setup debugging PyCharm Professional Edition is required.
