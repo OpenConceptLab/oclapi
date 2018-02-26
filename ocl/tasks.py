@@ -24,6 +24,7 @@ from mappings.views import MappingListView
 
 import json
 from rest_framework.test import APIRequestFactory
+import traceback
 
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
@@ -35,9 +36,15 @@ celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 def data_integrity_checks(self):
     logger.info('Updating concepts and mappings count and last updates on SourceVersions and CollectionVersions...')
     for source_version in SourceVersion.objects.all():
-        source_version.save()
+        try:
+            source_version.save()
+        except Exception:
+            logger.error(traceback.format_exc())
     for collection_version in CollectionVersion.objects.all():
-        collection_version.save()
+        try:
+            collection_version.save()
+        except Exception:
+            logger.error(traceback.format_exc())
 
     #mapping_ids_query = Mapping.objects.only('id').all()
     #mapping_ids = []
