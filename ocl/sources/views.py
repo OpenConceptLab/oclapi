@@ -162,6 +162,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         mapping_versions.delete()
         source_versions.delete()
         source.delete()
+
         return Response({'detail': 'Successfully deleted source.'}, status=204)
 
 

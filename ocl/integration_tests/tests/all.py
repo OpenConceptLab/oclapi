@@ -22,13 +22,14 @@ from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
 from sources.models import Source, SourceVersion
 from sources.tests import SourceBaseTest
-from tasks import update_collection_in_solr
 from test_helper.base import create_user, create_source, create_organization, create_concept
 
 logger = logging.getLogger('oclapi')
 
 def update_haystack_index():
     update_index.Command().handle()
+    import time
+    time.sleep(1)
 
 
 class ConceptCreateViewTest(ConceptBaseTest):
@@ -747,11 +748,13 @@ class ConceptVersionAllView(ConceptBaseTest):
         collection.full_clean()
         collection.save()
 
+        update_haystack_index()
+
         concept = Concept.objects.filter(mnemonic='concept1')[0]
         concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
 
         ConceptVersion.persist_clone(concept_version.clone(), self.user1)
-        update_collection_in_solr(collection.get_head().id, collection.references)
+
         self.assertEquals(concept.num_versions, 2)
 
         self.client.login(username='user1', password='user1')

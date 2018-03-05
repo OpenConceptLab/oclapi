@@ -75,6 +75,15 @@ class OCLSolrBackend(SolrSearchBackend):
 
         return (content_field_name, schema_fields)
 
+    def update(self, index, iterable, commit=False):
+        super(OCLSolrBackend, self).update(index, iterable, commit=commit)
+
+    def remove(self, obj_or_string, commit=False):
+        super(OCLSolrBackend, self).remove(obj_or_string, commit=commit)
+
+    def clear(self, models=[], commit=False):
+        super(OCLSolrBackend, self).clear(models, commit=commit)
+
 
 class OCLSolrEngine(SolrEngine):
     backend = OCLSolrBackend
