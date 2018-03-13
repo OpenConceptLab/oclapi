@@ -37,7 +37,7 @@ def data_integrity_checks(self):
     logger.info('Updating concepts and mappings count and last updates on SourceVersions and CollectionVersions...')
     for source_version in SourceVersion.objects.all():
         try:
-            source_version.sasve()
+            source_version.save()
         except Exception:
             logger.error('Failed to update SourceVersion(%s) due to %s' % (source_version.id, traceback.format_exc()))
     for collection_version in CollectionVersion.objects.all():
@@ -46,14 +46,14 @@ def data_integrity_checks(self):
         except Exception:
             logger.error('Failed to update CollectionVersion(%s) due to %s' % (collection_version.id, traceback.format_exc()))
 
-    mapping_ids_query = Mapping.objects.only('id').all()
-    mapping_ids = []
-    for mapping_id in mapping_ids_query:
-        mapping_ids.append(mapping_id.id)
+    #mapping_ids_query = Mapping.objects.only('id').all()
+    #mapping_ids = []
+    #for mapping_id in mapping_ids_query:
+    #    mapping_ids.append(mapping_id.id)
 
-    mapping_versions = MappingVersion.objects.raw_query({'versioned_object_id': {'$nin': mapping_ids} })
-    for mapping_version in mapping_versions:
-        logger.error('Mapping(%s) referenced by Mapping Version(%s) does not exist!' % mapping_version.versioned_object_id, mapping_version.id)
+    #mapping_versions = MappingVersion.objects.raw_query({'versioned_object_id': {'$nin': mapping_ids} })
+    #for mapping_version in mapping_versions:
+    #    logger.error('Mapping(%s) referenced by Mapping Version(%s) does not exist!' % mapping_version.versioned_object_id, mapping_version.id)
 
     #concept_ids_query = Concept.objects.only('id').all()
     #concept_ids = []
