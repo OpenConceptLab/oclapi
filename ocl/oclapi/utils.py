@@ -128,13 +128,17 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         out.write('%s, "concepts": [' % resource_string[:-1])
 
     batch_size = 1000
-    active_concepts = resource_serializer.object.active_concepts
-    if active_concepts:
-        logger.info('%s has %d concepts.  Getting them in batches of %d...' % (resource_type.title(), active_concepts, batch_size))
+    if resource_type == 'collection':
+        total_concepts = len(version.concepts)
+    else:
+        total_concepts = version.get_concepts().filter(is_active=True).count()
+
+    if total_concepts:
+        logger.info('%s has %d concepts.  Getting them in batches of %d...' % (resource_type.title(), total_concepts, batch_size))
         concept_version_class = get_class('concepts.models.ConceptVersion')
         concept_serializer_class = get_class('concepts.serializers.ConceptVersionDetailSerializer')
-        for start in range(0, active_concepts, batch_size):
-            end = min(start + batch_size, active_concepts)
+        for start in range(0, total_concepts, batch_size):
+            end = min(start + batch_size, total_concepts)
             logger.info('Serializing concepts %d - %d...' % (start+1, end))
             if resource_type == 'collection':
                 concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
@@ -147,7 +151,7 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
             concept_string = concept_string[1:-1]
             with open('export.json', 'ab') as out:
                 out.write(concept_string)
-                if end != active_concepts:
+                if end != total_concepts:
                     out.write(', ')
         logger.info('Done serializing concepts.')
     else:
@@ -156,13 +160,17 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     with open('export.json', 'ab') as out:
         out.write('], "mappings": [')
 
-    active_mappings = resource_serializer.object.active_mappings
-    if active_mappings:
-        logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), active_mappings, batch_size))
+    if resource_type == 'collection':
+        total_mappings = len(version.mappings)
+    else:
+        total_mappings = version.get_mappings().filter(is_active=True).count()
+
+    if total_mappings:
+        logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), total_mappings, batch_size))
         mapping_class = get_class('mappings.models.MappingVersion')
         mapping_serializer_class = get_class('mappings.serializers.MappingVersionDetailSerializer')
-        for start in range(0, active_mappings, batch_size):
-            end = min(start + batch_size, active_mappings)
+        for start in range(0, total_mappings, batch_size):
+            end = min(start + batch_size, total_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
             if resource_type == 'collection':
                 mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
@@ -175,7 +183,7 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
             mapping_string = mapping_string[1:-1]
             with open('export.json', 'ab') as out:
                 out.write(mapping_string)
-                if end != active_mappings:
+                if end != total_mappings:
                     out.write(', ')
         logger.info('Done serializing mappings.')
     else:
