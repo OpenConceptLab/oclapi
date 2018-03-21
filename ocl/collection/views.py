@@ -301,10 +301,11 @@ class CollectionListView(CollectionBaseView,
             from django_mongodb_engine.query import A
             queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         if self.user:
-            from users.models import UserProfile
-            user_profile = UserProfile.objects.filter(mnemonic=self.user)
-            if user_profile:
-                queryset = queryset.filter(parent_id__in=[user_profile[0].id] + user_profile[0].organizations, public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+            if self.user != 'root':
+                from users.models import UserProfile
+                user_profile = UserProfile.objects.filter(mnemonic=self.user)
+                if user_profile:
+                    queryset = queryset.filter(parent_id__in=[user_profile[0].id] + user_profile[0].organizations, public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         return queryset
 
     def get_csv_rows(self, queryset=None):
