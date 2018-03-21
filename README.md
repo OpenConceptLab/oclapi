@@ -83,8 +83,13 @@ docker-compose run --rm api python manage.py test integration_tests --configurat
 
 If the SOLR index gets out of sync, you can run the following command:
 ````sh
-docker-compose exec api python manage.py rebuild_index --batch-size 100 --workers 4 --verbosity 2
+docker-compose run --rm -d api python manage.py rebuild_index --batch-size 100 --workers 4 --verbosity 2 --noinput
 ````
+It's asynchronous. To follow logs run:
+````sh
+docker logs -f oclapistg_api_run_1
+````
+, where oclapistg_api_run_1 is the container id returned by the `run` command.
 
 ### Debugging in container
 
