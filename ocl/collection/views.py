@@ -268,6 +268,7 @@ class CollectionListView(CollectionBaseView,
     serializer_class = CollectionCreateSerializer
     filter_backends = [CollectionSearchFilter]
     contains_uri = None
+    user = None
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
@@ -279,11 +280,14 @@ class CollectionListView(CollectionBaseView,
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
+        self.user = request.QUERY_PARAMS.get('user', None)
         # Running the filter_backends seems to reset changes made to the queryset.
         # Therefore, remove the filter_backends when the 'contains' parameter is passed, and
         # apply the appropriate public_access filter in get_queryset
         # TODO correct the behavior of filter_backends, and remove this hack to get around it
         if self.contains_uri != None:
+            self.filter_backends=[]
+        if self.user != None:
             self.filter_backends=[]
         collection_list = self.list(request, *args, **kwargs)
         return collection_list
@@ -296,6 +300,11 @@ class CollectionListView(CollectionBaseView,
         if self.contains_uri != None:
             from django_mongodb_engine.query import A
             queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+        if self.user:
+            from users.models import UserProfile
+            user_profile = UserProfile.objects.filter(mnemonic=self.user)
+            if user_profile:
+                queryset = queryset.filter(parent_id__in=[user_profile[0].id] + user_profile[0].organizations, public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         return queryset
 
     def get_csv_rows(self, queryset=None):
