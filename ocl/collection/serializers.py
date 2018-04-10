@@ -52,11 +52,10 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return collection
 
     def get_active_concepts(self, obj):
-        return ConceptVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
-                                                                                                                 versioned_object_id=obj.id).concepts).count()
+        return CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).active_concepts
 
     def get_active_mappings(self, obj):
-        return MappingVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).mappings).count()
+        return CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).active_mappings
 
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):

@@ -53,16 +53,12 @@ class Source(ConceptContainerModel):
 
         # Check if concepts from this source are in any collection
         from collection.models import CollectionVersion
-        collections = CollectionVersion.objects.filter(
-            Q(concepts__in=concept_version_ids) | Q(concepts__in=concept_ids)
-        )
+        collections = CollectionVersion.get_collection_versions_with_concepts(concept_version_ids)
         if collections:
             raise Exception(resource_used_message)
 
         # Check if mappings from this source are in any collection
-        collections = CollectionVersion.objects.filter(
-            Q(mappings__in=mapping_version_ids) | Q(mappings__in=mapping_ids)
-        )
+        collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
         if collections:
             raise Exception(resource_used_message)
 

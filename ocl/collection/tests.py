@@ -226,8 +226,8 @@ class CollectionTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.mappings), 0)
-        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.get_mappings()), 0)
+        self.assertEquals(len(head.get_concepts()), 1)
         self.assertEquals(len(head.references), 1)
 
     def test_delete_single_mapping_reference(self):
@@ -288,7 +288,7 @@ class CollectionTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(len(head.get_mappings()), 1)
         self.assertEquals(len(head.references), 1)
 
         reference += mapping.get_latest_version.mnemonic + '/'
@@ -300,7 +300,7 @@ class CollectionTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
-        self.assertEquals(len(head.mappings), 0)
+        self.assertEquals(len(head.get_mappings()), 0)
 
     def test_delete_concept_reference(self):
         kwargs = {
@@ -350,7 +350,7 @@ class CollectionTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.get_concepts()), 1)
         self.assertEquals(len(head.references), 1)
         expression += concept1.get_latest_version.id + '/'
         collection.delete_references([expression])
@@ -360,7 +360,7 @@ class CollectionTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
-        self.assertEquals(len(head.concepts), 0)
+        self.assertEquals(len(head.get_concepts()), 0)
 
     def test_delete_multiple_reference(self):
         kwargs = {
@@ -443,8 +443,8 @@ class CollectionTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.concepts), 2)
-        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(len(head.get_concepts()), 2)
+        self.assertEquals(len(head.get_mappings()), 1)
         self.assertEquals(len(head.references), 3)
 
         references[0] += '{}/'.format(concept1.get_latest_version.id)
@@ -462,10 +462,10 @@ class CollectionTest(CollectionBaseTest):
                                                                 from_concept.get_latest_version.id)
         self.assertEquals(collection.references[0].expression, from_concept_reference_with_version_id)
         self.assertEquals(len(head.references), 1)
-        self.assertEquals(len(head.concepts), 1)
-        self.assertEquals(len(head.mappings), 0)
+        self.assertEquals(len(head.get_concepts()), 1)
+        self.assertEquals(len(head.get_mappings()), 0)
         self.assertEquals(head.references[0].expression, from_concept_reference_with_version_id)
-        self.assertEquals(next(iter(head.concepts)), from_concept.get_latest_version.id)
+        self.assertEquals(head.get_concepts()[0], from_concept.get_latest_version)
 
     def test_delete_reference_when_no_reference_given(self):
         kwargs = {
@@ -1195,11 +1195,12 @@ class CollectionVersionTest(CollectionBaseTest):
             versioned_object=self.collection1,
             released=True,
             created_by=self.user1,
-            updated_by=self.user1,
-            concepts=[concept2.id, concept1_version.id]
+            updated_by=self.user1
         )
         head_version.full_clean()
         head_version.save()
+        head_version.add_concept(concept2_latest_version)
+        head_version.add_concept(concept1_version)
 
         version1 = CollectionVersion(
             name='v1',
@@ -1212,11 +1213,9 @@ class CollectionVersionTest(CollectionBaseTest):
         version1.full_clean()
         version1.save()
 
-        self.assertEquals(len(version1.concepts), 0)
+        self.assertEquals(len(version1.get_concepts()), 0)
         version1.seed_concepts()
-        self.assertEquals(len(version1.concepts), 2)
-        self.assertTrue(concept2_latest_version.id in version1.concepts)
-        self.assertTrue(concept1_version.id in version1.concepts)
+        self.assertItemsEqual(version1.get_concept_ids(), [concept2_latest_version.id, concept1_version.id])
 
     def test_seed_mappings(self):
         source = Source(
@@ -1273,11 +1272,12 @@ class CollectionVersionTest(CollectionBaseTest):
             versioned_object=self.collection1,
             released=True,
             created_by=self.user1,
-            updated_by=self.user1,
-            mappings=[mapping2_version.id, mapping.id]
+            updated_by=self.user1
         )
         head_version.full_clean()
         head_version.save()
+        head_version.add_mapping(mapping2_version)
+        head_version.add_mapping(mapping1_latest_version)
 
         version1 = CollectionVersion(
             name='v1',
@@ -1290,13 +1290,11 @@ class CollectionVersionTest(CollectionBaseTest):
         version1.full_clean()
         version1.save()
 
-        self.assertEquals(len(version1.mappings), 0)
+        self.assertEquals(len(version1.get_mappings()), 0)
         version1.seed_mappings()
-        self.assertEquals(len(version1.mappings), 2)
-        self.assertTrue(mapping2_version.id in version1.mappings)
-        self.assertTrue(mapping1_latest_version.id in version1.mappings)
+        self.assertItemsEqual(version1.get_mapping_ids(), [mapping2_version.id, mapping1_latest_version.id])
 
-
+0
 class CollectionVersionClassMethodTest(CollectionBaseTest):
     def setUp(self):
         super(CollectionVersionClassMethodTest, self).setUp()
@@ -1781,7 +1779,7 @@ class CollectionVersionClassMethodTest(CollectionBaseTest):
             collection_version.full_clean()
             collection_version.save()
 
-            self.assertEquals(len(collection_version.concepts), 1)
+            self.assertEquals(len(collection_version.get_concepts()), 1)
             self.assertEquals(len(collection_version.references), 1)
             self.assertEquals(collection_version.active_concepts, 1)
 
@@ -1978,10 +1976,10 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.get_concepts()), 1)
         self.assertEquals(len(errors), 0)
         self.assertEquals(collection.current_references()[0], single_reference + concept_version_number + '/')
-        self.assertEquals(next(iter(head.concepts)), concept_version_number)
+        self.assertEquals(head.get_concept_ids()[0], concept_version_number)
 
     def test_add_concept_as_multiple_reference_without_version_information_should_add_latest_versions_numbers(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
@@ -2007,7 +2005,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         expected_concepts = [concept_one.get_latest_version.url, concept_two.get_latest_version.url]
 
-        self.assertEquals(len(head.concepts), 2)
+        self.assertEquals(len(head.get_concepts()), 2)
         self.assertEquals(len(errors), 0)
 
         self.assertItemsEqual(collection.current_references(), expected_concepts)
@@ -2035,7 +2033,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         head = CollectionVersion.get_head(collection.id)
 
-        self.assertEquals(len(head.mappings), 1)
+        self.assertEquals(len(head.get_mappings()), 1)
         self.assertEquals(collection.current_references()[0], single_reference + mapping_version_number)
 
     def test_add_mapping_as_multiple_reference_without_version_information_should_add_latest_versions_numbers(self):
@@ -2065,7 +2063,7 @@ class CollectionReferenceTest(CollectionBaseTest):
 
         expected_mappings = [mapping_one.get_latest_version.url, mapping_two.get_latest_version.url]
 
-        self.assertEquals(len(head.mappings), 2)
+        self.assertEquals(len(head.get_mappings()), 2)
         self.assertItemsEqual(collection.current_references(), expected_mappings)
 
     def test_add_duplicate_concept_reference_should_not_add(self):
@@ -2270,7 +2268,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         reference = CollectionReference(expression='/orgs/org1/sources/source/concepts/concept/')
         reference.full_clean()
         CollectionVersion.persist_changes(version, col_reference=reference)
-        self.assertEquals(len(version.concepts), 1)
+        self.assertEquals(len(version.get_concepts()), 1)
         self.assertEquals(len(version.references), 1)
 
     def test_add_valid_mapping_expression_to_collection_positive(self):
@@ -2309,4 +2307,4 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
             expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
         reference.full_clean()
         CollectionVersion.persist_changes(version, col_reference=reference)
-        self.assertEquals(len(version.mappings), 1)
+        self.assertEquals(len(version.get_mappings()), 1)

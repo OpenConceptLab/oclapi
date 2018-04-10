@@ -38,7 +38,7 @@ class ConceptBaseView(ChildResourceMixin):
     pk_field = 'mnemonic'
     model = Concept
     permission_classes = (CanViewParentDictionary,)
-    child_list_attribute = 'concepts'
+    child_list_attribute = 'get_concept_ids'
 
 
 class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
@@ -211,7 +211,7 @@ class ConceptVersionMixin():
     model = ConceptVersion
     parent_resource_version_model = SourceVersion
     permission_classes = (CanViewParentDictionary,)
-    child_list_attribute = 'concepts'
+    child_list_attribute = 'get_concept_ids'
 
 
 class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
@@ -254,13 +254,7 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        if ('collection' in self.kwargs and 'version' not in self.kwargs) or ('collection' in self.kwargs and 'version' in self.kwargs and self.kwargs['version'] == 'HEAD'):
-            all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
-            queryset = super(ConceptDictionaryMixin, self).get_queryset()
-            queryset = queryset.filter(versioned_object_id__in=all_children, is_latest_version=True)
-        else:
-            queryset = super(ConceptVersionListView, self).get_queryset()
-
+        queryset = super(ConceptVersionListView, self).get_queryset()
         queryset = queryset.filter(is_active=True)
         if not self.include_retired:
             queryset = queryset.filter(~Q(retired=True))

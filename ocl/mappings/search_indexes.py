@@ -58,8 +58,8 @@ class MappingVersionIndex(OCLSearchIndex, indexes.Indexable):
 
 
     def prepare_collection_version(self, obj):
-        return obj.collection_version_ids
+        return obj.get_collection_version_ids()
 
 
     def prepare_collection(self, obj):
-        return obj.collection_ids
+        return obj.get_collection_ids()
