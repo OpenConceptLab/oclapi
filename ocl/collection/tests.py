@@ -14,7 +14,7 @@ from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FUL
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from oclapi.models import ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from test_helper.base import *
-
+from oclapi.settings.common import Common
 
 class CollectionBaseTest(OclApiBaseTestCase):
     def setUp(self):
@@ -71,6 +71,22 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(self.org1.mnemonic, collection.parent_resource)
         self.assertEquals(self.org1.resource_type, collection.parent_resource_type)
         self.assertEquals(0, collection.num_versions)
+
+    def test_create_openmrs_dictionary_positive(self):
+        collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1, parent=self.org1,
+                                updated_by=self.user1, preferred_source="1", repository_type=Common.OPENMRS_REPOSITORY_TYPE )
+        collection.full_clean()
+        collection.save()
+        self.assertTrue(Collection.objects.filter(
+            mnemonic='collection1',
+            parent_type=ContentType.objects.get_for_model(Organization),
+            parent_id=self.org1.id)
+                        .exists())
+        self.assertEquals(collection.mnemonic, collection.__unicode__())
+        self.assertEquals("1", collection.preferred_source)
+        self.assertEquals(Common.OPENMRS_REPOSITORY_TYPE, collection.repository_type)
+        self.assertEquals(0, collection.num_versions)
+
 
     def test_create_collection_positive__valid_attributes(self):
         collection = Collection(name='collection1', mnemonic='collection1', created_by=self.user1,

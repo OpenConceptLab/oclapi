@@ -13,6 +13,6 @@ urlpatterns = patterns('',
     url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/reactivate/$', UserReactivateView.as_view(), name='userprofile-reactivate'),
     url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/orgs/$', OrganizationListView.as_view(), {'related_object_type': UserProfile, 'related_object_kwarg': 'user'}, name='userprofile-orgs'),
     url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/sources/', include('sources.urls')),
-    url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/collections/', include('collection.urls')),
+    url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/collections/', include('collection.urls'))
 )
 
