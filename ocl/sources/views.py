@@ -21,6 +21,7 @@ from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDiction
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
 from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
+from oclapi.rawqueries import RawQueries
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
 from celery_once import AlreadyQueued
@@ -156,12 +157,7 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         if mapping_versions:
             return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
 
-        concepts.delete()
-        concept_versions.delete()
-        mappings.delete()
-        mapping_versions.delete()
-        source_versions.delete()
-        source.delete()
+        RawQueries().delete_source(source)
 
         return Response({'detail': 'Successfully deleted source.'}, status=204)
 
