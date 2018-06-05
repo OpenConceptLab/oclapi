@@ -91,6 +91,23 @@ docker logs -f oclapistg_api_run_1
 ````
 , where oclapistg_api_run_1 is the container id returned by the `run` command.
 
+### Backups
+
+By default backups are taken every night at midnight. You can trigger a manual backup by running:
+````sh
+docker-compose run --rm backup bash backup.sh
+````
+Backups are saved in a backup directory configured via the BACKUP_DIR env property (./backups by default).
+You can restore a particular backup by running:
+````sh
+docker-compose run --rm backup bash restore.sh 2017-09-27_00-00-01
+````
+### Connecting to mongo in container
+
+````sh
+docker-compose exec mongo mongo
+````
+
 ### Debugging in container
 
 To setup debugging PyCharm Professional Edition is required.
