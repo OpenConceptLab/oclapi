@@ -1,13 +1,15 @@
 from bson import ObjectId
 from django.db import connections
+from django.utils.timezone import now
+
 
 class RawQueries():
 
     db = connections['default']
 
     def delete_source(self, source):
+        start_date = now()
         from sources.models import SourceVersion
-
         source_version_ids = list(SourceVersion.objects.filter(versioned_object_id=source.id).values_list('id', flat=True))
         mapping_versions_col = self.db.get_collection('mappings_mappingversion')
         mapping_versions_col.remove({'source_version_ids': {'$in': source_version_ids}})
@@ -26,3 +28,6 @@ class RawQueries():
 
         sources_col = self.db.get_collection('sources_source')
         sources_col.remove({'_id': ObjectId(source.id)})
+
+        from haystack.management.commands import update_index
+        update_index.Command().handle(remove=True, start_date=start_date)
