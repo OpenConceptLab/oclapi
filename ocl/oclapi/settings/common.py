@@ -95,13 +95,19 @@ class Common(Configuration):
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
     )
-
+    
     # List of callables that know how to import templates from various sources.
     TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
     #     'django.template.loaders.eggs.Loader',
     )
+
+    # List the repository type responsible for creating a Collection
+    # The variable identifies the differences between normal collections and Openmrs Dictionaries
+    DEFAULT_REPOSITORY_TYPE = 'Collection'
+    OPENMRS_REPOSITORY_TYPE = 'OpenMRSDictionary'
+
 
     MIDDLEWARE_CLASSES = (
         'django.middleware.common.CommonMiddleware',

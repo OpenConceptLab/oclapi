@@ -8,7 +8,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
 from django.utils import timezone
-
+from oclapi.settings.common import Common
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
@@ -25,6 +25,9 @@ HEAD = 'HEAD'
 class Collection(ConceptContainerModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
+    preferred_source = models.TextField(blank=True)
+    repository_type = models.TextField(default=Common.DEFAULT_REPOSITORY_TYPE, blank=True)
+    custom_resources_linked_source = models.TextField(blank=True)
     expressions = []
 
     @property
