@@ -220,7 +220,12 @@ class Common(Configuration):
     CORS_ORIGIN_ALLOW_ALL = True
 
     CORS_ALLOW_METHODS = (
-        'GET',
+      'DELETE',
+      'GET',
+      'OPTIONS',
+      'PATCH',
+      'POST',
+      'PUT',
     )
 
     # CORS_ORIGIN_WHITELIST = (
