@@ -110,10 +110,11 @@ class Common(Configuration):
 
 
     MIDDLEWARE_CLASSES = (
-        'django.middleware.common.CommonMiddleware',
         'corsheaders.middleware.CorsMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
+        'corsheaders.middleware.CorsPostCsrfMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'oclapi.middlewares.RequestLogMiddleware',
@@ -225,13 +226,23 @@ class Common(Configuration):
       'OPTIONS',
       'PATCH',
       'POST',
-      'PUT',
+      'PUT'
     )
 
-    # CORS_ORIGIN_WHITELIST = (
-    #     'google.com',
-    #     'hostname.example.com',
-    # )
+    CORS_ALLOW_HEADERS = (
+      'x-requested-with',
+      'content-type',
+      'accept',
+      'origin',
+      'authorization',
+      'x-csrftoken'
+    )
+
+    CORS_ALLOW_CREDENTIALS = True
+
+    # Needed to properly support https.
+    # See https://github.com/ottoyiu/django-cors-headers/#cors_replace_https_referer
+    CORS_REPLACE_HTTPS_REFERER = True
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
