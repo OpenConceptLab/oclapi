@@ -3,19 +3,17 @@ import os
 import zipfile
 import tempfile
 
-import datetime
 import haystack
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
-from haystack.management.commands import update_index
 from haystack.utils import loading
 from rest_framework.reverse import reverse
 from rest_framework.utils import encoders
-from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
 from operator import is_not, itemgetter
 from djqscsv import csv_file_for
 
+from django.conf import settings
 
 
 __author__ = 'misternando'
@@ -249,6 +247,19 @@ def update_search_index(object):
         #fetch the most recent data from db
         object = object_type.objects.filter(id = object.id)
         backend.update(index, object)
+
+def remove_from_search_index(type, id):
+    if isinstance(haystack.signal_processor, haystack.signals.RealtimeSignalProcessor):
+        default_connection = haystack_connections['default']
+        backend = default_connection.get_backend()
+
+        objectid = '%s.%s.%s' % (type._meta.app_label,
+            type._meta.module_name,
+            id
+        )
+
+        backend.remove(objectid)
+
 
 def update_all_in_index(model, qs):
     if not qs.exists():

@@ -251,6 +251,8 @@ class Common(Configuration):
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
     HAYSTACK_ITERATOR_LOAD_PER_QUERY = 25
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
+    # Override to properly support Mongo identifiers with alphanumerics
+    HAYSTACK_IDENTIFIER_METHOD = 'oclapi.settings.get_identifier'
 
     # Celery settings
     CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'

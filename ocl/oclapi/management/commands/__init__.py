@@ -2,8 +2,6 @@ from optparse import make_option
 import logging
 import os
 from django.core.management import BaseCommand, CommandError
-import haystack
-from haystack.signals import BaseSignalProcessor
 from rest_framework.authtoken.models import Token
 from oclapi.permissions import HasPrivateAccess
 from sources.models import Source
