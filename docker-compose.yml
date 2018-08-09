@@ -37,6 +37,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT-production}
       - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
       - OCL_API_TOKEN=${OCL_API_TOKEN-891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6}
+      - IMPORT_DEMO_DATA=${IMPORT_DEMO_DATA-false}
       - SECRET_KEY
       - SENTRY_DSN_KEY
       - EMAIL_HOST_PASSWORD

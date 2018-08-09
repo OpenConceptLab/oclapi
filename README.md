@@ -57,6 +57,8 @@ Docker `.env` file should be located under the root project folder. On developme
 
 `SENTRY_DSN=` Sentry unique URL for the given environment.
 
+`IMPORT_DEMO_DATA=` Set to 'true' to import ~2k concepts from the CIEL demo data.
+
 ### Running commands in a container
 
 You can run any command in a running container. Open up a new terminal and run for example:

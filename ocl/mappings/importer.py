@@ -206,7 +206,15 @@ class MappingsImporter(object):
                 data['to_concept'] = to_concept
                 query = query & Q(to_concept_id=to_concept.id)
             else:   # External mapping
-                to_source = self.get_source(data['to_source_url'])
+                try:
+                    to_source = self.get_source(data['to_source_url'])
+                except Source.DoesNotExist:
+                    str_log = 'to_source_url %s does not exist' % (data['to_source_url'])
+                    self.stderr.write(str_log)
+                    logger.warning(str_log)
+                    update_action = ImportActionHelper.IMPORT_ACTION_SKIP
+                    return update_action
+
                 data['to_source'] = to_source
                 query = query & Q(to_source_id=to_source.id,
                                   to_concept_code=data['to_concept_code'],
