@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
+from oclapi.rawqueries import RawQueries
 from datetime import datetime
 
 
@@ -84,6 +85,12 @@ class SourceVersion(ConceptContainerVersionModel):
             self.update_active_counts()
             self.update_last_updates()
         super(SourceVersion, self).save(**kwargs)
+
+    def delete(self, **kwargs):
+        RawQueries().delete_source_version(self)
+
+        super(SourceVersion, self).delete(**kwargs)
+
 
     def update_active_counts(self):
         from concepts.models import ConceptVersion

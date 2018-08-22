@@ -7,6 +7,24 @@ class RawQueries():
 
     db = connections['default']
 
+    def delete_source_version(self, source_version):
+        from mappings.models import MappingVersion
+        mapping_version_ids = list(source_version.get_mapping_ids())
+
+        MappingVersion.objects.raw_update({}, {'$pull': {'source_version_ids': source_version.id}})
+
+        for mapping_version_id in mapping_version_ids:
+            remove_from_search_index(MappingVersion, mapping_version_id)
+
+        from concepts.models import ConceptVersion
+        concept_versions_ids = list(source_version.get_concept_ids())
+
+        ConceptVersion.objects.raw_update({}, {'$pull': {'source_version_ids': source_version.id}})
+
+        for concept_version_id in concept_versions_ids:
+            remove_from_search_index(ConceptVersion, concept_version_id)
+
+
     def delete_source(self, source):
         from sources.models import SourceVersion
 
