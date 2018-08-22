@@ -1,8 +1,8 @@
+
 from haystack.backends.solr_backend import SolrSearchBackend, SolrEngine
 from haystack.fields import CharField, MultiValueField
 
 __author__ = 'misternando'
-
 
 class SortOrFilterField(CharField):
     field_type = 'lowercase'
@@ -10,7 +10,6 @@ class SortOrFilterField(CharField):
 
 class FilterField(MultiValueField):
     field_type = 'lowercase'
-
 
 class OCLSolrBackend(SolrSearchBackend):
 

@@ -4,6 +4,7 @@ from django.db import connections
 from oclapi.models import ConceptContainerVersionModel
 from sources.models import SourceVersion
 from collection.models import CollectionVersion
+from haystack.signals import BaseSignalProcessor
 
 class Command(BaseCommand):
     help = 'run before startup'
