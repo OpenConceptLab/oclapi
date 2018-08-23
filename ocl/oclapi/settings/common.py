@@ -160,7 +160,7 @@ class Common(Configuration):
 
     # Django Rest Framework configuration
     REST_FRAMEWORK = {
-        # Default to token-based authentication; fall back on session-based
+        # Default to token-based authentication
         # A user gets a unique token upon account creation (residing in the authtoken_token data store).
         # To pass an authentication token along with your request, include the following header:
         # Authorization: Token [TOKEN_VALUE]
@@ -168,8 +168,13 @@ class Common(Configuration):
         # Authorization: Token ad73f481096c3b6202bce395820199
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.TokenAuthentication',
-            'rest_framework.authentication.SessionAuthentication',
         ),
+        'DEFAULT_THROTTLE_CLASSES': (
+            'rest_framework.throttling.AnonRateThrottle',
+        ),
+        'DEFAULT_THROTTLE_RATES': {
+            'anon': '100/day'
+        },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
             # Disabling Browsable API due to performance issue, which can lead to taking the server down. It is caused

@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, status, views
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
@@ -9,6 +10,7 @@ from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from users.models import UserProfile
 from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer
+from django.contrib.auth.hashers import check_password
 
 
 class UserListView(BaseAPIView,
@@ -85,6 +87,7 @@ class UserDetailView(UserBaseView,
 
 
 class UserLoginView(views.APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         errors = {}
@@ -98,9 +101,12 @@ class UserLoginView(views.APIView):
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = UserProfile.objects.get(mnemonic=username)
-            if password != profile.hashed_password:
+
+            if check_password(password, profile.hashed_password):
+                return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+            else:
                 return Response({'detail': 'Passwords did not match.'}, status=status.HTTP_401_UNAUTHORIZED)
-            return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+
         except UserProfile.DoesNotExist:
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
