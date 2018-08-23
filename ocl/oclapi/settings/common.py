@@ -168,12 +168,13 @@ class Common(Configuration):
         # Authorization: Token ad73f481096c3b6202bce395820199
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.TokenAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
         ),
         'DEFAULT_THROTTLE_CLASSES': (
             'rest_framework.throttling.AnonRateThrottle',
         ),
         'DEFAULT_THROTTLE_RATES': {
-            'anon': '100/day'
+            'anon': '1000/day'
         },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
