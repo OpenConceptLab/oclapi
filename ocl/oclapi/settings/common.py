@@ -170,12 +170,6 @@ class Common(Configuration):
             'rest_framework.authentication.TokenAuthentication',
             'rest_framework.authentication.SessionAuthentication',
         ),
-        'DEFAULT_THROTTLE_CLASSES': (
-            'rest_framework.throttling.AnonRateThrottle',
-        ),
-        'DEFAULT_THROTTLE_RATES': {
-            'anon': '1000/day'
-        },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
             # Disabling Browsable API due to performance issue, which can lead to taking the server down. It is caused
