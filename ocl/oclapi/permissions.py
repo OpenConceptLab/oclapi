@@ -4,6 +4,14 @@ from orgs.models import Organization
 from users.models import UserProfile
 from django.contrib.auth.models import User
 
+class IsSuperuser(BasePermission):
+    """
+    The request is authenticated, and the user is a superuser
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        return False
 
 class HasOwnership(BasePermission):
     """

@@ -33,7 +33,7 @@ class RawQueries():
         from mappings.models import MappingVersion
         mapping_version_ids = list(MappingVersion.objects.filter(source_version_ids__in=source_version_ids).values_list('id', flat=True))
         mapping_versions_col = self.db.get_collection('mappings_mappingversion')
-        mapping_versions_col.remove({'source_version_ids': {'$in': source_version_ids}})
+        mapping_versions_col.remove({'_id': {'$in': [ObjectId(id) for id in mapping_version_ids]}})
         for mapping_version_id in mapping_version_ids:
             remove_from_search_index(MappingVersion, mapping_version_id)
 
@@ -45,10 +45,10 @@ class RawQueries():
             remove_from_search_index(Mapping, mapping_id)
 
         from concepts.models import ConceptVersion
-        concept_versions_ids = list(ConceptVersion.objects.filter(source_version_ids__in=source_version_ids).values_list('id', flat=True))
+        concept_version_ids = list(ConceptVersion.objects.filter(source_version_ids__in=source_version_ids).values_list('id', flat=True))
         concept_versions_col = self.db.get_collection('concepts_conceptversion')
-        concept_versions_col.remove({'source_version_ids': {'$in': source_version_ids}})
-        for concept_version_id in concept_versions_ids:
+        concept_versions_col.remove({'_id': {'$in': [ObjectId(id) for id in concept_version_ids]}})
+        for concept_version_id in concept_version_ids:
             remove_from_search_index(ConceptVersion, concept_version_id)
 
         from concepts.models import Concept

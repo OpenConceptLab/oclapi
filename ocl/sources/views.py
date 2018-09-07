@@ -113,51 +113,12 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         return Response(data)
 
     def destroy(self, request, *args, **kwargs):
-        resource_used_message = '''This source cannot be deleted because others have created mapping or references that point to it.
-        To delete this source, you must first delete all linked mappings and references and try again.'''
-
         source = self.get_object()
-        source_versions = SourceVersion.objects.filter(
-            versioned_object_id=source.id
-        )
-        concepts = Concept.objects.filter(parent_id=source.id)
-        mappings = Mapping.objects.filter(parent_id=source.id)
 
-        concept_ids = [c.id for c in concepts]
-        mapping_ids = [m.id for m in mappings]
-
-        concept_versions = ConceptVersion.objects.filter(
-            versioned_object_id__in=concept_ids
-        )
-        mapping_versions = MappingVersion.objects.filter(
-            versioned_object_id__in=mapping_ids
-        )
-
-        concept_version_ids = [c.id for c in concept_versions]
-        mapping_version_ids = [m.id for m in mapping_versions]
-
-        # Check if concepts from this source are in any collection
-        collections = CollectionVersion.objects.filter(
-            Q(concepts__in=concept_version_ids) | Q(concepts__in=concept_ids)
-        )
-        if collections:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if mappings from this source are in any collection
-        collections = CollectionVersion.objects.filter(
-            Q(mappings__in=mapping_version_ids) | Q(mappings__in=mapping_ids)
-        )
-        if collections:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if mappings from this source are referred in any sources
-        mapping_versions = MappingVersion.objects.filter(
-            Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
-        ).exclude(parent_id=source.id)
-        if mapping_versions:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        RawQueries().delete_source(source)
+        try:
+            source.delete()
+        except Exception as ex:
+            return Response({'detail': ex.message}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'detail': 'Successfully deleted source.'}, status=204)
 

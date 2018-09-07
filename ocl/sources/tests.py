@@ -710,6 +710,46 @@ class SourceVersionTest(SourceBaseTest):
         from concepts.models import ConceptVersion
         self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
 
+    def test_source_delete(self):
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
+                             created_by=self.user1, updated_by=self.user1)
+        head.full_clean()
+        head.save()
+
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
+
+        version1 = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        SourceVersion.persist_new(version1)
+
+        source_versions = SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        )
+        self.assertTrue(source_versions.exists())
+        self.assertEquals(version1.get_concepts().count(), 1)
+
+        version1_id = version1.id
+
+        version1.delete()
+
+        self.assertFalse(SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        ).exists())
+
+        from concepts.models import ConceptVersion
+        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
+
+
 
     def test_seed_concepts(self):
         head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,

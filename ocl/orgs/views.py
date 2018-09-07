@@ -1,12 +1,12 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status, generics
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
-from oclapi.permissions import HasOwnership
+from oclapi.permissions import HasOwnership, IsSuperuser
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
@@ -74,7 +74,7 @@ class OrganizationListView(BaseAPIView,
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class OrganizationBaseView(BaseAPIView, RetrieveAPIView):
+class OrganizationBaseView(BaseAPIView, RetrieveAPIView, DestroyAPIView):
     lookup_field = 'org'
     model = Organization
     queryset = Organization.objects.filter(is_active=True)
@@ -86,17 +86,24 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
     queryset = Organization.objects.filter(is_active=True)
 
     def initial(self, request, *args, **kwargs):
-        if (request.method == 'DELETE') or (request.method == 'POST'):
+        if (request.method == 'DELETE'):
+            self.permission_classes = (IsSuperuser, )
+        if (request.method == 'POST'):
             self.permission_classes = (HasOwnership, )
         super(OrganizationDetailView, self).initial(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.soft_delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        try:
+            obj.delete()
+        except Exception as ex:
+            return Response({'detail': ex.message}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'detail': 'Successfully deleted org.'}, status=status.HTTP_200_OK)
 
 
 class OrganizationMemberView(generics.GenericAPIView):

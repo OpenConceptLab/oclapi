@@ -3,6 +3,7 @@ import logging
 from urlparse import urlparse
 
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
@@ -30,7 +31,6 @@ def update_haystack_index():
     update_index.Command().handle()
     import time
     time.sleep(1)
-
 
 class ConceptCreateViewTest(ConceptBaseTest):
     def setUp(self):
@@ -3329,7 +3329,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
 
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
@@ -3342,7 +3342,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(
@@ -3381,5 +3381,110 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue('To delete this source, you must first delete all linked mappings and references and try again.' in message)
+
+class OrganizationDeleteViewTest(SourceBaseTest):
+    def setUp(self):
+        self.tearDown()
+        super(OrganizationDeleteViewTest, self).setUp()
+        self.source1 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+        )
+        kwargs = {
+            'parent_resource': self.org1,
+        }
+        Source.persist_new(self.source1, self.org1, **kwargs)
+
+        (self.concept1, _) = create_concept(mnemonic='1', user=self.org1, source=self.source1)
+        (self.concept2, _) = create_concept(mnemonic='2', user=self.org1, source=self.source1)
+
+        self.mapping = Mapping(
+            parent=self.source1,
+            map_type='SAME-AS',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='junk'
+        )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Mapping.persist_new(self.mapping, self.org1, **kwargs)
+
+        self.collection1 = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(self.collection1, self.org1, parent_resource=self.org1)
+
+        self.collection_version1 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.org1,
+            updated_by=self.org1,
+        )
+        CollectionVersion.persist_new(self.collection_version1)
+
+        self.collection2 = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(self.collection2, self.org2, parent_resource=self.org2)
+
+        self.collection_version2 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.collection2,
+            released=True,
+            created_by=self.org2,
+            updated_by=self.org2,
+        )
+        CollectionVersion.persist_new(self.collection_version2)
+
+    def test_delete_org_with_source_and_collection(self):
+        self.client.login(username='superuser', password='superuser')
+        path = reverse('organization-detail', kwargs={'org': self.org1.name})
+        response = self.client.delete(path)
+
+        self.assertEquals(response.status_code, 200)
+
+        self.assertFalse(Collection.objects.filter(id = self.collection1.id).exists())
+        self.assertFalse(Source.objects.filter(id = self.source1.id).exists())
+
+    def test_delete_org_with_referenced_concept_in_collection_in_another_org(self):
+        self.collection2.expressions = [self.concept1.uri]
+        self.collection2.full_clean()
+        self.collection2.save()
+
+        self.client.login(username='superuser', password='superuser')
+        path = reverse('organization-detail', kwargs={'org': self.org1.name})
+        response = self.client.delete(path)
+
+        self.assertEquals(response.status_code, 400)
+        message = json.loads(response.content)['detail']
+        self.assertTrue(
+            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
 
 

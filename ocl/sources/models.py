@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
@@ -26,6 +26,54 @@ class Source(ConceptContainerModel):
 
     class MongoMeta:
         indexes = [[('uri', 1)]]
+
+    def delete(self, **kwargs):
+        resource_used_message = '''Source %s cannot be deleted because others have created mapping or references that point to it.
+                To delete this source, you must first delete all linked mappings and references and try again.''' % self.id
+
+        from concepts.models import Concept
+        concepts = Concept.objects.filter(parent_id=self.id)
+        from mappings.models import Mapping
+        mappings = Mapping.objects.filter(parent_id=self.id)
+
+        concept_ids = [c.id for c in concepts]
+        mapping_ids = [m.id for m in mappings]
+
+        from concepts.models import ConceptVersion
+        concept_versions = ConceptVersion.objects.filter(
+            versioned_object_id__in=concept_ids
+        )
+        from mappings.models import MappingVersion
+        mapping_versions = MappingVersion.objects.filter(
+            versioned_object_id__in=mapping_ids
+        )
+
+        concept_version_ids = [c.id for c in concept_versions]
+        mapping_version_ids = [m.id for m in mapping_versions]
+
+        # Check if concepts from this source are in any collection
+        from collection.models import CollectionVersion
+        collections = CollectionVersion.objects.filter(
+            Q(concepts__in=concept_version_ids) | Q(concepts__in=concept_ids)
+        )
+        if collections:
+            raise Exception(resource_used_message)
+
+        # Check if mappings from this source are in any collection
+        collections = CollectionVersion.objects.filter(
+            Q(mappings__in=mapping_version_ids) | Q(mappings__in=mapping_ids)
+        )
+        if collections:
+            raise Exception(resource_used_message)
+
+        # Check if mappings from this source are referred in any sources
+        mapping_versions = MappingVersion.objects.filter(
+            Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
+        ).exclude(parent_id=self.id)
+        if mapping_versions:
+            raise Exception(resource_used_message)
+
+        RawQueries().delete_source(self)
 
     @property
     def concepts_url(self):
