@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import os
 
+from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
 
@@ -24,46 +26,17 @@ from mappings.views import MappingListView
 
 import json
 from rest_framework.test import APIRequestFactory
-import traceback
 
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
 
-logger = get_task_logger('celery.worker')
+logger = get_task_logger(__name__)
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 
 @celery.task(base=QueueOnce, bind=True)
 def data_integrity_checks(self):
-    logger.info('Updating concepts and mappings count and last updates on SourceVersions and CollectionVersions...')
-    for source_version in SourceVersion.objects.all():
-        try:
-            source_version.save()
-        except Exception:
-            logger.error('Failed to update SourceVersion(%s) due to %s' % (source_version.id, traceback.format_exc()))
-    for collection_version in CollectionVersion.objects.all():
-        try:
-            collection_version.save()
-        except Exception:
-            logger.error('Failed to update CollectionVersion(%s) due to %s' % (collection_version.id, traceback.format_exc()))
-
-    #mapping_ids_query = Mapping.objects.only('id').all()
-    #mapping_ids = []
-    #for mapping_id in mapping_ids_query:
-    #    mapping_ids.append(mapping_id.id)
-
-    #mapping_versions = MappingVersion.objects.raw_query({'versioned_object_id': {'$nin': mapping_ids} })
-    #for mapping_version in mapping_versions:
-    #    logger.error('Mapping(%s) referenced by Mapping Version(%s) does not exist!' % mapping_version.versioned_object_id, mapping_version.id)
-
-    #concept_ids_query = Concept.objects.only('id').all()
-    #concept_ids = []
-    #for concept_id in concept_ids_query:
-    #    concept_ids.append(concept_id.id)
-    #concept_versions = ConceptVersion.objects.raw_query({'versioned_object_id': {'$nin': concept_ids} })
-    #for concept_version in concept_versions:
-    #    logger.error('Concept(%s) referenced by Concept Version(%s) does not exist!' % concept_version.versioned_object_id, concept_version.id)
-
-
+    logger.info('Updating concepts and mappings count...')
+    update_concepts_and_mappings_count(logger)
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
