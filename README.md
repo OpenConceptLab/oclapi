@@ -24,6 +24,11 @@ Go to:
 cd oclapi
 ````
 
+Build containers explicitly (only the first time to go around oclapi:dev not found):
+````sh
+docker-compose build
+````
+
 Fire up containers:
 ````sh
 docker-compose up
