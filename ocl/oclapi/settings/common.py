@@ -174,7 +174,7 @@ class Common(Configuration):
             'rest_framework.throttling.AnonRateThrottle',
         ),
         'DEFAULT_THROTTLE_RATES': {
-            'anon': '1000/day'
+            'anon': '240/minute'
         },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
