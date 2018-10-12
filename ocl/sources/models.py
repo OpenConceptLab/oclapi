@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.db.models import Max, Q
+from django.db.models import Max, Q, F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djangotoolbox.fields import ListField, DictField
@@ -171,8 +171,13 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
-        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
-        self.save() #save to update counts
+
+        updated_at = datetime.now()
+        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=updated_at)
+
+        SourceVersion.objects.filter(id=self.id).update(active_concepts=F('active_concepts')+1, last_concept_update=updated_at,
+                                                        last_child_update=updated_at, updated_at=updated_at)
+
         update_search_index(concept_version)
 
     def has_concept_version(self, concept_version):
@@ -195,8 +200,11 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
-        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
-        self.save() # save to update counts
+        updated_at = datetime.now()
+        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=updated_at)
+
+        SourceVersion.objects.filter(id=self.id).update(active_mappings=F('active_mappings')+1, last_mapping_update=updated_at, last_child_update=updated_at, updated_at=updated_at)
+
         update_search_index(mapping_version)
 
     def has_mapping_version(self, mapping_version):
