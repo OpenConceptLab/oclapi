@@ -34,6 +34,12 @@ def data_integrity_checks(self):
     update_concepts_and_mappings_count(logger)
 
 @celery.task(base=QueueOnce, bind=True)
+def find_broken_references(self):
+    from manage.models import Reference
+    broken_references = Reference.find_broken_references()
+    return broken_references
+
+@celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
     from sources.models import SourceVersion
 

@@ -1,25 +1,35 @@
 from rest_framework import serializers
 
 class ReferenceSerializer(serializers.Serializer):
-    source_type = serializers.CharField(source='reference_definition.source_type.__name__', read_only=True)
-    source_field = serializers.CharField(source='reference_definition.source_field', read_only=True)
-    target_type = serializers.CharField(source='reference_definition.target_type.__name__', read_only=True)
-    target_field = serializers.CharField(source='reference_definition.target_field', read_only=True)
-    use_object_id = serializers.BooleanField(source='reference_definition.use_object_id', read_only=True)
-
     source_id = serializers.CharField(read_only=True)
-    broken_reference = serializers.CharField(read_only=True)
+    target_id = serializers.CharField(read_only=True)
+    deletable = serializers.BooleanField(read_only=True)
+    deleted = serializers.BooleanField(read_only=True)
+    item = serializers.SerializerMethodField('get_item')
+    dependencies = serializers.CharField(read_only=True)
+
+    def get_item(self, obj):
+        return str(obj.item)
+
+class ReferenceListItemSerializer(serializers.Serializer):
+    source = serializers.CharField(read_only=True)
+    target = serializers.CharField(read_only=True)
+    target_candidate_count = serializers.IntegerField(read_only=True)
+    dependencies = serializers.SerializerMethodField('get_dependencies')
+    broken_count = serializers.IntegerField(read_only=True)
+    deletable_count = serializers.IntegerField(read_only=True)
+    broken_references = ReferenceSerializer()
+
+    def get_dependencies(self, obj):
+        dependencies = []
+        for dependency in obj.reference_definition.dependencies:
+            dependencies.append('%s.%s' % (dependency.source_type.__name__, dependency.source_field))
+        return dependencies
 
 class ReferenceListSerializer(serializers.Serializer):
     broken_total_count = serializers.IntegerField(read_only=True)
-    broken_counts = serializers.SerializerMethodField(method_name='get_broken_counts')
-    candidate_counts = serializers.SerializerMethodField(method_name='get_candidate_counts')
-    broken_references = ReferenceSerializer()
+    deletable_total_count = serializers.IntegerField(read_only=True)
+    items = ReferenceListItemSerializer()
 
-    def get_broken_counts(self, obj):
-        return obj.broken_counts
-
-    def get_candidate_counts(self, obj):
-        return obj.candidate_counts
 
 

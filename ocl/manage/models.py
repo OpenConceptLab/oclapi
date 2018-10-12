@@ -3,18 +3,43 @@ import logging
 from bson import ObjectId
 from django.contrib.contenttypes.models import ContentType
 
+from oclapi.rawqueries import RawQueries
+
 logger = logging.getLogger('oclapi')
 
 class ReferenceDefinition:
-    def __init__(self, source_type, source_field, target_type, target_field='id', use_object_id = True):
+    _reference_definitions = None
+
+    def __init__(self, source_type, source_field, target_type, use_object_id = True, nullable = False):
         self.source_type = source_type
         self.source_field = source_field
         self.target_type = target_type
-        self.target_field = target_field
+        self.target_field = 'id'
         self.use_object_id = use_object_id
+        self.nullable = nullable
+        self._dependencies = None
+
+    @property
+    def dependencies(self):
+        if not self._dependencies:
+            self._dependencies = self.__resolve_dependencies()
+        return self._dependencies
+
+    def __resolve_dependencies(self):
+        dependencies = list()
+        for reference_definition in ReferenceDefinition.get_reference_definitions():
+            if reference_definition.target_type == self.source_type:
+                dependencies.append(reference_definition)
+        return dependencies
 
     @staticmethod
     def get_reference_definitions():
+        if not ReferenceDefinition._reference_definitions:
+            ReferenceDefinition._reference_definitions = ReferenceDefinition.__resolve_reference_definitions()
+        return ReferenceDefinition._reference_definitions
+
+    @staticmethod
+    def __resolve_reference_definitions():
         from mappings.models import MappingVersion
         from sources.models import SourceVersion
         from concepts.models import ConceptVersion
@@ -25,64 +50,74 @@ class ReferenceDefinition:
         from collection.models import Collection
         from users.models import UserProfile
         from orgs.models import Organization
+        from collection.models import CollectionConcept
+        from collection.models import CollectionMapping
         return [
             ReferenceDefinition(Source, 'parent_id', Organization),
             ReferenceDefinition(Source, 'parent_id', UserProfile),
             ReferenceDefinition(Collection, 'parent_id', Organization),
             ReferenceDefinition(Collection, 'parent_id', UserProfile),
 
-            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, 'id', False),
-            ReferenceDefinition(ConceptVersion, 'versioned_object_id', Concept),
+            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, False),
+            ReferenceDefinition(ConceptVersion, 'versioned_object_id', Concept, False),
             ReferenceDefinition(ConceptVersion, 'previous_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'parent_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'root_version', ConceptVersion),
 
-            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, 'id', False),
-            ReferenceDefinition(MappingVersion, 'versioned_object_id', Mapping),
+            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, False),
+            ReferenceDefinition(MappingVersion, 'versioned_object_id', Mapping, False),
             ReferenceDefinition(MappingVersion, 'previous_version', MappingVersion),
             ReferenceDefinition(MappingVersion, 'parent_version', MappingVersion),
 
-            ReferenceDefinition(SourceVersion, 'versioned_object_id', Source),
+            ReferenceDefinition(SourceVersion, 'versioned_object_id', Source, False),
             ReferenceDefinition(SourceVersion, 'previous_version', SourceVersion),
             ReferenceDefinition(SourceVersion, 'parent_version', SourceVersion),
 
-            ReferenceDefinition(CollectionVersion, 'versioned_object_id', Collection),
+            ReferenceDefinition(CollectionVersion, 'versioned_object_id', Collection, False),
             ReferenceDefinition(CollectionVersion, 'previous_version', CollectionVersion),
             ReferenceDefinition(CollectionVersion, 'parent_version', CollectionVersion),
 
-            ReferenceDefinition(UserProfile, 'organizations', Organization, 'id', False),
+            ReferenceDefinition(CollectionConcept, 'collection_id', CollectionVersion, False),
+            ReferenceDefinition(CollectionConcept, 'concept_id', ConceptVersion, False),
 
-            ReferenceDefinition(Organization, 'members', UserProfile, 'id', False)
+            ReferenceDefinition(CollectionMapping, 'mapping_id', MappingVersion, False),
+            ReferenceDefinition(CollectionMapping, 'collection_id', CollectionVersion, False),
+
+            ReferenceDefinition(UserProfile, 'organizations', Organization, False, True),
+
+            ReferenceDefinition(Organization, 'members', UserProfile, False, True)
         ]
 
 class Reference:
-    def __init__(self, reference_definition, source_id, broken_reference):
+    def __init__(self, reference_definition, source_id, target_id):
         self.reference_definition = reference_definition
         self.source_id = source_id
-        self.broken_reference = broken_reference
+        self.target_id = target_id
+        self.dependencies = Reference.__get_dependencies(reference_definition, source_id)
+        self.deletable = (not self.dependencies)
+        self.item = RawQueries().find_by_id(reference_definition.source_type, source_id)
+        self.deleted = False
 
     @staticmethod
     def find_broken_references():
         ref_defs = ReferenceDefinition.get_reference_definitions()
         candidates = {}
-        broken_references = ReferenceList()
+        reference_list = ReferenceList()
         for ref_def in ref_defs:
-            Reference.__find_broken_references_for_definition(ref_def, broken_references, candidates)
+            Reference.__find_broken_references_for_definition(ref_def, reference_list, candidates)
 
-        if broken_references.broken_total_count() != 0:
-            logger.error('Found %d broken references' % broken_references.broken_total_count())
+        if reference_list.broken_total_count() != 0:
+            logger.error('Found %d broken references' % reference_list.broken_total_count())
         else:
             logger.info('No broken references found')
 
-        return broken_references
+        return reference_list
 
     @staticmethod
-    def __find_broken_references_for_definition(reference_definition, broken_references, candidates):
+    def __find_broken_references_for_definition(reference_definition, reference_list, candidates):
         ref_def_target = reference_definition.target_type.__name__ + '.' + reference_definition.target_field
         ref_def_target_key = ref_def_target + '.%d' % reference_definition.use_object_id
         ref_def_source = reference_definition.source_type.__name__ + '.' + reference_definition.source_field
-
-        broken_references.add_broken_count(ref_def_source)
 
         if ref_def_target_key not in candidates:
             reference_candidates = list(reference_definition.target_type.objects.values_list(reference_definition.target_field, flat=True))
@@ -95,45 +130,101 @@ class Reference:
 
         logger.info('Checking references in %s against %d candidates from %s' %
                     (ref_def_source, len(reference_candidates), ref_def_target))
-        broken_references.add_candidate_count(reference_definition.target_type.__name__, len(reference_candidates))
+        reference_list.update_target_candidate_count(reference_definition, len(reference_candidates))
 
         source_field_in = reference_definition.source_field + '__in'
-        broken_references_query = reference_definition.source_type.objects.exclude(**{source_field_in: reference_candidates})
+        target_ids_query = reference_definition.source_type.objects.exclude(**{source_field_in: reference_candidates})
         if ref_def_source == 'Source.parent_id' or ref_def_source == 'Collection.parent_id':
             content_type = ContentType.objects.get_for_model(reference_definition.target_type)
-            broken_references_query = broken_references_query.filter(parent_type=content_type)
+            target_ids_query = target_ids_query.filter(parent_type=content_type)
 
-        for (source_id, broken_reference_list) in broken_references_query.values_list('id', reference_definition.source_field):
-            if isinstance(broken_reference_list, list) or isinstance(broken_reference_list, set):
-                broken_reference_list = list(set(broken_reference_list).difference(reference_candidates))
+        for (source_id, target_ids) in target_ids_query.values_list('id', reference_definition.source_field):
+            if isinstance(target_ids, list) or isinstance(target_ids, set):
+                target_ids = list(set(target_ids).difference(reference_candidates))
             else:
-                broken_reference_list = [broken_reference_list]
+                target_ids = [target_ids]
 
-            if not broken_reference_list:
-                broken_references.append(Reference(reference_definition, source_id, None))
+            if not target_ids and not reference_definition.nullable:
+                reference_list.add_broken_reference(Reference(reference_definition, source_id, None))
+            else:
+                for target_id in target_ids:
+                    reference_list.add_broken_reference(Reference(reference_definition, source_id, target_id))
 
-            for broken_reference in broken_reference_list:
-                broken_references.append(Reference(reference_definition, source_id, broken_reference))
+    @staticmethod
+    def __get_dependencies(reference_definition, source_id):
+        dependencies = []
+        for dependency in reference_definition.dependencies:
+            raw_source_id = source_id
+            raw_source_field = dependency.source_field
+            if dependency.use_object_id:
+                raw_source_id = ObjectId(source_id)
+                raw_source_field = dependency.source_field + '_id'
+            items = RawQueries().find_by_field(dependency.source_type, raw_source_field, raw_source_id)
+            for item in items:
+                dependencies.append('%s.%s: %s' % (dependency.source_type.__name__, dependency.source_field, str(item)))
+        return dependencies
 
 
 class ReferenceList:
     def __init__(self):
-        self.broken_references = []
-        self.broken_counts = {}
-        self.candidate_counts = {}
+        self.items = []
 
-    def append(self, broken_reference):
-        self.broken_references.append(broken_reference)
-        broken_reference_key = broken_reference.reference_definition.source_type.__name__ + '.' + broken_reference.reference_definition.source_field
-        if broken_reference_key in self.broken_counts:
-            self.broken_counts[broken_reference_key] += 1
+    def get_item(self, reference_definition):
+        for item in self.items:
+            if item.reference_definition.source_type is reference_definition.source_type and item.reference_definition.source_field is reference_definition.source_field:
+                return item
 
-    def add_broken_count(self, broken_reference_key):
-        if broken_reference_key not in self.broken_counts:
-            self.broken_counts[broken_reference_key] = 0
+        item = ReferenceListItem(reference_definition)
+        self.items.append(item)
+        return item
 
-    def add_candidate_count(self, target_type, target_count):
-        self.candidate_counts[target_type] = target_count
+    def update_target_candidate_count(self, reference_definition, candidate_count):
+        item = self.get_item(reference_definition)
+        item.target_candidate_count += candidate_count
+
+    def add_broken_reference(self, broken_reference):
+        item = self.get_item(broken_reference.reference_definition)
+        item.broken_references.append(broken_reference)
+        item.broken_count += 1
+        if broken_reference.deletable:
+            item.deletable_count += 1
 
     def broken_total_count(self):
-        return len(self.broken_references)
+        result = 0
+        for item in self.items:
+            result += item.broken_count
+        return result
+
+    def deletable_total_count(self):
+        result = 0
+        for item in self.items:
+            result += item.deletable_count
+        return result
+
+    def delete(self):
+        broken_references_by_type = {}
+
+        for item in self.items:
+            for broken_reference in item.broken_references:
+                if broken_reference.deletable:
+                    source_type = broken_reference.reference_definition.source_type
+                    if source_type in broken_references_by_type:
+                        broken_references_by_type[source_type].append(broken_reference)
+                    else:
+                        broken_references_by_type[source_type] = [broken_reference]
+
+        for type in broken_references_by_type:
+            ids = [broken_reference.source_id for broken_reference in broken_references_by_type[type]]
+            RawQueries().bulk_delete(type, ids)
+            for broken_reference in broken_references_by_type[type]:
+                broken_reference.deleted = True
+
+class ReferenceListItem:
+    def __init__(self, reference_definition):
+        self.reference_definition = reference_definition
+        self.source = '%s.%s' % (reference_definition.source_type.__name__, reference_definition.source_field)
+        self.target = '%s.%s' % (reference_definition.target_type.__name__, reference_definition.target_field)
+        self.target_candidate_count = 0
+        self.broken_count = 0
+        self.deletable_count = 0
+        self.broken_references = []

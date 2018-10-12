@@ -9,6 +9,23 @@ class RawQueries():
 
     db = connections['default']
 
+    def bulk_delete(self, type, ids):
+        collection = self.db.get_collection(type._meta.db_table)
+        collection.remove({'_id': {'$in': [ObjectId(id) for id in ids]}})
+        for id in ids:
+            remove_from_search_index(type, id)
+
+    def find_by_id(self, type, id):
+        collection = self.db.get_collection(type._meta.db_table)
+        item = collection.find_one({'_id': ObjectId(id)})
+        return item
+
+    def find_by_field(self, type, field, value):
+        collection = self.db.get_collection(type._meta.db_table)
+        items = collection.find({field: value})
+        return items
+
+
     def delete_source_version(self, source_version):
 
         from mappings.models import MappingVersion
