@@ -239,9 +239,9 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         if self.request.GET.get('verbose'):
             context.update({'verbose': True})
         if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
-            if self.request.GET.get('include_indirect_mappings'):
+            if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
                 context.update({'include_indirect_mappings': True})
-            if self.request.GET.get('include_direct_mappings'):
+            if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
                 context.update({'include_direct_mappings': True})
         return context
 
