@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
+from djangotoolbox.fields import ListField, EmbeddedModelField, DictField, SetField
 from django.utils import timezone
 from oclapi.settings.common import Common
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
@@ -252,8 +252,8 @@ class CollectionReference(models.Model):
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-    concepts = ListField()
-    mappings = ListField()
+    concepts = SetField()
+    mappings = SetField()
     retired = models.BooleanField(default=False)
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
@@ -291,9 +291,9 @@ class CollectionVersion(ConceptContainerVersionModel):
 
     def fill_data_for_reference(self, a_reference):
         if a_reference.concepts:
-            self.concepts = self.concepts + list([concept.id for concept in a_reference.concepts])
+            self.concepts.update([concept.id for concept in a_reference.concepts])
         if a_reference.mappings:
-            self.mappings = self.mappings + list([mapping.id for mapping in a_reference.mappings])
+            self.mappings.update([mapping.id for mapping in a_reference.mappings])
         self.references.append(a_reference)
 
     def seed_concepts(self):
@@ -306,14 +306,14 @@ class CollectionVersion(ConceptContainerVersionModel):
         seed_mappings_from = self.head_sibling()
         if seed_mappings_from:
             resources = list(getattr(seed_mappings_from, resource_type))
-            result = list()
+            result = set()
 
             for resource_id in resources:
                 resource_latest_version = resource_klass.get_latest_version_by_id(resource_id)
                 if resource_latest_version:
-                    result.append(resource_latest_version.id)
+                    result.add(resource_latest_version.id)
                 else:
-                    result.append(resource_id)
+                    result.add(resource_id)
 
             setattr(self, resource_type, result)
             self.save()
