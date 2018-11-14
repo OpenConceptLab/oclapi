@@ -465,7 +465,7 @@ class CollectionTest(CollectionBaseTest):
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(head.mappings), 0)
         self.assertEquals(head.references[0].expression, from_concept_reference_with_version_id)
-        self.assertEquals(head.concepts[0], from_concept.get_latest_version.id)
+        self.assertEquals(next(iter(head.concepts)), from_concept.get_latest_version.id)
 
     def test_delete_reference_when_no_reference_given(self):
         kwargs = {
@@ -1215,7 +1215,8 @@ class CollectionVersionTest(CollectionBaseTest):
         self.assertEquals(len(version1.concepts), 0)
         version1.seed_concepts()
         self.assertEquals(len(version1.concepts), 2)
-        self.assertEquals(version1.concepts, [concept2_latest_version.id, concept1_version.id])
+        self.assertTrue(concept2_latest_version.id in version1.concepts)
+        self.assertTrue(concept1_version.id in version1.concepts)
 
     def test_seed_mappings(self):
         source = Source(
@@ -1292,7 +1293,8 @@ class CollectionVersionTest(CollectionBaseTest):
         self.assertEquals(len(version1.mappings), 0)
         version1.seed_mappings()
         self.assertEquals(len(version1.mappings), 2)
-        self.assertEquals(version1.mappings, [mapping2_version.id, mapping1_latest_version.id])
+        self.assertTrue(mapping2_version.id in version1.mappings)
+        self.assertTrue(mapping1_latest_version.id in version1.mappings)
 
 
 class CollectionVersionClassMethodTest(CollectionBaseTest):
@@ -1979,7 +1981,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         self.assertEquals(len(head.concepts), 1)
         self.assertEquals(len(errors), 0)
         self.assertEquals(collection.current_references()[0], single_reference + concept_version_number + '/')
-        self.assertEquals(head.concepts[0], concept_version_number)
+        self.assertEquals(next(iter(head.concepts)), concept_version_number)
 
     def test_add_concept_as_multiple_reference_without_version_information_should_add_latest_versions_numbers(self):
         collection = create_collection(self.user1, CUSTOM_VALIDATION_SCHEMA_OPENMRS)
