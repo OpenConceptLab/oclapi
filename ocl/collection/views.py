@@ -129,7 +129,7 @@ class CollectionReferencesView(CollectionBaseView,
         adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
         if adding_all:
-            add_references.delay(
+            add_references(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url, cascade_mappings
             )
 

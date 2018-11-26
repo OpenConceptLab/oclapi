@@ -127,22 +127,20 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
 
     batch_size = 1000
     if resource_type == 'collection':
-        total_concepts = len(version.concepts)
+        total_concepts = version.get_concepts_count()
     else:
         total_concepts = version.get_concepts().filter(is_active=True).count()
 
     if total_concepts:
-        logger.info('%s has %d concepts.  Getting them in batches of %d...' % (resource_type.title(), total_concepts, batch_size))
-        concept_version_class = get_class('concepts.models.ConceptVersion')
+        logger.info('%s has %d concepts. Getting them in batches of %d...' % (resource_type.title(), total_concepts, batch_size))
         concept_serializer_class = get_class('concepts.serializers.ConceptVersionDetailSerializer')
         for start in range(0, total_concepts, batch_size):
             end = min(start + batch_size, total_concepts)
             logger.info('Serializing concepts %d - %d...' % (start+1, end))
             if resource_type == 'collection':
-                concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+                concept_versions = version.get_concepts(start, end)
             else:
                 concept_versions = version.get_concepts().filter(is_active=True)[start:end]
-            logger.info('Fetching %s concepts...' % concept_versions.count())
             concept_serializer = concept_serializer_class(concept_versions, many=True)
             concept_data = concept_serializer.data
             concept_string = json.dumps(concept_data, cls=encoders.JSONEncoder)
@@ -159,22 +157,20 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         out.write('], "mappings": [')
 
     if resource_type == 'collection':
-        total_mappings = len(version.mappings)
+        total_mappings = version.get_mappings_count()
     else:
         total_mappings = version.get_mappings().filter(is_active=True).count()
 
     if total_mappings:
-        logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), total_mappings, batch_size))
-        mapping_class = get_class('mappings.models.MappingVersion')
+        logger.info('%s has %d mappings. Getting them in batches of %d...' % (resource_type.title(), total_mappings, batch_size))
         mapping_serializer_class = get_class('mappings.serializers.MappingVersionDetailSerializer')
         for start in range(0, total_mappings, batch_size):
             end = min(start + batch_size, total_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
             if resource_type == 'collection':
-                mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+                mappings = version.get_mappings(start, end)
             else:
                 mappings = version.get_mappings().filter(is_active=True)[start:end]
-            logger.info('Fetching %s mappings...' % mappings.count())
             mapping_serializer = mapping_serializer_class(mappings, many=True)
             mapping_data = mapping_serializer.data
             mapping_string = json.dumps(mapping_data, cls=encoders.JSONEncoder)
