@@ -9,13 +9,14 @@ from mappings.importer import MappingsImporter
 
 from orgs.models import Organization
 from sources.models import Source
+from users.models import UserProfile
 
 
 class Command(BaseCommand):
     help = 'import demo data'
 
     def handle(self, *args, **options):
-        user = User.objects.filter(username='root').get()
+        user = self.create_admin_user()
 
         org = self.create_organization(user, 'CIEL')
 
@@ -28,6 +29,16 @@ class Command(BaseCommand):
         demo_file = open('./demo-data/ciel_20180601_mappings_2k.json', 'rb')
         importer = MappingsImporter(source, demo_file, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), user)
         importer.import_mappings(**options)
+
+    def create_admin_user(self):
+        admin_user = User.objects.filter(username='admin')
+        if not admin_user.exists():
+            admin_user = User.objects.create_user('admin', 'admin@openconceptlab.org', password='Admin123')
+            UserProfile.objects.create(user=admin_user, hashed_password=admin_user.password, mnemonic='admin')
+        else:
+            admin_user = admin_user.get()
+
+        return admin_user
 
     def create_organization(self, user, name):
         if Organization.objects.filter(mnemonic=name).count() < 1:

@@ -31,6 +31,7 @@ services:
     environment:
       - SSH=true
       - ENVIRONMENT=local
+      - IMPORT_DEMO_DATA=true
     restart: "no"
   celery:
     image: openconceptlab/oclapi:dev
