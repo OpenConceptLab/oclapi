@@ -114,7 +114,6 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
 
     def destroy(self, request, *args, **kwargs):
         source = self.get_object()
-
         try:
             source.delete()
         except Exception as ex:
