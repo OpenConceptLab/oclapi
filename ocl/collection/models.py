@@ -1,12 +1,11 @@
 from bson import ObjectId
-from celery.result import AsyncResult
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField, EmbeddedModelField, DictField, SetField
+from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
 from django.utils import timezone
 from oclapi.settings.common import Common
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
@@ -258,8 +257,8 @@ class CollectionMapping(models.Model):
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
     collection_type = models.TextField(blank=True)
-    concepts = SetField()
-    mappings = SetField()
+    concepts = ListField()
+    mappings = ListField()
     retired = models.BooleanField(default=False)
     collection_snapshot = DictField(null=True, blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
