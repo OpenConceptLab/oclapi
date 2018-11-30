@@ -16,13 +16,7 @@ importer.install()
 from celery import Celery
 from celery.utils.log import get_task_logger
 from celery_once import QueueOnce
-from concepts.models import ConceptVersion, Concept
-from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
-from sources.models import SourceVersion
-from collection.models import CollectionVersion, CollectionReference, CollectionReferenceUtils
-from concepts.views import ConceptVersionListView
-from mappings.views import MappingListView
 
 import json
 from rest_framework.test import APIRequestFactory
@@ -40,7 +34,10 @@ def data_integrity_checks(self):
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
+    from sources.models import SourceVersion
+
     logger.info('Finding source version...')
+
     version = SourceVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -53,6 +50,7 @@ def export_source(self, version_id):
 
 @celery.task(base=QueueOnce, bind=True)
 def export_collection(self, version_id):
+    from collection.models import CollectionVersion
     logger.info('Finding collection version...')
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
@@ -65,6 +63,9 @@ def export_collection(self, version_id):
 
 @celery.task(bind = True)
 def update_children_for_resource_version(self, version_id, _type):
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+
     _resource = resource(version_id, _type)
     _resource.add_processing(self.request.id)
     try:
@@ -72,15 +73,23 @@ def update_children_for_resource_version(self, version_id, _type):
         mapping_versions = _resource.get_mappings()
 
         logger.info('Indexing %s concepts...' % concept_versions.count())
+
         update_all_in_index(ConceptVersion, concept_versions)
         logger.info('Indexing %s mappings...' % mapping_versions.count())
+
         update_all_in_index(MappingVersion, mapping_versions)
 
     finally:
         _resource.remove_processing(self.request.id)
 
+@celery.task(bind = True)
+def update_search_index_task(self, model, query):
+    logger.info('Updating search index for %s...' % model.__name__)
+    update_all_in_index(model, query)
 
 def resource(version_id, type):
+    from sources.models import SourceVersion
+    from collection.models import CollectionVersion
     if type == 'source':
         return SourceVersion.objects.get(id=version_id)
     elif type == 'collection':
@@ -89,6 +98,10 @@ def resource(version_id, type):
 
 @celery.task(bind = True)
 def update_collection_in_solr(self, version_id, references):
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+    from collection.models import CollectionVersion
+
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -118,6 +131,12 @@ def _get_version_ids(resources, klass):
 
 @celery.task(bind = True)
 def delete_resources_from_collection_in_solr(self, version_id, concepts, mappings):
+    from concepts.models import Concept
+    from mappings.models import Mapping
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+    from collection.models import CollectionVersion
+
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -132,6 +151,15 @@ def delete_resources_from_collection_in_solr(self, version_id, concepts, mapping
 
 @celery.task
 def add_references(SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
+    from concepts.models import Concept
+    from mappings.models import Mapping
+    from collection.models import CollectionVersion
+    from sources.models import SourceVersion
+    from concepts.views import ConceptVersionListView
+    from mappings.views import MappingListView
+    from collection.models import CollectionReferenceUtils
+    from collection.models import CollectionReference
+
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])

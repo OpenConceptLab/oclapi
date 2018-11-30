@@ -2,27 +2,28 @@ from bson import ObjectId
 from django.db import connections
 
 from oclapi.utils import remove_from_search_index
+from tasks import update_search_index_task
+
 
 class RawQueries():
 
     db = connections['default']
 
     def delete_source_version(self, source_version):
+
         from mappings.models import MappingVersion
-        mapping_version_ids = list(source_version.get_mapping_ids())
+        mapping_version_ids = list(source_version.get_mapping_ids()) #store before deletion
 
         MappingVersion.objects.raw_update({}, {'$pull': {'source_version_ids': source_version.id}})
 
-        for mapping_version_id in mapping_version_ids:
-            remove_from_search_index(MappingVersion, mapping_version_id)
+        update_search_index_task.delay(MappingVersion, MappingVersion.objects.filter(id__in=mapping_version_ids))
 
         from concepts.models import ConceptVersion
-        concept_versions_ids = list(source_version.get_concept_ids())
+        concept_versions_ids = list(source_version.get_concept_ids()) #store before deletion
 
         ConceptVersion.objects.raw_update({}, {'$pull': {'source_version_ids': source_version.id}})
 
-        for concept_version_id in concept_versions_ids:
-            remove_from_search_index(ConceptVersion, concept_version_id)
+        update_search_index_task.delay(ConceptVersion, ConceptVersion.objects.filter(id__in=concept_versions_ids))
 
 
     def delete_source(self, source):

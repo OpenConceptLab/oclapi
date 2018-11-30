@@ -1,21 +1,20 @@
+from datetime import datetime
+
 from bson import ObjectId
-from celery.result import AsyncResult
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models
 from django.db.models import Max, Q, F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField, DictField
 from django.utils import timezone
+from djangotoolbox.fields import DictField
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
 from oclapi.rawqueries import RawQueries
-from datetime import datetime
-
+from oclapi.utils import S3ConnectionFactory, update_search_index
 
 SOURCE_TYPE = 'Source'
 

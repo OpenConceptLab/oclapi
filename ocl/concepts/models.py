@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
-from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_mongodb_engine.contrib import MongoDBManager
@@ -16,6 +15,7 @@ from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (ConceptBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
+
 
 class LocalizedText(models.Model):
     uuid = UUIDField(auto=True)
