@@ -656,13 +656,13 @@ class MappingVersionTest(MappingVersionBaseTest):
             released=True,
             created_by=self.user1,
             updated_by=self.user1,
+            mappings=[mapping_version.id]
         )
         collection_version.full_clean()
         collection_version.save()
-        collection_version.add_mapping(mapping_version)
 
-        self.assertEquals(len(mapping_version.get_collection_version_ids()), 2)
-        self.assertEquals(mapping_version.get_collection_version_ids()[1],
+        self.assertEquals(len(mapping_version.collection_version_ids), 2)
+        self.assertEquals(mapping_version.collection_version_ids[1],
                           CollectionVersion.objects.get(mnemonic='version1').id)
 
 

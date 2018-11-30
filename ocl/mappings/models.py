@@ -482,9 +482,9 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     def resource_type():
         return MAPPING_VERSION_RESOURCE_TYPE
 
-    def get_collection_versions(self):
-        from collection.models import CollectionVersion
-        return CollectionVersion.get_collection_versions_with_mapping(self.id)
+    @property
+    def collection_versions(self):
+        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
 
     @staticmethod
     def get_url_kwarg():

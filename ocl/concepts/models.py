@@ -299,9 +299,9 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     def parent_source(self):
         return self.source
 
-    def get_collection_versions(self):
-        from collection.models import CollectionVersion
-        return CollectionVersion.get_collection_versions_with_concept(self.id)
+    @property
+    def collection_versions(self):
+        return get_model('collection', 'CollectionVersion').objects.filter(concepts=self.id)
 
     @property
     def mappings_url(self):

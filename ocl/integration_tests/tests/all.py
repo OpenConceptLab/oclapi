@@ -2903,7 +2903,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 1)
         self.assertEquals(len(head.references), 1)
-        self.assertEquals(len(head.get_concepts()), 1)
+        self.assertEquals(len(head.concepts), 1)
 
         kwargs = {
             'user': 'user1',
@@ -2922,7 +2922,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         head = CollectionVersion.get_head(collection.id)
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
-        self.assertEquals(len(head.get_concepts()), 0)
+        self.assertEquals(len(head.concepts), 0)
 
     def test_reference_sorting(self):
         kwargs = {
@@ -2982,7 +2982,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 2)
         self.assertEquals(len(head.references), 2)
-        self.assertEquals(len(head.get_concepts()), 2)
+        self.assertEquals(len(head.concepts), 2)
 
         kwargs = {
             'user': 'user1',

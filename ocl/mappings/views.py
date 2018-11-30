@@ -24,7 +24,7 @@ class MappingBaseView(ConceptDictionaryMixin):
     lookup_field = 'mapping'
     pk_field = 'id'
     model = Mapping
-    child_list_attribute = 'get_mapping_ids'
+    child_list_attribute = 'mappings'
     include_retired = False
     permission_classes = (CanViewParentDictionary,)
 
@@ -145,7 +145,7 @@ class MappingVersionMixin():
     model = MappingVersion
     parent_resource_version_model = SourceVersion
     permission_classes = (CanViewParentDictionary,)
-    child_list_attribute = 'get_mapping_ids'
+    child_list_attribute = 'mappings'
 
 
 class MappingVersionsListView(MappingVersionMixin, VersionedResourceChildMixin,
@@ -180,7 +180,12 @@ class MappingVersionsListView(MappingVersionMixin, VersionedResourceChildMixin,
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = super(MappingVersionsListView, self).get_queryset()
+        if ('collection' in self.kwargs and 'version' not in self.kwargs) or ('collection' in self.kwargs and 'version' in self.kwargs and self.kwargs['version'] == 'HEAD'):
+            all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
+            queryset = super(ConceptDictionaryMixin, self).get_queryset()
+            queryset = queryset.filter(versioned_object_id__in=all_children, is_latest_version=True)
+        else:
+            queryset = super(MappingVersionsListView, self).get_queryset()
 
         queryset = queryset.filter(is_active=True)
         if not self.include_retired:

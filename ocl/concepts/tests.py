@@ -914,7 +914,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion.objects.get(
             versioned_object_id=Concept.objects.get(mnemonic=concept1.mnemonic).id)
 
-        self.assertEquals(concept_version.get_collection_ids(), [Collection.objects.get(mnemonic=collection.mnemonic).id])
+        self.assertEquals(concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_ids_with_latest_concept_version(self):
         kwargs = {
@@ -960,8 +960,8 @@ class ConceptVersionTest(ConceptBaseTest):
         collection.full_clean()
         collection.save()
 
-        self.assertEquals(initial_concept_version.get_collection_ids(), [])
-        self.assertEquals(new_concept_version.get_collection_ids(), [Collection.objects.get(mnemonic=collection.mnemonic).id])
+        self.assertEquals(initial_concept_version.collection_ids, [])
+        self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_version_ids(self):
         kwargs = {
@@ -1019,8 +1019,8 @@ class ConceptVersionTest(ConceptBaseTest):
         kwargs = {}
         CollectionVersion.persist_new(version, **kwargs)
 
-        self.assertEquals(len(concept_version.get_collection_version_ids()), 2)
-        self.assertEquals(concept_version.get_collection_version_ids()[1],
+        self.assertEquals(len(concept_version.collection_version_ids), 2)
+        self.assertEquals(concept_version.collection_version_ids[1],
                           CollectionVersion.objects.get(mnemonic='version1').id)
 
 

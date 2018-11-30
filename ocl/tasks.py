@@ -69,8 +69,12 @@ def update_children_for_resource_version(self, version_id, _type):
     _resource = resource(version_id, _type)
     _resource.add_processing(self.request.id)
     try:
-        concept_versions = _resource.get_concepts()
-        mapping_versions = _resource.get_mappings()
+        if _type == 'source':
+            concept_versions = _resource.get_concepts()
+            mapping_versions = _resource.get_mappings()
+        else:
+            concept_versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
+            mapping_versions = MappingVersion.objects.filter(id__in=_resource.mappings)
 
         logger.info('Indexing %s concepts...' % concept_versions.count())
 

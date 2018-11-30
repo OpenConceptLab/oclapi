@@ -62,7 +62,6 @@ class Collection(ConceptContainerModel):
         errors = self.add_references(self.expressions)
         if errors:
             raise ValidationError({'references': [errors]})
-        self.expressions = []
 
     def add_references(self, expressions):
         errors = {}
@@ -143,30 +142,38 @@ class Collection(ConceptContainerModel):
     def get_url_kwarg():
         return 'collection'
 
+    def _get_concept_and_mapping_ids(self, reference):
+        collection_reference = CollectionReference(expression=reference)
+        collection_reference.clean()
+        concept_ids = map(lambda c: c.id, collection_reference.concepts)
+        mapping_ids = map(lambda c: c.id, collection_reference.mappings or [])
+        return {'concept_ids': concept_ids, 'mapping_ids': mapping_ids}
+
+    def _reduce_func(self, start, current):
+        new_current = self._get_concept_and_mapping_ids(current)
+        start['concept_ids'] += new_current['concept_ids']
+        start['mapping_ids'] += new_current['mapping_ids']
+        return start
+
     def delete(self):
         CollectionVersion.objects.filter(versioned_object_id=self.id).delete()
         super(Collection, self).delete()
 
     def delete_references(self, references):
-        concept_ids = []
-        mapping_ids = []
-        head = CollectionVersion.get_head_of(self)
-        for reference in references:
-            collection_reference = CollectionReference(expression=reference)
-            collection_reference.clean()
-            concept_ids.extend(map(lambda c: c.id, collection_reference.concepts or []))
-            mapping_ids.extend(map(lambda c: c.id, collection_reference.mappings or []))
-
-            CollectionConcept.objects.filter(collection_id=head.id, concept_id__in=concept_ids).delete()
-            CollectionMapping.objects.filter(collection_id=head.id, mapping_id__in=mapping_ids).delete()
-
-        head.references = filter(lambda ref: ref.expression not in references, head.references)
-        self.references = head.references
-        head.full_clean()
-        head.save()
-        self.full_clean()
-        self.save()
-        return [concept_ids, mapping_ids]
+        self.expressions = []
+        children_to_reduce = {'concept_ids': [], 'mapping_ids': []}
+        if len(references) > 0:
+            head = CollectionVersion.get_head_of(self)
+            children_to_reduce = reduce(self._reduce_func, references, children_to_reduce)
+            head.concepts = list(set(head.concepts) - set(children_to_reduce['concept_ids']))
+            head.mappings = list(set(head.mappings) - set(children_to_reduce['mapping_ids']))
+            head.references = filter(lambda ref: ref.expression not in references, head.references)
+            self.references = head.references
+            head.full_clean()
+            head.save()
+            self.full_clean()
+            self.save()
+        return [children_to_reduce['concept_ids'], children_to_reduce['mapping_ids']]
 
     def current_references(self):
         return map(lambda ref: ref.expression, self.references)
@@ -190,11 +197,11 @@ class CollectionReference(models.Model):
         concept_klass, mapping_klass = self._resource_klasses()
         self.create_entities_from_expressions(concept_klass, mapping_klass)
 
-        if concept_klass == Concept:
-            self.add_concept_version_ids()
+        if CollectionReference.version_specified(self.expression):
+            return
 
-        if mapping_klass == Mapping:
-            self.add_mapping_version_ids()
+        self.add_concept_version_ids()
+        self.add_mapping_version_ids()
 
     def create_entities_from_expressions(self, concept_klass, mapping_klass):
         self.concepts = concept_klass.objects.filter(uri=self.expression)
@@ -211,7 +218,7 @@ class CollectionReference(models.Model):
         self.mappings = MappingVersion.objects.filter(uri=self.expression)
 
     def add_concept_version_ids(self):
-        if not self.concepts:
+        if len(self.concepts) < 1:
             return
 
         self.expression += '{}/'.format(self.concepts[0].get_latest_version.id)
@@ -240,19 +247,6 @@ class CollectionReference(models.Model):
         prev_expressions = map(lambda r: r.expression, _from)
         return filter(lambda ref: ref.expression not in prev_expressions, ctx)
 
-class CollectionConcept(models.Model):
-    collection_id = models.TextField()
-    concept_id = models.TextField()
-
-    class MongoMeta:
-        indexes = [[('collection_id', 1), ('concept_id', 1)]]
-
-class CollectionMapping(models.Model):
-    collection_id = models.TextField()
-    mapping_id = models.TextField()
-
-    class MongoMeta:
-        indexes = [[('collection_id', 1), ('mapping_id', 1)]]
 
 class CollectionVersion(ConceptContainerVersionModel):
     references = ListField(EmbeddedModelField('CollectionReference'))
@@ -269,116 +263,59 @@ class CollectionVersion(ConceptContainerVersionModel):
     last_child_update = models.DateTimeField(default=timezone.now)
 
     class MongoMeta:
-        indexes = [[('versioned_object_id', 1), ('mnemonic', 1)]]
+        indexes = [[('concepts', 1)],
+                   [('mappings', 1)]]
 
     def save(self, **kwargs):
         self.update_active_counts()
         self.update_last_updates()
         super(CollectionVersion, self).save(**kwargs)
 
-    def delete(self, **kwargs):
-        CollectionConcept.objects.filter(collection_id=self.id).delete()
-        CollectionMapping.objects.filter(collection_id=self.id).delete()
-        super(CollectionVersion, self).delete()
-
     def update_active_counts(self):
-        self.active_concepts = self.get_concepts().filter(retired=False).count()
-        self.active_mappings = self.get_mappings().filter(retired=False).count()
+        from concepts.models import ConceptVersion
+        self.active_concepts = ConceptVersion.objects.filter(id__in=self.concepts, retired=False).count()
+        from mappings.models import MappingVersion
+        self.active_mappings = MappingVersion.objects.filter(id__in=self.mappings, retired=False).count()
 
     def update_last_updates(self):
         self.last_concept_update = self.__get_last_concept_update()
         self.last_mapping_update = self.__get_last_mapping_update()
         self.last_child_update = self.__get_last_child_update()
-
-    def __get_concept_ids(self):
-        return CollectionConcept.objects.filter(collection_id=self.id).values_list('concept_id', flat=True)
-
+        
     def get_concept_ids(self):
-        """ Returns a list of concept version ids.
-        Prefer using get_concepts() or get_concepts(start, end) for fetching actual concepts.
-        """
-        return list(self.__get_concept_ids())
-
-    def get_concepts(self, start=None, end=None):
-        """ Use for efficient iteration over paginated concepts. Note that any filter will be applied only to concepts
-        from the given range. If you need to filter on all concepts, use get_concepts() without args.
-        In order to get the total concepts count, please use get_concepts_count().
-        """
-        from concepts.models import ConceptVersion
-        if start and end:
-            concept_ids = list(self.__get_concept_ids()[start:end])
-        else:
-            concept_ids = self.get_concept_ids()
-        if concept_ids:
-            return ConceptVersion.objects.filter(id__in=concept_ids)
-        else:
-            return ConceptVersion.objects.filter(id=None)
-
-    def add_concept(self, concept):
-        if not CollectionConcept.objects.filter(collection_id=self.id, concept_id=concept.id).exists():
-            CollectionConcept(collection_id=self.id, concept_id=concept.id).save()
-
-    def get_concepts_count(self):
-        """ Returns a count of concepts.
-        """
-        return self.__get_concept_ids().count()
-
-    def __get_mapping_ids(self):
-        return CollectionMapping.objects.filter(collection_id=self.id).values_list('mapping_id', flat=True)
+        return self.concepts
 
     def get_mapping_ids(self):
-        """ Returns a list of mapping version ids.
-        Prefer using get_mappings() or get_mappings(start, end) for fetching actual mappings
-        """
-        return list(self.__get_mapping_ids())
-
-    def get_mappings(self, start=None, end=None):
-        """ Use for efficient iteration over paginated mappings. Note that any filter will be applied only to mappings
-        from the given range. If you need to filter on all mappings, use get_mappings() without args
-        In order to get the total concepts count, please use get_mappings_count().
-        """
-        from mappings.models import MappingVersion
-        if start and end:
-            mapping_ids = list(self.__get_mapping_ids()[start:end])
-        else:
-            mapping_ids = self.get_mapping_ids()
-        if mapping_ids:
-            return MappingVersion.objects.filter(id__in=mapping_ids)
-        else:
-            return MappingVersion.objects.filter(id=None)
-
-    def add_mapping(self, mapping):
-        if not CollectionMapping.objects.filter(collection_id=self.id, mapping_id=mapping.id).exists():
-            CollectionMapping(collection_id=self.id, mapping_id=mapping.id).save()
-
-    def get_mappings_count(self):
-        """ Returns a count of mappings.
-        """
-        return self.__get_mapping_ids().count()
+        return self.mappings
 
     def fill_data_for_reference(self, a_reference):
         if a_reference.concepts:
-            for concept in a_reference.concepts:
-                self.add_concept(concept)
+            self.concepts.update([concept.id for concept in a_reference.concepts])
         if a_reference.mappings:
-            for mapping in a_reference.mappings:
-                self.add_mapping(mapping)
+            self.mappings.update([mapping.id for mapping in a_reference.mappings])
         self.references.append(a_reference)
-        self.save()
 
     def seed_concepts(self):
-        seed_from = self.head_sibling()
-        if seed_from:
-            for concept_id in seed_from.get_concept_ids():
-                CollectionConcept(collection_id=self.id, concept_id=concept_id).save()
-            self.save() #save to update counts
+        self._seed_resources('concepts', ConceptVersion)
 
     def seed_mappings(self):
-        seed_from = self.head_sibling()
-        if seed_from:
-            for mapping_id in seed_from.get_mapping_ids():
-                CollectionMapping(collection_id=self.id, mapping_id=mapping_id).save()
-            self.save() #save to update counts
+        self._seed_resources('mappings', MappingVersion)
+
+    def _seed_resources(self, resource_type, resource_klass):
+        seed_mappings_from = self.head_sibling()
+        if seed_mappings_from:
+            resources = list(getattr(seed_mappings_from, resource_type))
+            result = set()
+
+            for resource_id in resources:
+                resource_latest_version = resource_klass.get_latest_version_by_id(resource_id)
+                if resource_latest_version:
+                    result.add(resource_latest_version.id)
+                else:
+                    result.add(resource_id)
+
+            setattr(self, resource_type, result)
+            self.save()
 
     def seed_references(self):
         seed_references_from = self.head_sibling()
@@ -406,14 +343,20 @@ class CollectionVersion(ConceptContainerVersionModel):
         return last_concept_update or last_mapping_update or self.updated_at or timezone.now()
 
     def __get_last_concept_update(self):
-        concepts = self.get_concepts()
-        if not concepts.exists():
+        if not self.concepts:
             return None
-        agg = concepts.aggregate(Max('updated_at'))
+        klass = get_class('concepts.models.ConceptVersion')
+        versions = klass.objects.filter(id__in=self.concepts)
+        if not versions.exists():
+            return None
+        agg = versions.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
     def __get_last_mapping_update(self):
-        mappings = self.get_mappings()
+        if not self.mappings:
+            return None
+        klass = get_class('mappings.models.MappingVersion')
+        mappings = klass.objects.filter(id__in=self.mappings)
         if not mappings.exists():
             return None
         agg = mappings.aggregate(Max('updated_at'))
@@ -421,26 +364,6 @@ class CollectionVersion(ConceptContainerVersionModel):
 
     def head_sibling(self):
         return CollectionVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.versioned_object_id)
-
-    @classmethod
-    def get_collection_versions_with_concept(cls, concept_id):
-        collection_ids = CollectionConcept.objects.filter(concept_id=concept_id).values_list('collection_id', flat=True)
-        return CollectionVersion.objects.filter(id__in=list(collection_ids))
-
-    @classmethod
-    def get_collection_versions_with_concepts(cls, concept_ids):
-        collection_ids = CollectionConcept.objects.filter(concept_id__in=concept_ids).values_list('collection_id', flat=True)
-        return CollectionVersion.objects.filter(id__in=list(collection_ids))
-
-    @classmethod
-    def get_collection_versions_with_mapping(cls, mapping_id):
-        collection_ids = CollectionMapping.objects.filter(mapping_id=mapping_id).values_list('collection_id', flat=True)
-        return CollectionVersion.objects.filter(id__in=list(collection_ids))
-
-    @classmethod
-    def get_collection_versions_with_mappings(cls, mapping_ids):
-        collection_ids = CollectionMapping.objects.filter(mapping_id__in=mapping_ids).values_list('collection_id', flat=True)
-        return CollectionVersion.objects.filter(id__in=list(collection_ids))
 
     @classmethod
     def persist_new(cls, obj, user=None, **kwargs):
@@ -456,10 +379,9 @@ class CollectionVersion(ConceptContainerVersionModel):
     @classmethod
     def persist_changes(cls, obj, **kwargs):
         col_reference = kwargs.pop('col_reference', False)
-        col = super(CollectionVersion, cls).persist_changes(obj, **kwargs)
         if col_reference:
             obj.fill_data_for_reference(col_reference)
-        return col
+        return super(CollectionVersion, cls).persist_changes(obj, **kwargs)
 
     def update_version_data(self, obj=None):
         if obj:
