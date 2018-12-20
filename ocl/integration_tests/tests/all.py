@@ -12,7 +12,7 @@ from haystack.management.commands import update_index
 from moto import mock_s3
 from rest_framework import status
 
-from collection.models import Collection, CollectionVersion
+from collection.models import Collection, CollectionVersion, CollectionReference
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
@@ -1836,6 +1836,36 @@ class SourceViewTest(SourceBaseTest):
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
         self.assertEquals(head.full_name, 'test_updated_name')
 
+    def test_include_concepts_and_mappings(self):
+        source = Source(
+            name='source',
+            mnemonic='source12',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Source.persist_new(source, self.user1, **kwargs)
+
+        create_concept(mnemonic='concept1', user=self.user1, source=source)
+        create_concept(mnemonic='concept2', user=self.user1, source=source)
+
+        self.client.login(username='user1', password='user1')
+        response = self.client.get("/orgs/org1/sources/source12/?includeConcepts=true&includeMappings=true")
+        result = json.loads(response.content)
+        self.assertEquals(len(result['concepts']), 2)
+        self.assertEquals(len(result['mappings']), 0)
+
+
 
 class CollectionViewTest(CollectionBaseTest):
     def test_update_source_head(self):
@@ -1877,6 +1907,58 @@ class CollectionViewTest(CollectionBaseTest):
         self.assertEquals(head.description, 'test desc')
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
         self.assertEquals(head.full_name, 'test_updated_name')
+
+    def test_include_concepts_and_mappings(self):
+        source = Source(
+                name='source',
+                mnemonic='source12',
+                full_name='Source One',
+                source_type='Dictionary',
+                public_access=ACCESS_TYPE_EDIT,
+                default_locale='en',
+                supported_locales=['en'],
+                website='www.source1.com',
+                description='This is the first test source',
+                is_active=True
+            )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Source.persist_new(source, self.user1, **kwargs)
+
+        (concept1, errors) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+        (concept2, errors) = create_concept(mnemonic='concept2', user=self.user1, source=source)
+
+        collection = Collection(
+            name='col1',
+            mnemonic='col1',
+            full_name='collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.col1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        collection.expressions = [concept1.url, concept2.url]
+        collection.full_clean()
+        collection.save()
+
+        self.client.login(username='user1', password='user1')
+        response = self.client.get("/orgs/org1/collections/col1/?includeConcepts=true&includeMappings=true")
+        result = json.loads(response.content)
+        self.assertEquals(len(result['concepts']), 2)
+        self.assertEquals(len(result['mappings']), 0)
 
 
 class SourceVersionViewTest(SourceBaseTest):

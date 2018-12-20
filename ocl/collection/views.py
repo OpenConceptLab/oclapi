@@ -92,6 +92,15 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
             self.permission_classes = (CanEditConceptDictionary,)
         super(CollectionRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        super(CollectionRetrieveUpdateDestroyView, self).retrieve(request, *args, **kwargs)
+        self.object = self.get_object()
+        serializer = self.get_serializer(self.object)
+        data = serializer.data
+        collection_version = CollectionVersion.get_latest_version_of(self.object)
+        self.includeConceptsAndMappings(request, data, collection_version)
+        return Response(data)
+
 
 class CollectionReferencesView(CollectionBaseView,
                                RetrieveAPIView,

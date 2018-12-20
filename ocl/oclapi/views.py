@@ -1,13 +1,18 @@
 import dateutil.parser
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import DatabaseError
 from django.db.models import Q
+from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404 as generics_get_object_or_404
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
+
+from concepts.serializers import ConceptVersionDetailSerializer
+from mappings.serializers import MappingVersionDetailSerializer
 from oclapi.mixins import PathWalkerMixin
 from oclapi.models import ResourceVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from oclapi.permissions import HasPrivateAccess, CanEditConceptDictionary, CanViewConceptDictionary, HasOwnership
@@ -16,6 +21,12 @@ from users.models import UserProfile
 from sources.models import SourceVersion
 
 UPDATED_SINCE_PARAM = 'updatedSince'
+INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
+INCLUDE_MAPPINGS_PARAM = 'includeMappings'
+LIMIT_PARAM = 'limit'
+INCLUDE_RETIRED_PARAM = 'includeRetired'
+OFFSET_PARAM = 'offset'
+DEFAULT_OFFSET = 0
 
 
 def get_object_or_404(queryset, **filter_kwargs):
@@ -136,6 +147,47 @@ class ConceptDictionaryMixin(SubResourceMixin):
         # if not(self.user.is_staff or parent_is_self):
         #     queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset
+
+    def includeConceptsAndMappings(self, request, data, container_version):
+        offset = request.QUERY_PARAMS.get(OFFSET_PARAM, DEFAULT_OFFSET)
+        try:
+            offset = int(offset)
+        except ValueError:
+            offset = DEFAULT_OFFSET
+        limit = settings.REST_FRAMEWORK.get('MAX_PAGINATE_BY', self.paginate_by)
+        include_retired = False
+        include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
+        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
+        updated_since = None
+        if include_concepts or include_mappings:
+            paginate_by = self.get_paginate_by(EmptyQuerySet())
+            if paginate_by:
+                limit = min(limit, paginate_by)
+            include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
+            updated_since = parse_updated_since_param(request)
+
+        if include_concepts:
+            queryset = container_version.get_concepts()
+            queryset = queryset.filter(is_active=True)
+            if not include_retired:
+                queryset = queryset.filter(~Q(retired=True))
+            if updated_since:
+                queryset = queryset.filter(updated_at__gte=updated_since)
+            queryset = queryset[offset:offset+limit]
+            serializer = ConceptVersionDetailSerializer(queryset, many=True)
+            data['concepts'] = serializer.data
+
+        if include_mappings:
+            queryset = container_version.get_mappings()
+            queryset = queryset.filter(is_active=True)
+            if not include_retired:
+                queryset = queryset.filter(~Q(retired=True))
+            if updated_since:
+                queryset = queryset.filter(updated_at__gte=updated_since)
+            queryset = queryset[offset:offset+limit]
+            serializer = MappingVersionDetailSerializer(queryset, many=True)
+            data['mappings'] = serializer.data
+
 
 
 class ConceptDictionaryCreateMixin(ConceptDictionaryMixin):

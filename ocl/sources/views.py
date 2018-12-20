@@ -68,48 +68,8 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         self.object = self.get_object()
         serializer = self.get_serializer(self.object)
         data = serializer.data
-
-        source_version = None
-        offset = request.QUERY_PARAMS.get(OFFSET_PARAM, DEFAULT_OFFSET)
-        try:
-            offset = int(offset)
-        except ValueError:
-            offset = DEFAULT_OFFSET
-        limit = settings.REST_FRAMEWORK.get('MAX_PAGINATE_BY', self.paginate_by)
-        include_retired = False
-        include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
-        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
-        updated_since = None
-        if include_concepts or include_mappings:
-            source_version = SourceVersion.get_latest_version_of(self.object)
-            paginate_by = self.get_paginate_by(EmptyQuerySet())
-            if paginate_by:
-                limit = min(limit, paginate_by)
-            include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-            updated_since = parse_updated_since_param(request)
-
-        if include_concepts:
-            queryset = source_version.get_concepts()
-            queryset = queryset.filter(is_active=True)
-            if not include_retired:
-                queryset = queryset.filter(~Q(retired=True))
-            if updated_since:
-                queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset[offset:offset+limit]
-            serializer = ConceptVersionDetailSerializer(queryset, many=True)
-            data['concepts'] = serializer.data
-
-        if include_mappings:
-            queryset = source_version.get_mappings()
-            queryset = queryset.filter(is_active=True)
-            if not include_retired:
-                queryset = queryset.filter(~Q(retired=True))
-            if updated_since:
-                queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset[offset:offset+limit]
-            serializer = MappingVersionDetailSerializer(queryset, many=True)
-            data['mappings'] = serializer.data
-
+        source_version = SourceVersion.get_latest_version_of(self.object)
+        self.includeConceptsAndMappings(request, data, source_version)
         return Response(data)
 
     def destroy(self, request, *args, **kwargs):
