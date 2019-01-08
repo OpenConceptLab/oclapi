@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 import os
 
-from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count
+from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count, \
+    check_for_broken_references_in_collection_versions
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
@@ -29,7 +30,7 @@ celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 
 @celery.task(base=QueueOnce, bind=True)
 def data_integrity_checks(self):
-    logger.info('Updating concepts and mappings count...')
+    check_for_broken_references_in_collection_versions(logger)
     update_concepts_and_mappings_count(logger)
 
 @celery.task(base=QueueOnce, bind=True)
