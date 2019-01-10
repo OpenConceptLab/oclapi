@@ -305,10 +305,11 @@ class CollectionVersion(ConceptContainerVersionModel):
         In order to get the total concepts count, please use get_concepts_count().
         """
         from concepts.models import ConceptVersion
-        if start and end:
-            concept_ids = list(self.__get_concept_ids()[start:end])
-        else:
+        if start is None and end is None:
             concept_ids = self.get_concept_ids()
+        else:
+            concept_ids = list(self.__get_concept_ids()[start:end])
+
         if concept_ids:
             return ConceptVersion.objects.filter(id__in=concept_ids)
         else:
@@ -338,10 +339,11 @@ class CollectionVersion(ConceptContainerVersionModel):
         In order to get the total concepts count, please use get_mappings_count().
         """
         from mappings.models import MappingVersion
-        if start and end:
-            mapping_ids = list(self.__get_mapping_ids()[start:end])
-        else:
+        if start is None and end is None:
             mapping_ids = self.get_mapping_ids()
+        else:
+            mapping_ids = list(self.__get_mapping_ids()[start:end])
+
         if mapping_ids:
             return MappingVersion.objects.filter(id__in=mapping_ids)
         else:
