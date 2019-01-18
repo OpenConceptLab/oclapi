@@ -38,6 +38,11 @@ def find_broken_references(self):
     return broken_references
 
 @celery.task(base=QueueOnce, bind=True)
+def bulk_import(self, to_import):
+    from manage.imports.bulk_import import BulkImport
+    return BulkImport().run_import(to_import)
+
+@celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
     from sources.models import SourceVersion
 

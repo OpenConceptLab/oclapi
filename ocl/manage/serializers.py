@@ -32,4 +32,8 @@ class ReferenceListSerializer(serializers.Serializer):
     items = ReferenceListItemSerializer()
 
 
+class OclImportResultsSerializer(serializers.Serializer):
+    summary = serializers.SerializerMethodField('get_detailed_summary')
 
+    def get_detailed_summary(self, obj):
+        return obj.get_detailed_summary()
