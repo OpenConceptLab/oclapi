@@ -5,4 +5,4 @@ class Command(BaseCommand):
     help = 'Run data integrity checks'
 
     def handle(self, *args, **options):
-        data_integrity_checks.delay()
+        pass #data_integrity_checks.delay()
