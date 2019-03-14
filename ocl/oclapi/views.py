@@ -357,7 +357,12 @@ class VersionedResourceChildMixin(ConceptDictionaryMixin):
             self.parent_resource_version = self.parent_resource
             self.parent_resource = self.parent_resource_version.versioned_object
         else:
-            self.parent_resource_version = ResourceVersionModel.get_head_of(self.parent_resource)
+            version_model = self.parent_resource.get_version_model()
+
+            if version_model.__name__ in ['SourceVersion', 'CollectionVersion']:
+                self.parent_resource_version = ResourceVersionModel.get_head_of(self.parent_resource)
+            else:
+                self.parent_resource_version = ResourceVersionModel.get_latest_version_of(self.parent_resource)
 
     def get_queryset(self):
         if isinstance(self.parent_resource_version, SourceVersion):
