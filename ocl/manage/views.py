@@ -35,12 +35,15 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
         return Response({'task': task.id, 'state': task.state})
 
     def delete(self, request):
+        force = request.GET.get('force')
+        if not force:
+            force = False
         task = AsyncResult(request.GET.get('task'))
 
         if (task.successful() or task.failed()):
             broken_references = task.get()
 
-            broken_references.delete()
+            broken_references.delete(force)
 
             serializer = serializers.ReferenceListSerializer(
                 instance=broken_references)

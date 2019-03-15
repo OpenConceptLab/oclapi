@@ -159,8 +159,11 @@ class Reference:
             if dependency.use_object_id:
                 raw_source_id = ObjectId(source_id)
                 raw_source_field = dependency.source_field + '_id'
+
             items = RawQueries().find_by_field(dependency.source_type, raw_source_field, raw_source_id)
             for item in items:
+                if dependency.source_type is reference_definition.source_type and item['_id'] is item[raw_source_field]:
+                    continue #exclude self referencing dependencies
                 dependencies.append('%s.%s: %s' % (dependency.source_type.__name__, dependency.source_field, str(item)))
         return dependencies
 
@@ -201,12 +204,12 @@ class ReferenceList:
             result += item.deletable_count
         return result
 
-    def delete(self):
+    def delete(self, force = False):
         broken_references_by_type = {}
 
         for item in self.items:
             for broken_reference in item.broken_references:
-                if broken_reference.deletable:
+                if broken_reference.deletable or force:
                     source_type = broken_reference.reference_definition.source_type
                     if source_type in broken_references_by_type:
                         broken_references_by_type[source_type].append(broken_reference)
