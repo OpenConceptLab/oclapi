@@ -21,11 +21,13 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
     def list(self, request):
         task = AsyncResult(request.GET.get('task'))
 
-        if (task.successful() or task.failed()):
+        if task.successful():
             broken_references = task.get()
             serializer = serializers.ReferenceListSerializer(
                 instance=broken_references)
             return Response(serializer.data)
+        elif task.failed():
+            return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'task': task.id, 'state': task.state})
 
@@ -40,7 +42,7 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
             force = False
         task = AsyncResult(request.GET.get('task'))
 
-        if (task.successful() or task.failed()):
+        if task.successful():
             broken_references = task.get()
 
             broken_references.delete(force)
@@ -48,6 +50,8 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
             serializer = serializers.ReferenceListSerializer(
                 instance=broken_references)
             return Response(serializer.data)
+        elif task.failed():
+            return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'state': task.state}, status=status.HTTP_204_NO_CONTENT)
 
@@ -63,11 +67,13 @@ class BulkImportView(viewsets.ViewSet):
     def list(self, request):
         task = AsyncResult(request.GET.get('task'))
 
-        if (task.successful() or task.failed()):
+        if task.successful():
             result = task.get()
             serializer = serializers.OclImportResultsSerializer(
                 instance=result)
             return Response(serializer.data)
+        elif task.failed():
+            return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'task': task.id, 'state': task.state})
 
