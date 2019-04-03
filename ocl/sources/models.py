@@ -71,7 +71,7 @@ class Source(ConceptContainerModel):
         ).exclude(parent_id=self.id)
         if mapping_versions:
             if usage_summary:
-                usage_summary = usage_summary + ',\n- '
+                usage_summary = usage_summary + '\n- '
             usage_summary = usage_summary + self.join_uris(mapping_versions)
 
         if usage_summary:
