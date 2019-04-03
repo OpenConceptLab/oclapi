@@ -28,7 +28,7 @@ class Source(ConceptContainerModel):
 
     def delete(self, **kwargs):
         resource_used_message = '''Source %s cannot be deleted because others have created mapping or references that point to it.
-                To delete this source, you must first delete all linked mappings and references: ''' % self.id
+                To delete this source, you must first delete all linked mappings and references.''' % self.id
 
         from concepts.models import Concept
         concepts = Concept.objects.filter(parent_id=self.id)
@@ -56,19 +56,19 @@ class Source(ConceptContainerModel):
 
         usage_summary = ''
         if collections:
-            usage_summary = '\n--- Concepts in collections ---\n- ' + self.join_uris(collections)
+            usage_summary = ' Concepts in collections: ' + self.join_uris(collections) + ';'
 
         # Check if mappings from this source are in any collection
         collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
         if collections:
-            usage_summary = usage_summary + '\n--- Mappings in collections ---\n- ' + self.join_uris(collections)
+            usage_summary = usage_summary + ' Mappings in collections: ' + self.join_uris(collections) + ';'
 
         # Check if mappings from this source are referred in any sources
         mapping_versions = MappingVersion.objects.filter(
             Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
         ).exclude(parent_id=self.id)
         if mapping_versions:
-            usage_summary = usage_summary + '\n--- Mappings ---\n- ' + self.join_uris(mapping_versions)
+            usage_summary = usage_summary + ' Mappings: ' + self.join_uris(mapping_versions) + ';'
 
         if usage_summary:
             raise Exception(resource_used_message + usage_summary)
@@ -79,7 +79,7 @@ class Source(ConceptContainerModel):
         uris = []
         for resource in resources:
             uris.append(resource.uri)
-        joined_uris = '\n- '.join(uris)
+        joined_uris = ', '.join(uris)
         return joined_uris
 
     @property
