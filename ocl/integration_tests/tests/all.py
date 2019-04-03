@@ -3411,7 +3411,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
@@ -3424,7 +3424,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(
@@ -3462,7 +3462,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('To delete this source, you must first delete all linked mappings and references and try again.' in message)
+        self.assertTrue('To delete this source, you must first delete all linked mappings and references' in message)
 
 class OrganizationDeleteViewTest(SourceBaseTest):
     def setUp(self):
@@ -3567,6 +3567,6 @@ class OrganizationDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'To delete this source, you must first delete all linked mappings and references and try again.' in message)
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
 
