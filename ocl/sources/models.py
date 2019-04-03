@@ -62,7 +62,7 @@ class Source(ConceptContainerModel):
         collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
         if collections:
             if usage_summary:
-                usage_summary = usage_summary + ', '
+                usage_summary = usage_summary + '\n- '
             usage_summary = usage_summary + self.join_uris(collections)
 
         # Check if mappings from this source are referred in any sources
@@ -71,7 +71,7 @@ class Source(ConceptContainerModel):
         ).exclude(parent_id=self.id)
         if mapping_versions:
             if usage_summary:
-                usage_summary = usage_summary + ', '
+                usage_summary = usage_summary + ',\n- '
             usage_summary = usage_summary + self.join_uris(mapping_versions)
 
         if usage_summary:
@@ -83,7 +83,7 @@ class Source(ConceptContainerModel):
         uris = []
         for resource in resources:
             uris.append(resource.uri)
-        joined_uris = ', '.join(uris)
+        joined_uris = '\n- '.join(uris)
         return joined_uris
 
     @property
