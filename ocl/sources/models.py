@@ -56,23 +56,19 @@ class Source(ConceptContainerModel):
 
         usage_summary = ''
         if collections:
-            usage_summary = usage_summary + self.join_uris(collections)
+            usage_summary = '\n--- Concepts in collections ---\n- ' + self.join_uris(collections)
 
         # Check if mappings from this source are in any collection
         collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
         if collections:
-            if usage_summary:
-                usage_summary = usage_summary + '\n- '
-            usage_summary = usage_summary + self.join_uris(collections)
+            usage_summary = usage_summary + '\n--- Mappings in collections ---\n- ' + self.join_uris(collections)
 
         # Check if mappings from this source are referred in any sources
         mapping_versions = MappingVersion.objects.filter(
             Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
         ).exclude(parent_id=self.id)
         if mapping_versions:
-            if usage_summary:
-                usage_summary = usage_summary + '\n- '
-            usage_summary = usage_summary + self.join_uris(mapping_versions)
+            usage_summary = usage_summary + '\n--- Mappings ---\n- ' + self.join_uris(mapping_versions)
 
         if usage_summary:
             raise Exception(resource_used_message + usage_summary)
