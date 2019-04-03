@@ -28,7 +28,7 @@ class Source(ConceptContainerModel):
 
     def delete(self, **kwargs):
         resource_used_message = '''Source %s cannot be deleted because others have created mapping or references that point to it.
-                To delete this source, you must first delete all linked mappings and references and try again.''' % self.id
+                To delete this source, you must first delete all linked mappings and references: ''' % self.id
 
         from concepts.models import Concept
         concepts = Concept.objects.filter(parent_id=self.id)
@@ -53,22 +53,38 @@ class Source(ConceptContainerModel):
         # Check if concepts from this source are in any collection
         from collection.models import CollectionVersion
         collections = CollectionVersion.get_collection_versions_with_concepts(concept_version_ids)
+
+        usage_summary = ''
         if collections:
-            raise Exception(resource_used_message)
+            usage_summary = usage_summary + self.join_uris(collections)
 
         # Check if mappings from this source are in any collection
         collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
         if collections:
-            raise Exception(resource_used_message)
+            if usage_summary:
+                usage_summary = usage_summary + ', '
+            usage_summary = usage_summary + self.join_uris(collections)
 
         # Check if mappings from this source are referred in any sources
         mapping_versions = MappingVersion.objects.filter(
             Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
         ).exclude(parent_id=self.id)
         if mapping_versions:
-            raise Exception(resource_used_message)
+            if usage_summary:
+                usage_summary = usage_summary + ', '
+            usage_summary = usage_summary + self.join_uris(mapping_versions)
+
+        if usage_summary:
+            raise Exception(resource_used_message + usage_summary)
 
         RawQueries().delete_source(self)
+
+    def join_uris(self, resources):
+        uris = []
+        for resource in resources:
+            uris.append(resource.uri)
+        joined_uris = ', '.join(uris)
+        return joined_uris
 
     @property
     def concepts_url(self):
