@@ -28,7 +28,7 @@ class Source(ConceptContainerModel):
 
     def delete(self, **kwargs):
         resource_used_message = '''Source %s cannot be deleted because others have created mapping or references that point to it.
-                To delete this source, you must first delete all linked mappings and references.''' % self.id
+                To delete this source, you must first delete all linked mappings and references.''' % self.uri
 
         from concepts.models import Concept
         concepts = Concept.objects.filter(parent_id=self.id)
