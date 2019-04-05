@@ -58,20 +58,23 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
 
 class BulkImportView(viewsets.ViewSet):
 
-    serializer_class = serializers.OclImportResultsSerializer
-
     def initial(self, request, *args, **kwargs):
         self.permission_classes = (IsAdminUser, )
         super(BulkImportView, self).initial(request, *args, **kwargs)
 
     def list(self, request):
         task = AsyncResult(request.GET.get('task'))
+        result_format = request.GET.get('result')
 
         if task.successful():
             result = task.get()
-            serializer = serializers.OclImportResultsSerializer(
-                instance=result)
-            return Response(serializer.data)
+            if result_format == 'json':
+                return Response(result.to_json())
+            elif result_format == 'report':
+                return Response(result.display_report())
+            else:
+                return Response(result.get_detailed_summary())
+
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
         else:

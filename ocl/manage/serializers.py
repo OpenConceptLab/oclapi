@@ -30,10 +30,3 @@ class ReferenceListSerializer(serializers.Serializer):
     broken_total_count = serializers.IntegerField(read_only=True)
     deletable_total_count = serializers.IntegerField(read_only=True)
     items = ReferenceListItemSerializer()
-
-
-class OclImportResultsSerializer(serializers.Serializer):
-    summary = serializers.SerializerMethodField('get_detailed_summary')
-
-    def get_detailed_summary(self, obj):
-        return obj.get_detailed_summary()
