@@ -1,6 +1,7 @@
 import logging
 
 from celery.result import AsyncResult
+from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -69,11 +70,11 @@ class BulkImportView(viewsets.ViewSet):
         if task.successful():
             result = task.get()
             if result_format == 'json':
-                return Response(result.to_json())
+                return HttpResponse(result.to_json(), content_type="application/json")
             elif result_format == 'report':
-                return Response(result.display_report())
+                return HttpResponse(result.display_report())
             else:
-                return Response(result.get_detailed_summary())
+                return HttpResponse(result.get_detailed_summary())
 
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
