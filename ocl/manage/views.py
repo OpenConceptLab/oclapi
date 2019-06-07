@@ -1,9 +1,10 @@
 import logging
+import uuid
 
 from celery.result import AsyncResult
 from django.http import HttpResponse
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from manage import serializers
@@ -60,11 +61,18 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
 class BulkImportView(viewsets.ViewSet):
 
     def initial(self, request, *args, **kwargs):
-        self.permission_classes = (IsAdminUser, )
+        self.permission_classes = (IsAuthenticated, )
         super(BulkImportView, self).initial(request, *args, **kwargs)
 
     def list(self, request):
-        task = AsyncResult(request.GET.get('task'))
+        task_id = request.GET.get('task')
+        username = task_id[37:]
+        user = self.request.user
+
+        if not user.is_staff and user.username != username:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        task = AsyncResult(task_id)
         result_format = request.GET.get('result')
 
         if task.successful():
@@ -83,6 +91,7 @@ class BulkImportView(viewsets.ViewSet):
 
 
     def post(self, request):
-        task = bulk_import.delay(request.body)
+        username = self.request.user.username
+        task = bulk_import.apply_async((request.body, username), task_id=str(uuid.uuid4()) + '-' + username)
 
         return Response({'task': task.id, 'state': task.state})

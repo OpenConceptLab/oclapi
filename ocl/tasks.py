@@ -38,9 +38,9 @@ def find_broken_references(self):
     return broken_references
 
 @celery.task(base=QueueOnce, bind=True)
-def bulk_import(self, to_import):
+def bulk_import(self, to_import, username):
     from manage.imports.bulk_import import BulkImport
-    return BulkImport().run_import(to_import)
+    return BulkImport().run_import(to_import, username)
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
