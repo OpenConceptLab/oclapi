@@ -95,14 +95,14 @@ class UserLoginView(views.APIView):
         if not username:
             errors['username'] = ['This field is required.']
         password = request.DATA.get('password')
-        if not password:
+        hashed_password = request.DATA.get('hashed_password')
+        if not password and not hashed_password:
             errors['password'] = ['This field is required.']
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = UserProfile.objects.get(mnemonic=username)
-
-            if check_password(password, profile.hashed_password):
+            if check_password(password, profile.hashed_password) or hashed_password == profile.hashed_password:
                 return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
             else:
                 return Response({'detail': 'Passwords did not match.'}, status=status.HTTP_401_UNAUTHORIZED)
