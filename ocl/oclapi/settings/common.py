@@ -174,7 +174,7 @@ class Common(Configuration):
             'rest_framework.throttling.AnonRateThrottle',
         ),
         'DEFAULT_THROTTLE_RATES': {
-            'anon': '10/second' #can be lowered once web service passes individual client IPs together with a secret key
+            'anon': '50/second' #can be lowered once web service passes individual client IPs together with a secret key
         },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
