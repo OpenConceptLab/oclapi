@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status, views
+from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import AllowAny
@@ -76,6 +77,21 @@ class UserDetailView(UserBaseView,
         return super(UserDetailView, self).get_object(queryset)
 
     def post(self, request, *args, **kwargs):
+        password = request.DATA.get('password')
+        hashed_password = request.DATA.get('hashed_password')
+        if password:
+            obj = self.get_object()
+            obj.user.set_password(password)
+            obj.save()
+            Token.objects.filter(user=obj.user).delete()
+            Token.objects.create(user=obj.user)
+        elif hashed_password:
+            obj = self.get_object()
+            obj.hashed_password = hashed_password
+            obj.save()
+            Token.objects.filter(user=obj.user).delete()
+            Token.objects.create(user=obj.user)
+
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
