@@ -3,10 +3,12 @@ from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from rest_framework.response import Response
+
+from concepts.permissions import CanViewParentDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
-from oclapi.permissions import HasOwnership, IsSuperuser
+from oclapi.permissions import HasOwnership, IsSuperuser, CanViewConceptDictionary
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
@@ -19,6 +21,7 @@ class OrganizationListView(BaseAPIView,
                            mixins.CreateModelMixin):
     model = Organization
     queryset = Organization.objects.filter(is_active=True)
+    permission_classes = (CanViewConceptDictionary,)
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
@@ -77,12 +80,14 @@ class OrganizationListView(BaseAPIView,
 class OrganizationBaseView(BaseAPIView, RetrieveAPIView, DestroyAPIView):
     lookup_field = 'org'
     model = Organization
+    permission_classes = (CanViewConceptDictionary,)
     queryset = Organization.objects.filter(is_active=True)
 
 
 class OrganizationDetailView(mixins.UpdateModelMixin,
                              OrganizationBaseView):
     serializer_class = OrganizationDetailSerializer
+    permission_classes = (CanViewConceptDictionary,)
     queryset = Organization.objects.filter(is_active=True)
 
     def initial(self, request, *args, **kwargs):
