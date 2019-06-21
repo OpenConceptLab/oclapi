@@ -92,6 +92,14 @@ class BulkImportView(viewsets.ViewSet):
 
     def post(self, request):
         username = self.request.user.username
-        task = bulk_import.apply_async((request.body, username), task_id=str(uuid.uuid4()) + '-' + username)
+        update_if_exists = request.GET.get('update_if_exists', 'true')
+        if update_if_exists == 'true':
+            update_if_exists = True
+        elif update_if_exists == 'false':
+            update_if_exists = False
+        else:
+            return Response({'exception': 'update_if_exists must be either \'true\' or \'false\''}, status=status.HTTP_400_BAD_REQUEST)
+
+        task = bulk_import.apply_async((request.body, username, update_if_exists), task_id=str(uuid.uuid4()) + '-' + username)
 
         return Response({'task': task.id, 'state': task.state})
