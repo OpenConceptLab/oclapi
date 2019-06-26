@@ -14,7 +14,7 @@ class BulkImport:
             input_list.append(json.loads(line))
 
         profile = UserProfile.objects.get(mnemonic=username)
-        importer = OclFlexImporter(input_list=input_list, api_url_root='http://ap   i.openconceptlab.org:8000',
+        importer = OclFlexImporter(input_list=input_list, api_url_root='http://api.openconceptlab.org:8000',
                                    api_token=profile.user.auth_token.key, do_update_if_exists=update_if_exists)
         importer.process()
 
