@@ -3,6 +3,12 @@ from ocldev.oclfleximporter import OclFlexImporter
 
 from users.models import UserProfile
 
+class ImportResults:
+    def __init__(self, importer):
+        self.json = importer.import_results.to_json()
+        self.detailed_summary = importer.import_results.get_detailed_summary()
+        self.report = importer.import_results.display_report()
+
 
 class BulkImport:
     def __init__(self):
@@ -18,4 +24,4 @@ class BulkImport:
                                    api_token=profile.user.auth_token.key, do_update_if_exists=update_if_exists)
         importer.process()
 
-        return importer.import_results
+        return ImportResults(importer)
