@@ -78,7 +78,9 @@ class BulkImportView(viewsets.ViewSet):
         if task.successful():
             result = task.get()
             if result_format == 'json':
-                return HttpResponse(result.json, content_type="application/json")
+                response =  HttpResponse(result.json, content_type="application/json")
+                response['Content-Encoding'] = 'gzip'
+                return response
             elif result_format == 'report':
                 return HttpResponse(result.report)
             else:

@@ -1,11 +1,13 @@
 import json
+
+from django.utils.text import compress_string
 from ocldev.oclfleximporter import OclFlexImporter
 
 from users.models import UserProfile
 
 class ImportResults:
     def __init__(self, importer):
-        self.json = importer.import_results.to_json()
+        self.json = compress_string(importer.import_results.to_json())
         self.detailed_summary = importer.import_results.get_detailed_summary()
         self.report = importer.import_results.display_report()
 
