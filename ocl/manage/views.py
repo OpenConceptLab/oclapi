@@ -85,7 +85,6 @@ class BulkImportView(viewsets.ViewSet):
                 return HttpResponse(result.report)
             else:
                 return HttpResponse(result.detailed_summary)
-
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
         else:

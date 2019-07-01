@@ -13,9 +13,18 @@ class OpenMRSMappingValidator:
     def pair_must_be_unique(self):
         from mappings.models import Mapping
 
-        intersection = Mapping.objects\
-            .filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept, to_concept=self.mapping.to_concept, is_active=True, retired=False)\
-            .exclude(id=self.mapping.id)
+        if self.mapping.to_concept:
+            intersection = Mapping.objects\
+                .filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept, to_concept=self.mapping.to_concept, is_active=True, retired=False)\
+                .exclude(id=self.mapping.id)
+        elif self.mapping.to_concept_code:
+            intersection = Mapping.objects \
+                .filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept, to_source=self.mapping.to_source, to_concept_code=self.mapping.to_concept_code, is_active=True, retired=False) \
+                .exclude(id=self.mapping.id)
+        elif self.mapping.to_concept_name:
+            intersection = Mapping.objects \
+                .filter(parent=self.mapping.parent_source, from_concept=self.mapping.from_concept, to_source=self.mapping.to_source, to_concept_name=self.mapping.to_concept_name, is_active=True, retired=False) \
+                .exclude(id=self.mapping.id)
 
         if intersection:
             raise ValidationError(OPENMRS_SINGLE_MAPPING_BETWEEN_TWO_CONCEPTS)
