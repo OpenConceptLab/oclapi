@@ -21,11 +21,14 @@ from oclapi.utils import update_all_in_index, write_export_file
 import json
 from rest_framework.test import APIRequestFactory
 
+logger = get_task_logger(__name__)
+
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
-
-logger = get_task_logger(__name__)
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
+celery.conf.task_routes = {'tasks.bulk_import': {'queue': 'bulk_import'},
+                           'tasks.bulk_priority_import': {'queue': 'bulk_priority_import'}}
+
 
 @celery.task(base=QueueOnce, bind=True)
 def data_integrity_checks(self):
@@ -41,6 +44,10 @@ def find_broken_references(self):
 def bulk_import(self, to_import, username, update_if_exists):
     from manage.imports.bulk_import import BulkImport
     return BulkImport().run_import(to_import, username, update_if_exists)
+
+@celery.task(base=QueueOnce, bind=True)
+def bulk_priority_import(self, to_import, username, update_if_exists):
+    bulk_import(self, to_import, username, update_if_exists)
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):

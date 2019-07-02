@@ -51,7 +51,43 @@ services:
       retries: 3
   celery:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: bash run_celery.sh ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_STORAGE_BUCKET_NAME}
+    command: celery -A tasks worker -l INFO -n default --autoscale=15,3
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  celery_bulk_import:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_import -n bulk_import --autoscale=3,1
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  celery_bulk_priority_import:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_priority_import -n bulk_priority_import --autoscale=3,1
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -69,7 +105,7 @@ services:
       test: "exit 0"
   flower:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: bash run_flower.sh
+    command: celery -A tasks flower --basic_auth=root:${ROOT_PASSWORD-Root123}
     ports:
       - "5555:5555"
     depends_on:
@@ -79,7 +115,6 @@ services:
     environment:
       - C_FORCE_ROOT=1
       - SECRET_KEY
-      - ROOT_PASSWORD=${ROOT_PASSWORD-Root123}
     restart: always
     healthcheck:
       test: "exit 0"
