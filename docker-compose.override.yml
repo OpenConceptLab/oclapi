@@ -38,10 +38,23 @@ services:
     volumes:
       - ./ocl:/code
     restart: "no"
+  celery_bulk_import:
+    image: openconceptlab/oclapi:dev
+    volumes:
+      - ./ocl:/code
+    restart: "no"
+  celery_bulk_priority_import:
+    image: openconceptlab/oclapi:dev
+    volumes:
+      - ./ocl:/code
+    restart: "no"
   flower:
     image: openconceptlab/oclapi:dev
     ports:
       - "5555:5555"
     volumes:
       - ./ocl:/code
+    restart: "no"
+  backup:
+    image: openmrs/cron-backup:1.0.0
     restart: "no"

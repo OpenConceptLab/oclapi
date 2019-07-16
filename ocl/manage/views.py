@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from manage import serializers
-from tasks import find_broken_references, bulk_import
+from tasks import find_broken_references, bulk_import, bulk_priority_import
 
 logger = logging.getLogger('oclapi')
 
@@ -101,6 +101,9 @@ class BulkImportView(viewsets.ViewSet):
         else:
             return Response({'exception': 'update_if_exists must be either \'true\' or \'false\''}, status=status.HTTP_400_BAD_REQUEST)
 
-        task = bulk_import.apply_async((request.body, username, update_if_exists), task_id=str(uuid.uuid4()) + '-' + username)
+        if username == 'root':
+            task = bulk_priority_import.apply_async((request.body, username, update_if_exists), task_id=str(uuid.uuid4()) + '-' + username)
+        else:
+            task = bulk_import.apply_async((request.body, username, update_if_exists), task_id=str(uuid.uuid4()) + '-' + username)
 
         return Response({'task': task.id, 'state': task.state})
