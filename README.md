@@ -82,6 +82,15 @@ docker-compose run --rm api python manage.py run_test --configuration=Dev
 
 #### Integration Tests
 
+See integration-tests/README.md
+
+To run locally:
+````sh
+docker-comopse up -d
+docker build integration-tests/. --network="host"
+````
+
+Deprecated integration tests can be run with:
 ````sh
 docker-compose run --rm api python manage.py test integration_tests --configuration=Dev
 ````

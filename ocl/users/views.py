@@ -121,10 +121,10 @@ class UserLoginView(views.APIView):
             if check_password(password, profile.hashed_password) or hashed_password == profile.hashed_password:
                 return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
             else:
-                return Response({'detail': 'Passwords did not match.'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'detail': 'No such user or wrong password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         except UserProfile.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'No such user or wrong password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserReactivateView(UserBaseView, UpdateAPIView):
