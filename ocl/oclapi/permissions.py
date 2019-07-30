@@ -42,9 +42,11 @@ class HasPrivateAccess(BasePermission):
             return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
-            if profile == obj.owner:
+            if hasattr(obj, 'owner') and profile == obj.owner:
                 return True
-            if obj.parent_id in profile.organizations:
+            if obj.id in profile.organizations:
+                return True
+            if hasattr(obj, 'parent_id') and obj.parent_id in profile.organizations:
                 return True
         return False
 

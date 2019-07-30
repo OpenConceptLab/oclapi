@@ -3,7 +3,7 @@
 if [ "$1" != "" ]; then
   url=$1
 else
-  echo "Usage: ./wait_for.sh url [max_attempts]"
+  echo "Usage: ./wait_for_url.sh url [max_attempts]"
   exit 1
 fi
 

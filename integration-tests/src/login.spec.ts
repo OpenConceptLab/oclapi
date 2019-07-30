@@ -9,7 +9,7 @@ describe('Login', () => {
 
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json.token).not.toBeNull();
+        expect(json.token).toBeDefined();
     });
     it('fails with invalid username', async () => {
         const user = {username:'someuser', password: 'somepassword'};

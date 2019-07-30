@@ -6,13 +6,57 @@ export const config = {
     adminPassword: process.env.npm_config_adminPassword ? process.env.npm_config_adminPassword : process.env.npm_package_config_adminPassword
 };
 
-export const post = async function(url, body) {
-    const response = fetch(config.serverUrl + 'users/login/', {
+export const initHeaders = function(token, headers={}) {
+    headers['Content-type'] = 'application/json';
+    if (token != null) {
+        headers['Authorization'] = 'Token ' + token;
+    }
+    return headers;
+};
+
+export const joinUrl = function (url, part) {
+    url = url.endsWith('/') ? url : url + '/';
+    part = part.startsWith('/') ? part.substring(1) : part;
+    return url + part;
+}
+
+export const post = async function(url, body, token=null) {
+    return fetch(joinUrl(config.serverUrl, url), {
         method: 'post',
-        headers: {
-            "Content-type": "application/json"
-        },
+        headers: initHeaders(await token),
         body: JSON.stringify(body)
     });
-    return response;
+};
+
+export const put = async function(url, body, token=null) {
+    return fetch(joinUrl(config.serverUrl, url), {
+        method: 'put',
+        headers: initHeaders(await token),
+        body: JSON.stringify(body)
+    });
+};
+
+export const del = async function(url, token=null) {
+    return fetch(joinUrl(config.serverUrl, url), {
+        method: 'delete',
+        headers: initHeaders(await token)
+    });
+};
+
+export const get = async function(url, token=null) {
+    return fetch(joinUrl(config.serverUrl, url), {
+        method: 'get',
+        headers: initHeaders(await token)
+    });;
+};
+
+export const authenticate = async function(username, password) {
+    const user = {username: username, password: password};
+    const response = await post('users/login/', user);
+    const json = await response.json();
+    return json.token;
+};
+
+export const authenticateAdmin = async function() {
+    return authenticate(config.adminUser, config.adminPassword);
 };
