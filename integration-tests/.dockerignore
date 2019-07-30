@@ -6,3 +6,4 @@
 !package.json
 !package-lock.json
 !jest.config.js
+!wait_for_url.sh

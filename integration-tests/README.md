@@ -32,10 +32,10 @@ npm t --url=https://api.qa.openconceptlab.org/ --adminUser=admin --adminPassword
 
 Alternatively run tests in an isolated environment with Docker (used on CI):
 ```bash
-docker build . --build-arg url=https://api.qa.openconceptlab.org/ --build-arg adminUser=admin --build-arg adminPassword=Admin123
+docker build . --build-arg url=https://api.qa.openconceptlab.org/ --build-arg adminUser=admin --build-arg adminPassword=Admin123 --build-arg CACHEBUST=$(date +%s)
 ```
 
 Run tests with Docker against a local server at http://localhost:8000 (default url):
 ```bash
-docker build . --network="host"
+docker build . --network="host" --build-arg CACHEBUST=$(date +%s)
 ```
