@@ -87,7 +87,7 @@ See integration-tests/README.md
 To run locally:
 ````sh
 docker-comopse up -d
-docker build integration-tests/. --network="host"
+docker build integration-tests/. --network="host" --build-arg CACHEBUST=$(date +%s)
 ````
 
 Deprecated integration tests can be run with:
