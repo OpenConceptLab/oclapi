@@ -142,7 +142,7 @@ describe('Org', () => {
         expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
     });
 
-    it('should be deleted by authenticated member', async () => {
+    it.skip('should be deleted by authenticated member', async () => {
         const org = newOrgId()
         const orgUrl = orgIdToUrl(org);
         const res = await newOrg(org, regularUserToken, false);
