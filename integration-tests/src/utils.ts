@@ -18,7 +18,12 @@ export const joinUrl = function (url, part) {
     url = url.endsWith('/') ? url : url + '/';
     part = part.startsWith('/') ? part.substring(1) : part;
     return url + part;
-}
+};
+
+export const newUser = async function(username, password, adminToken) {
+    await post('users/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, adminToken);
+    await put('users/' + username + '/reactivate/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, adminToken);
+};
 
 export const post = async function(url, body, token=null) {
     return fetch(joinUrl(config.serverUrl, url), {
