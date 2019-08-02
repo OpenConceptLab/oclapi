@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import mixins, status, generics
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from concepts.permissions import CanViewParentDictionary
@@ -32,6 +33,8 @@ class OrganizationListView(BaseAPIView,
     }
 
     def initial(self, request, *args, **kwargs):
+        if (request.method == 'POST'):
+            self.permission_classes = (IsAuthenticated, )
         self.related_object_type = kwargs.pop('related_object_type', None)
         self.related_object_kwarg = kwargs.pop('related_object_kwarg', None)
         super(OrganizationListView, self).initial(request, *args, **kwargs)
