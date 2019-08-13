@@ -1,68 +1,28 @@
-import {get, post, del, newUser, authenticateAdmin, authenticate} from './utils';
+import { TestHelper } from './testHelper';
 
 describe('Org', () => {
-    const uniqueId = '6a5bb179';
-    const regularUser = 'Test' + uniqueId + 'User';
-    const regularUserUrl = '/users/' + regularUser + '/';
-    const nonPublicOrg = 'Test' + uniqueId + 'Org';
-    const nonPublicOrgUrl = '/orgs/' + nonPublicOrg + '/';
-    const nonPublicAdminOrg = 'Test' + uniqueId + 'AdminOrg';
-    const nonPublicAdminOrgUrl = '/orgs/' + nonPublicAdminOrg + '/';
-    let adminToken = null;
-    let regularUserToken = null;
-    let cleanup = async () => {};
-
-    const orgIdToUrl = (orgId: string): string => {
-        return '/orgs/' + orgId + '/';
-    };
-
-    const newOrgId = (): string => {
-        return 'Test' + uniqueId + new Date().getTime() + 'Org';
-    };
-
-    const newOrg = async (orgId: string, token: string, publicAccess: boolean= true): Promise<Response> => {
-        if (publicAccess) {
-            return post('orgs/', {id: orgId, name: orgId}, token);
-        } else {
-            return post('orgs/', {id: orgId, name: orgId, public_access: 'None'}, token);
-        }
-    };
-
-    const newCleanup = (url: string): (() => Promise<void>) => {
-        return async () => {
-            await del(url, adminToken);
-        };
-    };
+    const helper = new TestHelper();
 
     beforeAll(async () => {
-        adminToken = authenticateAdmin();
-        await del(nonPublicAdminOrgUrl, adminToken);
-        await post('orgs/', {id: nonPublicAdminOrg, name: nonPublicAdminOrg, public_access: 'None'}, adminToken);
-
-        await newUser(regularUser, regularUser, adminToken);
-
-        regularUserToken = authenticate(regularUser, regularUser);
-        await del(nonPublicOrgUrl, regularUserToken);
-        await post('orgs/', {id: nonPublicOrg, name: nonPublicOrg, public_access: 'None'}, regularUserToken);
+        await helper.beforeAll();
     });
 
     afterAll(async () => {
-        await del(nonPublicOrgUrl, adminToken);
-        await del(nonPublicAdminOrgUrl, adminToken);
-        await del(regularUserUrl, adminToken);
+        await helper.afterAll();
     });
 
     afterEach( async() => {
-        await cleanup();
+        await helper.afterEach();
     });
 
     it('should list only public orgs for anonymous', async () => {
-        const res = await get('orgs/');
+        const res = await helper.get('orgs/');
         const json = await res.json();
 
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
-        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicOrg, name: nonPublicOrg, url: nonPublicOrgUrl } ]));
-        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl } ]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab'),
+            helper.toOrg(helper.viewOrg), helper.toOrg(helper.editOrg)]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.nonPublicOrg) ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.nonPublicAdminOrg) ]));
     });
 
     test('orgs list should not be affected by query params', async () => {
@@ -75,108 +35,450 @@ describe('Org', () => {
     });
 
     it('should not be created by anonymous', async () => {
-        const orgId = newOrgId();
-        const orgUrl = orgIdToUrl(orgId);
-        cleanup = newCleanup(orgUrl);
-        const res = await newOrg(orgId, null, true);
+        const orgId = helper.newId('Org');
+        const orgUrl = helper.toUrl('orgs', orgId);
+        helper.cleanup(orgUrl);
+        const res = await helper.postOrg(orgId, null);
         expect(res.status).toBe(401);
 
-        const res2 = await get('orgs/', adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
         const json = await res2.json();
 
-        expect(json).toEqual(expect.not.arrayContaining([ { id: orgId, name: orgId, url: orgUrl} ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(orgId) ]));
     });
 
     it('should not be updated by anonymous', async () => {
-        const res = await post('orgs/OCL/', {'name': 'test'});
+        const res = await helper.post('orgs/OCL/', {'name': 'test'});
         expect(res.status).toBe(401);
 
-        const res2 = await get('orgs/', adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
         const json = await res2.json();
 
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab') ]));
+    });
+
+    it('with none access should not be updated by anonymous', async () => {
+        const res = await helper.post(helper.nonPublicOrg, {'name': 'test'});
+        expect(res.status).toBe(404);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.nonPublicOrg) ]));
+    });
+
+    it('with view access should not be updated by anonymous', async () => {
+        const res = await helper.post(helper.viewOrgUrl, {'name': 'test'});
+        expect(res.status).toBe(401);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.viewOrg) ]));
+    });
+
+    it('with edit access should not be updated by anonymous', async () => {
+        const res = await helper.post(helper.editOrgUrl, {'name': 'test'});
+        expect(res.status).toBe(401);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.editOrg) ]));
     });
 
     it('should not be deleted by anonymous', async () => {
-        const res = await del('orgs/OCL/');
+        const res = await helper.del('orgs/OCL/');
         expect(res.status).toBe(401);
 
-        const res2 = await get('orgs/', adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
         const json = await res2.json();
 
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab')]));
     });
 
+    it('with none access should not be deleted by anonymous', async () => {
+        const res = await helper.del(helper.nonPublicOrgUrl);
+        expect(res.status).toBe(401);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.nonPublicOrg)]));
+    });
+
+    it('with view access should not be deleted by anonymous', async () => {
+        const res = await helper.del(helper.viewOrgUrl);
+        expect(res.status).toBe(401);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.viewOrg)]));
+    });
+
+    it('with edit access should not be deleted by anonymous', async () => {
+        const res = await helper.del(helper.editOrgUrl);
+        expect(res.status).toBe(401);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.editOrg)]));
+    });
 
     it('should list all orgs for staff', async () => {
-        const res = await get('orgs/', adminToken);
+        const res = await helper.get('orgs/', helper.adminToken);
 
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' },
-            {id: nonPublicOrg, name: nonPublicOrg, url: nonPublicOrgUrl},
-            {id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl}]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab'),
+            helper.toOrg(helper.nonPublicOrg), helper.toOrg(helper.nonPublicAdminOrg),
+            helper.toOrg(helper.viewOrg), helper.toOrg(helper.editOrg)]));
     });
 
-    it('should list public and belonging orgs for authenticated', async () => {
-        const res = await get('orgs/', regularUserToken);
+    it('should be updated by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken);
+        helper.cleanup(orgUrl);
+
+        const res2 = await helper.post(orgUrl, {'name': 'test'}, helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId, 'test')));
+    });
+
+    it('with none access should be updated by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'None');
+        helper.cleanup(orgUrl);
+
+        const res2 = await helper.post(orgUrl, {'name': 'test'}, helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId, 'test')));
+    });
+
+    it('with view access should be updated by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'View');
+        helper.cleanup(orgUrl);
+
+        const res2 = await helper.post(orgUrl, {'name': 'test'}, helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId, 'test')));
+    });
+
+    it('with edit access should be updated by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'Edit');
+        helper.cleanup(orgUrl);
+
+        const res2 = await helper.post(orgUrl, {'name': 'test'}, helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId, 'test')));
+    });
+
+    it('should be deleted by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken);
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        await helper.del(orgUrl, helper.adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json2 = await res2.json();
+
+        expect(json2).toEqual(expect.not.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with none access should be deleted by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'None');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        await helper.del(orgUrl, helper.adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json2 = await res2.json();
+
+        expect(json2).toEqual(expect.not.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with view access should be deleted by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'View');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        await helper.del(orgUrl, helper.adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json2 = await res2.json();
+
+        expect(json2).toEqual(expect.not.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with edit access should be deleted by staff', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'Edit');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        await helper.del(orgUrl, helper.adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json2 = await res2.json();
+
+        expect(json2).toEqual(expect.not.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('should list public and belonging orgs for authenticated member', async () => {
+        const res = await helper.get('orgs/', helper.regularMemberUserToken);
 
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' },
-            {id: nonPublicOrg, name: nonPublicOrg, url: nonPublicOrgUrl} ]));
-        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl } ]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab'),
+            helper.toOrg(helper.nonPublicOrg), helper.toOrg(helper.viewOrg), helper.toOrg(helper.editOrg) ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.nonPublicAdminOrg) ]));
     });
 
     it('should be updated by authenticated member', async () => {
-        const orgId = newOrgId();
-        const orgUrl = orgIdToUrl(orgId);
-        await newOrg(orgId, regularUserToken);
-        cleanup = newCleanup(orgUrl);
+        const orgId = helper.newId('Org');
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken);
+        helper.cleanup(orgUrl);
 
-        const res = await post(orgUrl, {'name': 'test'}, regularUserToken);
+        const res = await helper.post(orgUrl, {'name': 'test'}, helper.regularMemberUserToken);
         const json = await res.json();
 
         expect(json).toEqual(expect.objectContaining({ id: orgId, name: 'test', url: orgUrl }));
     });
 
-    it('should not be updated by authenticated nonmember', async () => {
-        const org = newOrgId();
-        const res = await post('orgs/OCL/', {'name': org});
-        expect(res.status).toBe(401);
+    it('with none access should be updated by authenticated member', async () => {
+        const orgId = helper.newId('Org');
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'None');
+        helper.cleanup(orgUrl);
 
-        const res2 = await get('orgs/', adminToken);
-        const json = await res2.json();
+        const res = await helper.post(orgUrl, {'name': 'test'}, helper.regularMemberUserToken);
+        const json = await res.json();
 
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
+        expect(json).toEqual(expect.objectContaining({ id: orgId, name: 'test', url: orgUrl }));
+    });
+
+
+    it('with view access should be updated by authenticated member', async () => {
+        const orgId = helper.newId('Org');
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'View');
+        helper.cleanup(orgUrl);
+
+        const res = await helper.post(orgUrl, {'name': 'test'}, helper.regularMemberUserToken);
+        const json = await res.json();
+
+        expect(json).toEqual(expect.objectContaining({ id: orgId, name: 'test', url: orgUrl }));
+    });
+
+    it('with edit access should be updated by authenticated member', async () => {
+        const orgId = helper.newId('Org');
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'Edit');
+        helper.cleanup(orgUrl);
+
+        const res = await helper.post(orgUrl, {'name': 'test'}, helper.regularMemberUserToken);
+        const json = await res.json();
+
+        expect(json).toEqual(expect.objectContaining({ id: orgId, name: 'test', url: orgUrl }));
     });
 
     it('should not be deleted by authenticated member', async () => {
-        const org = newOrgId()
-        const orgUrl = orgIdToUrl(org);
-        const res = await newOrg(org, regularUserToken, false);
-        cleanup = newCleanup(orgUrl);
-        ;
-        const json = await res.json();
-        expect(json).toEqual(expect.objectContaining({ id: org, name: org, url: orgUrl }));
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken);
+        helper.cleanup(orgUrl);
 
-        const res2 = await del(orgUrl, regularUserToken);
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        const res2 = await helper.del(orgUrl, helper.regularMemberUserToken);
         expect(res2.status).toBe(403);
 
-        const res3 = await get('orgs/', adminToken);
+        const res3 = await helper.get('orgs/', helper.adminToken);
         const json3 = await res3.json();
 
-        expect(json3).toEqual(expect.arrayContaining([ { id: org, name: org, url: orgUrl } ]));
+        expect(json3).toEqual(expect.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with none access should not be deleted by authenticated member', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'None');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        const res2 = await helper.del(orgUrl, helper.regularMemberUserToken);
+        expect(res2.status).toBe(403);
+
+        const res3 = await helper.get('orgs/', helper.adminToken);
+        const json3 = await res3.json();
+
+        expect(json3).toEqual(expect.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with view access should not be deleted by authenticated member', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'View');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        const res2 = await helper.del(orgUrl, helper.regularMemberUserToken);
+        expect(res2.status).toBe(403);
+
+        const res3 = await helper.get('orgs/', helper.adminToken);
+        const json3 = await res3.json();
+
+        expect(json3).toEqual(expect.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+    it('with edit access should not be deleted by authenticated member', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        const res = await helper.postOrg(orgId, helper.regularMemberUserToken, 'Edit');
+        helper.cleanup(orgUrl);
+
+        const json = await res.json();
+        expect(json).toEqual(expect.objectContaining(helper.toOrg(orgId)));
+
+        const res2 = await helper.del(orgUrl, helper.regularMemberUserToken);
+        expect(res2.status).toBe(403);
+
+        const res3 = await helper.get('orgs/', helper.adminToken);
+        const json3 = await res3.json();
+
+        expect(json3).toEqual(expect.arrayContaining([ helper.toOrg(orgId) ]));
+    });
+
+
+    it('should list public orgs for authenticated nonmember', async () => {
+        const res = await helper.get('orgs/', helper.regularNonMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab'),
+            helper.toOrg(helper.editOrg), helper.toOrg(helper.viewOrg)]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.nonPublicAdminOrg),
+            helper.toOrg(helper.nonPublicOrg) ]));
+    });
+
+    it('should not be updated by authenticated nonmember', async () => {
+        const org = helper.newId('Org');
+        const res = await helper.post('orgs/OCL/', {'name': org}, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab') ]));
+    });
+
+    it('with none access should not be updated by authenticated nonmember', async () => {
+        const org = helper.newId('Org');
+        const res = await helper.post(helper.nonPublicOrgUrl, {'name': org}, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.nonPublicOrg) ]));
+    });
+
+    it('with view access should not be updated by authenticated nonmember', async () => {
+        const org = helper.newId('Org');
+        const res = await helper.post(helper.viewOrgUrl, {'name': org}, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.viewOrg) ]));
+    });
+
+    it('with edit access should be updated by authenticated nonmember', async () => {
+        const orgId = helper.newId('Org')
+        const orgUrl = helper.toUrl('orgs', orgId);
+        await helper.postOrg(orgId, helper.regularMemberUserToken, 'Edit');
+        helper.cleanup(orgUrl);
+
+        const org = helper.newId('Org');
+        const res = await helper.post(orgUrl, {'name': org}, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(200);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(orgId, org) ]));
     });
 
     it('should not be deleted by authenticated nonmember', async () => {
-        const res = await del('orgs/OCL/', regularUserToken);
+        const res = await helper.del('orgs/OCL/', helper.regularNonMemberUserToken);
         expect(res.status).toBe(403);
 
-        const res2 = await get('orgs/', adminToken);
+        const res2 = await helper.get('orgs/', helper.adminToken);
         const json = await res2.json();
 
-        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab') ]));
+    });
+
+    it('with none access should not be deleted by authenticated nonmember', async () => {
+        const res = await helper.del(helper.nonPublicOrgUrl, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.nonPublicOrg) ]));
+    });
+
+    it('with view access should not be deleted by authenticated nonmember', async () => {
+        const res = await helper.del(helper.viewOrgUrl, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.viewOrg) ]));
+    });
+
+    it('with edit access should not be deleted by authenticated nonmember', async () => {
+        const res = await helper.del(helper.editOrgUrl, helper.regularNonMemberUserToken);
+        expect(res.status).toBe(403);
+
+        const res2 = await helper.get('orgs/', helper.adminToken);
+        const json = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg(helper.editOrg) ]));
     });
 });
 
