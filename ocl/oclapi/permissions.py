@@ -73,11 +73,11 @@ class HasAccessToVersionedObject(BasePermission):
 
 class CanViewConceptDictionary(HasPrivateAccess):
     """
-    The user can view this source
+    The request is authenticated as a user, and the user can view this source
     """
 
     def has_object_permission(self, request, view, obj):
-        if ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access:
+        if request.user.is_authenticated() and (ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access):
             return True
         return super(CanViewConceptDictionary, self).has_object_permission(request, view, obj)
 
@@ -95,11 +95,11 @@ class CanEditConceptDictionary(HasPrivateAccess):
 
 class CanViewConceptDictionaryVersion(HasAccessToVersionedObject):
     """
-    The user can view this source
+    The request is authenticated as a user, and the user can view this source
     """
 
     def has_object_permission(self, request, view, obj):
-        if ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access:
+        if request.user.is_authenticated() and (ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access):
             return True
         return super(CanViewConceptDictionaryVersion, self).has_object_permission(request, view, obj)
 
