@@ -22,7 +22,7 @@ class HasOwnership(BasePermission):
             return True
         if request.user.is_superuser:
             return True
-        if request.user.is_authenticated() and hasattr(request.user, 'get_profile'):
+        if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             userprofile = request.user.get_profile()
             if isinstance(obj, UserProfile):
                 return obj == userprofile
@@ -40,7 +40,7 @@ class HasPrivateAccess(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
-        if request.user.is_authenticated() and hasattr(request.user, 'get_profile'):
+        if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
             if hasattr(obj, 'owner') and profile == obj.owner:
                 return True
@@ -64,7 +64,7 @@ class HasAccessToVersionedObject(BasePermission):
 
         if type(versioned_object.owner) == UserProfile and request.user.id == versioned_object.owner.user_id:
             return True
-        if request.user.is_authenticated() and hasattr(request.user, 'get_profile'):
+        if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
             if versioned_object.parent_id in profile.organizations:
                 return True
@@ -77,7 +77,7 @@ class CanViewConceptDictionary(HasPrivateAccess):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated() and (ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access):
+        if ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access:
             return True
         return super(CanViewConceptDictionary, self).has_object_permission(request, view, obj)
 
@@ -88,7 +88,7 @@ class CanEditConceptDictionary(HasPrivateAccess):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated() and ACCESS_TYPE_EDIT == obj.public_access:
+        if ACCESS_TYPE_EDIT == obj.public_access:
             return True
         return super(CanEditConceptDictionary, self).has_object_permission(request, view, obj)
 
@@ -99,7 +99,7 @@ class CanViewConceptDictionaryVersion(HasAccessToVersionedObject):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated() and (ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access):
+        if ACCESS_TYPE_EDIT == obj.public_access or ACCESS_TYPE_VIEW == obj.public_access:
             return True
         return super(CanViewConceptDictionaryVersion, self).has_object_permission(request, view, obj)
 
@@ -110,7 +110,7 @@ class CanEditConceptDictionaryVersion(HasAccessToVersionedObject):
     """
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated() and ACCESS_TYPE_EDIT == obj.public_access:
+        if ACCESS_TYPE_EDIT == obj.public_access:
             return True
         return super(CanEditConceptDictionaryVersion, self).has_object_permission(request, view, obj)
 

@@ -10,7 +10,7 @@ from concepts.permissions import CanViewParentDictionary
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.models import ACCESS_TYPE_NONE
-from oclapi.permissions import HasOwnership, IsSuperuser, CanViewConceptDictionary, CanEditConceptDictionary
+from oclapi.permissions import HasOwnership, IsSuperuser, CanViewConceptDictionary
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
@@ -102,7 +102,7 @@ class OrganizationDetailView(mixins.UpdateModelMixin,
         if (request.method == 'DELETE'):
             self.permission_classes = (IsSuperuser, )
         if (request.method == 'POST'):
-            self.permission_classes = (CanEditConceptDictionary, )
+            self.permission_classes = (HasOwnership, )
         super(OrganizationDetailView, self).initial(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
