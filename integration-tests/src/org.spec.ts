@@ -142,7 +142,7 @@ describe('Org', () => {
         expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
     });
 
-    it.skip('should be deleted by authenticated member', async () => {
+    it('should not be deleted by authenticated member', async () => {
         const org = newOrgId()
         const orgUrl = orgIdToUrl(org);
         const res = await newOrg(org, regularUserToken, false);
@@ -151,11 +151,13 @@ describe('Org', () => {
         const json = await res.json();
         expect(json).toEqual(expect.objectContaining({ id: org, name: org, url: orgUrl }));
 
-        await del(orgUrl, regularUserToken);
-        const res2 = await get('orgs/', adminToken);
-        const json2 = await res2.json();
+        const res2 = await del(orgUrl, regularUserToken);
+        expect(res2.status).toBe(403);
 
-        expect(json2).toEqual(expect.not.arrayContaining([ { id: org, name: org, url: orgUrl } ]));
+        const res3 = await get('orgs/', adminToken);
+        const json3 = await res3.json();
+
+        expect(json3).toEqual(expect.arrayContaining([ { id: org, name: org, url: orgUrl } ]));
     });
 
     it('should not be deleted by authenticated nonmember', async () => {

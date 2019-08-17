@@ -49,7 +49,7 @@ export const del = async function(url, token=null) {
 };
 
 export const get = async function(url, token=null) {
-    return fetch(joinUrl(config.serverUrl, url), {
+    return fetch(joinUrl(config.serverUrl, url + '?limit=100'), {
         method: 'get',
         headers: initHeaders(await token)
     });;
