@@ -112,6 +112,7 @@ class ConceptVersionListAllView(BaseAPIView, ConceptVersionCSVFormatterMixin, Li
     filter_backends = [PublicConceptsSearchFilter]
     queryset = ConceptVersion.objects.filter(is_active=True)
     solr_fields = {
+        'id': {'sortable': True, 'filterable': False},
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
         'is_latest_version': {'sortable': False, 'filterable': True},
@@ -219,6 +220,7 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
     solr_fields = {
+        'id': {'sortable': True, 'filterable': False},
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
         'is_latest_version': {'sortable': False, 'filterable': True},

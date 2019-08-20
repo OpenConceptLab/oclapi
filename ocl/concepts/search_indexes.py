@@ -11,6 +11,8 @@ __author__ = 'misternando'
 class ConceptVersionIndex(OCLSearchIndex, indexes.Indexable):
     text = indexes.CharField(
         document=True, use_template=True)
+    id = SortOrFilterField(
+        model_attr='name', indexed=True, stored=True, default="")
     name = SortOrFilterField(
         model_attr='display_name', indexed=True, stored=True, default="")
     lastUpdate = indexes.DateTimeField(
