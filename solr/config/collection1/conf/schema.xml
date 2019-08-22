@@ -184,6 +184,10 @@
 
     <field name="owner" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="customValidationSchema" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <field name="customValidationSchema_exact" type="string" indexed="true" stored="true" multiValued="false" />
+
     <field name="conceptClass" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="num_stars" type="long" indexed="true" stored="true" multiValued="false" />

@@ -95,6 +95,7 @@ class SourceListView(SourceBaseView,
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'owner': {'sortable': False, 'filterable': True, 'facet': True},
         'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'customValidationSchema': {'sortable': False, 'filterable': True},
     }
 
     def get(self, request, *args, **kwargs):
