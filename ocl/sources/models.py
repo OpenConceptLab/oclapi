@@ -89,6 +89,12 @@ class Source(ConceptContainerModel):
         return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
 
     @property
+    def mappings_url(self):
+        owner = self.owner
+        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
+        return reverse('mapping-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+
+    @property
     def versions_url(self):
         owner = self.owner
         owner_kwarg = 'user' if isinstance(owner, User) else 'org'
