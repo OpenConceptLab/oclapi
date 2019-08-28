@@ -11,5 +11,4 @@ class CollectionSearchFilter(HaystackSearchFilter):
             filters.update({'ownerType': view.parent_resource.resource_type()})
         else:
             filters.update({'public_can_view': True})
-
         return filters
