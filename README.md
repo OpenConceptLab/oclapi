@@ -24,6 +24,11 @@ Go to:
 cd oclapi
 ````
 
+Build containers explicitly (only the first time to go around oclapi:dev not found):
+````sh
+docker-compose build
+````
+
 Fire up containers:
 ````sh
 docker-compose up
@@ -57,6 +62,8 @@ Docker `.env` file should be located under the root project folder. On developme
 
 `SENTRY_DSN=` Sentry unique URL for the given environment.
 
+`IMPORT_DEMO_DATA=` Set to 'true' to import ~2k concepts from the CIEL demo data.
+
 ### Running commands in a container
 
 You can run any command in a running container. Open up a new terminal and run for example:
@@ -75,8 +82,46 @@ docker-compose run --rm api python manage.py run_test --configuration=Dev
 
 #### Integration Tests
 
+See integration-tests/README.md
+
+To run locally:
+````sh
+docker-comopse up -d
+docker build integration-tests/. --network="host" --build-arg CACHEBUST=$(date +%s)
+````
+
+Deprecated integration tests can be run with:
 ````sh
 docker-compose run --rm api python manage.py test integration_tests --configuration=Dev
+````
+
+#### Rebuilding SOLR index
+
+If the SOLR index gets out of sync, you can run the following command:
+````sh
+docker-compose run --rm -d api python manage.py rebuild_index --batch-size 100 --workers 4 --verbosity 2 --noinput
+````
+It's asynchronous. To follow logs run:
+````sh
+docker logs -f oclapistg_api_run_1
+````
+, where oclapistg_api_run_1 is the container id returned by the `run` command.
+
+### Backups
+
+By default backups are taken every night at midnight. You can trigger a manual backup by running:
+````sh
+docker-compose run --rm backup bash backup.sh
+````
+Backups are saved in a backup directory configured via the BACKUP_DIR env property (./backups by default).
+You can restore a particular backup by running:
+````sh
+docker-compose run --rm backup bash restore.sh 2017-09-27_00-00-01
+````
+### Connecting to mongo in container
+
+````sh
+docker-compose exec mongo mongo
 ````
 
 ### Debugging in container
@@ -114,7 +159,7 @@ You can see 3 plans there:
 
 OCL API and OCL WEB are triggered by commits to respective repos. First docker images are built and pushed with a nightly tag to dockerhub at https://hub.docker.com/u/openconceptlab/dashboard/. Next unit and integration tests are being run. Finally a qa tag is being pushed to dockerhub and deployed to https://ocl-qa.openmrs.org/. On each deployment data is wiped out of the qa environment. You can login to the server using username 'admin' and password 'Admin123'.
 
-### Deplying to staging and production
+### Deploying to staging and production
 
 If you want to deploy to staging or production, you need to be logged in to Bamboo. Please request access via helpdesk@openmrs.org
 
@@ -124,6 +169,33 @@ If you want to deploy to staging or production, you need to be logged in to Bamb
 4. Choose whether to create a new release from build result or redeploy an existing release. You will choose the latter when promoting a release from staging to production, downgrading to a previous release or restarting services.
 5. When creating a new release, choose the build result, which you want to deploy (usually the latest successful build). Leave the release title unchanged and click the Start deployment button.
 6. Wait for the release to complete.
+
+### Importing CIEL to staging and production
+
+In order to import a newer version of the CIEL dictionary you need to have an SSH root access to staging.openconceptlab.org and openconceptlab.org.
+Download the zip file with concepts and mappings in the OCL format and run the following commands for staging:
+```sh
+sudo -s
+cd /root/docker/oclapi-stg 
+unzip /path/to/zip/ciel_20180223.zip
+docker-compose run -d --rm -v /root/docker/oclapi-stg:/ciel api python manage.py import_concepts_to_source --source 57cd60e2ba0d489c55039465 --token REPLACE_WITH_ROOT_API_TOKEN --retire-missing-records /ciel/ciel_20180223_concepts.json
+docker logs -f oclapistg_api_run_1
+docker-compose run -d --rm -v /root/docker/oclapi-stg:/ciel api python manage.py import_mappings_to_source --source 57cd60e2ba0d489c55039465 --token REPLACE_WITH_ROOT_API_TOKEN --retire-missing-records /ciel/ciel_20180223_mappings.json
+docker logs -f oclapistg_api_run_2
+```
+
+Or for production:
+```sh
+sudo -s
+cd /root/docker/oclapi-prd 
+unzip /path/to/zip/ciel_20180223.zip
+docker-compose run -d --rm -v /root/docker/oclapi-prd:/ciel api python manage.py import_concepts_to_source --source 5821b7a564d700001440f44a --token REPLACE_WITH_ROOT_API_TOKEN --retire-missing-records /ciel/ciel_20180223_concepts.json
+docker logs -f oclapiprd_api_run_1
+docker-compose run -d --rm -v /root/docker/oclapi-prd:/ciel api python manage.py import_mappings_to_source --source 5821b7a564d700001440f44a --token REPLACE_WITH_ROOT_API_TOKEN --retire-missing-records /ciel/ciel_20180223_mappings.json
+docker logs -f oclapiprd_api_run_2
+```
+
+Imports run in background so you can disconnect from the server any time, but note that you must wait for concepts to be imported before importing mappings. You can get back to logs at any point by running: `docker logs -f CONTAINER_NAME`.
 
 ## Manual Environment Setup (on a Mac)
 

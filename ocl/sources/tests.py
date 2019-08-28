@@ -671,6 +671,86 @@ class SourceVersionTest(SourceBaseTest):
         self.assertIsNone(version3.parent_version_mnemonic)
         self.assertEquals(3, self.source1.num_versions)
 
+    def test_source_version_delete(self):
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
+                             created_by=self.user1, updated_by=self.user1)
+        head.full_clean()
+        head.save()
+
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
+
+        version1 = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        SourceVersion.persist_new(version1)
+
+        source_versions = SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        )
+        self.assertTrue(source_versions.exists())
+        self.assertEquals(version1.get_concepts().count(), 1)
+
+        version1_id = version1.id
+
+        version1.delete()
+
+        self.assertFalse(SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        ).exists())
+
+        from concepts.models import ConceptVersion
+        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
+
+    def test_source_delete(self):
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
+                             created_by=self.user1, updated_by=self.user1)
+        head.full_clean()
+        head.save()
+
+        create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
+
+        version1 = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.source1,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
+        )
+        SourceVersion.persist_new(version1)
+
+        source_versions = SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        )
+        self.assertTrue(source_versions.exists())
+        self.assertEquals(version1.get_concepts().count(), 1)
+
+        version1_id = version1.id
+
+        version1.delete()
+
+        self.assertFalse(SourceVersion.objects.filter(
+            mnemonic='version1',
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=self.source1.id
+        ).exists())
+
+        from concepts.models import ConceptVersion
+        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
+
+
+
     def test_seed_concepts(self):
         head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
                              created_by=self.user1, updated_by=self.user1)
@@ -754,7 +834,8 @@ class SourceVersionTest(SourceBaseTest):
         )
         Source.persist_new(source, self.user1, parent_resource=self.org1)
         source_version = SourceVersion.get_latest_version_of(source)
-        self.assertEquals(source_version.last_child_update, source_version.updated_at)
+        #updated_at will always be a couple of microseconds away
+        self.assertEquals(source_version.last_child_update.replace(second=0,microsecond=0), source_version.updated_at.replace(second=0,microsecond=0))
 
 class SourceVersionClassMethodTest(SourceBaseTest):
 

@@ -29,7 +29,7 @@ class Common(Configuration):
 
     # Hosts/domain names that are valid for this site; required if DEBUG is False
     # See https://docs.djangoproject.com/en/1.3/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.openconceptlab.org', '.openmrs.org']
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.17.0.1', '[::1]', '.openconceptlab.org', '.openmrs.org']
 
     # Local time zone for this installation. Choices can be found here:
     # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -95,7 +95,7 @@ class Common(Configuration):
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
     )
-
+    
     # List of callables that know how to import templates from various sources.
     TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
@@ -103,11 +103,18 @@ class Common(Configuration):
     #     'django.template.loaders.eggs.Loader',
     )
 
+    # List the repository type responsible for creating a Collection
+    # The variable identifies the differences between normal collections and Openmrs Dictionaries
+    DEFAULT_REPOSITORY_TYPE = 'Collection'
+    OPENMRS_REPOSITORY_TYPE = 'OpenMRSDictionary'
+
+
     MIDDLEWARE_CLASSES = (
-        'django.middleware.common.CommonMiddleware',
         'corsheaders.middleware.CorsMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
+        'corsheaders.middleware.CorsPostCsrfMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'oclapi.middlewares.RequestLogMiddleware',
@@ -153,7 +160,7 @@ class Common(Configuration):
 
     # Django Rest Framework configuration
     REST_FRAMEWORK = {
-        # Default to token-based authentication; fall back on session-based
+        # Default to token-based authentication
         # A user gets a unique token upon account creation (residing in the authtoken_token data store).
         # To pass an authentication token along with your request, include the following header:
         # Authorization: Token [TOKEN_VALUE]
@@ -163,6 +170,12 @@ class Common(Configuration):
             'rest_framework.authentication.TokenAuthentication',
             'rest_framework.authentication.SessionAuthentication',
         ),
+        'DEFAULT_THROTTLE_CLASSES': (
+            'rest_framework.throttling.AnonRateThrottle',
+        ),
+        'DEFAULT_THROTTLE_RATES': {
+            'anon': '50/second' #can be lowered once web service passes individual client IPs together with a secret key
+        },
         'DEFAULT_RENDERER_CLASSES': (
             'rest_framework.renderers.JSONRenderer',
             # Disabling Browsable API due to performance issue, which can lead to taking the server down. It is caused
@@ -214,13 +227,28 @@ class Common(Configuration):
     CORS_ORIGIN_ALLOW_ALL = True
 
     CORS_ALLOW_METHODS = (
-        'GET',
+      'DELETE',
+      'GET',
+      'OPTIONS',
+      'PATCH',
+      'POST',
+      'PUT'
     )
 
-    # CORS_ORIGIN_WHITELIST = (
-    #     'google.com',
-    #     'hostname.example.com',
-    # )
+    CORS_ALLOW_HEADERS = (
+      'x-requested-with',
+      'content-type',
+      'accept',
+      'origin',
+      'authorization',
+      'x-csrftoken'
+    )
+
+    CORS_ALLOW_CREDENTIALS = True
+
+    # Needed to properly support https.
+    # See https://github.com/ottoyiu/django-cors-headers/#cors_replace_https_referer
+    CORS_REPLACE_HTTPS_REFERER = True
 
     # Haystack processor determines when/how updates to mongo are indexed by Solr
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
@@ -229,6 +257,8 @@ class Common(Configuration):
     HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
     HAYSTACK_ITERATOR_LOAD_PER_QUERY = 25
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
+    # Override to properly support Mongo identifiers with alphanumerics
+    HAYSTACK_IDENTIFIER_METHOD = 'oclapi.settings.get_identifier'
 
     # Celery settings
     CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'

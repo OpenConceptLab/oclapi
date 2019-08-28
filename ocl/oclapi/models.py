@@ -12,6 +12,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django_mongodb_engine.contrib import MongoDBManager
 from djangotoolbox.fields import DictField, ListField, SetField
 from rest_framework.authtoken.models import Token
@@ -260,32 +261,16 @@ class ResourceVersionModel(BaseModel):
     def parent_url(self):
         return self.versioned_object.parent_url
 
-    @property
-    def collections(self):
-        versions = self.collection_versions
-        return map(lambda v: v.versioned_object, versions)
+    def get_collections(self):
+        collection_ids = self.get_collection_versions().values_list('versioned_object_id', flat=True)
+        from collection.models import Collection
+        return Collection.objects.filter(id__in=list(collection_ids))
 
-    @property
-    def collection_ids(self):
-        if self.is_latest_version:
-            return list(set(self._collection_ids_for_versioned_object() + self._collection_ids_for_version()))
-        else:
-            return self._collection_ids_for_version()
+    def get_collection_ids(self):
+        return list(self.get_collections().values_list('id', flat=True))
 
-    def _collection_ids_for_versioned_object(self):
-        if self.versioned_object:
-            return map(lambda c: c.id, get_model('collection', 'Collection').objects.filter(
-                references={'expression': self.versioned_object.uri}))
-        else:
-            return []
-
-    def _collection_ids_for_version(self):
-        return map(lambda c: c.id,
-                   get_model('collection', 'Collection').objects.filter(references={'expression': self.uri}))
-
-    @property
-    def collection_version_ids(self):
-        return map(lambda v: v.id, self.collection_versions)
+    def get_collection_version_ids(self):
+        return list(self.get_collection_versions().values_list('id', flat=True))
 
     @classmethod
     def get_latest_version_of(cls, versioned_object):

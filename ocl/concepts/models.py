@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
-from django.db.models import get_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_mongodb_engine.contrib import MongoDBManager
@@ -16,6 +15,7 @@ from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (ConceptBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
+
 
 class LocalizedText(models.Model):
     uuid = UUIDField(auto=True)
@@ -234,8 +234,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
 
     class MongoMeta:
         indexes = [[ ('uri', 1) ],
-                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)],
-                   [('source_version_ids', 1)]]
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', -1)],
+                   [('source_version_ids', 1), ('updated_at', -1)]]
 
     objects = MongoDBManager()
 
@@ -299,9 +299,9 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     def parent_source(self):
         return self.source
 
-    @property
-    def collection_versions(self):
-        return get_model('collection', 'CollectionVersion').objects.filter(concepts=self.id)
+    def get_collection_versions(self):
+        from collection.models import CollectionVersion
+        return CollectionVersion.get_collection_versions_with_concept(self.id)
 
     @property
     def mappings_url(self):

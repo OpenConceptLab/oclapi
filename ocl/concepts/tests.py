@@ -636,10 +636,10 @@ class ConceptClassMethodsTest(ConceptBaseTest):
 
     def test_persist_new_positive__earlier_source_version(self):
         version1 = SourceVersion.get_latest_version_of(self.source1)
-        self.assertEquals(0, len(version1.concepts))
+        self.assertEquals(0, len(version1.get_concept_ids()))
         version2 = SourceVersion.for_base_object(self.source1, label='version2')
         version2.save()
-        self.assertEquals(0, len(version2.concepts))
+        self.assertEquals(0, len(version2.get_concept_ids()))
 
         (concept, errors) = create_concept(mnemonic='concept1', user=self.user1, source=self.source1, names=[self.name])
 
@@ -914,7 +914,7 @@ class ConceptVersionTest(ConceptBaseTest):
         concept_version = ConceptVersion.objects.get(
             versioned_object_id=Concept.objects.get(mnemonic=concept1.mnemonic).id)
 
-        self.assertEquals(concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
+        self.assertEquals(concept_version.get_collection_ids(), [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_ids_with_latest_concept_version(self):
         kwargs = {
@@ -960,8 +960,8 @@ class ConceptVersionTest(ConceptBaseTest):
         collection.full_clean()
         collection.save()
 
-        self.assertEquals(initial_concept_version.collection_ids, [])
-        self.assertEquals(new_concept_version.collection_ids, [Collection.objects.get(mnemonic=collection.mnemonic).id])
+        self.assertEquals(initial_concept_version.get_collection_ids(), [])
+        self.assertEquals(new_concept_version.get_collection_ids(), [Collection.objects.get(mnemonic=collection.mnemonic).id])
 
     def test_collections_version_ids(self):
         kwargs = {
@@ -1019,8 +1019,8 @@ class ConceptVersionTest(ConceptBaseTest):
         kwargs = {}
         CollectionVersion.persist_new(version, **kwargs)
 
-        self.assertEquals(len(concept_version.collection_version_ids), 2)
-        self.assertEquals(concept_version.collection_version_ids[1],
+        self.assertEquals(len(concept_version.get_collection_version_ids()), 2)
+        self.assertEquals(concept_version.get_collection_version_ids()[1],
                           CollectionVersion.objects.get(mnemonic='version1').id)
 
 
@@ -1149,6 +1149,82 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         self.assertEquals(csv_rows[0].get('External ID'), None)
         self.assertEquals(csv_rows[0].get('URI'), concept_version.uri)
         self.assertEquals(csv_rows[0].get('Synonyms'), 'concept1 [FULLY_SPECIFIED] [en]')
+        self.assertEquals(csv_rows[0].get('Attributes'), '')
+        self.assertEquals(csv_rows[0].get('Mappings'), '')
+
+    def test_get_csv_rows_with_attributes(self):
+        display_name = LocalizedText(name='concept1', locale='en', type='FULLY_SPECIFIED')
+
+        (concept, _) = create_concept(
+            mnemonic='concept1',
+            source=self.source1,
+            user=self.user1,
+            names=[display_name],
+            descriptions=[display_name],
+            extras={"attr1": "value1", "attr2": "value2"}
+        )
+
+        view = ConceptVersionListView()
+        view.kwargs = {}
+        view.parent_resource_version = self.source1.get_head()
+        csv_rows = view.get_csv_rows()
+        self.assertEquals(len(csv_rows), 1)
+        self.assertEquals(csv_rows[0].get('Attributes'), 'attr2: value2; attr1: value1')
+
+    def test_get_csv_rows_with_mappings(self):
+        display_name_1 = LocalizedText(name='concept1', locale='en', type='FULLY_SPECIFIED')
+        display_name_2 = LocalizedText(name='concept2', locale='en', type='FULLY_SPECIFIED')
+
+        (concept1, _) = create_concept(
+            mnemonic='concept1',
+            source=self.source1,
+            user=self.user1,
+            names=[display_name_1],
+            descriptions=[display_name_1]
+        )
+
+        (concept2, _) = create_concept(
+            mnemonic='concept2',
+            source=self.source2,
+            user=self.user1,
+            names=[display_name_2],
+            descriptions=[display_name_2]
+        )
+
+        mapping1 = Mapping(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            map_type='Same As',
+            from_concept=concept1,
+            to_concept=concept2,
+            external_id='versionmapping1',
+        )
+        mapping1.full_clean()
+        mapping1.save()
+
+        mapping2 = Mapping(
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            map_type='NARROWER-THAN',
+            from_concept=concept1,
+            to_source=self.source1,
+            to_concept_code='code',
+            to_concept_name='name',
+            external_id='versionmapping2',
+        )
+        mapping2.full_clean()
+        mapping2.save()
+
+        view = ConceptVersionListView()
+        view.kwargs = {}
+        view.parent_resource_version = self.source1.get_head()
+        csv_rows = view.get_csv_rows()
+        self.assertEquals(len(csv_rows), 1)
+        self.assertEquals(csv_rows[0].get('Mappings'), 'org1 / source1 / concept1 : concept1 <Same As> org2 / source2 / concept2 : concept2 [Internal]; '
+                                                       'org1 / source1 / concept1 : concept1 <NARROWER-THAN> org1 / source1 / code : name [External]')
+
 
 
 class OpenMRSConceptValidationTest(ConceptBaseTest):

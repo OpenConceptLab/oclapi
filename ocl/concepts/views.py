@@ -38,7 +38,7 @@ class ConceptBaseView(ChildResourceMixin):
     pk_field = 'mnemonic'
     model = Concept
     permission_classes = (CanViewParentDictionary,)
-    child_list_attribute = 'concepts'
+    child_list_attribute = 'get_concept_ids'
 
 
 class ConceptRetrieveUpdateDestroyView(ConceptBaseView, RetrieveAPIView,
@@ -112,11 +112,12 @@ class ConceptVersionListAllView(BaseAPIView, ConceptVersionCSVFormatterMixin, Li
     filter_backends = [PublicConceptsSearchFilter]
     queryset = ConceptVersion.objects.filter(is_active=True)
     solr_fields = {
+        'id': {'sortable': True, 'filterable': False},
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
         'is_latest_version': {'sortable': False, 'filterable': True},
-        'conceptClass': {'sortable': False, 'filterable': True, 'facet': True},
-        'datatype': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptClass': {'sortable': True, 'filterable': True, 'facet': True},
+        'datatype': {'sortable': True, 'filterable': True, 'facet': True},
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
@@ -211,7 +212,7 @@ class ConceptVersionMixin():
     model = ConceptVersion
     parent_resource_version_model = SourceVersion
     permission_classes = (CanViewParentDictionary,)
-    child_list_attribute = 'concepts'
+    child_list_attribute = 'get_concept_ids'
 
 
 class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
@@ -219,11 +220,12 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
     serializer_class = ConceptVersionListSerializer
     permission_classes = (CanViewParentDictionary,)
     solr_fields = {
+        'id': {'sortable': True, 'filterable': False},
         'name': {'sortable': True, 'filterable': False},
         'lastUpdate': {'sortable': True, 'filterable': False},
         'is_latest_version': {'sortable': False, 'filterable': True},
-        'conceptClass': {'sortable': False, 'filterable': True, 'facet': True},
-        'datatype': {'sortable': False, 'filterable': True, 'facet': True},
+        'conceptClass': {'sortable': True, 'filterable': True, 'facet': True},
+        'datatype': {'sortable': True, 'filterable': True, 'facet': True},
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'retired': {'sortable': False, 'filterable': True, 'facet': True},
         'source': {'sortable': False, 'filterable': True, 'facet': True},
@@ -239,9 +241,9 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         if self.request.GET.get('verbose'):
             context.update({'verbose': True})
         if 'version' not in self.kwargs and 'concept_version' not in self.kwargs:
-            if self.request.GET.get('include_indirect_mappings'):
+            if self.request.GET.get(INCLUDE_INVERSE_MAPPINGS_PARAM):
                 context.update({'include_indirect_mappings': True})
-            if self.request.GET.get('include_direct_mappings'):
+            if self.request.GET.get(INCLUDE_MAPPINGS_PARAM):
                 context.update({'include_direct_mappings': True})
         return context
 
@@ -254,13 +256,7 @@ class ConceptVersionListView(ConceptVersionMixin, VersionedResourceChildMixin,
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        if ('collection' in self.kwargs and 'version' not in self.kwargs) or ('collection' in self.kwargs and 'version' in self.kwargs and self.kwargs['version'] == 'HEAD'):
-            all_children = getattr(self.parent_resource_version, self.child_list_attribute) or []
-            queryset = super(ConceptDictionaryMixin, self).get_queryset()
-            queryset = queryset.filter(versioned_object_id__in=all_children, is_latest_version=True)
-        else:
-            queryset = super(ConceptVersionListView, self).get_queryset()
-
+        queryset = super(ConceptVersionListView, self).get_queryset()
         queryset = queryset.filter(is_active=True)
         if not self.include_retired:
             queryset = queryset.filter(~Q(retired=True))

@@ -21,6 +21,7 @@ from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDiction
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
 from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
+from oclapi.rawqueries import RawQueries
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
 from celery_once import AlreadyQueued
@@ -67,101 +68,17 @@ class SourceRetrieveUpdateDestroyView(SourceBaseView,
         self.object = self.get_object()
         serializer = self.get_serializer(self.object)
         data = serializer.data
-
-        source_version = None
-        offset = request.QUERY_PARAMS.get(OFFSET_PARAM, DEFAULT_OFFSET)
-        try:
-            offset = int(offset)
-        except ValueError:
-            offset = DEFAULT_OFFSET
-        limit = settings.REST_FRAMEWORK.get('MAX_PAGINATE_BY', self.paginate_by)
-        include_retired = False
-        include_concepts = request.QUERY_PARAMS.get(INCLUDE_CONCEPTS_PARAM, False)
-        include_mappings = request.QUERY_PARAMS.get(INCLUDE_MAPPINGS_PARAM, False)
-        updated_since = None
-        if include_concepts or include_mappings:
-            source_version = SourceVersion.get_latest_version_of(self.object)
-            paginate_by = self.get_paginate_by(EmptyQuerySet())
-            if paginate_by:
-                limit = min(limit, paginate_by)
-            include_retired = request.QUERY_PARAMS.get(INCLUDE_RETIRED_PARAM, False)
-            updated_since = parse_updated_since_param(request)
-
-        if include_concepts:
-            queryset = source_version.get_concepts()
-            queryset = queryset.filter(is_active=True)
-            if not include_retired:
-                queryset = queryset.filter(~Q(retired=True))
-            if updated_since:
-                queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset[offset:offset+limit]
-            serializer = ConceptVersionDetailSerializer(queryset, many=True)
-            data['concepts'] = serializer.data
-
-        if include_mappings:
-            queryset = source_version.get_mappings()
-            queryset = queryset.filter(is_active=True)
-            if not include_retired:
-                queryset = queryset.filter(~Q(retired=True))
-            if updated_since:
-                queryset = queryset.filter(updated_at__gte=updated_since)
-            queryset = queryset[offset:offset+limit]
-            serializer = MappingVersionDetailSerializer(queryset, many=True)
-            data['mappings'] = serializer.data
-
+        source_version = SourceVersion.get_latest_version_of(self.object)
+        self.includeConceptsAndMappings(request, data, source_version)
         return Response(data)
 
     def destroy(self, request, *args, **kwargs):
-        resource_used_message = '''This source cannot be deleted because others have created mapping or references that point to it.
-        To delete this source, you must first delete all linked mappings and references and try again.'''
-
         source = self.get_object()
-        source_versions = SourceVersion.objects.filter(
-            versioned_object_id=source.id
-        )
-        concepts = Concept.objects.filter(parent_id=source.id)
-        mappings = Mapping.objects.filter(parent_id=source.id)
+        try:
+            source.delete()
+        except Exception as ex:
+            return Response({'detail': ex.message}, status=status.HTTP_400_BAD_REQUEST)
 
-        concept_ids = [c.id for c in concepts]
-        mapping_ids = [m.id for m in mappings]
-
-        concept_versions = ConceptVersion.objects.filter(
-            versioned_object_id__in=concept_ids
-        )
-        mapping_versions = MappingVersion.objects.filter(
-            versioned_object_id__in=mapping_ids
-        )
-
-        concept_version_ids = [c.id for c in concept_versions]
-        mapping_version_ids = [m.id for m in mapping_versions]
-
-        # Check if concepts from this source are in any collection
-        collections = CollectionVersion.objects.filter(
-            Q(concepts__in=concept_version_ids) | Q(concepts__in=concept_ids)
-        )
-        if collections:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if mappings from this source are in any collection
-        collections = CollectionVersion.objects.filter(
-            Q(mappings__in=mapping_version_ids) | Q(mappings__in=mapping_ids)
-        )
-        if collections:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if mappings from this source are referred in any sources
-        mapping_versions = MappingVersion.objects.filter(
-            Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
-        ).exclude(parent_id=source.id)
-        if mapping_versions:
-            return Response({'detail': resource_used_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        concepts.delete()
-        concept_versions.delete()
-        mappings.delete()
-        mapping_versions.delete()
-        source_versions.delete()
-        source.delete()
         return Response({'detail': 'Successfully deleted source.'}, status=204)
 
 
@@ -178,6 +95,7 @@ class SourceListView(SourceBaseView,
         'locale': {'sortable': False, 'filterable': True, 'facet': True},
         'owner': {'sortable': False, 'filterable': True, 'facet': True},
         'ownerType': {'sortable': False, 'filterable': True, 'facet': True},
+        'customValidationSchema': {'sortable': False, 'filterable': True},
     }
 
     def get(self, request, *args, **kwargs):

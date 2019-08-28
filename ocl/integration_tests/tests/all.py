@@ -3,6 +3,7 @@ import logging
 from urlparse import urlparse
 
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.test import Client
 from django.test.client import MULTIPART_CONTENT, FakePayload
 from django.utils.encoding import force_str
@@ -11,7 +12,7 @@ from haystack.management.commands import update_index
 from moto import mock_s3
 from rest_framework import status
 
-from collection.models import Collection, CollectionVersion
+from collection.models import Collection, CollectionVersion, CollectionReference
 from collection.tests import CollectionBaseTest
 from concepts.models import Concept, LocalizedText, ConceptVersion
 from concepts.tests import ConceptBaseTest
@@ -22,14 +23,14 @@ from mappings.tests import MappingBaseTest
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_NONE, LOOKUP_CONCEPT_CLASSES
 from sources.models import Source, SourceVersion
 from sources.tests import SourceBaseTest
-from tasks import update_collection_in_solr
 from test_helper.base import create_user, create_source, create_organization, create_concept
 
 logger = logging.getLogger('oclapi')
 
 def update_haystack_index():
     update_index.Command().handle()
-
+    import time
+    time.sleep(1)
 
 class ConceptCreateViewTest(ConceptBaseTest):
     def setUp(self):
@@ -747,11 +748,13 @@ class ConceptVersionAllView(ConceptBaseTest):
         collection.full_clean()
         collection.save()
 
+        update_haystack_index()
+
         concept = Concept.objects.filter(mnemonic='concept1')[0]
         concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id)
 
         ConceptVersion.persist_clone(concept_version.clone(), self.user1)
-        update_collection_in_solr(collection.get_head().id, collection.references)
+
         self.assertEquals(concept.num_versions, 2)
 
         self.client.login(username='user1', password='user1')
@@ -1833,6 +1836,36 @@ class SourceViewTest(SourceBaseTest):
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
         self.assertEquals(head.full_name, 'test_updated_name')
 
+    def test_include_concepts_and_mappings(self):
+        source = Source(
+            name='source',
+            mnemonic='source12',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Source.persist_new(source, self.user1, **kwargs)
+
+        create_concept(mnemonic='concept1', user=self.user1, source=source)
+        create_concept(mnemonic='concept2', user=self.user1, source=source)
+
+        self.client.login(username='user1', password='user1')
+        response = self.client.get("/orgs/org1/sources/source12/?includeConcepts=true&includeMappings=true")
+        result = json.loads(response.content)
+        self.assertEquals(len(result['concepts']), 2)
+        self.assertEquals(len(result['mappings']), 0)
+
+
 
 class CollectionViewTest(CollectionBaseTest):
     def test_update_source_head(self):
@@ -1874,6 +1907,58 @@ class CollectionViewTest(CollectionBaseTest):
         self.assertEquals(head.description, 'test desc')
         self.assertEquals(head.external_id, '57ac81eab29215063d7b1624')
         self.assertEquals(head.full_name, 'test_updated_name')
+
+    def test_include_concepts_and_mappings(self):
+        source = Source(
+                name='source',
+                mnemonic='source12',
+                full_name='Source One',
+                source_type='Dictionary',
+                public_access=ACCESS_TYPE_EDIT,
+                default_locale='en',
+                supported_locales=['en'],
+                website='www.source1.com',
+                description='This is the first test source',
+                is_active=True
+            )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Source.persist_new(source, self.user1, **kwargs)
+
+        (concept1, errors) = create_concept(mnemonic='concept1', user=self.user1, source=source)
+        (concept2, errors) = create_concept(mnemonic='concept2', user=self.user1, source=source)
+
+        collection = Collection(
+            name='col1',
+            mnemonic='col1',
+            full_name='collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.col1.com',
+            description='This is the first test source',
+            is_active=True
+        )
+
+        kwargs = {
+            'parent_resource': self.org1
+        }
+
+        Collection.persist_new(collection, self.user1, **kwargs)
+
+        collection.expressions = [concept1.url, concept2.url]
+        collection.full_clean()
+        collection.save()
+
+        self.client.login(username='user1', password='user1')
+        response = self.client.get("/orgs/org1/collections/col1/?includeConcepts=true&includeMappings=true")
+        result = json.loads(response.content)
+        self.assertEquals(len(result['concepts']), 2)
+        self.assertEquals(len(result['mappings']), 0)
 
 
 class SourceVersionViewTest(SourceBaseTest):
@@ -2900,7 +2985,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 1)
         self.assertEquals(len(head.references), 1)
-        self.assertEquals(len(head.concepts), 1)
+        self.assertEquals(len(head.get_concepts()), 1)
 
         kwargs = {
             'user': 'user1',
@@ -2919,7 +3004,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
         head = CollectionVersion.get_head(collection.id)
         self.assertEquals(len(collection.references), 0)
         self.assertEquals(len(head.references), 0)
-        self.assertEquals(len(head.concepts), 0)
+        self.assertEquals(len(head.get_concepts()), 0)
 
     def test_reference_sorting(self):
         kwargs = {
@@ -2979,7 +3064,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
 
         self.assertEquals(len(collection.references), 2)
         self.assertEquals(len(head.references), 2)
-        self.assertEquals(len(head.concepts), 2)
+        self.assertEquals(len(head.get_concepts()), 2)
 
         kwargs = {
             'user': 'user1',
@@ -3326,7 +3411,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
     def test_delete_source_with_referenced_concept_in_collection(self):
         self.collection.expressions = [self.concept1.uri]
@@ -3339,7 +3424,7 @@ class SourceDeleteViewTest(SourceBaseTest):
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
         self.assertTrue(
-            'This source cannot be deleted because others have created mapping or references that point to it.' in message)
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
     def test_delete_source_with_concept_referenced_in_mapping_of_another_source(self):
         self.source2 = Source(
@@ -3377,6 +3462,111 @@ class SourceDeleteViewTest(SourceBaseTest):
         response = self.client.delete(path)
         self.assertEquals(response.status_code, 400)
         message = json.loads(response.content)['detail']
-        self.assertTrue('To delete this source, you must first delete all linked mappings and references and try again.' in message)
+        self.assertTrue('To delete this source, you must first delete all linked mappings and references' in message)
+
+class OrganizationDeleteViewTest(SourceBaseTest):
+    def setUp(self):
+        self.tearDown()
+        super(OrganizationDeleteViewTest, self).setUp()
+        self.source1 = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source',
+        )
+        kwargs = {
+            'parent_resource': self.org1,
+        }
+        Source.persist_new(self.source1, self.org1, **kwargs)
+
+        (self.concept1, _) = create_concept(mnemonic='1', user=self.org1, source=self.source1)
+        (self.concept2, _) = create_concept(mnemonic='2', user=self.org1, source=self.source1)
+
+        self.mapping = Mapping(
+            parent=self.source1,
+            map_type='SAME-AS',
+            from_concept=self.concept1,
+            to_concept=self.concept2,
+            external_id='junk'
+        )
+        kwargs = {
+            'parent_resource': self.source1,
+        }
+        Mapping.persist_new(self.mapping, self.org1, **kwargs)
+
+        self.collection1 = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(self.collection1, self.org1, parent_resource=self.org1)
+
+        self.collection_version1 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.collection1,
+            released=True,
+            created_by=self.org1,
+            updated_by=self.org1,
+        )
+        CollectionVersion.persist_new(self.collection_version1)
+
+        self.collection2 = Collection(
+            name='collection',
+            mnemonic='collection',
+            full_name='Collection One',
+            collection_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.collection1.com',
+            description='This is the first test collection'
+        )
+        Collection.persist_new(self.collection2, self.org2, parent_resource=self.org2)
+
+        self.collection_version2 = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=self.collection2,
+            released=True,
+            created_by=self.org2,
+            updated_by=self.org2,
+        )
+        CollectionVersion.persist_new(self.collection_version2)
+
+    def test_delete_org_with_source_and_collection(self):
+        self.client.login(username='superuser', password='superuser')
+        path = reverse('organization-detail', kwargs={'org': self.org1.name})
+        response = self.client.delete(path)
+
+        self.assertEquals(response.status_code, 200)
+
+        self.assertFalse(Collection.objects.filter(id = self.collection1.id).exists())
+        self.assertFalse(Source.objects.filter(id = self.source1.id).exists())
+
+    def test_delete_org_with_referenced_concept_in_collection_in_another_org(self):
+        self.collection2.expressions = [self.concept1.uri]
+        self.collection2.full_clean()
+        self.collection2.save()
+
+        self.client.login(username='superuser', password='superuser')
+        path = reverse('organization-detail', kwargs={'org': self.org1.name})
+        response = self.client.delete(path)
+
+        self.assertEquals(response.status_code, 400)
+        message = json.loads(response.content)['detail']
+        self.assertTrue(
+            'To delete this source, you must first delete all linked mappings and references' in message)
 
 

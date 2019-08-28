@@ -1,0 +1,9 @@
+# Ignore all files by default
+*
+
+# White list only the required files
+!src/**/*.ts
+!package.json
+!package-lock.json
+!jest.config.js
+!wait_for_url.sh

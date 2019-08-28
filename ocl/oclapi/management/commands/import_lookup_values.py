@@ -18,8 +18,6 @@ class Command(BaseCommand):
     help = 'import lookup values'
 
     def handle(self, *args, **options):
-        self.clear_all_processing()
-
         user = User.objects.filter(username='root').get()
 
         org = self.create_organization(user)
@@ -34,8 +32,6 @@ class Command(BaseCommand):
             {'source': sources['DescriptionTypes'], 'file': "./description_types.json"},
             {'source': sources['MapTypes'], 'file': "./maptypes_fixed.json"}
         ]
-
-        SourceVersion.migrate_concepts_and_mappings_field()
 
         for conf in importer_confs:
             file = open(conf['file'], 'rb')
@@ -75,7 +71,3 @@ class Command(BaseCommand):
 
 
         return sources
-
-    def clear_all_processing(self):
-        ConceptContainerVersionModel.clear_all_processing(SourceVersion)
-        ConceptContainerVersionModel.clear_all_processing(CollectionVersion)

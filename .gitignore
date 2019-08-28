@@ -30,3 +30,7 @@ env/
 
 .env
 backups/
+
+node_modules/
+
+*.pid

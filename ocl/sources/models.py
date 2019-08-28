@@ -1,18 +1,20 @@
+from datetime import datetime
+
 from bson import ObjectId
-from celery.result import AsyncResult
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
-from django.db.models import Max
+from django.db import models
+from django.db.models import Max, Q, F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from djangotoolbox.fields import ListField, DictField
+from django.utils import timezone
+from djangotoolbox.fields import DictField
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
-from oclapi.utils import S3ConnectionFactory, get_class, update_search_index
-from datetime import datetime
+from oclapi.rawqueries import RawQueries
+from oclapi.utils import S3ConnectionFactory, update_search_index
 
 SOURCE_TYPE = 'Source'
 
@@ -23,6 +25,62 @@ class Source(ConceptContainerModel):
 
     class MongoMeta:
         indexes = [[('uri', 1)]]
+
+    def delete(self, **kwargs):
+        resource_used_message = '''Source %s cannot be deleted because others have created mapping or references that point to it.
+                To delete this source, you must first delete all linked mappings and references.''' % self.uri
+
+        from concepts.models import Concept
+        concepts = Concept.objects.filter(parent_id=self.id)
+        from mappings.models import Mapping
+        mappings = Mapping.objects.filter(parent_id=self.id)
+
+        concept_ids = [c.id for c in concepts]
+        mapping_ids = [m.id for m in mappings]
+
+        from concepts.models import ConceptVersion
+        concept_versions = ConceptVersion.objects.filter(
+            versioned_object_id__in=concept_ids
+        )
+        from mappings.models import MappingVersion
+        mapping_versions = MappingVersion.objects.filter(
+            versioned_object_id__in=mapping_ids
+        )
+
+        concept_version_ids = [c.id for c in concept_versions]
+        mapping_version_ids = [m.id for m in mapping_versions]
+
+        # Check if concepts from this source are in any collection
+        from collection.models import CollectionVersion
+        collections = CollectionVersion.get_collection_versions_with_concepts(concept_version_ids)
+
+        usage_summary = ''
+        if collections:
+            usage_summary = ' Concepts in collections: ' + self.join_uris(collections) + ';'
+
+        # Check if mappings from this source are in any collection
+        collections = CollectionVersion.get_collection_versions_with_mappings(mapping_version_ids)
+        if collections:
+            usage_summary = usage_summary + ' Mappings in collections: ' + self.join_uris(collections) + ';'
+
+        # Check if mappings from this source are referred in any sources
+        mapping_versions = MappingVersion.objects.filter(
+            Q(to_concept_id__in=concept_ids) | Q(from_concept_id__in=concept_ids)
+        ).exclude(parent_id=self.id)
+        if mapping_versions:
+            usage_summary = usage_summary + ' Mappings: ' + self.join_uris(mapping_versions) + ';'
+
+        if usage_summary:
+            raise Exception(resource_used_message + usage_summary)
+
+        RawQueries().delete_source(self)
+
+    def join_uris(self, resources):
+        uris = []
+        for resource in resources:
+            uris.append(resource.uri)
+        joined_uris = ', '.join(uris)
+        return joined_uris
 
     @property
     def concepts_url(self):
@@ -63,13 +121,12 @@ class SourceVersion(ConceptContainerVersionModel):
     source_type = models.TextField(blank=True)
     custom_validation_schema = models.TextField(blank=True, null=True)
     retired = models.BooleanField(default=False)
-    #TODO: remove concept and mappings fields after migration on all envs
-    concepts = ListField()
-    mappings = ListField()
+    source_snapshot = DictField(null=True, blank=True)
     active_concepts = models.IntegerField(default=0)
     active_mappings = models.IntegerField(default=0)
-    _ocl_processing = models.BooleanField(default=False)
-    source_snapshot = DictField(null=True, blank=True)
+    last_concept_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_mapping_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    last_child_update = models.DateTimeField(default=timezone.now)
 
     class MongoMeta:
         indexes = [[('versioned_object_id', 1), ('is_active', 1), ('created_at', 1)],
@@ -77,33 +134,31 @@ class SourceVersion(ConceptContainerVersionModel):
                    [('versioned_object_id', 1), ('mnemonic', 1)],
                    [('uri', 1)]]
 
-    #TODO: remove once concept and mappings fields are migrated on all envs
-    @classmethod
-    def migrate_concepts_and_mappings_field(cls):
-        source_versions = SourceVersion.objects.all()
-        source_versions_count = SourceVersion.objects.count()
-        source_versions_pos = 0
-        for source_version in source_versions:
-            source_versions_pos = source_versions_pos + 1
-            if len(source_version.concepts) == 0 and len(source_version.mappings) == 0:
-                continue
+    def save(self, **kwargs):
+        #update only when editing
+        if self.id:
+            self.update_active_counts()
+            self.update_last_updates()
+        super(SourceVersion, self).save(**kwargs)
 
-            print 'Migrating source %s (%s of %s)' % (source_version.mnemonic, source_versions_pos, source_versions_count)
+    def delete(self, **kwargs):
+        RawQueries().delete_source_version(self)
 
-            concepts = map((lambda x: ObjectId(x)), source_version.concepts)
-            from concepts.models import ConceptVersion
-            ConceptVersion.objects.raw_update({'_id': {'$in': concepts}}, {'$push': { 'source_version_ids': source_version.id }})
-            ConceptVersion.objects.filter(id__in=source_version.concepts).update(updated_at=datetime.now())
+        super(SourceVersion, self).delete(**kwargs)
 
-            mappings = map((lambda x: ObjectId(x)), source_version.mappings)
-            from mappings.models import MappingVersion
-            MappingVersion.objects.raw_update({'_id': {'$in': mappings}},
-                                              {'$push': {'source_version_ids': source_version.id}})
-            MappingVersion.objects.filter(id__in=source_version.mappings).update(updated_at=datetime.now())
 
-            source_version.concepts = []
-            source_version.mappings = []
-            source_version.save()
+    def update_active_counts(self):
+        from concepts.models import ConceptVersion
+        self.active_concepts = ConceptVersion.objects.filter(source_version_ids__contains=self.id,
+                                                             retired=False).count()
+        from mappings.models import MappingVersion
+        self.active_mappings = MappingVersion.objects.filter(source_version_ids__contains=self.id,
+                                                             retired=False).count()
+    def update_last_updates(self):
+        self.last_concept_update = self.__get_last_concept_update()
+        self.last_mapping_update = self.__get_last_mapping_update()
+        self.last_child_update = self.__get_last_child_update()
+
 
     def update_concept_version(self, concept_version):
         concept_previous_version = concept_version.previous_version
@@ -123,7 +178,13 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         ConceptVersion.objects.raw_update({'_id': ObjectId(concept_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
-        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=datetime.now())
+
+        updated_at = datetime.now()
+        ConceptVersion.objects.filter(id=concept_version.id).update(updated_at=updated_at)
+
+        SourceVersion.objects.filter(id=self.id).update(active_concepts=F('active_concepts')+1, last_concept_update=updated_at,
+                                                        last_child_update=updated_at, updated_at=updated_at)
+
         update_search_index(concept_version)
 
     def has_concept_version(self, concept_version):
@@ -146,7 +207,11 @@ class SourceVersion(ConceptContainerVersionModel):
         # Using raw query to atomically add item to the list
         MappingVersion.objects.raw_update({'_id': ObjectId(mapping_version.id)},
                                           {'$push': {'source_version_ids': self.id}})
-        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=datetime.now())
+        updated_at = datetime.now()
+        MappingVersion.objects.filter(id=mapping_version.id).update(updated_at=updated_at)
+
+        SourceVersion.objects.filter(id=self.id).update(active_mappings=F('active_mappings')+1, last_mapping_update=updated_at, last_child_update=updated_at, updated_at=updated_at)
+
         update_search_index(mapping_version)
 
     def has_mapping_version(self, mapping_version):
@@ -173,6 +238,7 @@ class SourceVersion(ConceptContainerVersionModel):
         if seed_concepts_from:
             from concepts.models import ConceptVersion
             ConceptVersion.objects.raw_update({'source_version_ids': seed_concepts_from.id}, {'$push': { 'source_version_ids': self.id }})
+            self.save() #save to update counts
 
     def head_sibling(self):
         try:
@@ -186,6 +252,7 @@ class SourceVersion(ConceptContainerVersionModel):
             from mappings.models import MappingVersion
             MappingVersion.objects.raw_update({'source_version_ids': seed_mappings_from.id},
                                               {'$push': {'source_version_ids': self.id}})
+            self.save() #save to update counts
 
     def update_version_data(self, obj=None):
         if obj:
@@ -216,26 +283,24 @@ class SourceVersion(ConceptContainerVersionModel):
     def export_path(self):
         last_update = self.last_child_update.strftime('%Y%m%d%H%M%S')
         source = self.versioned_object
-        return "%s/%s_%s.%s.tgz" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
+        return "%s/%s_%s.%s.zip" % (source.owner_name, source.mnemonic, self.mnemonic, last_update)
 
-    @property
-    def last_child_update(self):
+    def __get_last_child_update(self):
         last_concept_update = self.last_concept_update
         last_mapping_update = self.last_mapping_update
         if last_concept_update and last_mapping_update:
             return max(last_concept_update, last_mapping_update)
-        return last_concept_update or last_mapping_update or self.updated_at
+        return last_concept_update or last_mapping_update or self.updated_at or timezone.now()
 
-    @property
-    def last_concept_update(self):
+
+    def __get_last_concept_update(self):
         concepts = self.get_concepts()
         if not concepts.exists():
             return None
         agg = concepts.aggregate(Max('updated_at'))
         return agg.get('updated_at__max')
 
-    @property
-    def last_mapping_update(self):
+    def __get_last_mapping_update(self):
         mappings = self.get_mappings()
         if not mappings.exists():
             return None

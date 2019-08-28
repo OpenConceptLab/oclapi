@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from oclapi.utils import compact, extract_values
 from users.models import UserProfile
 from oclapi.filters import SearchQuerySetWrapper
+from mappings.models import Mapping
 
 __author__ = 'misternando'
 
@@ -207,9 +208,37 @@ class ConceptVersionCSVFormatterMixin():
             value['Updated By'] = value.pop('created_by')
             value['URI'] = value.pop('uri')
 
+            #Include extras
+            value['Attributes'] = ''
+            if concept_ver.extras:
+                attributes = []
+                for key in concept_ver.extras:
+                    attributes.append(key + ': ' + concept_ver.extras[key])
+
+                value['Attributes'] = '; '.join(attributes)
+
+            #Include mappings
+            value['Mappings'] = ''
+            concept_mappings = Mapping.objects.filter(from_concept=concept_ver.versioned_object)
+            if concept_mappings:
+                mappings = []
+                for mapping in concept_mappings:
+                    row = mapping.owner + ' / ' + mapping.parent.name + ' / ' + mapping.from_concept_code + ' : ' \
+                          + mapping.from_concept_name + ' <' + mapping.map_type +'> ' \
+                          + mapping.to_source_owner_mnemonic + ' / ' + mapping.to_source_name
+                    if (mapping.to_concept):
+                        row = row + ' / ' + mapping.to_concept.mnemonic + ' : ' + mapping.to_concept.display_name + ' [Internal]'
+                    else:
+                        concept_code = mapping.to_concept_code if mapping.to_concept_code else ''
+                        concept_name = mapping.to_concept_name if mapping.to_concept_name else ''
+                        row = row + ' / ' + concept_code + ' : ' + concept_name + ' [External]'
+                    mappings.append(row)
+
+                value['Mappings'] = '; '.join(mappings)
+
 
         values.field_names.extend(['Owner','Source','Concept ID','Preferred Name','Preferred Name Locale','Concept Class','Datatype','Retired','Synonyms','Description'
-                                      ,'External ID','Last Updated','Updated By','URI'])
+                                      ,'External ID','Mappings','Attributes','Last Updated','Updated By','URI'])
         del values.field_names[0:10]
         return values
 
@@ -223,8 +252,9 @@ class ConceptVersionCSVFormatterMixin():
 
     def get_formatted_values(self, items):
         formated_synonym=[]
-        for item in items:
-            formated_synonym.append((item[1].get('name') if 'name' in item[1] else '') + (' [' + item[1].get('type') + ']' if 'type' in item[1] and item[1].get('type') else '')
-                                    + (' [' + item[1].get('locale') + ']' if 'locale' in item[1] and item[1].get('locale') else ''))
+        if items:
+            for item in items:
+                formated_synonym.append((item[1].get('name') if 'name' in item[1] else '') + (' [' + item[1].get('type') + ']' if 'type' in item[1] and item[1].get('type') else '')
+                                        + (' [' + item[1].get('locale') + ']' if 'locale' in item[1] and item[1].get('locale') else ''))
         return ';'.join(formated_synonym)
 

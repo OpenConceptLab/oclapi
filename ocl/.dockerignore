@@ -39,3 +39,5 @@ env
 
 # Git
 .git
+
+node_modules/

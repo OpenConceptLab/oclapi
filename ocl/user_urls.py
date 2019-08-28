@@ -46,16 +46,5 @@ urlpatterns = patterns('',
     url(r'^sources/(?P<source>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/concepts/(?P<concept>' + CONCEPT_ID_PATTERN + ')/$', ConceptRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
     url(r'^sources/(?P<source>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/mappings/$', MappingListView.as_view(), name='mapping-list'),
     url(r'^sources/(?P<source>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/mappings/(?P<mapping>' + NAMESPACE_PATTERN + ')/$', MappingListView.as_view(), name='mapping-detail'),
-
-    url(r'^collections/', include('collection.urls')),
-    # url(r'^collections/$', CollectionListView.as_view(), extra_kwargs, name='user-collection-list'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/$', CollectionRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-collection-detail'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/concepts/$', ConceptReferenceListCreateView.as_view(), name='user-collection-concepts'),
-    # # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/concepts/(?P<concept>' + CONCEPT_ID_PATTERN + ')/$', ConceptReferenceRetrieveUpdateDestroyView.as_view(), name='user-collection-concept'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/versions/$', CollectionVersionListView.as_view(), extra_kwargs, name='user-sourceversion-list'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/latest/$', CollectionVersionRetrieveUpdateDestroyView.as_view(), {'user_is_self': True, 'is_latest': True}, name='user-sourceversion-latest'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/$', CollectionVersionRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-sourceversion-detail'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/children/$', CollectionVersionChildListView.as_view(), extra_kwargs, name='user-sourceversion-child-list'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/concepts/$', ConceptReferenceListCreateView.as_view(), name='concept-list'),
-    # url(r'^collections/(?P<collection>' + NAMESPACE_PATTERN + ')/(?P<version>' + NAMESPACE_PATTERN + ')/concepts/(?P<concept>' + CONCEPT_ID_PATTERN + ')/$', ConceptReferenceRetrieveUpdateDestroyView.as_view(), name='concept-detail'),
-)
+    url(r'^collections/', include('collection.urls'))
+    )

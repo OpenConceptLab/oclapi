@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 from rest_framework import mixins, status, views
+from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
@@ -9,6 +11,7 @@ from oclapi.views import BaseAPIView
 from orgs.models import Organization
 from users.models import UserProfile
 from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer
+from django.contrib.auth.hashers import check_password
 
 
 class UserListView(BaseAPIView,
@@ -74,6 +77,21 @@ class UserDetailView(UserBaseView,
         return super(UserDetailView, self).get_object(queryset)
 
     def post(self, request, *args, **kwargs):
+        password = request.DATA.get('password')
+        hashed_password = request.DATA.get('hashed_password')
+        if password:
+            obj = self.get_object()
+            obj.user.set_password(password)
+            obj.save()
+            Token.objects.filter(user=obj.user).delete()
+            Token.objects.create(user=obj.user)
+        elif hashed_password:
+            obj = self.get_object()
+            obj.hashed_password = hashed_password
+            obj.save()
+            Token.objects.filter(user=obj.user).delete()
+            Token.objects.create(user=obj.user)
+
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -85,6 +103,7 @@ class UserDetailView(UserBaseView,
 
 
 class UserLoginView(views.APIView):
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         errors = {}
@@ -92,17 +111,20 @@ class UserLoginView(views.APIView):
         if not username:
             errors['username'] = ['This field is required.']
         password = request.DATA.get('password')
-        if not password:
+        hashed_password = request.DATA.get('hashed_password')
+        if not password and not hashed_password:
             errors['password'] = ['This field is required.']
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             profile = UserProfile.objects.get(mnemonic=username)
-            if password != profile.hashed_password:
-                return Response({'detail': 'Passwords did not match.'}, status=status.HTTP_401_UNAUTHORIZED)
-            return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+            if check_password(password, profile.hashed_password) or hashed_password == profile.hashed_password:
+                return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'No such user or wrong password.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         except UserProfile.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'No such user or wrong password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserReactivateView(UserBaseView, UpdateAPIView):

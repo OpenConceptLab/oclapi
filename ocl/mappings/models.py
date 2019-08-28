@@ -339,11 +339,11 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     objects = MongoDBManager()
 
     class MongoMeta:
-        indexes = [[('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_concept', 1), ('to_source', 1), ('to_concept_code', 1)],
-                   [('parent', 1), ('map_type', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('to_concept_name', 1)],
-                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('is_active', 1), ('retired', 1)],
-                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', 1)],
-                   [('source_version_ids', 1)]]
+        indexes = [[('parent', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_code', 1), ('retired', 1)],
+                   [('parent', 1), ('from_concept', 1), ('to_source', 1), ('to_concept_name', 1), ('retired', 1)],
+                   [('parent', 1), ('from_concept', 1), ('to_concept', 1), ('retired', 1)],
+                   [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', -1)],
+                   [('source_version_ids', 1), ('updated_at', -1)]]
 
     def clone(self):
         return MappingVersion(
@@ -482,9 +482,9 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
     def resource_type():
         return MAPPING_VERSION_RESOURCE_TYPE
 
-    @property
-    def collection_versions(self):
-        return get_model('collection', 'CollectionVersion').objects.filter(mappings=self.id)
+    def get_collection_versions(self):
+        from collection.models import CollectionVersion
+        return CollectionVersion.get_collection_versions_with_mapping(self.id)
 
     @staticmethod
     def get_url_kwarg():

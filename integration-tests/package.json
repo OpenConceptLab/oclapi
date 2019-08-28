@@ -1,0 +1,25 @@
+{
+  "name": "ocl-api-integration-tests",
+  "version": "1.0.0",
+  "description": "OpenConceptLab API Integration Tests",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
+    "jest": "^24.8.0",
+    "node-fetch": "^2.6.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.5.3"
+  },
+  "config": {
+    "url": "http://localhost:8000/",
+    "adminUser": "root",
+    "adminPassword": "Root123"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "openconceptlab.org",
+  "license": "MPL-2.0"
+}

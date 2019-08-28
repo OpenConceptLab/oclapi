@@ -1,22 +1,19 @@
 import json
 import os
-import tarfile
+import zipfile
 import tempfile
-import gzip
 
-import datetime
 import haystack
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
-from haystack.management.commands import update_index
 from haystack.utils import loading
 from rest_framework.reverse import reverse
 from rest_framework.utils import encoders
-from django.conf import settings
 from django.core.urlresolvers import NoReverseMatch
 from operator import is_not, itemgetter
 from djqscsv import csv_file_for
 
+from django.conf import settings
 
 
 __author__ = 'misternando'
@@ -129,26 +126,28 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
         out.write('%s, "concepts": [' % resource_string[:-1])
 
     batch_size = 1000
-    active_concepts = resource_serializer.object.active_concepts
-    if active_concepts:
-        logger.info('%s has %d concepts.  Getting them in batches of %d...' % (resource_type.title(), active_concepts, batch_size))
-        concept_version_class = get_class('concepts.models.ConceptVersion')
+    if resource_type == 'collection':
+        total_concepts = version.get_concepts_count()
+    else:
+        total_concepts = version.get_concepts().filter(is_active=True).count()
+
+    if total_concepts:
+        logger.info('%s has %d concepts. Getting them in batches of %d...' % (resource_type.title(), total_concepts, batch_size))
         concept_serializer_class = get_class('concepts.serializers.ConceptVersionDetailSerializer')
-        for start in range(0, active_concepts, batch_size):
-            end = min(start + batch_size, active_concepts)
+        for start in range(0, total_concepts, batch_size):
+            end = min(start + batch_size, total_concepts)
             logger.info('Serializing concepts %d - %d...' % (start+1, end))
             if resource_type == 'collection':
-                concept_versions = concept_version_class.objects.filter(id__in=version.concepts[start:end], is_active=True)
+                concept_versions = version.get_concepts(start, end)
             else:
                 concept_versions = version.get_concepts().filter(is_active=True)[start:end]
-            logger.info('Fetching %s concepts...' % concept_versions.count())
             concept_serializer = concept_serializer_class(concept_versions, many=True)
             concept_data = concept_serializer.data
             concept_string = json.dumps(concept_data, cls=encoders.JSONEncoder)
             concept_string = concept_string[1:-1]
             with open('export.json', 'ab') as out:
                 out.write(concept_string)
-                if end != active_concepts:
+                if end != total_concepts:
                     out.write(', ')
         logger.info('Done serializing concepts.')
     else:
@@ -157,26 +156,28 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     with open('export.json', 'ab') as out:
         out.write('], "mappings": [')
 
-    active_mappings = resource_serializer.object.active_mappings
-    if active_mappings:
-        logger.info('%s has %d mappings.  Getting them in batches of %d...' % (resource_type.title(), active_mappings, batch_size))
-        mapping_class = get_class('mappings.models.MappingVersion')
+    if resource_type == 'collection':
+        total_mappings = version.get_mappings_count()
+    else:
+        total_mappings = version.get_mappings().filter(is_active=True).count()
+
+    if total_mappings:
+        logger.info('%s has %d mappings. Getting them in batches of %d...' % (resource_type.title(), total_mappings, batch_size))
         mapping_serializer_class = get_class('mappings.serializers.MappingVersionDetailSerializer')
-        for start in range(0, active_mappings, batch_size):
-            end = min(start + batch_size, active_mappings)
+        for start in range(0, total_mappings, batch_size):
+            end = min(start + batch_size, total_mappings)
             logger.info('Serializing mappings %d - %d...' % (start+1, end))
             if resource_type == 'collection':
-                mappings = mapping_class.objects.filter(id__in=version.mappings[start:end], is_active=True)
+                mappings = version.get_mappings(start, end)
             else:
                 mappings = version.get_mappings().filter(is_active=True)[start:end]
-            logger.info('Fetching %s mappings...' % mappings.count())
             mapping_serializer = mapping_serializer_class(mappings, many=True)
             mapping_data = mapping_serializer.data
             mapping_string = json.dumps(mapping_data, cls=encoders.JSONEncoder)
             mapping_string = mapping_string[1:-1]
             with open('export.json', 'ab') as out:
                 out.write(mapping_string)
-                if end != active_mappings:
+                if end != total_mappings:
                     out.write(', ')
         logger.info('Done serializing mappings.')
     else:
@@ -185,13 +186,15 @@ def write_export_file(version, resource_type, resource_serializer_type, logger):
     with open('export.json', 'ab') as out:
         out.write(']}')
 
-    with tarfile.open('export.tgz', 'w:gz') as tar:
-        tar.add('export.json')
+    with zipfile.ZipFile('export.zip', 'w', zipfile.ZIP_DEFLATED) as zip:
+        zip.write('export.json')
+
+    logger.info(os.path.abspath('export.zip'))
 
     logger.info('Done compressing.  Uploading...')
     k = Key(S3ConnectionFactory.get_export_bucket())
     k.key = version.export_path
-    k.set_contents_from_filename('export.tgz')
+    k.set_contents_from_filename('export.zip')
     logger.info('Uploaded to %s.' % k.key)
     os.chdir(cwd)
 
@@ -200,20 +203,15 @@ def write_csv_to_s3(data, is_owner, **kwargs):
     cwd = cd_temp()
     csv_file = csv_file_for(data, **kwargs)
     csv_file.close()
-    reader = open(os.path.abspath(csv_file.name), 'r')
-    gz = gzip.open(csv_file.name + '.gz', 'wb')
-    lines = reader.readlines()
-    gz.writelines(lines)
-    gz.close()
-    reader.close()
+    zip_file_name = csv_file.name + '.zip'
+    with zipfile.ZipFile(zip_file_name, 'w', zipfile.ZIP_DEFLATED) as zip:
+        zip.write(csv_file.name)
 
     bucket = S3ConnectionFactory.get_export_bucket()
     k = Key(bucket)
     _dir = 'downloads/creator/' if is_owner else 'downloads/reader/'
-    k.key = _dir + gz.name
-    k.set_metadata('Content-Encoding', 'gzip')
-    k.set_metadata('Content-Type', 'text/csv')
-    k.set_contents_from_filename(gz.name)
+    k.key = _dir + zip_file_name
+    k.set_contents_from_filename(zip_file_name)
 
     os.chdir(cwd)
     return bucket.get_key(k.key).generate_url(expires_in=60)
@@ -221,7 +219,7 @@ def write_csv_to_s3(data, is_owner, **kwargs):
 
 def get_csv_from_s3(filename, is_owner):
     _dir = 'downloads/creator' if is_owner else 'downloads/reader'
-    filename = _dir + filename + '.csv.gz'
+    filename = _dir + filename + '.csv.zip'
     bucket = S3ConnectionFactory.get_export_bucket()
     key = bucket.get_key(filename)
     return key.generate_url(expires_in=600) if key else None
@@ -245,6 +243,19 @@ def update_search_index(object):
         #fetch the most recent data from db
         object = object_type.objects.filter(id = object.id)
         backend.update(index, object)
+
+def remove_from_search_index(type, id):
+    if isinstance(haystack.signal_processor, haystack.signals.RealtimeSignalProcessor):
+        default_connection = haystack_connections['default']
+        backend = default_connection.get_backend()
+
+        objectid = '%s.%s.%s' % (type._meta.app_label,
+            type._meta.module_name,
+            id
+        )
+
+        backend.remove(objectid)
+
 
 def update_all_in_index(model, qs):
     if not qs.exists():

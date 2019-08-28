@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.conf.urls import url, patterns, include
 from rest_framework import routers
+
 from concepts.views import ConceptVersionListAllView
 from mappings.views import MappingListAllView
 from sources.views import SourceListView
@@ -21,8 +22,8 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/$', 'rest_framework.authtoken.views.obtain_auth_token'),
+
+    url(r'^manage/', include('manage.urls')),
 
     # Top-level resource endpoints
     url(r'^collections/', include('collection.urls')),
@@ -34,9 +35,5 @@ urlpatterns = patterns('',
 
     # Shortcuts to endpoints corresponding to the currently logged in user
     url(r'^user/', include('user_urls')),
+
 )
-
-
-
-
-

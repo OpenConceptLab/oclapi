@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import os
 
+from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'Local')
 
@@ -14,27 +16,46 @@ importer.install()
 from celery import Celery
 from celery.utils.log import get_task_logger
 from celery_once import QueueOnce
-from concepts.models import ConceptVersion, Concept
-from mappings.models import Mapping, MappingVersion
 from oclapi.utils import update_all_in_index, write_export_file
-from sources.models import SourceVersion
-from collection.models import CollectionVersion, CollectionReference, CollectionReferenceUtils
-from concepts.views import ConceptVersionListView
-from mappings.views import MappingListView
 
 import json
 from rest_framework.test import APIRequestFactory
 
+logger = get_task_logger(__name__)
+
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
-
-logger = get_task_logger('celery.worker')
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
+celery.conf.task_routes = {'tasks.bulk_import': {'queue': 'bulk_import'},
+                           'tasks.bulk_priority_import': {'queue': 'bulk_priority_import'}}
+celery.conf.result_expires = 259200 #72 hours
+celery.conf.task_track_started = True
 
+@celery.task(base=QueueOnce, bind=True)
+def data_integrity_checks(self):
+    update_concepts_and_mappings_count(logger)
+
+@celery.task(base=QueueOnce, bind=True)
+def find_broken_references(self):
+    from manage.models import Reference
+    broken_references = Reference.find_broken_references()
+    return broken_references
+
+@celery.task(base=QueueOnce, bind=True)
+def bulk_import(self, to_import, username, update_if_exists):
+    from manage.imports.bulk_import import BulkImport
+    return BulkImport().run_import(to_import, username, update_if_exists)
+
+@celery.task(base=QueueOnce, bind=True)
+def bulk_priority_import(self, to_import, username, update_if_exists):
+    bulk_import(self, to_import, username, update_if_exists)
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
+    from sources.models import SourceVersion
+
     logger.info('Finding source version...')
+
     version = SourceVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -47,6 +68,7 @@ def export_source(self, version_id):
 
 @celery.task(base=QueueOnce, bind=True)
 def export_collection(self, version_id):
+    from collection.models import CollectionVersion
     logger.info('Finding collection version...')
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
@@ -59,26 +81,33 @@ def export_collection(self, version_id):
 
 @celery.task(bind = True)
 def update_children_for_resource_version(self, version_id, _type):
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+
     _resource = resource(version_id, _type)
     _resource.add_processing(self.request.id)
     try:
-        if _type == 'source':
-            concept_versions = _resource.get_concepts()
-            mapping_versions = _resource.get_mappings()
-        else:
-            concept_versions = ConceptVersion.objects.filter(id__in=_resource.concepts)
-            mapping_versions = MappingVersion.objects.filter(id__in=_resource.mappings)
+        concept_versions = _resource.get_concepts()
+        mapping_versions = _resource.get_mappings()
 
         logger.info('Indexing %s concepts...' % concept_versions.count())
+
         update_all_in_index(ConceptVersion, concept_versions)
         logger.info('Indexing %s mappings...' % mapping_versions.count())
+
         update_all_in_index(MappingVersion, mapping_versions)
 
     finally:
         _resource.remove_processing(self.request.id)
 
+@celery.task(bind = True)
+def update_search_index_task(self, model, query):
+    logger.info('Updating search index for %s...' % model.__name__)
+    update_all_in_index(model, query)
 
 def resource(version_id, type):
+    from sources.models import SourceVersion
+    from collection.models import CollectionVersion
     if type == 'source':
         return SourceVersion.objects.get(id=version_id)
     elif type == 'collection':
@@ -87,6 +116,10 @@ def resource(version_id, type):
 
 @celery.task(bind = True)
 def update_collection_in_solr(self, version_id, references):
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+    from collection.models import CollectionVersion
+
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -116,6 +149,12 @@ def _get_version_ids(resources, klass):
 
 @celery.task(bind = True)
 def delete_resources_from_collection_in_solr(self, version_id, concepts, mappings):
+    from concepts.models import Concept
+    from mappings.models import Mapping
+    from concepts.models import ConceptVersion
+    from mappings.models import MappingVersion
+    from collection.models import CollectionVersion
+
     version = CollectionVersion.objects.get(id=version_id)
     version.add_processing(self.request.id)
     try:
@@ -130,6 +169,15 @@ def delete_resources_from_collection_in_solr(self, version_id, concepts, mapping
 
 @celery.task
 def add_references(SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
+    from concepts.models import Concept
+    from mappings.models import Mapping
+    from collection.models import CollectionVersion
+    from sources.models import SourceVersion
+    from concepts.views import ConceptVersionListView
+    from mappings.views import MappingListView
+    from collection.models import CollectionReferenceUtils
+    from collection.models import CollectionReference
+
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])

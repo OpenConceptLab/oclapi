@@ -17,6 +17,17 @@ class Organization(BaseResourceModel):
     location = models.TextField(null=True, blank=True)
     members = ListField()
 
+    def delete(self, **kwargs):
+        collections = Collection.objects.filter(parent_id=self.id)
+        for collection in collections:
+            collection.delete()
+
+        sources = Source.objects.filter(parent_id=self.id)
+        for source in sources:
+            source.delete()
+
+        super(Organization, self).delete()
+
     def __unicode__(self):
         return self.mnemonic
 

@@ -92,6 +92,15 @@ class CollectionRetrieveUpdateDestroyView(CollectionBaseView,
             self.permission_classes = (CanEditConceptDictionary,)
         super(CollectionRetrieveUpdateDestroyView, self).initialize(request, path_info_segment, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        super(CollectionRetrieveUpdateDestroyView, self).retrieve(request, *args, **kwargs)
+        self.object = self.get_object()
+        serializer = self.get_serializer(self.object)
+        data = serializer.data
+        collection_version = CollectionVersion.get_latest_version_of(self.object)
+        self.includeConceptsAndMappings(request, data, collection_version)
+        return Response(data)
+
 
 class CollectionReferencesView(CollectionBaseView,
                                RetrieveAPIView,
@@ -129,7 +138,7 @@ class CollectionReferencesView(CollectionBaseView,
         adding_all = mapping_expressions == '*' or concept_expressions == '*'
 
         if adding_all:
-            add_references.delay(
+            add_references(
                 self.serializer_class, self.request.user, data, self.parent_resource, host_url, cascade_mappings
             )
 
@@ -268,24 +277,27 @@ class CollectionListView(CollectionBaseView,
     serializer_class = CollectionCreateSerializer
     filter_backends = [CollectionSearchFilter]
     contains_uri = None
-    owner_specified = False
+    user = None
     solr_fields = {
         'collection_type': {'sortable': False, 'filterable': True},
         'name': {'sortable': True, 'filterable': False},
-        'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},
+        'lastUpdate': {'sortable': True, 'default': 'desc', 'filterable': False},
         'num_stars': {'sortable': True, 'filterable': False},
-        'language': {'sortable': False, 'filterable': True}
+        'language': {'sortable': False, 'filterable': True},
+        'customValidationSchema': {'sortable': False, 'filterable': True},
     }
 
     def get(self, request, *args, **kwargs):
-        self.owner_specified = (kwargs.__len__() > 0)
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
+        self.user = request.QUERY_PARAMS.get('user', None)
         # Running the filter_backends seems to reset changes made to the queryset.
         # Therefore, remove the filter_backends when the 'contains' parameter is passed, and
         # apply the appropriate public_access filter in get_queryset
         # TODO correct the behavior of filter_backends, and remove this hack to get around it
         if self.contains_uri != None:
+            self.filter_backends=[]
+        if self.user != None:
             self.filter_backends=[]
         collection_list = self.list(request, *args, **kwargs)
         return collection_list
@@ -297,10 +309,13 @@ class CollectionListView(CollectionBaseView,
         # TODO correct the behavior of filter_backends, and remove this hack to get around it
         if self.contains_uri != None:
             from django_mongodb_engine.query import A
-            if self.owner_specified:
-                queryset = queryset.filter(references=A('expression', self.contains_uri))
-            else:
-                queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+            queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+        if self.user:
+            if self.user != 'root':
+                from users.models import UserProfile
+                user_profile = UserProfile.objects.filter(mnemonic=self.user)
+                if user_profile:
+                    queryset = queryset.filter(parent_id__in=[user_profile[0].id] + user_profile[0].organizations, public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
         return queryset
 
     def get_csv_rows(self, queryset=None):

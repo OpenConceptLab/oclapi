@@ -17,7 +17,7 @@ class CollectionListSerializer(serializers.Serializer):
     # TODO id and short code are same .. remove one of them
     id = serializers.CharField(required=True, source='mnemonic')
     short_code = serializers.CharField(required=True, source='mnemonic')
-    name = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)  
     url = serializers.CharField()
     owner = serializers.CharField(source='parent_resource')
     owner_type = serializers.CharField(source='parent_resource_type')
@@ -37,6 +37,9 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         collection.mnemonic = attrs.get(self.Meta.lookup_field, collection.mnemonic)
         collection.name = attrs.get('name', collection.name)
         collection.full_name = attrs.get('full_name', collection.full_name)
+        collection.preferred_source =attrs.get('preferred_source', collection.preferred_source)
+        collection.repository_type =attrs.get('repository_type', collection.repository_type)
+        collection.custom_resources_linked_source =attrs.get('custom_resources_linked_source', collection.custom_resources_linked_source)
         collection.description = attrs.get('description', collection.description)
         collection.custom_validation_schema = attrs.get('custom_validation_schema', collection.custom_validation_schema)
         collection.collection_type = attrs.get('collection_type', collection.collection_type)
@@ -49,11 +52,10 @@ class CollectionCreateOrUpdateSerializer(serializers.Serializer):
         return collection
 
     def get_active_concepts(self, obj):
-        return ConceptVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD',
-                                                                                                                 versioned_object_id=obj.id).concepts).count()
+        return CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).active_concepts
 
     def get_active_mappings(self, obj):
-        return MappingVersion.objects.filter(is_active=True, retired=False, id__in=CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).mappings).count()
+        return CollectionVersion.objects.get(mnemonic='HEAD', versioned_object_id=obj.id).active_mappings
 
 
 class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
@@ -63,6 +65,9 @@ class CollectionCreateSerializer(CollectionCreateOrUpdateSerializer):
     short_code = serializers.CharField(source='mnemonic', read_only=True)
     name = serializers.CharField(required=True)
     full_name = serializers.CharField(required=False)
+    preferred_source = serializers.CharField(required=False)
+    repository_type = serializers.CharField(required=False)
+    custom_resources_linked_source = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     custom_validation_schema = serializers.CharField(required=False)
     collection_type = serializers.CharField(required=False)
@@ -108,6 +113,9 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     short_code = serializers.CharField(source='mnemonic', read_only=True)
     name = serializers.CharField(required=False)
     full_name = serializers.CharField(required=False)
+    preferred_source = serializers.CharField(required=False)
+    repository_type = serializers.CharField(required=False)
+    custom_resources_linked_source = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     external_id = serializers.CharField(required=False)
     collection_type = serializers.CharField(required=False)
@@ -288,8 +296,6 @@ class CollectionVersionCreateSerializer(CollectionVersionCreateOrUpdateSerialize
         snapshot_data = snap_serializer.data
         snapshot_data.pop('references')
         obj.collection_snapshot = snapshot_data
-        obj.active_concepts = snapshot_data.get('active_concepts')
-        obj.active_mappings = snapshot_data.get('active_mappings')
         errors = CollectionVersion.persist_new(obj, user=request_user, **kwargs)
         if errors:
             self._errors.update(errors)

@@ -4,6 +4,14 @@ from orgs.models import Organization
 from users.models import UserProfile
 from django.contrib.auth.models import User
 
+class IsSuperuser(BasePermission):
+    """
+    The request is authenticated, and the user is a superuser
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        return False
 
 class HasOwnership(BasePermission):
     """
@@ -34,9 +42,11 @@ class HasPrivateAccess(BasePermission):
             return True
         if request.user.is_authenticated and hasattr(request.user, 'get_profile'):
             profile = request.user.get_profile()
-            if profile == obj.owner:
+            if hasattr(obj, 'owner') and profile == obj.owner:
                 return True
-            if obj.parent_id in profile.organizations:
+            if obj.id in profile.organizations:
+                return True
+            if hasattr(obj, 'parent_id') and obj.parent_id in profile.organizations:
                 return True
         return False
 
