@@ -22,11 +22,11 @@ class Command(BaseCommand):
 
         source = self.create_source(user, org, 'CIEL')
 
-        demo_file = open('./demo-data/ciel_20180601_concepts_2k.json', 'rb')
+        demo_file = open('./demo-data/ciel_20190701_c2k.json', 'rb')
         importer = ConceptsImporter(source, demo_file, user, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), save_validation_errors=False)
         importer.import_concepts(**options)
 
-        demo_file = open('./demo-data/ciel_20180601_mappings_2k.json', 'rb')
+        demo_file = open('./demo-data/ciel_20190701_m2k.json', 'rb')
         importer = MappingsImporter(source, demo_file, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), user)
         importer.import_mappings(**options)
 
