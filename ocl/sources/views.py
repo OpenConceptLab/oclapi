@@ -1,33 +1,26 @@
 import logging
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 from django.db.models import Q
-from django.db.models.query import EmptyQuerySet
 from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView
 from django.shortcuts import get_list_or_404
 from rest_framework.response import Response
-from concepts.models import ConceptVersion, Concept
-from mappings.models import Mapping
-from collection.models import CollectionVersion
-from concepts.serializers import ConceptVersionDetailSerializer
-from mappings.models import MappingVersion
-from mappings.serializers import MappingVersionDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
+from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.permissions import HasAccessToVersionedObject, CanEditConceptDictionaryVersion, CanViewConceptDictionary, \
     CanViewConceptDictionaryVersion, CanEditConceptDictionary, HasOwnership
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, parse_updated_since_param, parse_boolean_query_param
 from sources.filters import SourceSearchFilter
 from sources.models import Source, SourceVersion
-from oclapi.rawqueries import RawQueries
 from sources.serializers import SourceCreateSerializer, SourceListSerializer, SourceDetailSerializer, SourceVersionDetailSerializer, SourceVersionListSerializer, SourceVersionCreateSerializer, SourceVersionUpdateSerializer
 from tasks import export_source
 from celery_once import AlreadyQueued
 from users.models import UserProfile
 from orgs.models import Organization
-from django.db.models import Q
 
 INCLUDE_CONCEPTS_PARAM = 'includeConcepts'
 INCLUDE_MAPPINGS_PARAM = 'includeMappings'
@@ -48,6 +41,22 @@ class SourceBaseView():
 
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
         return SourceDetailSerializer(obj, data, files, partial)
+
+    def get_queryset(self):
+        owner = self.get_owner()
+        if not owner:
+            return self.queryset.exclude(public_access=ACCESS_TYPE_NONE)
+        elif 'source' in self.kwargs:
+            return self.model.objects.filter(
+                parent_id=owner.id,
+                mnemonic=self.kwargs['source'],
+                parent_type=ContentType.objects.get_for_model(owner),
+            )
+        else:
+            return self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
+
+    def get_owner(self):
+        return self.parent_resource
 
 
 class SourceRetrieveUpdateDestroyView(SourceBaseView,

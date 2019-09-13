@@ -1,6 +1,8 @@
 import logging
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
+from django.db.models import Q
 
 from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
     HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT
@@ -9,23 +11,17 @@ from collection.serializers import CollectionDetailSerializer, CollectionListSer
     CollectionVersionListSerializer, CollectionVersionCreateSerializer, CollectionVersionDetailSerializer, \
     CollectionVersionUpdateSerializer, \
     CollectionReferenceSerializer
-from concepts.models import Concept, ConceptVersion
-from mappings.models import MappingVersion
-from sources.models import SourceVersion
-from concepts.serializers import ConceptListSerializer
+from concepts.models import Concept
 from django.http import HttpResponse, HttpResponseForbidden
-from mappings.models import Mapping
-from mappings.serializers import MappingDetailSerializer
 from oclapi.mixins import ListWithHeadersMixin
 from oclapi.permissions import CanViewConceptDictionary, CanEditConceptDictionary, CanViewConceptDictionaryVersion, \
     CanEditConceptDictionaryVersion, HasOwnership
 from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, \
-    ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, \
-    BaseAPIView
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+    ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView
+from oclapi.models import ACCESS_TYPE_NONE
 from rest_framework import mixins, status
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from users.models import UserProfile
 from orgs.models import Organization
@@ -33,8 +29,7 @@ from tasks import export_collection, add_references
 from celery_once import AlreadyQueued
 from django.shortcuts import get_list_or_404
 from collection.filters import CollectionSearchFilter
-from tasks import update_collection_in_solr, delete_resources_from_collection_in_solr
-from django.core.exceptions import ValidationError
+from tasks import delete_resources_from_collection_in_solr
 
 logger = logging.getLogger('oclapi')
 
@@ -53,22 +48,19 @@ class CollectionBaseView():
 
     def get_queryset(self):
         owner = self.get_owner()
-        if not self.kwargs:
-            return self.queryset
+        if not owner:
+            return self.queryset.exclude(public_access=ACCESS_TYPE_NONE)
         elif 'collection' in self.kwargs:
-            return Collection.objects.filter(parent_id=owner.id, mnemonic=self.kwargs['collection'])
+            return self.model.objects.filter(
+                parent_id=owner.id,
+                mnemonic=self.kwargs['collection'],
+                parent_type=ContentType.objects.get_for_model(owner),
+            )
         else:
-            return self.queryset.filter(parent_id=owner.id)
+            return self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
 
     def get_owner(self):
-        owner = None
-        if 'user' in self.kwargs:
-            owner_id = self.kwargs['user']
-            owner = UserProfile.objects.get(mnemonic=owner_id)
-        elif 'org' in self.kwargs:
-            owner_id = self.kwargs['org']
-            owner = Organization.objects.get(mnemonic=owner_id)
-        return owner
+        return self.parent_resource
 
 
 class CollectionVersionBaseView(ResourceVersionMixin):
@@ -291,31 +283,14 @@ class CollectionListView(CollectionBaseView,
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
         self.user = request.QUERY_PARAMS.get('user', None)
-        # Running the filter_backends seems to reset changes made to the queryset.
-        # Therefore, remove the filter_backends when the 'contains' parameter is passed, and
-        # apply the appropriate public_access filter in get_queryset
-        # TODO correct the behavior of filter_backends, and remove this hack to get around it
-        if self.contains_uri != None:
-            self.filter_backends=[]
-        if self.user != None:
-            self.filter_backends=[]
         collection_list = self.list(request, *args, **kwargs)
         return collection_list
 
     def get_queryset(self):
         queryset = super(CollectionListView, self).get_queryset()
-        # If the 'contains' parameter is used, the filter_backends have been cleared to prevent
-        # reset of the queryset.  Therefore, add a public_access filter to the queryset.
-        # TODO correct the behavior of filter_backends, and remove this hack to get around it
-        if self.contains_uri != None:
+        if self.contains_uri is not None:
             from django_mongodb_engine.query import A
-            queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
-        if self.user:
-            if self.user != 'root':
-                from users.models import UserProfile
-                user_profile = UserProfile.objects.filter(mnemonic=self.user)
-                if user_profile:
-                    queryset = queryset.filter(parent_id__in=[user_profile[0].id] + user_profile[0].organizations, public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+            queryset = queryset.filter(references=A('expression', self.contains_uri))
         return queryset
 
     def get_csv_rows(self, queryset=None):

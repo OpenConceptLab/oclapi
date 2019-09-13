@@ -21,8 +21,9 @@ export const joinUrl = function (url, part) {
 };
 
 export const newUser = async function(username, password, adminToken) {
-    await post('users/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, adminToken);
+    const user = await post('users/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, adminToken);
     await put('users/' + username + '/reactivate/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, adminToken);
+    return await user.json();
 };
 
 export const post = async function(url, body, token=null) {

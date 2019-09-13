@@ -1,7 +1,13 @@
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from haystack.inputs import Raw
-from haystack.query import RelatedSearchQuerySet, SearchQuerySet
+from haystack.query import RelatedSearchQuerySet
 from rest_framework.filters import BaseFilterBackend
+
+from oclapi.models import ACCESS_TYPE_NONE
+from orgs.models import Organization
+from users.models import UserProfile
 
 
 class SearchQuerySetWrapper(object):
@@ -128,7 +134,7 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                     sqs = sqs.order_by(default_sort)
             sqs = sqs.models(view.model)
             if hasattr(sqs, 'load_all_queryset'):
-                sqs = sqs.load_all_queryset(view.model, queryset)
+                sqs = sqs.load_all().load_all_queryset(view.model, queryset)
             return SearchQuerySetWrapper(sqs)
 
         if hasattr(view, 'default_order_by'):
@@ -138,4 +144,24 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
 
 class HaystackSearchFilter(BaseHaystackSearchFilter):
     def filter_queryset(self, request, queryset, view):
-        return self._filter_queryset(request, queryset, view, SearchQuerySet())
+        return self._filter_queryset(request, queryset, view, RelatedSearchQuerySet())
+
+
+class ConceptContainerPermissionedSearchFilter(HaystackSearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        current_user = request.user
+        permissioned_qs = None
+
+        public_access_not_none = ~Q(public_access=ACCESS_TYPE_NONE)
+
+        if not current_user.is_anonymous():
+            user_profile = UserProfile.objects.get(user=current_user)
+            permissioned_qs = queryset.filter(
+                Q(parent_id=user_profile.id, parent_type=ContentType.objects.get_for_model(UserProfile)) |
+                Q(parent_id__in=user_profile.organizations, parent_type=ContentType.objects.get_for_model(Organization)) |
+                public_access_not_none
+            )
+        else:
+            permissioned_qs = queryset.filter(public_access_not_none)
+
+        return super(ConceptContainerPermissionedSearchFilter, self).filter_queryset(request, permissioned_qs, view)

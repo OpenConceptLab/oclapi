@@ -1,4 +1,5 @@
 import {get, post, del, newUser, authenticateAdmin, authenticate} from './utils';
+import api from "./api";
 
 describe('Org', () => {
     const uniqueId = '6a5bb179';
@@ -20,13 +21,7 @@ describe('Org', () => {
         return 'Test' + uniqueId + new Date().getTime() + 'Org';
     };
 
-    const newOrg = async (orgId: string, token: string, publicAccess: boolean= true): Promise<Response> => {
-        if (publicAccess) {
-            return post('orgs/', {id: orgId, name: orgId}, token);
-        } else {
-            return post('orgs/', {id: orgId, name: orgId, public_access: 'None'}, token);
-        }
-    };
+    const newOrg = api.organizations.new;
 
     const newCleanup = (url: string): (() => Promise<void>) => {
         return async () => {

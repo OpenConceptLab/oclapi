@@ -1,11 +1,10 @@
-from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import mixins, status
 from rest_framework.generics import (RetrieveAPIView, get_object_or_404, UpdateAPIView,
-                                     DestroyAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView,
+                                     DestroyAPIView, RetrieveUpdateDestroyAPIView,
                                      ListCreateAPIView, ListAPIView)
 from rest_framework.response import Response
 from concepts.filters import LimitSourceVersionFilter, PublicConceptsSearchFilter, LimitCollectionVersionFilter
