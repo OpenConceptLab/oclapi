@@ -63,3 +63,19 @@ class RequestLogMiddleware(object):
             return "{0}\n...\n".format(msg[0:MAX_BODY_LENGTH])
         else:
             return msg
+
+
+class DiscardTrailingLimitParamMiddleware(object):
+    """
+    Remove trailing '?limit=100' appended on some GET requests
+    Why this was necessary: https://github.com/OpenConceptLab/ocl_issues/issues/151
+    """
+    @staticmethod
+    def process_request(request):
+        to_remove = '?limit=100'
+        if request.get_full_path()[-10:] == to_remove and request.method == 'GET':
+            query_dict_copy = request.GET.copy()
+            for key, value in query_dict_copy.iteritems():
+                if to_remove in value:
+                    query_dict_copy[key] = value.replace(to_remove, '')
+            request.GET = query_dict_copy

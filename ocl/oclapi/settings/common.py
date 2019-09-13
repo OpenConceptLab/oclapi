@@ -110,6 +110,7 @@ class Common(Configuration):
 
 
     MIDDLEWARE_CLASSES = (
+        'oclapi.middlewares.DiscardTrailingLimitParamMiddleware',
         'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
