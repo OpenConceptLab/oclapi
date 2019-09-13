@@ -57,8 +57,8 @@ class SourceBaseTest(OclApiBaseTestCase):
         self.userprofile2 = UserProfile.objects.create(user=self.user2, mnemonic='user2')
         self.superuserprofile = UserProfile.objects.create(user=self.superuser, mnemonic='superuser')
 
-        self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
-        self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
+        self.org1 = Organization.objects.create(name='org1', mnemonic='org1', members=[self.user1.id])
+        self.org2 = Organization.objects.create(name='org2', mnemonic='org2', members=[self.user2.id])
         self.name = LocalizedText.objects.create(name='Fred', locale='es', type='FULLY_SPECIFIED')
 
 

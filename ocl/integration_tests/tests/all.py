@@ -2137,8 +2137,6 @@ class SourceVersionProcessingViewTest(SourceBaseTest):
 class SourceVersionExportViewTest(SourceBaseTest):
     @mock_s3
     def test_source_version_concept_seeding(self):
-        c = Client()
-
         source = Source(
             name='source',
             mnemonic='source',
@@ -2173,12 +2171,14 @@ class SourceVersionExportViewTest(SourceBaseTest):
         }
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
-        response = c.post('/orgs/' + self.org1.name + '/sources/' + source.mnemonic + '/versions/',
+        self.client.login(username=self.user1.username, password=self.user1.password)
+        response = self.client.post('/orgs/' + self.org1.name + '/sources/' + source.mnemonic + '/versions/',
                           {'id': 'v1', 'description': 'v1'}
                           )
-        source_version = SourceVersion.objects.get(mnemonic='v1')
 
         self.assertEquals(response.status_code, 201)
+
+        source_version = SourceVersion.objects.get(mnemonic='v1')
         self.assertEquals(source_version.active_concepts, 2)
 
     @mock_s3
@@ -2992,7 +2992,7 @@ class CollectionReferenceViewTest(CollectionBaseTest):
             'collection': collection.mnemonic,
         }
 
-        c = Client()
+        self.client.login(username=self.user1.username, password=self.user1.password)
         data = json.dumps({'references': [concept1.get_latest_version.url],
                            'cascade': 'none'
                            })

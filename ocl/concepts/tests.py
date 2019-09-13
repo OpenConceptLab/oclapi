@@ -42,8 +42,8 @@ class ConceptBaseTest(OclApiBaseTestCase):
         self.userprofile1 = UserProfile.objects.create(user=self.user1, mnemonic='user1')
         self.userprofile2 = UserProfile.objects.create(user=self.user2, mnemonic='user2')
 
-        self.org1 = Organization.objects.create(name='org1', mnemonic='org1')
-        self.org2 = Organization.objects.create(name='org2', mnemonic='org2')
+        self.org1 = Organization.objects.create(name='org1', mnemonic='org1', members=[self.user1.id])
+        self.org2 = Organization.objects.create(name='org2', mnemonic='org2', members=[self.user2.id])
 
         self.source1 = Source(
             name='source1',
@@ -57,7 +57,6 @@ class ConceptBaseTest(OclApiBaseTestCase):
             description='This is the first test source',
             custom_validation_schema=None
         )
-
         kwargs = {
             'parent_resource': self.org1
         }
@@ -76,16 +75,14 @@ class ConceptBaseTest(OclApiBaseTestCase):
             description='This is the second test source',
             custom_validation_schema=None
         )
-
-        self.source_for_openmrs = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
-                                                organization=self.org1)
-
         kwargs = {
             'parent_resource': self.org2,
         }
-
         Source.persist_new(self.source2, self.user2, **kwargs)
         self.source2 = Source.objects.get(id=self.source2.id)
+
+        self.source_for_openmrs = create_source(self.user1, validation_schema=CUSTOM_VALIDATION_SCHEMA_OPENMRS,
+                                                organization=self.org1)
 
         self.name = create_localized_text(name='Fred', locale='es', type='FULLY_SPECIFIED')
         self.description = create_localized_text(name='guapo', locale='es')
