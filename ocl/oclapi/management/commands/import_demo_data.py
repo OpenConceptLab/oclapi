@@ -8,8 +8,10 @@ from concepts.importer import ConceptsImporter
 from mappings.importer import MappingsImporter
 
 from orgs.models import Organization
-from sources.models import Source
+from sources.models import Source, SourceVersion
 from users.models import UserProfile
+
+from tasks import export_source
 
 
 class Command(BaseCommand):
@@ -18,17 +20,32 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         user = self.create_admin_user()
 
+        version = '20190701'
+
+        source_version = SourceVersion.objects.filter(mnemonic=version)
+        if source_version.exists():
+            return
+
         org = self.create_organization(user, 'CIEL')
 
         source = self.create_source(user, org, 'CIEL')
 
-        demo_file = open('./demo-data/ciel_20190701_c2k.json', 'rb')
+        demo_file = open('./demo-data/ciel_' + version + '_c2k.json', 'rb')
         importer = ConceptsImporter(source, demo_file, user, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), save_validation_errors=False)
         importer.import_concepts(**options)
 
-        demo_file = open('./demo-data/ciel_20190701_m2k.json', 'rb')
+        demo_file = open('./demo-data/ciel_' + version + '_m2k.json', 'rb')
         importer = MappingsImporter(source, demo_file, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), user)
         importer.import_mappings(**options)
+
+        new_version = SourceVersion.for_base_object(source, version)
+        new_version.full_clean()
+        new_version.save()
+        new_version.seed_concepts()
+        new_version.seed_mappings()
+
+        export_source.delay(new_version.id)
+
 
     def create_admin_user(self):
         admin_user = User.objects.filter(username='admin')
