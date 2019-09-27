@@ -18,7 +18,7 @@ class Command(BaseCommand):
     help = 'import demo data'
 
     def handle(self, *args, **options):
-        user = self.create_admin    _user()
+        user = self.create_admin_user()
 
         version = 'v2019-07-01'
 

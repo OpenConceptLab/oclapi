@@ -34,6 +34,15 @@ export class TestHelper {
     readonly editSource: string;
     readonly editSourceUrl: string;
 
+    readonly privateCollection: string;
+    readonly privateCollectionUrl: string;
+
+    readonly viewCollection: string;
+    readonly viewCollectionUrl: string;
+
+    readonly editCollection: string;
+    readonly editCollectionUrl: string;
+
     urlsToDelete: string[];
     static readonly config = {
         serverUrl: process.env.npm_config_url ? process.env.npm_config_url :
@@ -74,6 +83,15 @@ export class TestHelper {
         this.editSource = this.newId('Edit-Source');
         this.editSourceUrl = this.joinUrl(this.viewOrgUrl, 'sources', this.editSource);
 
+        this.privateCollection = this.newId('Private-Collection');
+        this.privateCollectionUrl = this.joinUrl('orgs', this.viewOrg, 'collections', this.privateCollection);
+
+        this.viewCollection = this.newId('View-Collection');
+        this.viewCollectionUrl = this.joinUrl(this.viewOrgUrl, 'collections', this.viewCollection);
+
+        this.editCollection = this.newId('Edit-Collection');
+        this.editCollectionUrl = this.joinUrl(this.viewOrgUrl, 'collections', this.editCollection);
+
         this.urlsToDelete = [];
     }
 
@@ -94,12 +112,20 @@ export class TestHelper {
         await this.postSource(this.viewOrg, this.viewSource, this.regularMemberUserToken, 'View');
         await this.postSource(this.viewOrg, this.editSource, this.regularMemberUserToken, 'Edit');
 
+        await this.postCollection(this.viewOrg, this.privateCollection, this.regularMemberUserToken, 'None');
+        await this.postCollection(this.viewOrg, this.viewCollection, this.regularMemberUserToken, 'View');
+        await this.postCollection(this.viewOrg, this.editCollection, this.regularMemberUserToken, 'Edit');
+
         await this.newUser(this.regularNonMemberUser, this.regularNonMemberUser);
         this.regularNonMemberUserToken = await this.authenticate(this.regularNonMemberUser, this.regularNonMemberUser);
     }
 
     async afterAll() {
-        await this.del(this.privateSource, this.adminToken);
+        await this.del(this.privateCollectionUrl, this.adminToken);
+        await this.del(this.editCollectionUrl, this.adminToken);
+        await this.del(this.viewCollectionUrl, this.adminToken);
+
+        await this.del(this.privateSourceUrl, this.adminToken);
         await this.del(this.editSourceUrl, this.adminToken);
         await this.del(this.viewSourceUrl, this.adminToken);
 
@@ -220,6 +246,19 @@ export class TestHelper {
         return response;
     }
 
+    async postCollection(orgId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
+        let response;
+        if (publicAccess == null) {
+            response = await this.post(this.joinUrl('orgs', orgId, 'collections'), {id: collectionId, name: collectionId}, token);
+        } else {
+            response = await this.post(this.joinUrl('orgs', orgId, 'collections'), {id: collectionId, name: collectionId, public_access: publicAccess}, token);
+        }
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
     toOrg(orgId: string, orgName: string=orgId) {
         return {id: orgId, name: orgName, url: this.joinUrl('orgs', orgId)};
     }
@@ -232,5 +271,10 @@ export class TestHelper {
     toSource(orgId: string, sourceId: string, sourceName: string=sourceId) {
         return {name: sourceName, owner: orgId, owner_type: 'Organization', owner_url: this.joinUrl('orgs', orgId),
             short_code: sourceId, url: this.joinUrl('orgs', orgId, 'sources', sourceId)};
+    }
+
+    toCollection(orgId: string, collectionId: string, collectionName: string=collectionId) {
+        return {id: collectionId, name: collectionName, owner: orgId, owner_type: 'Organization', owner_url: this.joinUrl('orgs', orgId),
+            short_code: collectionId, url: this.joinUrl('orgs', orgId, 'collections', collectionId)};
     }
 };
