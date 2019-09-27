@@ -27,17 +27,20 @@ class ConceptBaseTest(OclApiBaseTestCase):
         super(ConceptBaseTest, self).setUp()
         self.user1 = User.objects.create(
             username='user1',
-            password='user1',
             email='user1@test.com',
             last_name='One',
             first_name='User'
         )
+        self.user1.set_password('user1')
+        self.user1.save()
         self.user2 = User.objects.create(
             username='user2',
             email='user2@test.com',
             last_name='Two',
             first_name='User'
         )
+        self.user2.set_password('user2')
+        self.user2.save()
 
         self.userprofile1 = UserProfile.objects.create(user=self.user1, mnemonic='user1')
         self.userprofile2 = UserProfile.objects.create(user=self.user2, mnemonic='user2')

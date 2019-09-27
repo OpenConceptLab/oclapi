@@ -95,6 +95,7 @@ class ConceptCreateViewTest(ConceptBaseTest):
     def test_concept_class_is_valid_attribute_negative(self):
         self.client.login(username='user1', password='user1')
 
+
         kwargs = {
             'org': self.org1.mnemonic,
             'source': self.source_for_openmrs.mnemonic,

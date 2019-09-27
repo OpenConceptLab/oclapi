@@ -121,6 +121,42 @@ describe('Concept', () => {
     it('should not list concepts from private collection for staff', async () => {
         await shouldListConcepts(helper.privateCollectionUrl, helper.adminToken);
     });
+
+    it('should not be created in public source by anonymous', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.viewSourceUrl, conceptId);
+        expect(response.status).toBe(401);
+    });
+
+    it('should not be created in private source by anonymous', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.privateSourceUrl, conceptId);
+        expect(response.status).toBe(401);
+    });
+
+    it('should not be created in editable source by anonymous', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.editSourceUrl, conceptId);
+        expect(response.status).toBe(401);
+    });
+
+    it('should not be created in public source by nonmember', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.viewSourceUrl, conceptId, helper.regularNonMemberUserToken);
+        expect(response.status).toBe(403);
+    });
+
+    it('should not be created in private source by nonmember', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.privateSourceUrl, conceptId, helper.regularNonMemberUserToken);
+        expect(response.status).toBe(403);
+    });
+
+    it('should be created in editable source by nonmember', async () => {
+        let conceptId = helper.newId('Concept');
+        let response = await helper.postConcept(helper.editSourceUrl, conceptId, helper.regularNonMemberUserToken);
+        expect(response.status).toBe(201);
+    });
 });
 
 

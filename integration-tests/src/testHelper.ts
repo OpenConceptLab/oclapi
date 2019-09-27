@@ -259,6 +259,16 @@ export class TestHelper {
         return response;
     }
 
+    async postConcept(sourceUrl: string, conceptId: string, token: string=null): Promise<Response> {
+        let response;
+        response = await this.post(this.joinUrl(sourceUrl, 'concepts'), {id: conceptId, datatype: 'None',
+            concept_class: 'Test', names:[ { name: conceptId, locale: 'en', name_type: "FULLY_SPECIFIED" }]}, token);
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
     toOrg(orgId: string, orgName: string=orgId) {
         return {id: orgId, name: orgName, url: this.joinUrl('orgs', orgId)};
     }
