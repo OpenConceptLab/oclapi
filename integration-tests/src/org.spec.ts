@@ -65,6 +65,15 @@ describe('Org', () => {
         expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl } ]));
     });
 
+    test('orgs list should not be affected by query params', async () => {
+        const res = await get('orgs/?q=*');
+        const json = await res.json();
+
+        expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
+        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicOrg, name: nonPublicOrg, url: nonPublicOrgUrl } ]));
+        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl } ]));
+    });
+
     it('should not be created by anonymous', async () => {
         const orgId = newOrgId();
         const orgUrl = orgIdToUrl(orgId);
