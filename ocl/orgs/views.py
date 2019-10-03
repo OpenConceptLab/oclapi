@@ -13,6 +13,7 @@ from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.permissions import HasOwnership, IsSuperuser, CanViewConceptDictionary, CanEditConceptDictionary
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from oclapi.views import BaseAPIView
+from orgs.filters import OrgSearchFilter
 from orgs.models import Organization
 from orgs.serializers import OrganizationListSerializer, OrganizationCreateSerializer, OrganizationDetailSerializer
 from users.models import UserProfile
@@ -24,7 +25,7 @@ class OrganizationListView(BaseAPIView,
     model = Organization
     queryset = Organization.objects.filter(is_active=True)
     permission_classes = (CanViewConceptDictionary,)
-    filter_backends = [HaystackSearchFilter]
+    filter_backends = [OrgSearchFilter]
     solr_fields = {
         'name': {'sortable': True, 'filterable': False},
         'last_update': {'sortable': True, 'default': 'desc', 'filterable': False},

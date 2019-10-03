@@ -13,6 +13,7 @@ class OrganizationIndex(OCLSearchIndex, indexes.Indexable):
     location = SortOrFilterField(model_attr='location', null=True, indexed=True, stored=True)
     lastUpdate = indexes.DateTimeField(model_attr='updated_at', indexed=True, stored=True)
     is_active = indexes.BooleanField(model_attr='is_active', indexed=True, stored=True)
+    public_can_view = indexes.BooleanField(model_attr='public_can_view', indexed=True, stored=True)
 
     def get_model(self):
         return Organization

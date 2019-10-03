@@ -46,7 +46,7 @@ export class TestHelper {
     urlsToDelete: string[];
     static readonly config = {
         serverUrl: process.env.npm_config_url ? process.env.npm_config_url :
-            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8000'),
+            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8001'),
         adminUser: process.env.npm_config_adminUser ? process.env.npm_config_adminUser :
             (process.env.npm_package_config_adminUser ? process.env.npm_package_config_adminUser : 'root'),
         adminPassword: process.env.npm_config_adminPassword ? process.env.npm_config_adminPassword :
@@ -219,7 +219,14 @@ export class TestHelper {
     }
 
     async get(url, token=null) {
-        return fetch(this.joinUrl(TestHelper.config.serverUrl, url) + '?limit=1000', {
+        let limitedUrl;
+        if (url.indexOf('?') !== -1) {
+            limitedUrl = url + '&limit=1000';
+        } else {
+            limitedUrl = url + '?limit=1000';
+        }
+
+        return fetch(this.joinUrl(TestHelper.config.serverUrl, limitedUrl), {
             method: 'get',
             headers: this.initHeaders(await token)
         });;

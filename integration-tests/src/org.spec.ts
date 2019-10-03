@@ -26,12 +26,12 @@ describe('Org', () => {
     });
 
     test('orgs list should not be affected by query params', async () => {
-        const res = await get('orgs/?q=*');
+        const res = await helper.get('orgs/?q=*');
         const json = await res.json();
 
         expect(json).toEqual(expect.arrayContaining([ { id: 'OCL', name: 'Open Concept Lab', url: '/orgs/OCL/' } ]));
-        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicOrg, name: nonPublicOrg, url: nonPublicOrgUrl } ]));
-        expect(json).toEqual(expect.not.arrayContaining([ { id: nonPublicAdminOrg, name: nonPublicAdminOrg, url: nonPublicAdminOrgUrl } ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.privateOrg) ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.privateAdminOrg) ]));
     });
 
     it('should not be created by anonymous', async () => {
@@ -251,6 +251,16 @@ describe('Org', () => {
 
     it('should list public and belonging orgs for authenticated member', async () => {
         const res = await helper.get('orgs/', helper.regularMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([ helper.toOrg('OCL', 'Open Concept Lab'),
+            helper.toOrg(helper.privateOrg), helper.toOrg(helper.viewOrg), helper.toOrg(helper.editOrg) ]));
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toOrg(helper.privateAdminOrg) ]));
+    });
+
+    it.skip('with query params should list should public and belonging orgs for authenticated member', async () => {
+        const res = await helper.get('orgs/?q=*', helper.regularMemberUserToken);
 
         expect(res.status).toBe(200);
         const json = await res.json();
