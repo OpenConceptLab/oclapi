@@ -46,7 +46,7 @@ export class TestHelper {
     urlsToDelete: string[];
     static readonly config = {
         serverUrl: process.env.npm_config_url ? process.env.npm_config_url :
-            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8001'),
+            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8000'),
         adminUser: process.env.npm_config_adminUser ? process.env.npm_config_adminUser :
             (process.env.npm_package_config_adminUser ? process.env.npm_package_config_adminUser : 'root'),
         adminPassword: process.env.npm_config_adminPassword ? process.env.npm_config_adminPassword :
@@ -112,9 +112,9 @@ export class TestHelper {
         await this.postSource(this.viewOrg, this.viewSource, this.regularMemberUserToken, 'View');
         await this.postSource(this.viewOrg, this.editSource, this.regularMemberUserToken, 'Edit');
 
-        await this.postCollection(this.viewOrg, this.privateCollection, this.regularMemberUserToken, 'None');
-        await this.postCollection(this.viewOrg, this.viewCollection, this.regularMemberUserToken, 'View');
-        await this.postCollection(this.viewOrg, this.editCollection, this.regularMemberUserToken, 'Edit');
+        await this.postOrgCollection(this.viewOrg, this.privateCollection, this.regularMemberUserToken, 'None');
+        await this.postOrgCollection(this.viewOrg, this.viewCollection, this.regularMemberUserToken, 'View');
+        await this.postOrgCollection(this.viewOrg, this.editCollection, this.regularMemberUserToken, 'Edit');
 
         await this.newUser(this.regularNonMemberUser, this.regularNonMemberUser);
         this.regularNonMemberUserToken = await this.authenticate(this.regularNonMemberUser, this.regularNonMemberUser);
@@ -253,12 +253,25 @@ export class TestHelper {
         return response;
     }
 
-    async postCollection(orgId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
+    async postOrgCollection(orgId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
         let response;
         if (publicAccess == null) {
             response = await this.post(this.joinUrl('orgs', orgId, 'collections'), {id: collectionId, name: collectionId}, token);
         } else {
             response = await this.post(this.joinUrl('orgs', orgId, 'collections'), {id: collectionId, name: collectionId, public_access: publicAccess}, token);
+        }
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
+    async postUserCollection(userId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
+        let response;
+        if (publicAccess == null) {
+            response = await this.post(this.joinUrl('users', userId, 'collections'), {id: collectionId, name: collectionId}, token);
+        } else {
+            response = await this.post(this.joinUrl('users', userId, 'collections'), {id: collectionId, name: collectionId, public_access: publicAccess}, token);
         }
 
         //hacky way to wait for index to be updated, implement proper query
@@ -290,8 +303,13 @@ export class TestHelper {
             short_code: sourceId, url: this.joinUrl('orgs', orgId, 'sources', sourceId)};
     }
 
-    toCollection(orgId: string, collectionId: string, collectionName: string=collectionId) {
+    toOrgCollection(orgId: string, collectionId: string, collectionName: string=collectionId) {
         return {id: collectionId, name: collectionName, owner: orgId, owner_type: 'Organization', owner_url: this.joinUrl('orgs', orgId),
             short_code: collectionId, url: this.joinUrl('orgs', orgId, 'collections', collectionId)};
+    }
+
+    toUserCollection(userId: string, collectionId: string, collectionName: string=collectionId) {
+        return {id: collectionId, name: collectionName, owner: userId, owner_type: 'User', owner_url: this.joinUrl('users', userId),
+            short_code: collectionId, url: this.joinUrl('users', userId, 'collections', collectionId)};
     }
 };
