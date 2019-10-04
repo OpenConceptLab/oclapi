@@ -62,6 +62,10 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                     filters["%s__exact" % k] = Raw(clause)
         return filters
 
+    def get_sq_filters(self, request, view):
+        filters = []
+        return filters
+
     def get_sort_and_desc(self, request):
         sort_field = request.QUERY_PARAMS.get(self.sort_desc_param)
         if sort_field is not None:
@@ -105,6 +109,8 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
         use_sqs = use_sqs or search_query
         filters = self.get_filters(request, view)
         use_sqs = use_sqs or filters
+        sq_filters = self.get_sq_filters(request, view)
+        use_sqs = use_sqs or sq_filters
         sort, desc = self.get_sort_and_desc(request)
         if sort:
             sort = sort if self.is_valid_sort(sort, view) else None
@@ -120,6 +126,9 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                 filters.update(view.default_filters)
             if filters:
                 sqs = sqs.filter(**filters)
+            if sq_filters:
+                for sq_filter in sq_filters:
+                    sqs = sqs.filter(sq_filter)
             if sort:
                 sqs = sqs.order_by(sort)
             else:

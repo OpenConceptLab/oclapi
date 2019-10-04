@@ -25,16 +25,6 @@ describe('Collection', () => {
         expect(json).toEqual(expect.not.arrayContaining([ helper.toCollection(helper.viewOrg, helper.privateCollection) ]));
     });
 
-    it('should list only public collections for anonymous', async () => {
-        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'collections'));
-        const json = await res.json();
-
-        expect(json).toEqual(expect.arrayContaining([
-            helper.toCollection(helper.viewOrg, helper.viewCollection), helper.toCollection(helper.viewOrg, helper.editCollection)]));
-
-        expect(json).toEqual(expect.not.arrayContaining([ helper.toCollection(helper.viewOrg, helper.privateCollection) ]));
-    });
-
     it('global search should list all collections for staff', async () => {
         const res = await helper.get('collections', helper.adminToken);
 
@@ -43,6 +33,36 @@ describe('Collection', () => {
         expect(json).toEqual(expect.arrayContaining([helper.toCollection(helper.viewOrg, helper.viewCollection),
             helper.toCollection(helper.viewOrg, helper.editCollection), helper.toCollection(helper.viewOrg, helper.privateCollection)
         ]));
+    });
+
+    it('global should list public and belonging collections for authenticated members', async () => {
+        const res = await helper.get('collections', helper.regularMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toCollection(helper.viewOrg, helper.viewCollection), helper.toCollection(helper.viewOrg, helper.editCollection),
+            helper.toCollection(helper.viewOrg, helper.privateCollection) ]));
+    });
+
+    it('global search should list only public collections for authenticated nonmember', async () => {
+        const res = await helper.get('collections', helper.regularNonMemberUserToken);
+        const json = await res.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toCollection(helper.viewOrg, helper.viewCollection), helper.toCollection(helper.viewOrg, helper.editCollection)]));
+
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toCollection(helper.viewOrg, helper.privateCollection) ]));
+    });
+
+    it('should list only public collections for anonymous', async () => {
+        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'collections'));
+        const json = await res.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toCollection(helper.viewOrg, helper.viewCollection), helper.toCollection(helper.viewOrg, helper.editCollection)]));
+
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toCollection(helper.viewOrg, helper.privateCollection) ]));
     });
 
     it('should list all collections for staff', async () => {

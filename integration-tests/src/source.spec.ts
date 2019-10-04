@@ -25,16 +25,6 @@ describe('Source', () => {
         expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
     });
 
-    it('should list only public sources for anonymous', async () => {
-        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'sources'));
-        const json = await res.json();
-
-        expect(json).toEqual(expect.arrayContaining([
-            helper.toSource(helper.viewOrg, helper.viewSource), helper.toSource(helper.viewOrg, helper.editSource)]));
-
-        expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
-    });
-
     it('global search should list all sources for staff', async () => {
         const res = await helper.get('sources', helper.adminToken);
 
@@ -45,14 +35,14 @@ describe('Source', () => {
         ]));
     });
 
-    it('should list all sources for staff', async () => {
-        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'sources'), helper.adminToken);
+    it('global search should list public and belonging sources for authenticated member', async () => {
+        const res = await helper.get('sources', helper.regularMemberUserToken);
 
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json).toEqual(expect.arrayContaining([helper.toSource(helper.viewOrg, helper.viewSource),
-            helper.toSource(helper.viewOrg, helper.editSource), helper.toSource(helper.viewOrg, helper.privateSource)
-        ]));
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toSource(helper.viewOrg, helper.viewSource), helper.toSource(helper.viewOrg, helper.editSource),
+            helper.toSource(helper.viewOrg, helper.privateSource) ]));
     });
 
     it('should list public and belonging sources for authenticated member', async () => {
@@ -63,6 +53,38 @@ describe('Source', () => {
         expect(json).toEqual(expect.arrayContaining([
             helper.toSource(helper.viewOrg, helper.viewSource), helper.toSource(helper.viewOrg, helper.editSource),
             helper.toSource(helper.viewOrg, helper.privateSource) ]));
+    });
+
+    it('global search should list public and belonging sources for authenticated nonmember', async () => {
+        const res = await helper.get('sources', helper.regularNonMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toSource(helper.viewOrg, helper.viewSource), helper.toSource(helper.viewOrg, helper.editSource)]));
+
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
+    });
+
+    it('should list only public sources for anonymous', async () => {
+        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'sources'));
+        const json = await res.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toSource(helper.viewOrg, helper.viewSource), helper.toSource(helper.viewOrg, helper.editSource)]));
+
+        expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
+    });
+
+    it('should list all sources for staff', async () => {
+        const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'sources'), helper.adminToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([helper.toSource(helper.viewOrg, helper.viewSource),
+            helper.toSource(helper.viewOrg, helper.editSource), helper.toSource(helper.viewOrg, helper.privateSource)
+        ]));
     });
 
     it('should list only public sources for authenticated nonmember', async () => {
