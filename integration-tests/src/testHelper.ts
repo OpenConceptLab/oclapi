@@ -46,7 +46,7 @@ export class TestHelper {
     urlsToDelete: string[];
     static readonly config = {
         serverUrl: process.env.npm_config_url ? process.env.npm_config_url :
-            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8000'),
+            (process.env.npm_package_config_url ? process.env.npm_package_config_url : 'http://localhost:8001'),
         adminUser: process.env.npm_config_adminUser ? process.env.npm_config_adminUser :
             (process.env.npm_package_config_adminUser ? process.env.npm_package_config_adminUser : 'root'),
         adminPassword: process.env.npm_config_adminPassword ? process.env.npm_config_adminPassword :
