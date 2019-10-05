@@ -99,7 +99,6 @@ describe('Source', () => {
 
     it('should list all sources belonging to an authenticated user', async () => {
         const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'sources'), helper.regularNonMemberUserToken);
-        console.log(helper.joinUrl(helper.regularNonMemberUserUrl, 'sources'));
 
         expect(res.status).toBe(200);
         const json = await res.json();

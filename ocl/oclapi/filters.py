@@ -1,12 +1,13 @@
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
-from haystack.backends import SQ
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from haystack.inputs import Raw
 from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
-from orgs.models import Organization, ORG_OBJECT_TYPE
-from users.models import USER_OBJECT_TYPE
+from oclapi.models import ACCESS_TYPE_NONE
+from orgs.models import Organization
+from users.models import UserProfile
 
 
 class SearchQuerySetWrapper(object):
@@ -142,7 +143,7 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                     sqs = sqs.order_by(default_sort)
             sqs = sqs.models(view.model)
             if hasattr(sqs, 'load_all_queryset'):
-                sqs = sqs.load_all_queryset(view.model, queryset)
+                sqs = sqs.load_all().load_all_queryset(view.model, queryset)
             return SearchQuerySetWrapper(sqs)
 
         if hasattr(view, 'default_order_by'):
@@ -152,21 +153,24 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
 
 class HaystackSearchFilter(BaseHaystackSearchFilter):
     def filter_queryset(self, request, queryset, view):
-        return self._filter_queryset(request, queryset, view, SearchQuerySet())
+        return self._filter_queryset(request, queryset, view, RelatedSearchQuerySet())
 
 
 class ConceptContainerPermissionedSearchFilter(HaystackSearchFilter):
-    def get_sq_filters(self, request, view):
-        filters = super(ConceptContainerPermissionedSearchFilter, self).get_sq_filters(request, view)
+    def filter_queryset(self, request, queryset, view):
+        current_user = request.user
+        permissioned_qs = None
 
-        if not isinstance(request.user, AnonymousUser) and not request.user.is_staff:
-            org_ids = request.user.get_profile().organizations
-            if org_ids:
-                orgs = Organization.objects.filter(id__in = org_ids).values_list('mnemonic', flat=True)
-                filters.append(SQ(public_can_view=True)
-                               | (SQ(owner__exact=request.user.get_profile().mnemonic) & SQ(ownerType__exact=USER_OBJECT_TYPE))
-                               | (SQ(owner__in=orgs) & SQ(ownerType__exact=ORG_OBJECT_TYPE)))
-            else:
-                filters.append(SQ(public_can_view=True))
+        if current_user.is_staff:
+            permissioned_qs = queryset
+        elif not current_user.is_anonymous():
+            user_profile = UserProfile.objects.get(user=current_user)
+            permissioned_qs = queryset.filter(
+                Q(parent_id=user_profile.id, parent_type=ContentType.objects.get_for_model(UserProfile)) |
+                Q(parent_id__in=user_profile.organizations, parent_type=ContentType.objects.get_for_model(Organization)) |
+                ~Q(public_access=ACCESS_TYPE_NONE)
+            )
+        else:
+            permissioned_qs = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
 
-        return filters
+        return super(ConceptContainerPermissionedSearchFilter, self).filter_queryset(request, permissioned_qs, view)
