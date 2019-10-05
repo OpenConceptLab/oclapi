@@ -1,7 +1,12 @@
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
+from haystack.backends import SQ
 from haystack.inputs import Raw
 from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
+
+from orgs.models import Organization, ORG_OBJECT_TYPE
+from users.models import USER_OBJECT_TYPE
 
 
 class SearchQuerySetWrapper(object):
@@ -148,3 +153,20 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
 class HaystackSearchFilter(BaseHaystackSearchFilter):
     def filter_queryset(self, request, queryset, view):
         return self._filter_queryset(request, queryset, view, SearchQuerySet())
+
+
+class ConceptContainerPermissionedSearchFilter(HaystackSearchFilter):
+    def get_sq_filters(self, request, view):
+        filters = super(ConceptContainerPermissionedSearchFilter, self).get_sq_filters(request, view)
+
+        if not isinstance(request.user, AnonymousUser) and not request.user.is_staff:
+            org_ids = request.user.get_profile().organizations
+            if org_ids:
+                orgs = Organization.objects.filter(id__in = org_ids).values_list('mnemonic', flat=True)
+                filters.append(SQ(public_can_view=True)
+                               | (SQ(owner__exact=request.user.get_profile().mnemonic) & SQ(ownerType__exact=USER_OBJECT_TYPE))
+                               | (SQ(owner__in=orgs) & SQ(ownerType__exact=ORG_OBJECT_TYPE)))
+            else:
+                filters.append(SQ(public_can_view=True))
+
+        return filters
