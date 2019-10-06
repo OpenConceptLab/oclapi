@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 from django.db.models import Q
 from django.db.models.query import EmptyQuerySet
@@ -48,6 +49,26 @@ class SourceBaseView():
 
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
         return SourceDetailSerializer(obj, data, files, partial)
+
+    def get_queryset(self):
+        owner = self.get_owner()
+        if not owner:
+            user = self.request.QUERY_PARAMS.get('user', None)
+            if user:
+                user = UserProfile.objects.get(mnemonic=user)
+                return self.queryset.filter(parent_id=user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+            return self.queryset
+        elif 'source' in self.kwargs:
+            return self.model.objects.filter(
+                parent_id=owner.id,
+                mnemonic=self.kwargs['source'],
+                parent_type=ContentType.objects.get_for_model(owner),
+            )
+        else:
+            return self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
+
+    def get_owner(self):
+        return self.parent_resource
 
 
 class SourceRetrieveUpdateDestroyView(SourceBaseView,

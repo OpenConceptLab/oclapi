@@ -1,6 +1,8 @@
 import logging
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
+from django.db.models import Q
 
 from collection.validation_messages import HEAD_OF_CONCEPT_ADDED_TO_COLLECTION, CONCEPT_ADDED_TO_COLLECTION_FMT, \
     HEAD_OF_MAPPING_ADDED_TO_COLLECTION, MAPPING_ADDED_TO_COLLECTION_FMT
@@ -23,7 +25,7 @@ from oclapi.permissions import HasAccessToVersionedObject
 from oclapi.views import ResourceVersionMixin, ResourceAttributeChildMixin, ConceptDictionaryUpdateMixin, \
     ConceptDictionaryCreateMixin, ConceptDictionaryExtrasView, ConceptDictionaryExtraRetrieveUpdateDestroyView, \
     BaseAPIView
-from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
+from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ACCESS_TYPE_NONE
 from rest_framework import mixins, status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404, DestroyAPIView
 from rest_framework.response import Response
@@ -53,22 +55,23 @@ class CollectionBaseView():
 
     def get_queryset(self):
         owner = self.get_owner()
-        if not self.kwargs:
+        if not owner:
+            user = self.request.QUERY_PARAMS.get('user', None)
+            if user:
+                user = UserProfile.objects.get(mnemonic=user)
+                return self.queryset.filter(parent_id=user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
             return self.queryset
         elif 'collection' in self.kwargs:
-            return Collection.objects.filter(parent_id=owner.id, mnemonic=self.kwargs['collection'])
+            return self.model.objects.filter(
+                parent_id=owner.id,
+                mnemonic=self.kwargs['collection'],
+                parent_type=ContentType.objects.get_for_model(owner),
+            )
         else:
-            return self.queryset.filter(parent_id=owner.id)
+            return self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
 
     def get_owner(self):
-        owner = None
-        if 'user' in self.kwargs:
-            owner_id = self.kwargs['user']
-            owner = UserProfile.objects.get(mnemonic=owner_id)
-        elif 'org' in self.kwargs:
-            owner_id = self.kwargs['org']
-            owner = Organization.objects.get(mnemonic=owner_id)
-        return owner
+        return self.parent_resource
 
 
 class CollectionVersionBaseView(ResourceVersionMixin):
