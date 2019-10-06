@@ -227,7 +227,7 @@ export class TestHelper {
             }
             url = url + '/' + part;
         }
-        url = url + '/';
+        if (url.indexOf('?') === -1) url = url + '/';
         return url;
     }
 
