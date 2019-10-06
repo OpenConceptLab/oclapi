@@ -108,6 +108,29 @@ describe('Collection', () => {
         expect(json).toEqual(expect.not.arrayContaining([ helper.toOrgCollection(helper.viewOrg, helper.privateCollection) ]));
     });
 
+    it('should list all collections belonging to an authenticated user', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'collections'), helper.regularNonMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toUserCollection(helper.regularNonMemberUser, helper.privateUserOwnedCollection),
+            helper.toUserCollection(helper.regularNonMemberUser, helper.viewUserOwnedCollection) ]));
+    });
+
+    it('should list only public collections for anonymous user', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'collections'));
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toUserCollection(helper.regularNonMemberUser, helper.viewUserOwnedCollection),
+        ]));
+        expect(json).toEqual(expect.not.arrayContaining([
+            helper.toUserCollection(helper.regularNonMemberUser, helper.privateUserOwnedCollection),
+        ]));
+    });
+
     it('should not be created by anonymous', async () => {
         const collectionId = helper.newId('Collection');
         const res = await helper.postOrgCollection('OCL', collectionId, null);

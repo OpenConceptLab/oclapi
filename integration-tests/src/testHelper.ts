@@ -43,6 +43,18 @@ export class TestHelper {
     readonly editCollection: string;
     readonly editCollectionUrl: string;
 
+    readonly privateUserOwnedSource: string;
+    readonly privateUserOwnedSourceUrl: string;
+
+    readonly viewUserOwnedSource: string;
+    readonly viewUserOwnedSourceUrl: string;
+
+    readonly privateUserOwnedCollection: string;
+    readonly privateUserOwnedCollectionUrl: string;
+
+    readonly viewUserOwnedCollection: string;
+    readonly viewUserOwnedCollectionUrl: string;
+
     urlsToDelete: string[];
     static readonly config = {
         serverUrl: process.env.npm_config_url ? process.env.npm_config_url :
@@ -92,6 +104,18 @@ export class TestHelper {
         this.editCollection = this.newId('Edit-Collection');
         this.editCollectionUrl = this.joinUrl(this.viewOrgUrl, 'collections', this.editCollection);
 
+        this.privateUserOwnedSource = this.newId('Private-User-Owned-Source');
+        this.privateUserOwnedSourceUrl = this.joinUrl(this.regularNonMemberUserUrl, 'sources', this.privateUserOwnedSource);
+
+        this.viewUserOwnedSource = this.newId('View-User-Owned-Source');
+        this.viewUserOwnedSourceUrl = this.joinUrl(this.regularNonMemberUserUrl, 'sources', this.viewUserOwnedSource);
+
+        this.privateUserOwnedCollection = this.newId('Private-User-Owned-Collection');
+        this.privateUserOwnedCollectionUrl = this.joinUrl(this.regularNonMemberUserUrl, 'collections', this.privateUserOwnedCollection);
+
+        this.viewUserOwnedCollection = this.newId('View-User-Owned-Collection');
+        this.viewUserOwnedCollectionUrl = this.joinUrl(this.regularNonMemberUserUrl, 'collections', this.viewUserOwnedCollection);
+
         this.urlsToDelete = [];
     }
 
@@ -101,8 +125,11 @@ export class TestHelper {
         await this.postOrg(this.privateAdminOrg, this.adminToken, 'None');
 
         await this.newUser(this.regularMemberUser, this.regularMemberUser);
-
         this.regularMemberUserToken = await this.authenticate(this.regularMemberUser, this.regularMemberUser);
+
+        await this.newUser(this.regularNonMemberUser, this.regularNonMemberUser);
+        this.regularNonMemberUserToken = await this.authenticate(this.regularNonMemberUser, this.regularNonMemberUser);
+
         await this.del(this.privateOrgUrl, this.regularMemberUserToken);
         await this.postOrg(this.privateOrg, this.regularMemberUserToken, 'None');
         await this.postOrg(this.viewOrg, this.regularMemberUserToken, 'View');
@@ -116,11 +143,20 @@ export class TestHelper {
         await this.postOrgCollection(this.viewOrg, this.viewCollection, this.regularMemberUserToken, 'View');
         await this.postOrgCollection(this.viewOrg, this.editCollection, this.regularMemberUserToken, 'Edit');
 
-        await this.newUser(this.regularNonMemberUser, this.regularNonMemberUser);
-        this.regularNonMemberUserToken = await this.authenticate(this.regularNonMemberUser, this.regularNonMemberUser);
+        await this.postUserSource(this.regularNonMemberUser, this.privateUserOwnedSource, this.regularNonMemberUserToken, 'None');
+        await this.postUserSource(this.regularNonMemberUser, this.viewUserOwnedSource, this.regularNonMemberUserToken, 'View');
+
+        await this.postUserCollection(this.regularNonMemberUser, this.privateUserOwnedCollection, this.regularNonMemberUserToken, 'None');
+        await this.postUserCollection(this.regularNonMemberUser, this.viewUserOwnedCollection, this.regularNonMemberUserToken, 'View');
     }
 
     async afterAll() {
+        await this.del(this.privateUserOwnedCollectionUrl, this.adminToken);
+        await this.del(this.viewUserOwnedCollectionUrl, this.adminToken);
+
+        await this.del(this.privateUserOwnedSourceUrl, this.adminToken);
+        await this.del(this.viewUserOwnedSourceUrl, this.adminToken);
+
         await this.del(this.privateCollectionUrl, this.adminToken);
         await this.del(this.editCollectionUrl, this.adminToken);
         await this.del(this.viewCollectionUrl, this.adminToken);
@@ -266,6 +302,19 @@ export class TestHelper {
         return response;
     }
 
+    async postUserSource(userId: string, sourceId: string, token: string, publicAccess: string=null): Promise<Response> {
+        let response;
+        if (publicAccess == null) {
+            response = await this.post(this.joinUrl('users', userId, 'sources'), {id: sourceId, name: sourceId}, token);
+        } else {
+            response = await this.post(this.joinUrl('users', userId, 'sources'), {id: sourceId, name: sourceId, public_access: publicAccess}, token);
+        }
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
     async postUserCollection(userId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
         let response;
         if (publicAccess == null) {
@@ -301,6 +350,11 @@ export class TestHelper {
     toSource(orgId: string, sourceId: string, sourceName: string=sourceId) {
         return {name: sourceName, owner: orgId, owner_type: 'Organization', owner_url: this.joinUrl('orgs', orgId),
             short_code: sourceId, url: this.joinUrl('orgs', orgId, 'sources', sourceId)};
+    }
+
+    toUserSource(userId: string, sourceId: string, sourceName: string=sourceId) {
+        return {name: sourceName, owner: userId, owner_type: 'User', owner_url: this.joinUrl('users', userId),
+            short_code: sourceId, url: this.joinUrl('users', userId, 'sources', sourceId)};
     }
 
     toOrgCollection(orgId: string, collectionId: string, collectionName: string=collectionId) {

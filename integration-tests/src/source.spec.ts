@@ -97,6 +97,29 @@ describe('Source', () => {
         expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
     });
 
+    it('should list all sources belonging to an authenticated user', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'sources'), helper.regularNonMemberUserToken);
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toUserSource(helper.regularNonMemberUser, helper.privateUserOwnedSource),
+            helper.toUserSource(helper.regularNonMemberUser, helper.viewUserOwnedSource) ]));
+    });
+
+    it('should list only public sources for anonymous user', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'sources'));
+
+        expect(res.status).toBe(200);
+        const json = await res.json();
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toUserSource(helper.regularNonMemberUser, helper.viewUserOwnedSource),
+        ]));
+        expect(json).toEqual(expect.not.arrayContaining([
+            helper.toUserSource(helper.regularNonMemberUser, helper.privateUserOwnedSource),
+        ]));
+    });
+
     it('should not be created by anonymous', async () => {
         const sourceId = helper.newId('Source');
         const res = await helper.postSource('OCL', sourceId, null);
