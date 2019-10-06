@@ -38,7 +38,7 @@ class Command(BaseCommand):
         importer = MappingsImporter(source, demo_file, OutputWrapper(sys.stdout), OutputWrapper(sys.stderr), user)
         importer.import_mappings(**options)
 
-        new_version = SourceVersion.for_base_object(source, version)
+        new_version = SourceVersion.for_base_object(source, version, released=True)
         new_version.full_clean()
         new_version.save()
         new_version.seed_concepts()
