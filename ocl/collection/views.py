@@ -342,6 +342,15 @@ class CollectionListView(CollectionBaseView,
         return values
 
 
+class OrganizationCollectionListView(CollectionListView):
+    def get_queryset(self):
+        user = self.userprofile or UserProfile.objects.get(mnemonic=self.kwargs.get('user', None))
+        return self.queryset.filter(parent_id__in=user.organizations, parent_type=ContentType.objects.get_for_model(Organization))
+
+    def get_object_for_path(self, path_info, request):
+        return None
+
+
 class CollectionExtrasView(ConceptDictionaryExtrasView):
     pass
 

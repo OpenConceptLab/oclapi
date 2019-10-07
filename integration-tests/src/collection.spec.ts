@@ -98,6 +98,26 @@ describe('Collection', () => {
             helper.toOrgCollection(helper.viewOrg, helper.privateCollection) ]));
     });
 
+    it('should list public and belonging collections in all orgs for authenticated member', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularMemberUserUrl, 'orgs', 'collections'), helper.regularMemberUserToken);
+        const res2 = await helper.get(helper.joinUrl('user', 'orgs', 'collections'), helper.regularMemberUserToken);
+
+        expect(res.status).toBe(200);
+        expect(res2.status).toBe(200);
+
+        const json = await res.json();
+        const json2 = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toOrgCollection(helper.viewOrg, helper.viewCollection),
+            helper.toOrgCollection(helper.viewOrg, helper.editCollection),
+            helper.toOrgCollection(helper.viewOrg, helper.privateCollection),
+
+            helper.toOrgCollection(helper.editOrg, helper.privateEditOrgOwnedCollection),
+        ]));
+        expect(json).toEqual(json2);
+    });
+
     it('should list only public collections for authenticated nonmember', async () => {
         const res = await helper.get(helper.joinUrl(helper.viewOrgUrl, 'collections'), helper.regularNonMemberUserToken);
         const json = await res.json();

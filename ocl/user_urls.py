@@ -1,8 +1,12 @@
 from django.conf.urls import patterns, url, include
+
+from collection.views import OrganizationCollectionListView
 from concepts.views import ConceptCreateView, ConceptRetrieveUpdateDestroyView, ConceptVersionRetrieveView, ConceptVersionsView, ConceptNameRetrieveUpdateDestroyView, ConceptNameListCreateView, ConceptDescriptionRetrieveUpdateDestroyView, ConceptDescriptionListCreateView, ConceptExtrasView, ConceptExtraRetrieveUpdateDestroyView, ConceptMappingsView
 from mappings.views import MappingListView, MappingDetailView, MappingVersionDetailView, MappingVersionsListView
 from orgs.views import OrganizationListView
-from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView
+from sources.views import SourceListView, SourceRetrieveUpdateDestroyView, SourceVersionRetrieveUpdateView, \
+    SourceVersionChildListView, SourceVersionListView, SourceVersionRetrieveUpdateDestroyView, \
+    OrganizationSourceListView
 from users.views import UserDetailView
 
 from oclapi.models import NAMESPACE_PATTERN, CONCEPT_ID_PATTERN
@@ -15,6 +19,8 @@ urlpatterns = patterns('',
     # shortcuts for the currently logged-in user
     url(r'^$', UserDetailView.as_view(), extra_kwargs, name='user-self-detail'),
     url(r'^orgs/$', OrganizationListView.as_view(), extra_kwargs, name='user-organization-list'),
+    url(r'^orgs/sources/$', OrganizationSourceListView.as_view(), extra_kwargs, name='user-organization-source-list'),
+    url(r'^orgs/collections/$', OrganizationCollectionListView.as_view(), extra_kwargs, name='user-organization-collection-list'),
     url(r'^sources/$', SourceListView.as_view(), extra_kwargs, name='user-source-list'),
     url(r'^sources/(?P<source>' + NAMESPACE_PATTERN + ')/$', SourceRetrieveUpdateDestroyView.as_view(), extra_kwargs, name='user-source-detail'),
     url(r'^sources/(?P<source>' + NAMESPACE_PATTERN + ')/concepts/$', ConceptCreateView.as_view(), name='concept-list'),
