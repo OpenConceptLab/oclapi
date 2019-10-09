@@ -11,7 +11,7 @@ from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
 
-from tasks import export_source
+from tasks import export_source, update_children_for_resource_version
 
 
 class Command(BaseCommand):
@@ -39,10 +39,8 @@ class Command(BaseCommand):
         importer.import_mappings(**options)
 
         new_version = SourceVersion.for_base_object(source, version, released=True)
-        new_version.full_clean()
-        new_version.save()
-        new_version.seed_concepts()
-        new_version.seed_mappings()
+        SourceVersion.persist_new(new_version, versioned_object=source, force_insert=True)
+        update_children_for_resource_version.delay(new_version.id, 'source')
 
         export_source.delay(new_version.id)
 
