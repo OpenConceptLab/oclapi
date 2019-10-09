@@ -34,6 +34,9 @@ export class TestHelper {
     readonly editSource: string;
     readonly editSourceUrl: string;
 
+    readonly privateEditOrgOwnedSource: string;
+    readonly privateEditOrgOwnedSourceUrl: string;
+
     readonly privateCollection: string;
     readonly privateCollectionUrl: string;
 
@@ -42,6 +45,9 @@ export class TestHelper {
 
     readonly editCollection: string;
     readonly editCollectionUrl: string;
+
+    readonly privateEditOrgOwnedCollection: string;
+    readonly privateEditOrgOwnedCollectionUrl: string;
 
     readonly privateUserOwnedSource: string;
     readonly privateUserOwnedSourceUrl: string;
@@ -95,6 +101,9 @@ export class TestHelper {
         this.editSource = this.newId('Edit-Source');
         this.editSourceUrl = this.joinUrl(this.viewOrgUrl, 'sources', this.editSource);
 
+        this.privateEditOrgOwnedSource = this.newId('Private-Edit-Org-Owned-Source');
+        this.privateEditOrgOwnedSourceUrl = this.joinUrl('orgs', this.editOrg, 'sources', this.privateEditOrgOwnedSource);
+
         this.privateCollection = this.newId('Private-Collection');
         this.privateCollectionUrl = this.joinUrl('orgs', this.viewOrg, 'collections', this.privateCollection);
 
@@ -103,6 +112,9 @@ export class TestHelper {
 
         this.editCollection = this.newId('Edit-Collection');
         this.editCollectionUrl = this.joinUrl(this.viewOrgUrl, 'collections', this.editCollection);
+
+        this.privateEditOrgOwnedCollection = this.newId('Private-Edit-Org-Owned-Collection');
+        this.privateEditOrgOwnedCollectionUrl = this.joinUrl('orgs', this.editOrg, 'collections', this.privateEditOrgOwnedCollection);
 
         this.privateUserOwnedSource = this.newId('Private-User-Owned-Source');
         this.privateUserOwnedSourceUrl = this.joinUrl(this.regularNonMemberUserUrl, 'sources', this.privateUserOwnedSource);
@@ -139,9 +151,13 @@ export class TestHelper {
         await this.postSource(this.viewOrg, this.viewSource, this.regularMemberUserToken, 'View');
         await this.postSource(this.viewOrg, this.editSource, this.regularMemberUserToken, 'Edit');
 
+        await this.postSource(this.editOrg, this.privateEditOrgOwnedSource, this.regularMemberUserToken, 'None');
+
         await this.postOrgCollection(this.viewOrg, this.privateCollection, this.regularMemberUserToken, 'None');
         await this.postOrgCollection(this.viewOrg, this.viewCollection, this.regularMemberUserToken, 'View');
         await this.postOrgCollection(this.viewOrg, this.editCollection, this.regularMemberUserToken, 'Edit');
+
+        await this.postOrgCollection(this.editOrg, this.privateEditOrgOwnedCollection, this.regularMemberUserToken, 'None');
 
         await this.postUserSource(this.regularNonMemberUser, this.privateUserOwnedSource, this.regularNonMemberUserToken, 'None');
         await this.postUserSource(this.regularNonMemberUser, this.viewUserOwnedSource, this.regularNonMemberUserToken, 'View');
@@ -157,9 +173,13 @@ export class TestHelper {
         await this.del(this.privateUserOwnedSourceUrl, this.adminToken);
         await this.del(this.viewUserOwnedSourceUrl, this.adminToken);
 
+        await this.del(this.privateEditOrgOwnedCollectionUrl, this.adminToken);
+
         await this.del(this.privateCollectionUrl, this.adminToken);
         await this.del(this.editCollectionUrl, this.adminToken);
         await this.del(this.viewCollectionUrl, this.adminToken);
+
+        await this.del(this.privateEditOrgOwnedSourceUrl, this.adminToken);
 
         await this.del(this.privateSourceUrl, this.adminToken);
         await this.del(this.editSourceUrl, this.adminToken);

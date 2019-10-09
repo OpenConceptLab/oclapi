@@ -97,6 +97,26 @@ describe('Source', () => {
         expect(json).toEqual(expect.not.arrayContaining([ helper.toSource(helper.viewOrg, helper.privateSource) ]));
     });
 
+    it('should list public and belonging sources in all orgs for authenticated member', async () => {
+        const res = await helper.get(helper.joinUrl(helper.regularMemberUserUrl, 'orgs', 'sources'), helper.regularMemberUserToken);
+        const res2 = await helper.get(helper.joinUrl('user', 'orgs', 'sources'), helper.regularMemberUserToken);
+
+        expect(res.status).toBe(200);
+        expect(res2.status).toBe(200);
+
+        const json = await res.json();
+        const json2 = await res2.json();
+
+        expect(json).toEqual(expect.arrayContaining([
+            helper.toSource(helper.viewOrg, helper.viewSource),
+            helper.toSource(helper.viewOrg, helper.editSource),
+            helper.toSource(helper.viewOrg, helper.privateSource),
+
+            helper.toSource(helper.editOrg, helper.privateEditOrgOwnedSource),
+        ]));
+        expect(json).toEqual(json2);
+    });
+
     it('should list all sources belonging to an authenticated user', async () => {
         const res = await helper.get(helper.joinUrl(helper.regularNonMemberUserUrl, 'sources'), helper.regularNonMemberUserToken);
 
