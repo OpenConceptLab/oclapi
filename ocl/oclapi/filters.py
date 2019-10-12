@@ -153,7 +153,7 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
 
 class HaystackSearchFilter(BaseHaystackSearchFilter):
     def filter_queryset(self, request, queryset, view):
-        return self._filter_queryset(request, queryset, view, RelatedSearchQuerySet())
+        return self._filter_queryset(request, queryset, view, SearchQuerySet())
 
 
 class ConceptContainerPermissionedSearchFilter(HaystackSearchFilter):
@@ -173,4 +173,4 @@ class ConceptContainerPermissionedSearchFilter(HaystackSearchFilter):
         else:
             permissioned_qs = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
 
-        return super(ConceptContainerPermissionedSearchFilter, self).filter_queryset(request, permissioned_qs, view)
+        return super(ConceptContainerPermissionedSearchFilter, self)._filter_queryset(request, permissioned_qs, view, RelatedSearchQuerySet())
