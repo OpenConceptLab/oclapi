@@ -26,10 +26,10 @@ logger = get_task_logger(__name__)
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
-celery.conf.task_routes = {'tasks.bulk_import': {'queue': 'bulk_import'},
+celery.conf.CELERY_ROUTES = {'tasks.bulk_import': {'queue': 'bulk_import'},
                            'tasks.bulk_priority_import': {'queue': 'bulk_priority_import'}}
-celery.conf.result_expires = 259200 #72 hours
-celery.conf.task_track_started = True
+celery.conf.CELERY_TASK_RESULT_EXPIRES = 259200 #72 hours
+celery.conf.CELERY_TRACK_STARTED = True
 
 @celery.task(base=QueueOnce, bind=True)
 def data_integrity_checks(self):
@@ -48,7 +48,8 @@ def bulk_import(self, to_import, username, update_if_exists):
 
 @celery.task(base=QueueOnce, bind=True)
 def bulk_priority_import(self, to_import, username, update_if_exists):
-    bulk_import(self, to_import, username, update_if_exists)
+    from manage.imports.bulk_import import BulkImport
+    return BulkImport().run_import(to_import, username, update_if_exists)
 
 @celery.task(base=QueueOnce, bind=True)
 def export_source(self, version_id):
