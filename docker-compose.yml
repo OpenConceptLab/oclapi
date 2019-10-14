@@ -105,7 +105,7 @@ services:
       test: "exit 0"
   flower:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: celery -A tasks flower --basic_auth=root:${ROOT_PASSWORD-Root123}
+    command: celery -A tasks flower --basic_auth=root:${ROOT_PASSWORD-Root123} --conf=flowerconfig.py
     ports:
       - "5555:5555"
     depends_on:
