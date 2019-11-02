@@ -245,6 +245,16 @@ class Common(Configuration):
       'x-csrftoken'
     )
 
+    CORS_EXPOSE_HEADERS = (
+        'num_found',
+        'num_returned',
+        'next',
+        'previous',
+        'offset',
+        'Content-Length',
+        'Content-Range'
+    )
+
     CORS_ALLOW_CREDENTIALS = True
 
     # Needed to properly support https.
