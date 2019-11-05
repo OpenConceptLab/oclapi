@@ -12,10 +12,12 @@ from fhir.mixins import ConceptMapFhirMixin
 
 __author__ = 'davetrig'
 
-class BaseFhirView(BaseAPIView,):
+class BaseFhirView(BaseAPIView, BaseFhirMixin,):
     permission_classes = (AllowAny,)
 
     def get(self, object_type_values, request, *args, **kwargs):
+        self.ocl_username = self.request.user.username
+
         ocl_object = None
         object_url = request.QUERY_PARAMS.get('url')
         if (object_url == None):
@@ -36,9 +38,8 @@ class BaseFhirView(BaseAPIView,):
             return Response({'detail': 'specified object not of expected type %s'% expected_type}, status=status.HTTP_400_BAD_REQUEST)
 
         fhir_object = self.build_from_dictionary(ocl_object)
-        fhir_object_json = fhir_object.as_json()
-        fhir_object_json_string = json.dumps(fhir_object_json)
-        return HttpResponse(fhir_object_json_string)
+
+        return HttpResponse(json.dumps(fhir_object.as_json()))
 
 
 class FhirCodeSystemView(BaseFhirView, CodeSystemFhirMixin,):

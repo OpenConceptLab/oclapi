@@ -21,25 +21,31 @@ __author__ = 'davetrig'
 
 
 class BaseFhirMixin(object):
+    ocl_username = ''
+
     def get_from_api(self, url):
 
-        #profile = UserProfile.objects.get(mnemonic=username)
-        #api_url = 'http://api.openconceptlab.org:8000'
-        #api_token = profile.user.auth_token.key
-
-        #api_url = 'http://api.openconceptlab.org:8000'
         api_url = 'http://localhost:8000'
-        api_token = '891b4b17feab99f3ff7e5b5d04ccc5da7aa96da6'
-
-        #api_url = 'https://api.staging.openconceptlab.org'
-        #api_token = '57ce8e00f2461a844f428f92dafa26ce3ea0c115'
-
-        ocl_api_headers = {
+        api_headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'Token %s' % api_token
         }
 
-        r = requests.get(api_url + url, headers=ocl_api_headers)
+        try:
+            profile = UserProfile.objects.get(mnemonic=self.ocl_username)
+            api_token = profile.user.auth_token.key
+            api_headers['Authorization'] = 'Token %s' % api_token
+        except:
+            pass
+
+        # use this to test against staging db
+
+        #api_url = 'https://api.staging.openconceptlab.org'
+        #api_headers = {
+        #    'Content-Type': 'application/json',
+        #    'Authorization': '57ce8e00f2461a844f428f92dafa26ce3ea0c115'
+        #}
+
+        r = requests.get(api_url + url, headers=api_headers)
         r.raise_for_status()
         result = r.json()
 
@@ -236,7 +242,7 @@ class ConceptMapFhirMixin(BaseFhirMixin,):
 
 def get_equivalence(map_type):
 
-    if (map_type == 'Same As'):
+    if (map_type.lower() == 'same as'):
         return 'equivalent'
     #
     # Put other value translations here
