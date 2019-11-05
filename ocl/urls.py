@@ -36,4 +36,7 @@ urlpatterns = patterns('',
     # Shortcuts to endpoints corresponding to the currently logged in user
     url(r'^user/', include('user_urls')),
 
+    # FHIR endpoints
+    url(r'^fhir/', include('fhir.urls')),
+
 )
