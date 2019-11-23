@@ -14,7 +14,7 @@ from djangotoolbox.fields import DictField
 
 from oclapi.models import ConceptContainerModel, ConceptContainerVersionModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from oclapi.rawqueries import RawQueries
-from oclapi.utils import S3ConnectionFactory, update_search_index
+from oclapi.utils import S3ConnectionFactory, update_search_index, reverse_resource
 
 SOURCE_TYPE = 'Source'
 
@@ -84,21 +84,17 @@ class Source(ConceptContainerModel):
 
     @property
     def concepts_url(self):
-        owner = self.owner
-        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+        owner_kwarg = self.get_owner_type(self.owner)
+        return reverse('concept-create', kwargs={'source': self.mnemonic, owner_kwarg: self.owner.mnemonic})
 
     @property
     def mappings_url(self):
-        owner = self.owner
-        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('mapping-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+        owner_kwarg = self.get_owner_type(self.owner)
+        return reverse('mapping-list', kwargs={'source': self.mnemonic, owner_kwarg: self.owner.mnemonic})
 
     @property
     def versions_url(self):
-        owner = self.owner
-        owner_kwarg = 'user' if isinstance(owner, User) else 'org'
-        return reverse('sourceversion-list', kwargs={'source': self.mnemonic, owner_kwarg: owner.mnemonic})
+        return reverse_resource(self, 'sourceversion-list')
 
     def get_head(self):
         return SourceVersion.objects.get(mnemonic=HEAD, versioned_object_id=self.id)
@@ -118,6 +114,10 @@ class Source(ConceptContainerModel):
     @staticmethod
     def get_url_kwarg():
         return 'source'
+
+    def get_owner_type(self, owner):
+        sources_url_part = owner.sources_url.split('/')[1]
+        return 'user' if sources_url_part == 'users' else 'org'
 
 
 SOURCE_VERSION_TYPE = 'Source Version'
