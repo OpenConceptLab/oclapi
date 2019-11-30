@@ -9,9 +9,16 @@ export class TestHelper {
     readonly regularMemberUser: string;
     readonly regularMemberUserUrl: string;
 
+    regularMemberUser2Token: string;
+    readonly regularMemberUser2: string;
+    readonly regularMemberUser2Url: string;
+
     regularNonMemberUserToken: string;
     readonly regularNonMemberUser: string;
     readonly regularNonMemberUserUrl: string;
+
+    readonly org1: string;
+    readonly org1Url: string;
 
     readonly privateOrg: string;
     readonly privateOrgUrl: string;
@@ -52,6 +59,9 @@ export class TestHelper {
     readonly privateUserOwnedSource: string;
     readonly privateUserOwnedSourceUrl: string;
 
+    readonly privateOrg1OwnedSource: string;
+    readonly privateOrg1OwnedSourceUrl: string;
+
     readonly viewUserOwnedSource: string;
     readonly viewUserOwnedSourceUrl: string;
 
@@ -60,6 +70,18 @@ export class TestHelper {
 
     readonly viewUserOwnedCollection: string;
     readonly viewUserOwnedCollectionUrl: string;
+
+    readonly privateUserOwnedConcept1: string;
+    readonly privateUserOwnedConcept1Url: string;
+
+    readonly privateUserOwnedConcept2: string;
+    readonly privateUserOwnedConcept2Url: string;
+
+    readonly privateOrg1OwnedConcept1: string;
+    readonly privateOrg1OwnedConcept1Url: string;
+
+    readonly privateOrg1OwnedConcept2: string;
+    readonly privateOrg1OwnedConcept2Url: string;
 
     urlsToDelete: string[];
     static readonly config = {
@@ -77,8 +99,14 @@ export class TestHelper {
         this.regularMemberUser = this.newId('Member-User');
         this.regularMemberUserUrl = this.joinUrl('users', this.regularMemberUser);
 
+        this.regularMemberUser2 = this.newId('Member-User-2');
+        this.regularMemberUser2Url = this.joinUrl('users', this.regularMemberUser2);
+
         this.regularNonMemberUser = this.newId('NonMember-User');
         this.regularNonMemberUserUrl = this.joinUrl('users', this.regularNonMemberUser);
+
+        this.org1 = this.newId('Org-1');
+        this.org1Url = this.joinUrl('orgs', this.org1);
 
         this.privateOrg = this.newId('Private-Org');
         this.privateOrgUrl = this.joinUrl('orgs', this.privateOrg);
@@ -119,6 +147,9 @@ export class TestHelper {
         this.privateUserOwnedSource = this.newId('Private-User-Owned-Source');
         this.privateUserOwnedSourceUrl = this.joinUrl(this.regularNonMemberUserUrl, 'sources', this.privateUserOwnedSource);
 
+        this.privateOrg1OwnedSource = this.newId('Private-Org-1-Owned-Source');
+        this.privateOrg1OwnedSourceUrl = this.joinUrl(this.org1Url, 'sources', this.privateOrg1OwnedSource);
+
         this.viewUserOwnedSource = this.newId('View-User-Owned-Source');
         this.viewUserOwnedSourceUrl = this.joinUrl(this.regularNonMemberUserUrl, 'sources', this.viewUserOwnedSource);
 
@@ -127,6 +158,18 @@ export class TestHelper {
 
         this.viewUserOwnedCollection = this.newId('View-User-Owned-Collection');
         this.viewUserOwnedCollectionUrl = this.joinUrl(this.regularNonMemberUserUrl, 'collections', this.viewUserOwnedCollection);
+
+        this.privateUserOwnedConcept1 = this.newId('Private-User-Owned-Concept-1');
+        this.privateUserOwnedConcept1Url = this.joinUrl(this.privateUserOwnedSourceUrl, 'concepts', this.privateUserOwnedConcept1);
+
+        this.privateUserOwnedConcept2 = this.newId('Private-User-Owned-Concept-2');
+        this.privateUserOwnedConcept2Url = this.joinUrl(this.privateUserOwnedSourceUrl, 'concepts', this.privateUserOwnedConcept2);
+
+        this.privateOrg1OwnedConcept1 = this.newId('Private-Org-1-Owned-Concept-1');
+        this.privateOrg1OwnedConcept1Url = this.joinUrl(this.privateOrg1OwnedSourceUrl, 'concepts', this.privateOrg1OwnedConcept1);
+
+        this.privateOrg1OwnedConcept2 = this.newId('Private-Org-1-Owned-Concept-2');
+        this.privateOrg1OwnedConcept2Url = this.joinUrl(this.privateOrg1OwnedSourceUrl, 'concepts', this.privateOrg1OwnedConcept2);
 
         this.urlsToDelete = [];
     }
@@ -139,13 +182,21 @@ export class TestHelper {
         await this.newUser(this.regularMemberUser, this.regularMemberUser);
         this.regularMemberUserToken = await this.authenticate(this.regularMemberUser, this.regularMemberUser);
 
+        await this.newUser(this.regularMemberUser2, this.regularMemberUser2);
+        this.regularMemberUser2Token = await this.authenticate(this.regularMemberUser2, this.regularMemberUser2);
+
         await this.newUser(this.regularNonMemberUser, this.regularNonMemberUser);
         this.regularNonMemberUserToken = await this.authenticate(this.regularNonMemberUser, this.regularNonMemberUser);
 
+        await this.del(this.org1Url, this.regularMemberUserToken);
+        await this.postOrg(this.org1, this.regularMemberUserToken, 'None');
         await this.del(this.privateOrgUrl, this.regularMemberUserToken);
         await this.postOrg(this.privateOrg, this.regularMemberUserToken, 'None');
         await this.postOrg(this.viewOrg, this.regularMemberUserToken, 'View');
         await this.postOrg(this.editOrg, this.regularMemberUserToken, 'Edit');
+
+        await this.addUserToOrg(this.org1, this.regularMemberUser);
+        await this.addUserToOrg(this.org1, this.regularMemberUser2);
 
         await this.postSource(this.viewOrg, this.privateSource, this.regularMemberUserToken, 'None');
         await this.postSource(this.viewOrg, this.viewSource, this.regularMemberUserToken, 'View');
@@ -160,16 +211,30 @@ export class TestHelper {
         await this.postOrgCollection(this.editOrg, this.privateEditOrgOwnedCollection, this.regularMemberUserToken, 'None');
 
         await this.postUserSource(this.regularNonMemberUser, this.privateUserOwnedSource, this.regularNonMemberUserToken, 'None');
+        await this.postOrgSource(this.org1, this.privateOrg1OwnedSource, this.regularMemberUserToken, 'None');
         await this.postUserSource(this.regularNonMemberUser, this.viewUserOwnedSource, this.regularNonMemberUserToken, 'View');
 
         await this.postUserCollection(this.regularNonMemberUser, this.privateUserOwnedCollection, this.regularNonMemberUserToken, 'None');
         await this.postUserCollection(this.regularNonMemberUser, this.viewUserOwnedCollection, this.regularNonMemberUserToken, 'View');
+
+        await this.postConcept(this.privateUserOwnedSourceUrl, this.privateUserOwnedConcept1, this.regularNonMemberUserToken);
+        await this.postConcept(this.privateUserOwnedSourceUrl, this.privateUserOwnedConcept2, this.regularNonMemberUserToken);
+
+        await this.postConcept(this.privateOrg1OwnedSourceUrl, this.privateOrg1OwnedConcept1, this.regularMemberUserToken);
+        await this.postConcept(this.privateOrg1OwnedSourceUrl, this.privateOrg1OwnedConcept2, this.regularMemberUserToken);
     }
 
     async afterAll() {
+        await this.del(this.privateOrg1OwnedConcept2Url, this.adminToken);
+        await this.del(this.privateOrg1OwnedConcept1Url, this.adminToken);
+
+        await this.del(this.privateUserOwnedConcept2Url, this.adminToken);
+        await this.del(this.privateUserOwnedConcept1Url, this.adminToken);
+
         await this.del(this.privateUserOwnedCollectionUrl, this.adminToken);
         await this.del(this.viewUserOwnedCollectionUrl, this.adminToken);
 
+        await this.del(this.privateOrg1OwnedSourceUrl, this.adminToken);
         await this.del(this.privateUserOwnedSourceUrl, this.adminToken);
         await this.del(this.viewUserOwnedSourceUrl, this.adminToken);
 
@@ -188,9 +253,11 @@ export class TestHelper {
         await this.del(this.viewOrgUrl, this.adminToken);
         await this.del(this.editOrgUrl, this.adminToken);
         await this.del(this.privateOrgUrl, this.adminToken);
+        await this.del(this.org1Url, this.adminToken);
         await this.del(this.privateAdminOrgUrl, this.adminToken);
 
         await this.del(this.regularNonMemberUserUrl, this.adminToken);
+        await this.del(this.regularMemberUser2Url, this.adminToken);
         await this.del(this.regularMemberUserUrl, this.adminToken);
     }
 
@@ -207,6 +274,10 @@ export class TestHelper {
     async newUser(username, password) {
         await this.post('users/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, this.adminToken);
         await this.put('users/' + username + '/reactivate/', {username: username, password: password, name: username, email: username + '@openconceptlab.org'}, this.adminToken);
+    }
+
+    async addUserToOrg(orgId: string, userId: string) {
+        return this.put(this.joinUrl('orgs', orgId, 'members', userId), undefined, this.adminToken);
     }
 
     async authenticateAdmin(): Promise<string> {
@@ -335,6 +406,19 @@ export class TestHelper {
         return response;
     }
 
+    async postOrgSource(orgId: string, sourceId: string, token: string, publicAccess: string=null): Promise<Response> {
+        let response;
+        if (publicAccess == null) {
+            response = await this.post(this.joinUrl('orgs', orgId, 'sources'), {id: sourceId, name: sourceId}, token);
+        } else {
+            response = await this.post(this.joinUrl('orgs', orgId, 'sources'), {id: sourceId, name: sourceId, public_access: publicAccess}, token);
+        }
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
     async postUserCollection(userId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
         let response;
         if (publicAccess == null) {
@@ -352,6 +436,19 @@ export class TestHelper {
         let response;
         response = await this.post(this.joinUrl(sourceUrl, 'concepts'), {id: conceptId, datatype: 'None',
             concept_class: 'Test', names:[ { name: conceptId, locale: 'en', name_type: "FULLY_SPECIFIED" }]}, token);
+
+        //hacky way to wait for index to be updated, implement proper query
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return response;
+    }
+
+    async postMapping(sourceUrl: string, fromUrl: string, toUrl: string, token: string=null): Promise<Response> {
+        let response;
+        response = await this.post(
+            this.joinUrl(sourceUrl, 'mappings'),
+            {from_concept_url: fromUrl, to_concept_url: toUrl, map_type: "NARROWER-THAN", external_id: this.newId('Mapping-External-Id')},
+            token,
+        );
 
         //hacky way to wait for index to be updated, implement proper query
         await new Promise(resolve => setTimeout(resolve, 1000));
