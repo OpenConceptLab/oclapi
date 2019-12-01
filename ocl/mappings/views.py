@@ -14,7 +14,7 @@ from oclapi.models import ACCESS_TYPE_NONE
 from oclapi.views import ConceptDictionaryMixin, BaseAPIView, parse_updated_since_param, VersionedResourceChildMixin
 from sources.models import SourceVersion
 from orgs.models import Organization
-from users.models import UserProfile
+from users.models import UserProfile, ORG_OBJECT_TYPE
 
 INCLUDE_RETIRED_PARAM = 'includeRetired'
 LIMIT_PARAM = 'limit'
@@ -39,10 +39,11 @@ class MappingBaseView(ConceptDictionaryMixin):
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
-        owner_is_self = self.parent_resource and self.userprofile and self.parent_resource.owner == self.userprofile
+        owner_is_self = self.parent_resource and self.user.userprofile and self.parent_resource.owner == self.user.userprofile
+        owner_in_org = self.user.userprofile.pk in self.parent_resource.owner.members if self.parent_resource.owner.resource_type() == ORG_OBJECT_TYPE else False
         if self.parent_resource:
             queryset = queryset.filter(parent_id=self.parent_resource.id)
-        if not(self.user.is_staff or owner_is_self):
+        if not (self.user.is_staff or owner_is_self or owner_in_org):
             queryset = queryset.filter(~Q(public_access=ACCESS_TYPE_NONE))
         return queryset
 

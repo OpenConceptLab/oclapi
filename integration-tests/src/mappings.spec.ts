@@ -22,6 +22,14 @@ describe('Mapping', () => {
         expect(json).toEqual([]);
     }
 
+    async function shouldRetrieveMapping(from: string, id: string, who?: string) {
+        const res = await helper.get(helper.joinUrl(from, 'mappings', id), who);
+        const json = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(json.id).toEqual(id);
+    }
+
     it('should list mappings from viewable source for anonymous', async () => {
         await shouldListMappings(helper.viewSourceUrl);
     });
@@ -120,6 +128,18 @@ describe('Mapping', () => {
 
     it('should not list mappings from private collection for staff', async () => {
         await shouldListMappings(helper.privateCollectionUrl, helper.adminToken);
+    });
+
+    it('should retrieve private mapping if mapping owner', async () => {
+        const res = await helper.postMapping(helper.privateUserOwnedSourceUrl, helper.privateUserOwnedConcept1Url, helper.privateUserOwnedConcept2Url, helper.regularNonMemberUserToken);
+        const json = await res.json();
+        await shouldRetrieveMapping(helper.privateUserOwnedSourceUrl, json.id, helper.regularNonMemberUserToken)
+    });
+
+    it('should retrieve private mapping if org member', async () => {
+        const res = await helper.postMapping(helper.privateOrg1OwnedSourceUrl, helper.privateOrg1OwnedConcept1Url, helper.privateOrg1OwnedConcept2Url, helper.regularMemberUserToken);
+        const json = await res.json();
+        await shouldRetrieveMapping(helper.privateOrg1OwnedSourceUrl, json.id, helper.regularMemberUser2Token)
     });
 });
 
