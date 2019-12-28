@@ -214,6 +214,9 @@ class CollectionReferencesView(CollectionBaseView,
         if not references:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+        if references == '*':
+            references = map(lambda reference: reference.expression, self.parent_resource.references)
+
         if self.cascade_mapping_resolver(cascade_mappings_flag):
             references += self.get_related_mappings_with_version_information(cascade_mappings_flag, references)
 
