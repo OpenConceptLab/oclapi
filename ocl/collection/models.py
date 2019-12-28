@@ -157,8 +157,8 @@ class Collection(ConceptContainerModel):
             concept_ids.extend(map(lambda c: c.id, collection_reference.concepts or []))
             mapping_ids.extend(map(lambda c: c.id, collection_reference.mappings or []))
 
-            CollectionConcept.objects.filter(collection_id=head.id, concept_id__in=concept_ids).delete()
-            CollectionMapping.objects.filter(collection_id=head.id, mapping_id__in=mapping_ids).delete()
+        CollectionConcept.objects.filter(collection_id=head.id, concept_id__in=concept_ids).delete()
+        CollectionMapping.objects.filter(collection_id=head.id, mapping_id__in=mapping_ids).delete()
 
         head.references = filter(lambda ref: ref.expression not in references, head.references)
         self.references = head.references
