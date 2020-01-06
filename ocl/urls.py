@@ -37,6 +37,6 @@ urlpatterns = patterns('',
     url(r'^user/', include('user_urls')),
 
     # FHIR endpoints
-    url(r'^fhir/', include('fhir.urls')),
+    url(r'^fhir/', include('fhir_app.urls')),
 
 )
