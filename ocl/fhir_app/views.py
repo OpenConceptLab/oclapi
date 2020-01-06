@@ -5,10 +5,10 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from oclapi.views import BaseAPIView
-from fhir.mixins import BaseFhirMixin
-from fhir.mixins import CodeSystemFhirMixin
-from fhir.mixins import ValueSetFhirMixin
-from fhir.mixins import ConceptMapFhirMixin
+from fhir_app.mixins import BaseFhirMixin
+from fhir_app.mixins import CodeSystemFhirMixin
+from fhir_app.mixins import ValueSetFhirMixin
+from fhir_app.mixins import ConceptMapFhirMixin
 
 __author__ = 'davetrig'
 

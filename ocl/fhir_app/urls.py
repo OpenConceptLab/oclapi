@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url, include
-from fhir.views import FhirCodeSystemView
-from fhir.views import FhirValueSetView
-from fhir.views import FhirConceptMapView
+from fhir_app.views import FhirCodeSystemView
+from fhir_app.views import FhirValueSetView
+from fhir_app.views import FhirConceptMapView
 
 __author__ = 'davetrig'
 
