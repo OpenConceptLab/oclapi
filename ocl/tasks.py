@@ -168,8 +168,8 @@ def delete_resources_from_collection_in_solr(self, version_id, concepts, mapping
         version.remove_processing(self.request.id)
 
 
-@celery.task
-def add_references(SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
+@celery.task(bind=True)
+def add_references(self, SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
     from concepts.models import Concept
     from mappings.models import Mapping
     from collection.models import CollectionVersion
@@ -178,6 +178,8 @@ def add_references(SerializerClass, user, data, parent_resource, host_url, casca
     from mappings.views import MappingListView
     from collection.models import CollectionReferenceUtils
     from collection.models import CollectionReference
+
+    parent_resource.get_head().add_processing(self.request.id)
 
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
@@ -237,8 +239,10 @@ def add_references(SerializerClass, user, data, parent_resource, host_url, casca
         serializer.object.save()
 
     diff = map(lambda ref: ref, CollectionReference.diff(serializer.object.references, prev_refs))
-
     errors = serializer.errors.get('references', [])
+
+    parent_resource.get_head().remove_processing(self.request.id)
+
     return diff, errors
 
 
