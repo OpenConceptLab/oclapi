@@ -380,6 +380,20 @@ export class TestHelper {
         return response;
     }
 
+    async retry(what: () => void, ms: number=5000): Promise<void> {
+        for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, ms/5));
+            try {
+                await what();
+            } catch (e) {
+                if (i == 4) {
+                    throw e;
+                }
+                console.log('Retrying due to ' + e.toString());
+            }
+        }
+    }
+
     async postOrgCollection(orgId: string, collectionId: string, token: string, publicAccess: string=null): Promise<Response> {
         let response;
         if (publicAccess == null) {

@@ -313,6 +313,40 @@ describe('Source', () => {
     it('with edit access should be deleted by authenticated nonmember', async () => {
         await deleteSourceTestHelper(helper.regularNonMemberUserToken, 'Edit');
     });
+
+    it('should not delete concept from previous source version after edit', async() => {
+        //Given
+        const sourceId = helper.newId('Source');
+        const sourceUrl = helper.joinUrl(helper.viewOrgUrl, 'sources', sourceId);
+        await helper.postSource(helper.viewOrg, sourceId, helper.regularMemberUserToken);
+        helper.cleanup(sourceUrl);
+
+        const conceptId = helper.newId('Concept');
+        const conceptUrl = helper.joinUrl(sourceUrl, 'concepts', conceptId);
+        let res = await helper.postConcept(sourceUrl, conceptId, helper.regularMemberUserToken);
+        let json;
+
+        res = await helper.post(helper.joinUrl(sourceUrl, 'versions'), { 'id': 'v1' }, helper.regularMemberUserToken);
+
+        await helper.retry(async () =>{
+            res = await helper.get(helper.joinUrl(sourceUrl, 'v1', 'concepts'), helper.regularMemberUserToken);
+            json = await res.json();
+            expect(json.length).toEqual(1);
+        });
+
+        //When
+        res = await helper.put(conceptUrl, {'external_id': 'new value'}, helper.regularMemberUserToken);
+
+        //Then
+        await helper.retry(async () => {
+            res = await helper.get(helper.joinUrl(sourceUrl, 'v1', 'concepts'), helper.regularMemberUserToken);
+            json = await res.json();
+            expect(json).toEqual([expect.objectContaining({'external_id': null})]);
+            res = await helper.get(helper.joinUrl(sourceUrl, 'concepts'), helper.regularMemberUserToken);
+            json = await res.json();
+            expect(json).toEqual([expect.objectContaining({'external_id': 'new value'})]);
+        });
+    });
 });
 
 
