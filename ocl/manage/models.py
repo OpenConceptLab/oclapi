@@ -162,7 +162,7 @@ class Reference:
 
             items = RawQueries().find_by_field(dependency.source_type, raw_source_field, raw_source_id)
             for item in items:
-                if dependency.source_type is reference_definition.source_type and item['_id'] is item[raw_source_field]:
+                if dependency.source_type is reference_definition.source_type and item['_id'] is raw_source_id:
                     continue #exclude self referencing dependencies
                 dependencies.append('%s.%s: %s' % (dependency.source_type.__name__, dependency.source_field, str(item)))
         return dependencies
