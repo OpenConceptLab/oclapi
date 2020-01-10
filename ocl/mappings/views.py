@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpResponse
@@ -39,8 +40,9 @@ class MappingBaseView(ConceptDictionaryMixin):
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
-        owner_is_self = self.parent_resource and self.user.userprofile and self.parent_resource.owner == self.user.userprofile
-        owner_in_org = self.user.userprofile.pk in self.parent_resource.owner.members if self.parent_resource.owner.resource_type() == ORG_OBJECT_TYPE else False
+        if not isinstance(self.user, AnonymousUser):
+            owner_is_self = self.parent_resource and self.user.userprofile and self.parent_resource.owner == self.user.userprofile
+            owner_in_org = self.user.userprofile.pk in self.parent_resource.owner.members if self.parent_resource.owner.resource_type() == ORG_OBJECT_TYPE else False
         if self.parent_resource:
             queryset = queryset.filter(parent_id=self.parent_resource.id)
         if not (self.user.is_staff or owner_is_self or owner_in_org):
