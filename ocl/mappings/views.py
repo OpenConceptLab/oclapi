@@ -40,6 +40,7 @@ class MappingBaseView(ConceptDictionaryMixin):
 
     def get_queryset(self):
         queryset = super(ConceptDictionaryMixin, self).get_queryset()
+        owner_is_self, owner_in_org = False
         if not isinstance(self.user, AnonymousUser):
             owner_is_self = self.parent_resource and self.user.userprofile and self.parent_resource.owner == self.user.userprofile
             owner_in_org = self.user.userprofile.pk in self.parent_resource.owner.members if self.parent_resource.owner.resource_type() == ORG_OBJECT_TYPE else False
