@@ -235,7 +235,9 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     class MongoMeta:
         indexes = [[ ('uri', 1) ],
                    [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', -1)],
-                   [('source_version_ids', 1), ('updated_at', -1)]]
+                   [('source_version_ids', 1), ('updated_at', -1)],
+                   [('parent_version_id', 1)],
+                   [('previous_version_id', 1)]]
 
     objects = MongoDBManager()
 
