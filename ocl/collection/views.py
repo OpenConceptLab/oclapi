@@ -151,22 +151,22 @@ class CollectionReferencesView(CollectionBaseView,
             self.serializer_class, self.request.user, data, self.parent_resource, host_url, cascade_mappings
         )
 
-        all_expression = expressions + concept_expressions + mapping_expressions
+        all_expressions = expressions + concept_expressions + mapping_expressions
 
-        added_expression = [references.expression for references in added_references]
-        added_original_expression = set([references.original_expression for references in added_references] + all_expression)
+        added_expressions = [reference.expression for reference in added_references]
+        added_original_expressions = set([reference.original_expression for reference in added_references] + all_expressions)
 
         response = []
 
-        for expression in added_original_expression:
-            response_item = self.create_response_item(added_expression, errors, expression)
+        for expression in added_original_expressions:
+            response_item = self.create_response_item(added_expressions, errors, expression)
             if response_item:
                 response.append(response_item)
 
         return Response(response, status=status.HTTP_200_OK)
 
     def create_response_item(self, added_references, errors, expression):
-        adding_expression_failed = len(errors) > 0 and errors[0].has_key(expression)
+        adding_expression_failed = len(errors) > 0 and errors.has_key(expression)
         if adding_expression_failed:
             return self.create_error_message(errors, expression)
         return self.create_success_message(added_references, expression)
@@ -185,7 +185,7 @@ class CollectionReferencesView(CollectionBaseView,
         }
 
     def create_error_message(self, errors, expression):
-        error_message = errors[0].get(expression, {})
+        error_message = errors.get(expression, {})
         return {
             'added': False,
             'expression': expression,

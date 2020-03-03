@@ -19,7 +19,7 @@ python-dateutil==2.2
 gunicorn==18.0
 moto==0.4.25
 django-cors-headers==1.1.0
-ocldev==0.1.36
+ocldev==0.1.37
 fhir.resources==5.0.1
 mock
 raven #used to push logs to sentry.io/openconceptlab
