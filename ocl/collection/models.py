@@ -96,12 +96,17 @@ class Collection(ConceptContainerModel):
             if existing_versionless_expression in new_versionless_expressions:
                 existing_expression = new_versionless_expressions[existing_versionless_expression]
                 new_expressions.discard(existing_expression)
-                errors[existing_expression] = REFERENCE_ALREADY_EXISTS
+                errors[existing_expression] = [REFERENCE_ALREADY_EXISTS]
 
         added_references = list()
         for expression in new_expressions:
             ref = CollectionReference(expression=expression)
-            ref.clean()
+            try:
+                ref.clean()
+            except Exception as e:
+                errors[expression] = e.messages if hasattr(e, 'messages') else e
+                continue
+
             added = False
             if ref.concepts:
                 for concept in ref.concepts:
