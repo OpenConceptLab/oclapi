@@ -59,6 +59,7 @@ class Collection(ConceptContainerModel):
         return CollectionVersion
 
     def clean(self):
+        #TODO: figure out why add_references is called here, which triggers CollectionVersion.persist_changes
         errors = self.add_references(self.expressions)
         if errors:
             raise ValidationError({'references': [errors]})
@@ -84,6 +85,50 @@ class Collection(ConceptContainerModel):
 
         return errors
 
+    def add_references_in_bulk(self, expressions):
+        errors = {}
+        collection_version = CollectionVersion.get_head(self.id)
+
+        new_expressions = set(expressions)
+        new_versionless_expressions = {CollectionReferenceUtils.drop_version(expression):expression for expression in new_expressions}
+        for reference in collection_version.references:
+            existing_versionless_expression = CollectionReferenceUtils.drop_version(reference.expression)
+            if existing_versionless_expression in new_versionless_expressions:
+                existing_expression = new_versionless_expressions[existing_versionless_expression]
+                new_expressions.discard(existing_expression)
+                errors[existing_expression] = REFERENCE_ALREADY_EXISTS
+
+        added_references = list()
+        for expression in new_expressions:
+            ref = CollectionReference(expression=expression)
+            ref.clean()
+            added = False
+            if ref.concepts:
+                for concept in ref.concepts:
+                    if self.custom_validation_schema == CUSTOM_VALIDATION_SCHEMA_OPENMRS:
+                        try:
+                            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='is_fully_specified', value=True,
+                                                                                                     error_message=CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+                            self.check_concept_uniqueness_in_collection_and_locale_by_name_attribute(concept, attribute='locale_preferred', value=True,
+                                                                                                  error_message=CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE)
+                        except Exception as e:
+                            errors[expression] = e.messages if hasattr(e, 'messages') else e
+                            continue
+                    collection_version.add_concept(concept)
+                    added = True
+            if ref.mappings:
+                for mapping in ref.mappings:
+                    collection_version.add_mapping(mapping)
+                    added = True
+
+            if added:
+                collection_version.references.append(ref)
+                self.references.append(ref)
+                added_references.append(ref)
+
+        collection_version.save()
+        self.save()
+        return added_references, errors
 
     def get_concept_id_by_version_information(self, expression):
         if CollectionReference.version_specified(expression):
@@ -551,7 +596,7 @@ class CollectionReferenceUtils():
                 related_mappings = cls.get_related_mappings(concept_expression, unversioned_mappings)
                 all_related_mappings += related_mappings
 
-            except Exception:
+            except Exception as ex:
                 continue
 
         return all_related_mappings
@@ -560,20 +605,20 @@ class CollectionReferenceUtils():
     def get_related_mappings(cls, expression, existing_unversioned_mappings):
         mappings = []
         concept_id = cls.get_concept_id_by_version_information(expression)
-        related_mappings = Concept.objects.get(id=concept_id).get_unidirectional_mappings()
+        related_mapping_urls = Concept.objects.get(id=concept_id).get_unidirectional_mappings().values_list('uri', flat=True)
 
-        for mapping in related_mappings:
-            if mapping.url not in existing_unversioned_mappings:
-                mappings.append(mapping.url)
+        for mapping_url in related_mapping_urls:
+            if mapping_url not in existing_unversioned_mappings:
+                mappings.append(mapping_url)
 
         return mappings
 
     @classmethod
     def get_concept_id_by_version_information(cls, expression):
         if CollectionReference.version_specified(expression):
-            return ConceptVersion.objects.get(uri=expression).versioned_object_id
+            return ConceptVersion.objects.filter(uri=expression).values_list('versioned_object_id', flat=True)[0]
         else:
-            return Concept.objects.get(uri=expression).id
+            return Concept.objects.filter(uri=expression).values_list('id', flat=True)[0]
 
     @classmethod
     def drop_version(cls, expression):

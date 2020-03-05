@@ -169,26 +169,20 @@ def delete_resources_from_collection_in_solr(self, version_id, concepts, mapping
 
 
 @celery.task(bind=True)
-def add_references(self, SerializerClass, user, data, parent_resource, host_url, cascade_mappings=False):
+def add_references(self, SerializerClass, user, data, collection, host_url, cascade_mappings=False):
     from concepts.models import Concept
     from mappings.models import Mapping
-    from collection.models import CollectionVersion
-    from sources.models import SourceVersion
     from concepts.views import ConceptVersionListView
     from mappings.views import MappingListView
     from collection.models import CollectionReferenceUtils
-    from collection.models import CollectionReference
 
-    parent_resource.get_head().add_processing(self.request.id)
+    collection.get_head().add_processing(self.request.id)
 
     expressions = data.get('expressions', [])
     concept_expressions = data.get('concepts', [])
     mapping_expressions = data.get('mappings', [])
     uri = data.get('uri')
     search_term = data.get('search_term', '')
-
-    if '*' in [concept_expressions, mapping_expressions]:
-        ResourceContainer = SourceVersion if uri.split('/')[3] == 'sources' else CollectionVersion
 
     if concept_expressions == '*':
         url = host_url + uri + 'concepts?q=' + search_term + '&limit=0'
@@ -219,31 +213,19 @@ def add_references(self, SerializerClass, user, data, parent_resource, host_url,
     expressions = set(expressions)
 
     if cascade_mappings:
-        all_related_mappings = CollectionReferenceUtils.get_all_related_mappings(expressions, parent_resource)
-        expressions = expressions.union(set(all_related_mappings))
+        all_related_mappings = CollectionReferenceUtils.get_all_related_mappings(expressions, collection)
+        expressions = expressions.union(all_related_mappings)
 
-    prev_refs = parent_resource.references
-    save_kwargs = {
-        'force_update': True, 'expressions': expressions, 'user': user
-    }
+    added_references, errors = collection.add_references_in_bulk(expressions)
 
-    serializer = SerializerClass(parent_resource, partial=True)
-
-    serializer.save(**save_kwargs)
     update_collection_in_solr.delay(
-        serializer.object.get_head().id,
-        CollectionReference.diff(serializer.object.references, prev_refs)
+        collection.get_head().id,
+        added_references
     )
 
-    if 'references' in serializer.errors:
-        serializer.object.save()
+    collection.get_head().remove_processing(self.request.id)
 
-    diff = map(lambda ref: ref, CollectionReference.diff(serializer.object.references, prev_refs))
-    errors = serializer.errors.get('references', [])
-
-    parent_resource.get_head().remove_processing(self.request.id)
-
-    return diff, errors
+    return added_references, errors
 
 
 def index_resource(resource_ids, resource_klass, resource_version_klass, identifier):

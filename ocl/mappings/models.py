@@ -345,7 +345,8 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
                    [('versioned_object_id', 1), ('is_latest_version', 1), ('created_at', -1)],
                    [('source_version_ids', 1), ('updated_at', -1)],
                    [('parent_version', 1)],
-                   [('previous_version', 1)]]
+                   [('previous_version', 1)],
+                   [('uri', 1)]]
 
     def clone(self):
         return MappingVersion(
