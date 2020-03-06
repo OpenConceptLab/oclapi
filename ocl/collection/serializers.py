@@ -144,7 +144,7 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     def get_fields(self, *args, **kwargs):
         fields = super(CollectionDetailSerializer, self).get_fields(*args, **kwargs)
         from collection.views import INCLUDE_REFERENCES_PARAM
-        include_references = self.context.get(INCLUDE_REFERENCES_PARAM)
+        include_references = self.context.get(INCLUDE_REFERENCES_PARAM, True)
         if not include_references:
             fields.pop('references', None)
         return fields
@@ -236,7 +236,7 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
     def get_fields(self, *args, **kwargs):
         fields = super(CollectionVersionDetailSerializer, self).get_fields(*args, **kwargs)
         from collection.views import INCLUDE_REFERENCES_PARAM
-        include_references = self.context.get(INCLUDE_REFERENCES_PARAM)
+        include_references = self.context.get(INCLUDE_REFERENCES_PARAM, True)
         if not include_references:
             fields.pop('references', None)
         return fields

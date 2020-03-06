@@ -41,24 +41,17 @@ from django.core.exceptions import ValidationError
 logger = logging.getLogger('oclapi')
 INCLUDE_REFERENCES_PARAM = 'includeReferences'
 
-class CollectionBaseView():
+class CollectionBaseView(BaseAPIView):
     lookup_field = 'collection'
     pk_field = 'mnemonic'
     model = Collection
     queryset = Collection.objects.filter(is_active=True)
 
-    def initialize(self, request, path_info_segment, **kwargs):
-        self.include_references = self.request.QUERY_PARAMS.get(INCLUDE_REFERENCES_PARAM, 'false').lower() == 'true'
-
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
-        return CollectionDetailSerializer(obj, data, files, partial)
+        return CollectionDetailSerializer(obj, data, files, self.get_serializer_context(), partial)
 
     def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
-        return CollectionVersionDetailSerializer(obj, data, files, partial)
-
-    def get_serializer_context(self):
-        context = {'request': self.request, INCLUDE_REFERENCES_PARAM: self.include_references}
-        return context
+        return CollectionVersionDetailSerializer(obj, data, files, self.get_serializer_context(), partial)
 
     def get_queryset(self):
         owner = self.get_owner()
@@ -77,9 +70,6 @@ class CollectionBaseView():
             )
         else:
             queryset = self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
-
-        if not self.include_references:
-            queryset = queryset.defer('references')
         return queryset
 
     def get_owner(self):
@@ -305,6 +295,15 @@ class CollectionListView(CollectionBaseView,
         'customValidationSchema': {'sortable': False, 'filterable': True},
     }
 
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.include_references = self.request.QUERY_PARAMS.get(INCLUDE_REFERENCES_PARAM, 'false').lower() == 'true'
+        super(CollectionListView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_serializer_context(self):
+        context = super(CollectionListView, self).get_serializer_context()
+        context.update({'request': self.request, INCLUDE_REFERENCES_PARAM: self.include_references})
+        return context
+
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
@@ -325,6 +324,9 @@ class CollectionListView(CollectionBaseView,
         if self.contains_uri != None:
             from django_mongodb_engine.query import A
             queryset = queryset.filter(references=A('expression', self.contains_uri), public_access__in=[ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW])
+        if not self.include_references:
+            queryset = queryset.defer('references')
+
         return queryset
 
     def get_csv_rows(self, queryset=None):
@@ -380,6 +382,15 @@ class CollectionVersionListView(CollectionVersionBaseView,
     processing_filter = None
     released_filter = None
 
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.include_references = self.request.QUERY_PARAMS.get(INCLUDE_REFERENCES_PARAM, 'false').lower() == 'true'
+        super(CollectionVersionListView, self).initialize(request, path_info_segment, **kwargs)
+
+    def get_serializer_context(self):
+        context = super(CollectionVersionListView, self).get_serializer_context()
+        context.update({'request': self.request, INCLUDE_REFERENCES_PARAM: self.include_references})
+        return context
+
     def get(self, request, *args, **kwargs):
         self.permission_classes = (CanViewConceptDictionary,)
         self.serializer_class = CollectionVersionDetailSerializer if self.is_verbose(
@@ -415,6 +426,8 @@ class CollectionVersionListView(CollectionVersionBaseView,
 
     def get_queryset(self):
         queryset = super(CollectionVersionListView, self).get_queryset()
+        if not self.include_references:
+            queryset = queryset.defer('references')
         return queryset.order_by('-created_at')
 
 
