@@ -39,7 +39,7 @@ from tasks import update_collection_in_solr, delete_resources_from_collection_in
 from django.core.exceptions import ValidationError
 
 logger = logging.getLogger('oclapi')
-
+INCLUDE_REFERENCES_PARAM = 'includeReferences'
 
 class CollectionBaseView():
     lookup_field = 'collection'
@@ -47,11 +47,18 @@ class CollectionBaseView():
     model = Collection
     queryset = Collection.objects.filter(is_active=True)
 
+    def initialize(self, request, path_info_segment, **kwargs):
+        self.include_references = self.request.QUERY_PARAMS.get(INCLUDE_REFERENCES_PARAM, 'false').lower() == 'true'
+
     def get_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionDetailSerializer(obj, data, files, partial)
 
     def get_version_detail_serializer(self, obj, data=None, files=None, partial=False):
         return CollectionVersionDetailSerializer(obj, data, files, partial)
+
+    def get_serializer_context(self):
+        context = {'request': self.request, INCLUDE_REFERENCES_PARAM: self.include_references}
+        return context
 
     def get_queryset(self):
         owner = self.get_owner()
@@ -59,16 +66,21 @@ class CollectionBaseView():
             user = self.request.QUERY_PARAMS.get('user', None)
             if user:
                 user = UserProfile.objects.get(mnemonic=user)
-                return self.queryset.filter(parent_id=user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
-            return self.queryset
+                queryset = self.queryset.filter(parent_id=user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+            else:
+                queryset = self.queryset
         elif 'collection' in self.kwargs:
-            return self.model.objects.filter(
+            queryset = self.model.objects.filter(
                 parent_id=owner.id,
                 mnemonic=self.kwargs['collection'],
                 parent_type=ContentType.objects.get_for_model(owner),
             )
         else:
-            return self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
+            queryset = self.queryset.filter(parent_id=owner.id, parent_type=ContentType.objects.get_for_model(owner))
+
+        if not self.include_references:
+            queryset = queryset.defer('references')
+        return queryset
 
     def get_owner(self):
         return self.parent_resource

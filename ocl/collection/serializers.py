@@ -141,6 +141,14 @@ class CollectionDetailSerializer(CollectionCreateOrUpdateSerializer):
     active_concepts = serializers.SerializerMethodField(method_name='get_active_concepts')
     active_mappings = serializers.SerializerMethodField(method_name='get_active_mappings')
 
+    def get_fields(self, *args, **kwargs):
+        fields = super(CollectionDetailSerializer, self).get_fields(*args, **kwargs)
+        from collection.views import INCLUDE_REFERENCES_PARAM
+        include_references = self.context.get(INCLUDE_REFERENCES_PARAM)
+        if not include_references:
+            fields.pop('references', None)
+        return fields
+
     def save_object(self, obj, **kwargs):
         request_user = kwargs.pop('user', None) or self.context['request'].user
         errors = Collection.persist_changes(obj, request_user, **kwargs)
@@ -224,6 +232,14 @@ class CollectionVersionDetailSerializer(ResourceVersionSerializer):
         model = CollectionVersion
         versioned_object_view_name = 'collection-detail'
         versioned_object_field_name = 'collectionUrl'
+
+    def get_fields(self, *args, **kwargs):
+        fields = super(CollectionVersionDetailSerializer, self).get_fields(*args, **kwargs)
+        from collection.views import INCLUDE_REFERENCES_PARAM
+        include_references = self.context.get(INCLUDE_REFERENCES_PARAM)
+        if not include_references:
+            fields.pop('references', None)
+        return fields
 
     def get_default_fields(self):
         default_fields = super(CollectionVersionDetailSerializer, self).get_default_fields()
