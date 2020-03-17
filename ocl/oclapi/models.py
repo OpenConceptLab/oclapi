@@ -1,3 +1,4 @@
+import collections
 import logging
 import re
 import ast
@@ -69,7 +70,7 @@ class BaseModel(models.Model):
 
     def __setattr__(self, attrname, val):
         if("extras" == attrname and val is not None and self.is_being_saved == False and self.extras_have_been_decoded == False):
-            val = self.decode_extras(val)
+            self.decode_extras(val)
             self.extras_have_been_decoded = True
         super(BaseModel, self).__setattr__(attrname, val)
 
@@ -106,27 +107,40 @@ class BaseModel(models.Model):
 
     def encode_extras(self):
         if self.extras is not None and self.extras_have_been_encoded == False:
-            encoded_extras = {}
-            extras = self.extras
+            self.encode_extras_recursively(self.extras)
+            self.extras_have_been_encoded = True
+        return
+
+    def encode_extras_recursively(self, extras):
+        if isinstance(extras, collections.Mapping):
             for old_key in extras:
                 key = old_key
                 key = key.replace('%', '%25')
                 key = key.replace('.','%2E')
                 value = extras.get(old_key)
-                encoded_extras[key] = value
-            self.extras = encoded_extras
-            self.extras_have_been_encoded = True
-        return
+                self.encode_extras_recursively(value)
+                if key is not old_key:
+                    extras.pop(old_key)
+                    extras[key] = value
+        elif isinstance(extras, list):
+            for item in extras:
+                self.encode_extras_recursively(item)
 
     def decode_extras(self, extras):
-        decoded_extras = {}
-        for old_key in extras:
-            key = old_key
-            key = key.replace('%25', '%')
-            key = key.replace('%2E', '.')
-            value = extras.get(old_key)
-            decoded_extras[key] = value
-        return decoded_extras
+        if isinstance(extras, collections.Mapping):
+            for old_key in extras:
+                key = old_key
+                key = key.replace('%25', '%')
+                key = key.replace('%2E', '.')
+                value = extras.get(old_key)
+                self.decode_extras(value)
+                if key is not old_key:
+                    extras.pop(old_key)
+                    extras[key] = value
+        elif isinstance(extras, list):
+            for item in extras:
+                self.decode_extras(item)
+
 
 class BaseResourceModel(BaseModel):
     """
