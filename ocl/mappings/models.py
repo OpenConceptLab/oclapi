@@ -29,7 +29,8 @@ class Mapping(MappingValidationMixin, BaseModel):
     class MongoMeta:
         indexes = [[('parent', 1), ('from_concept', 1)],
                    [('parent'), ('to_concept', 1)],
-                   [('parent', 1), ('retired', 1), ('is_active', 1)]]
+                   [('parent', 1), ('retired', 1), ('is_active', 1)],
+                   [('uri', 1)]]
 
     def clone(self, user):
         return Mapping(
