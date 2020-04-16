@@ -59,7 +59,9 @@ class CollectionBaseView(BaseAPIView):
             user = self.request.QUERY_PARAMS.get('user', None)
             if user:
                 user = UserProfile.objects.get(mnemonic=user)
-                queryset = self.queryset.filter(parent_id=user.id, parent_type=ContentType.objects.get_for_model(UserProfile))
+                parents = [user.id]
+                parents.extend(user.organizations)
+                queryset = self.queryset.filter(parent_id__in=parents)
             else:
                 queryset = self.queryset
         elif 'collection' in self.kwargs:
