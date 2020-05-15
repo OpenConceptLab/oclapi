@@ -175,7 +175,7 @@ class CollectionVersionListSerializer(ResourceVersionSerializer):
         versioned_object_field_name = 'url'
 
 
-class CollectionVersionCreateOrUpdateSerializer(serializers.Serializer):
+class CollectionVersionCreateOrUpdateSerializer(ResourceVersionSerializer):
     class Meta:
         model = CollectionVersion
         lookup_field = 'mnemonic'
