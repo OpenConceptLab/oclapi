@@ -262,8 +262,7 @@ class ConceptDescriptionSerializer(serializers.Serializer):
         concept_desc = instance if instance else LocalizedText()
         concept_desc.name = attrs.get('name', concept_desc.name)
         concept_desc.locale = attrs.get('locale', concept_desc.locale)
-        concept_desc.locale_preferred = attrs.get(
-            'locale_preferred', concept_desc.locale_preferred)
+        concept_desc.locale_preferred = attrs.get('locale_preferred', concept_desc.locale_preferred)
         concept_desc.type = attrs.get('type', concept_desc.type)
         concept_desc.external_id = attrs.get('external_id', concept_desc.external_id)
         return concept_desc

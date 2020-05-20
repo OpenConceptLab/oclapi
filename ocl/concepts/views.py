@@ -439,10 +439,17 @@ class ConceptLabelListCreateView(ConceptBaseView, VersionedResourceChildMixin,
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
         if serializer.is_valid():
             new_version = self.parent_resource_version.clone()
+            # get the current labels from the object
             labels = getattr(new_version, self.parent_list_attribute)
+            # If labels are None then we would want to initialize the labels in new_version
+            if labels is None:
+                setattr(new_version, self.parent_list_attribute, [])
+                labels = getattr(new_version, self.parent_list_attribute)
+            # update the labels with input object
             labels.append(serializer.object)
             new_version.update_comment = 'Added to %s: %s.' % (self.parent_list_attribute,
                                                                serializer.object.name)
+            # save updated ConceptVersion into database
             errors = ConceptVersion.persist_clone(new_version, request.user)
             if errors:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)

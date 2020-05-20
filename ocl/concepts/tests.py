@@ -243,6 +243,35 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
 
+    def test_concept_descriptions(self):
+        """
+        Test to make sure that Concept resource is properly updated when adding ConceptDescription to it.
+        """
+        concept, errors = create_concept(
+            mnemonic='concept1',
+            user=self.user1,
+            source=self.source1,
+            names=[self.name],
+            force=True
+        )
+
+        self.assertTrue(Concept.objects.filter(mnemonic='concept1').exists())
+        self.assertFalse(concept.retired)
+        self.assertEquals(self.source1.owner_name, concept.owner_name)
+        self.assertEquals(self.source1.owner_type, concept.owner_type)
+        self.assertEquals(1, concept.num_versions)
+        self.assertIsNone(concept.descriptions)
+
+        concept_version = ConceptVersion.objects.get(versioned_object_id=concept.id).clone()
+        self.assertFalse(concept_version.descriptions)
+        concept_version.descriptions = [create_localized_text(name = 'concept description')]
+        ConceptVersion.persist_clone(concept_version, self.user1)
+        self.assertEquals(2, concept.num_versions)
+
+        concept_version_latest = ConceptVersion.get_latest_version_of(concept)
+        self.assertTrue(concept_version_latest.descriptions)
+        self.assertEquals("concept description", concept_version_latest.descriptions[0].name)
+
     def test_concept_access_changes_with_source(self):
         public_access = self.source1.public_access
         concept = Concept(
