@@ -1,3 +1,6 @@
+import re
+import urllib
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
@@ -6,6 +9,7 @@ from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
 from oclapi.models import ACCESS_TYPE_NONE
+from oclapi.search_indexes import encode_search_field_name
 from orgs.models import Organization
 from users.models import UserProfile
 
@@ -66,6 +70,17 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                     vals = v.split(',')
                     clause = "(%s)" % ' OR '.join(vals)
                     filters["%s__exact" % k] = Raw(clause)
+            if k.startswith('extras__'):
+                #encode extras name
+                field_name_parts = []
+                for part in k.split('__'):
+                    encoded = encode_search_field_name(part)
+                    field_name_parts.append(encoded)
+                field_name = '_'.join(field_name_parts)
+                vals = v.split(',')
+                clause = "(%s)" % ' OR '.join(vals)
+                filters["%s__exact" % field_name] = Raw(clause)
+
         return filters
 
     def get_sq_filters(self, request, view):

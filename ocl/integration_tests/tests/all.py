@@ -325,6 +325,67 @@ class ConceptCreateViewTest(ConceptBaseTest):
 
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_search_concept_by_extras(self):
+        self.client.login(username='user1', password='user1')
+
+        kwargs = {
+            'org': self.org1.mnemonic,
+            'source': self.source_for_openmrs.mnemonic,
+        }
+
+        data = json.dumps({
+            "id": "12399000",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "grip",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "descriptions": [{
+                "description": "description",
+                "locale": "en",
+                "description_type": "None"
+            }],
+            "datatype": "None",
+            "extras": {
+                "custom_attribute": "Test",
+                "nested-attribute": {
+                    "custom attribute": "Test2",
+                    "custom.attribute": "Test3"
+                }
+            }
+        })
+
+        self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        update_haystack_index()
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__custom_attribute=Test', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 1)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__custom_attribute=Test2', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 0)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom attribute=Test2', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 1)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom attribute=Test3', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 0)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom.attribute=Test3', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 1)
+
     def test_create_concept_with_more_than_one_preferred_name_in_source(self):
         self.client.login(username='user1', password='user1')
         kwargs = {
