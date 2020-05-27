@@ -149,7 +149,6 @@
     <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
     <dynamicField name="*_coordinate"  type="tdouble" indexed="true"  stored="false"/>
 
-
     <field name="username" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="location" type="lowercase" indexed="true" stored="true" multiValued="false" />
@@ -277,6 +276,8 @@
     <field name="fromConceptOwnerType_exact" type="string" indexed="true" stored="true" multiValued="false" />
 
     <field name="external_id" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
+    <dynamicField name="extras_*"  type="string"  indexed="true"  stored="true"/>
 
   </fields>
 
