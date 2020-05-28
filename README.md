@@ -1,4 +1,4 @@
-oclapi
+OCL API
 ======
 
 ## Contributing
