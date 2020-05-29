@@ -4,7 +4,7 @@ import urllib
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from haystack.inputs import Raw
+from haystack.inputs import Raw, Not
 from haystack.query import RelatedSearchQuerySet, SearchQuerySet
 from rest_framework.filters import BaseFilterBackend
 
@@ -79,7 +79,10 @@ class BaseHaystackSearchFilter(BaseFilterBackend):
                 field_name = '_'.join(field_name_parts)
                 vals = v.split(',')
                 clause = "(%s)" % ' OR '.join(vals)
-                filters["%s__exact" % field_name] = Raw(clause)
+                if field_name.endswith('_21'): #ends with '!'
+                    filters["-%s__exact" % field_name[:-3]] = Raw(clause)
+                else:
+                    filters["%s__exact" % field_name] = Raw(clause)
 
         return filters
 

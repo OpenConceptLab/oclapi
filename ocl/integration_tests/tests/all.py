@@ -353,7 +353,49 @@ class ConceptCreateViewTest(ConceptBaseTest):
                 "nested-attribute": {
                     "custom attribute": "Test2",
                     "custom.attribute": "Test3"
-                }
+                },
+                "attributes": [
+                    {
+                        "nested": "Nested1"
+                    },
+                    {
+                        "nested": "NESTED2"
+                    }
+                ]
+            }
+        })
+
+        self.client.post(reverse('concept-create', kwargs=kwargs), data, content_type='application/json')
+
+        data = json.dumps({
+            "id": "111111001",
+            "concept_class": "Diagnosis",
+            "names": [{
+                "name": "another grip",
+                "locale": 'en',
+                "locale_preferred": "true",
+                "name_type": "FULLY_SPECIFIED"
+            }],
+            "descriptions": [{
+                "description": "another description",
+                "locale": "en",
+                "description_type": "None"
+            }],
+            "datatype": "None",
+            "extras": {
+                "custom_attribute": "Test",
+                "nested-attribute": {
+                    "custom attribute": "Test2",
+                    "custom.attribute": "Test5"
+                },
+                "attributes": [
+                    {
+                        "nested": "Nested1"
+                    },
+                    {
+                        "nested": "NESTED3"
+                    }
+                ]
             }
         })
 
@@ -364,17 +406,18 @@ class ConceptCreateViewTest(ConceptBaseTest):
         response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__custom_attribute=Test', content_type='application/json')
         result = json.loads(response.content)
 
-        self.assertEquals(len(result), 1)
+        self.assertEquals(len(result), 2)
 
-        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__custom_attribute=Test2', content_type='application/json')
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__custom_5Fattribute=Test2', content_type='application/json')
         result = json.loads(response.content)
 
         self.assertEquals(len(result), 0)
 
-        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom attribute=Test2', content_type='application/json')
+        #test different case as well
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom attribute=tESt2', content_type='application/json')
         result = json.loads(response.content)
 
-        self.assertEquals(len(result), 1)
+        self.assertEquals(len(result), 2)
 
         response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom attribute=Test3', content_type='application/json')
         result = json.loads(response.content)
@@ -382,6 +425,26 @@ class ConceptCreateViewTest(ConceptBaseTest):
         self.assertEquals(len(result), 0)
 
         response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__nested-attribute__custom.attribute=Test3', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 1)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__attributes__nested=Nested1', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 2)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__attributes__nested=nested2', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 1)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__attributes__nested=nested4', content_type='application/json')
+        result = json.loads(response.content)
+
+        self.assertEquals(len(result), 0)
+
+        response = self.client.get(reverse('concept-create', kwargs=kwargs) + '?extras__attributes__nested!=nested3', content_type='application/json')
         result = json.loads(response.content)
 
         self.assertEquals(len(result), 1)
