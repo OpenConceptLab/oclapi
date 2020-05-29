@@ -5,7 +5,7 @@ from orgs.views import OrganizationListView
 from sources.views import OrganizationSourceListView
 from users.models import UserProfile
 from users.views import UserListView, UserDetailView, UserReactivateView, UserLoginView
-from oclapi.models import NAMESPACE_PATTERN, CONCEPT_ID_PATTERN
+from oclapi.models import NAMESPACE_PATTERN
 
 __author__ = 'misternando'
 

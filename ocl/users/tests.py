@@ -115,3 +115,39 @@ class UserProfileTest(OclApiBaseTestCase):
         self.assertTrue(UserProfile.objects.filter(id=user_id).exists())
         user.delete()
         self.assertFalse(UserProfile.objects.filter(id=user_id).exists())
+
+    def test_create_user_profile_special_characters(self):
+        # period in mnemonic
+        user = UserProfile(user=self.user1, mnemonic='user.1', created_by=self.user1, updated_by=self.user1)
+        user.full_clean()
+        user.save()
+        self.assertTrue(UserProfile.objects.filter(mnemonic='user.1').exists())
+        user.delete()
+
+        # hyphen in mnemonic
+        user = UserProfile(user=self.user1, mnemonic='user-1', created_by=self.user1, updated_by=self.user1)
+        user.full_clean()
+        user.save()
+        self.assertTrue(UserProfile.objects.filter(mnemonic='user-1').exists())
+        user.delete()
+
+        # underscore in mnemonic
+        user = UserProfile(user=self.user1, mnemonic='user_1', created_by=self.user1, updated_by=self.user1)
+        user.full_clean()
+        user.save()
+        self.assertTrue(UserProfile.objects.filter(mnemonic='user_1').exists())
+        user.delete()
+
+        # all characters in mnemonic
+        user = UserProfile(user=self.user1, mnemonic='user.1_2-3', created_by=self.user1, updated_by=self.user1)
+        user.full_clean()
+        user.save()
+        self.assertTrue(UserProfile.objects.filter(mnemonic='user.1_2-3').exists())
+        user.delete()
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            user = UserProfile(user=self.user1, mnemonic='user@1', created_by=self.user1, updated_by=self.user1)
+            user.full_clean()
+            user.save()
+

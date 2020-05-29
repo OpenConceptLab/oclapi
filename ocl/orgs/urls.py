@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url, include
 from orgs.models import Organization
 from orgs.views import OrganizationDetailView, OrganizationListView, OrganizationMemberView
 from users.views import UserListView
-from oclapi.models import NAMESPACE_PATTERN, CONCEPT_ID_PATTERN
+from oclapi.models import NAMESPACE_PATTERN
 
 __author__ = 'misternando'
 
