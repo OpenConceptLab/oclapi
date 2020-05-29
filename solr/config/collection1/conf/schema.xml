@@ -277,7 +277,7 @@
 
     <field name="external_id" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
-    <dynamicField name="extras_*"  type="string"  indexed="true"  stored="true"/>
+    <dynamicField name="extras_*"  type="lowercase" indexed="true" stored="true" multiValued="true" />
 
   </fields>
 
