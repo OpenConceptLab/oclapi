@@ -105,9 +105,10 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
     @property
     def descriptions_for_default_locale(self):
         descriptions = []
-        for desc in self.descriptions:
-            if settings.DEFAULT_LOCALE == desc.locale:
-                descriptions.append(desc.name)
+        if self.descriptions:
+            for desc in self.descriptions:
+                if settings.DEFAULT_LOCALE == desc.locale:
+                    descriptions.append(desc.name)
         return descriptions
 
     @property
@@ -260,6 +261,8 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
 
         if self.descriptions:
             concept_version.descriptions = map(lambda d: d.clone(), self.descriptions)
+        else:
+            concept_version.descriptions = []
 
         return concept_version
 
@@ -333,9 +336,10 @@ class ConceptVersion(ConceptValidationMixin, ResourceVersionModel):
     @property
     def descriptions_for_default_locale(self):
         descriptions = []
-        for desc in self.descriptions:
-            if settings.DEFAULT_LOCALE == desc.locale:
-                descriptions.append(desc.name)
+        if self.descriptions:
+            for desc in self.descriptions:
+                if settings.DEFAULT_LOCALE == desc.locale:
+                    descriptions.append(desc.name)
         return descriptions
 
     @property
