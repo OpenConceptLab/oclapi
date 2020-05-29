@@ -19,7 +19,7 @@ class OCLSearchIndex(SearchIndex):
         return self.prepared_data
 
     def prepare_extras(self, extras, field_name, field_value):
-        if field_value:
+        if field_value is not None:
             if isinstance(field_value, dict):
                 for k, v in field_value.items():
                     encoded_field_name = field_name + '_' + encode_search_field_name(k)
