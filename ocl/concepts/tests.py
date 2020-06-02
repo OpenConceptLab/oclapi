@@ -22,6 +22,7 @@ from test_helper.base import *
 
 logger = logging.getLogger('oclapi')
 
+
 class ConceptBaseTest(OclApiBaseTestCase):
     def setUp(self):
         super(ConceptBaseTest, self).setUp()
@@ -318,6 +319,29 @@ class ConceptTest(ConceptBaseTest):
         concept = Concept.objects.get(mnemonic=concept1.mnemonic)
         concept_version1 = ConceptVersion.objects.get(versioned_object_id=concept.id)
         self.assertEquals(concept.get_latest_version.id, concept_version1.id)
+
+    def test_create_concept_special_characters(self):
+        # period in mnemonic
+        (concept1, errors) = create_concept(mnemonic='concept.1', user=self.user1, source=self.source1)
+        self.assertTrue(Concept.objects.filter(mnemonic=concept1.mnemonic).exists())
+
+        # hyphen in mnemonic
+        (concept1, errors) = create_concept(mnemonic='concept-1', user=self.user1, source=self.source1)
+        self.assertTrue(Concept.objects.filter(mnemonic=concept1.mnemonic).exists())
+
+        # underscore in mnemonic
+        (concept1, errors) = create_concept(mnemonic='concept_1', user=self.user1, source=self.source1)
+        self.assertTrue(Concept.objects.filter(mnemonic=concept1.mnemonic).exists())
+
+        # all characters in mnemonic
+        (concept1, errors) = create_concept(mnemonic='concept.1_2-3', user=self.user1, source=self.source1)
+        self.assertTrue(Concept.objects.filter(mnemonic=concept1.mnemonic).exists())
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            concept = Concept(mnemonic='concept#1', parent=self.source1, names=[self.name])
+            concept.full_clean()
+            concept.save()
 
 
 class OpenMrsLookupValueValidationTest(ConceptBaseTest):
@@ -1052,6 +1076,35 @@ class ConceptVersionTest(ConceptBaseTest):
         self.assertEquals(concept_version.get_collection_version_ids()[1],
                           CollectionVersion.objects.get(mnemonic='version1').id)
 
+    def test_create_concept_version_special_characters(self):
+        # period in mnemonic
+        create_concept(mnemonic='version.1', user=self.user1, source=self.source1)
+        # hyphen in mnemonic
+        create_concept(mnemonic='version-1', user=self.user1, source=self.source1)
+        # underscore in mnemonic
+        create_concept(mnemonic='version_1', user=self.user1, source=self.source1)
+        # all characters in mnemonic
+        create_concept(mnemonic='version.1_2-3', user=self.user1, source=self.source1)
+        # test validation error
+        with self.assertRaises(ValidationError):
+            concept_version = ConceptVersion(mnemonic='version@1', versioned_object=self.concept1,
+                                             concept_class='Diagnosis',
+                                             datatype=self.concept1.datatype, names=self.concept1.names,
+                                             created_by=self.user1.username, updated_by=self.user1.username,
+                                             version_created_by=self.user1.username,
+                                             descriptions=[create_localized_text("aDescription")])
+            concept_version.full_clean()
+            concept_version.save()
+
+    def create_concept_version_for_mnemonic(self, mnemonic=None):
+        concept_version = ConceptVersion(mnemonic=mnemonic, versioned_object=self.concept1, concept_class='Diagnosis',
+                                         datatype=self.concept1.datatype, names=self.concept1.names,
+                                         created_by=self.user1.username, updated_by=self.user1.username,
+                                         version_created_by=self.user1.username,
+                                         descriptions=[create_localized_text("aDescription")])
+        concept_version.full_clean()
+        concept_version.save()
+        self.assertTrue(ConceptVersion.objects.filter(mnemonic=mnemonic, versioned_object_id=self.concept1.id).exists())
 
 class ConceptVersionStaticMethodsTest(ConceptBaseTest):
     def setUp(self):

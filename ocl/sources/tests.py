@@ -191,6 +191,31 @@ class SourceTest(SourceBaseTest):
 
         self.assertEquals("OpenMRS", source.custom_validation_schema)
 
+    def test_create_source_special_characters(self):
+        # period in mnemonic
+        source = create_source(user=self.user1, name='source.1')
+        self.assertEquals('source.1', source.mnemonic)
+
+        # hyphen in mnemonic
+        source = create_source(user=self.user1, name='source-1')
+        self.assertEquals('source-1', source.mnemonic)
+
+        # underscore in mnemonic
+        source = create_source(user=self.user1, name='source_1')
+        self.assertEquals('source_1', source.mnemonic)
+
+        # all characters in mnemonic
+        source = create_source(user=self.user1, name='source.1_2-3')
+        self.assertEquals('source.1_2-3', source.mnemonic)
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            source = Source(name='source1', mnemonic='source@1', full_name='Source One', parent=self.org1,
+                            created_by=self.user1, updated_by=self.user1)
+            source.full_clean()
+            source.save()
+
+
 class SourceClassMethodTest(SourceBaseTest):
 
     def setUp(self):
@@ -836,6 +861,29 @@ class SourceVersionTest(SourceBaseTest):
         source_version = SourceVersion.get_latest_version_of(source)
         #updated_at will always be a couple of microseconds away
         self.assertEquals(source_version.last_child_update.replace(second=0,microsecond=0), source_version.updated_at.replace(second=0,microsecond=0))
+
+    def test_create_source_version_special_characters(self):
+        # period in mnemonic
+        self.create_source_version_for_mnemonic(mnemonic='version.1')
+        # period in hyphen
+        self.create_source_version_for_mnemonic(mnemonic='version-1')
+        # period in underscore
+        self.create_source_version_for_mnemonic(mnemonic='version_1')
+        # all characters in mnemonic
+        self.create_source_version_for_mnemonic(mnemonic='version.1_2-3')
+        # test validation error
+        with self.assertRaises(ValidationError):
+            source_version = SourceVersion(name='version1', mnemonic='version@1', versioned_object=self.source1,
+                                           released=True, created_by=self.user1, updated_by=self.user1)
+            source_version.full_clean()
+            source_version.save()
+
+    def create_source_version_for_mnemonic(self, mnemonic=None):
+        source_version = SourceVersion(name='version1', mnemonic=mnemonic, versioned_object=self.source1,
+                                       released=True, created_by=self.user1, updated_by=self.user1)
+        source_version.full_clean()
+        source_version.save()
+        self.assertTrue(SourceVersion.objects.filter(mnemonic=mnemonic, versioned_object_id=self.source1.id).exists())
 
 class SourceVersionClassMethodTest(SourceBaseTest):
 

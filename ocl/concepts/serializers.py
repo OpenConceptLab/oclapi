@@ -5,7 +5,6 @@ from concepts.models import Concept, ConceptVersion, LocalizedText
 from concepts.validation_messages import BASIC_NAMES_CANNOT_BE_EMPTY
 from oclapi.fields import HyperlinkedResourceIdentityField
 from oclapi.models import NAMESPACE_REGEX
-from oclapi.models import CONCEPT_ID_REGEX
 from oclapi.serializers import ResourceVersionSerializer
 
 
@@ -28,7 +27,7 @@ class ConceptListSerializer(serializers.Serializer):
 
 
 class ConceptDetailSerializer(serializers.Serializer):
-    id = serializers.CharField(required=True, validators=[RegexValidator(regex=CONCEPT_ID_REGEX)], source='mnemonic')
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     external_id = serializers.CharField(required=False)
     concept_class = serializers.CharField(required=False)
     datatype = serializers.CharField(required=False)

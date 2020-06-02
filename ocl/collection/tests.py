@@ -520,6 +520,30 @@ class CollectionTest(CollectionBaseTest):
         collection.save()
         self.assertEquals("OpenMRS", collection.custom_validation_schema)
 
+    def test_create_collection_special_characters(self):
+        # period in mnemonic
+        collection = create_collection(user=self.user1, name='collection.1')
+        self.assertEquals('collection.1', collection.mnemonic)
+
+        # hyphen in mnemonic
+        collection = create_collection(user=self.user1, name='collection-1')
+        self.assertEquals('collection-1', collection.mnemonic)
+
+        # underscore in mnemonic
+        collection = create_collection(user=self.user1, name='collection_1')
+        self.assertEquals('collection_1', collection.mnemonic)
+
+        # all characters in mnemonic
+        collection = create_collection(user=self.user1, name='collection.1_2-3')
+        self.assertEquals('collection.1_2-3', collection.mnemonic)
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            collection = Collection(name='collection name', mnemonic='collection@1', created_by=self.user1, parent=self.org1,
+                                    updated_by=self.user1)
+            collection.full_clean()
+            collection.save()
+
 
 class CollectionClassMethodTest(CollectionBaseTest):
     def setUp(self):
@@ -1294,7 +1318,32 @@ class CollectionVersionTest(CollectionBaseTest):
         version1.seed_mappings()
         self.assertItemsEqual(version1.get_mapping_ids(), [mapping2_version.id, mapping1_latest_version.id])
 
-0
+    def test_collection_version_special_characters(self):
+        # period in mnemonic
+        self.create_collection_version_for_mnemonic(mnemonic='version.1')
+        # period in hyphen
+        self.create_collection_version_for_mnemonic(mnemonic='version-1')
+        # period in underscore
+        self.create_collection_version_for_mnemonic(mnemonic='version_1')
+        # all characters in mnemonic
+        self.create_collection_version_for_mnemonic(mnemonic='version.1_2-3')
+        # test validation error
+        with self.assertRaises(ValidationError):
+            collection_version = CollectionVersion(name='version1', mnemonic='version@1',
+                                                   versioned_object=self.collection1, released=True,
+                                                   created_by=self.user1, updated_by=self.user1)
+            collection_version.full_clean()
+            collection_version.save()
+
+    def create_collection_version_for_mnemonic(self, mnemonic=None):
+        collection_version = CollectionVersion(name='version1', mnemonic=mnemonic, versioned_object=self.collection1,
+                                               released=True, created_by=self.user1, updated_by=self.user1)
+        collection_version.full_clean()
+        collection_version.save()
+        self.assertTrue(CollectionVersion.objects.filter(mnemonic=mnemonic, versioned_object_id=self.collection1.id)
+                        .exists())
+
+
 class CollectionVersionClassMethodTest(CollectionBaseTest):
     def setUp(self):
         super(CollectionVersionClassMethodTest, self).setUp()

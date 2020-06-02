@@ -11,7 +11,7 @@ from oclapi.utils import add_user_to_org, remove_user_from_org
 from orgs.models import Organization, ORG_OBJECT_TYPE
 from sources.models import Source
 from users.models import UserProfile
-from test_helper.base import OclApiBaseTestCase
+from test_helper.base import OclApiBaseTestCase, create_organization
 
 
 class OrganizationTestCase(OclApiBaseTestCase):
@@ -128,3 +128,26 @@ class OrganizationTestCase(OclApiBaseTestCase):
 
         self.assertEquals(0, userprofile.orgs)
         self.assertEquals(0, org.num_members)
+
+    def test_create_org_special_characters(self):
+        # period in mnemonic
+        org = create_organization(name='test', mnemonic='org.1')
+        self.assertEquals('org.1', org.mnemonic)
+
+        # hyphen in mnemonic
+        org = create_organization(name='test', mnemonic='org-1')
+        self.assertEquals('org-1', org.mnemonic)
+
+        # underscore in mnemonic
+        org = create_organization(name='test', mnemonic='org_1')
+        self.assertEquals('org_1', org.mnemonic)
+
+        # all characters in mnemonic
+        org = create_organization(name='test', mnemonic='org.1_2-3')
+        self.assertEquals('org.1_2-3', org.mnemonic)
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            org = Organization(name='test', mnemonic='org@1')
+            org.full_clean()
+            org.save()

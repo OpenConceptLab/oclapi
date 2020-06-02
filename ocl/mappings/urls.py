@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 from mappings.views import MappingListView, MappingDetailView, MappingVersionDetailView, MappingVersionsListView, MappingVersionsView
-from oclapi.models import NAMESPACE_PATTERN, CONCEPT_ID_PATTERN
+from oclapi.models import NAMESPACE_PATTERN
 
 __author__ = 'misternando'
 

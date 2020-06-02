@@ -26,10 +26,8 @@ logger = logging.getLogger('oclapi')
 
 HEAD = 'HEAD'
 
-NAMESPACE_PATTERN = '[a-zA-Z0-9\-\.]+'
-CONCEPT_ID_PATTERN = '[a-zA-Z0-9\-\.\_]+'
+NAMESPACE_PATTERN = '[a-zA-Z0-9\-\.\_]+'
 NAMESPACE_REGEX = re.compile(r'^' + NAMESPACE_PATTERN + '$')
-CONCEPT_ID_REGEX = re.compile(r'^' + CONCEPT_ID_PATTERN + '$')
 
 ACCESS_TYPE_VIEW = 'View'
 ACCESS_TYPE_EDIT = 'Edit'
@@ -194,7 +192,7 @@ class ConceptBaseModel(BaseModel):
     It pains me to duplicate code in this way, but I cannot find a more
         elegant way to do this.
     """
-    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=CONCEPT_ID_REGEX)])
+    mnemonic = models.CharField(max_length=255, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     parent_type = models.ForeignKey(ContentType, db_index=False)
     parent_id = models.TextField()
     parent = generic.GenericForeignKey('parent_type', 'parent_id')
@@ -303,6 +301,7 @@ class ResourceVersionModel(BaseModel):
 CUSTOM_VALIDATION_SCHEMA_OPENMRS = 'OpenMRS'
 LOOKUP_CONCEPT_CLASSES = ['Concept Class', 'Datatype', 'NameType', 'DescriptionType', 'MapType', 'Locale']
 LOOKUP_SOURCES = ['Classes', 'Datatypes', 'NameTypes', 'DescriptionTypes', 'MapTypes', 'Locales']
+
 
 class ConceptContainerModel(SubResourceBaseModel):
     name = models.TextField()
