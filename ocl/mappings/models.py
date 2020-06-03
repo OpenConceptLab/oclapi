@@ -28,8 +28,10 @@ class Mapping(MappingValidationMixin, BaseModel):
 
     class MongoMeta:
         indexes = [[('parent', 1), ('from_concept', 1)],
-                   [('parent'), ('to_concept', 1)],
+                   [('parent', 1), ('to_concept', 1)],
                    [('parent', 1), ('retired', 1), ('is_active', 1)],
+                   [('from_concept', 1)],
+                   [('to_concept', 1)],
                    [('uri', 1)]]
 
     def clone(self, user):
@@ -347,6 +349,8 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
                    [('source_version_ids', 1), ('updated_at', -1)],
                    [('parent_version', 1)],
                    [('previous_version', 1)],
+                   [('from_concept', 1)],
+                   [('to_concept', 1)],
                    [('uri', 1)]]
 
     def clone(self):

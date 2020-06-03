@@ -69,6 +69,11 @@ class ReferenceDefinition:
             ReferenceDefinition(MappingVersion, 'previous_version', MappingVersion),
             ReferenceDefinition(MappingVersion, 'parent_version', MappingVersion),
 
+            ReferenceDefinition(Mapping, 'to_concept', Concept, True, True),
+            ReferenceDefinition(Mapping, 'from_concept', Concept, True, True),
+            ReferenceDefinition(MappingVersion, 'to_concept', Concept, True, True),
+            ReferenceDefinition(MappingVersion, 'from_concept', Concept, True, True),
+
             ReferenceDefinition(SourceVersion, 'versioned_object_id', Source, False),
             ReferenceDefinition(SourceVersion, 'previous_version', SourceVersion),
             ReferenceDefinition(SourceVersion, 'parent_version', SourceVersion),
@@ -122,7 +127,13 @@ class Reference:
         if ref_def_target_key not in candidates:
             reference_candidates = list(reference_definition.target_type.objects.values_list(reference_definition.target_field, flat=True))
             if reference_definition.use_object_id:
-                reference_candidates = [ObjectId(id) for id in reference_candidates]
+                ref_candidates_id = []
+                for id in reference_candidates:
+                    if isinstance(id, ObjectId):
+                        ref_candidates_id.append(id)
+                    else:
+                        ref_candidates_id.append(ObjectId(id))
+                reference_candidates = ref_candidates_id
             reference_candidates.append(None)
             candidates[ref_def_target_key] = reference_candidates
         else:
@@ -138,6 +149,7 @@ class Reference:
             content_type = ContentType.objects.get_for_model(reference_definition.target_type)
             target_ids_query = target_ids_query.filter(parent_type=content_type)
 
+        broken_count = 0
         for (source_id, target_ids) in target_ids_query.values_list('id', reference_definition.source_field):
             if isinstance(target_ids, list) or isinstance(target_ids, set):
                 target_ids = list(set(target_ids).difference(reference_candidates))
@@ -146,9 +158,14 @@ class Reference:
 
             if not target_ids and not reference_definition.nullable:
                 reference_list.add_broken_reference(Reference(reference_definition, source_id, None))
+                broken_count += 1
             else:
                 for target_id in target_ids:
                     reference_list.add_broken_reference(Reference(reference_definition, source_id, target_id))
+                    broken_count += 1
+
+        logger.info('Found %d broken references in %s' %
+                    (broken_count, ref_def_source))
 
     @staticmethod
     def __get_dependencies(reference_definition, source_id):
