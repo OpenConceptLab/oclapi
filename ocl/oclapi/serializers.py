@@ -67,9 +67,12 @@ class ResourceVersionSerializer(serializers.Serializer):
     _default_view_name = '%(model_name)s-detail'
 
     def get_locale(self, obj):
-        names = filter(lambda n: n.type == 'ISO 639-1', obj.names)
-        if names:
-            return names[0].name
+        if hasattr(obj, 'names'):
+            names = filter(lambda n: n.type == 'ISO 639-1', obj.names)
+            if names:
+                return names[0].name
+        else:
+            return None
 
     def get_default_fields(self):
         fields = super(ResourceVersionSerializer, self).get_default_fields()
