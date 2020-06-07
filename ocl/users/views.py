@@ -1,23 +1,97 @@
+from datetime import timedelta
+
+from django.conf import settings
+from django.core.signing import BadSignature
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.utils.http import urlencode
 from rest_framework import mixins, status, views
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
 from oclapi.filters import HaystackSearchFilter
 from oclapi.mixins import ListWithHeadersMixin
+from oclapi.utils import timestamp_unsign
 from oclapi.views import BaseAPIView
 from orgs.models import Organization
+from tasks import send_verify_email_message
+from users.constants import SUCCESS_URL_PARAM, FAILURE_URL_PARAM, VERIFY_EMAIL_MESSAGE
 from users.models import UserProfile
-from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer
+from users.serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, RedirectParamsSerializer, \
+    LoginSerializer
 from django.contrib.auth.hashers import check_password
 
 
-class UserListView(BaseAPIView,
-                   ListWithHeadersMixin,
-                   mixins.CreateModelMixin):
+OCL_WEB_BASE_URL = settings.BASE_URL.replace("api.", "")
+
+
+def build_redirect_urls(data):
+    return urlencode({
+        SUCCESS_URL_PARAM: data.get('email_verify_success_url', OCL_WEB_BASE_URL),
+        FAILURE_URL_PARAM: data.get('email_verify_failure_url', OCL_WEB_BASE_URL),
+    })
+
+
+class BaseSignUpView(BaseAPIView, mixins.CreateModelMixin):
     model = UserProfile
+    verified_email = True
+
+    def initial(self, request, *args, **kwargs):
+        self.related_object_type = kwargs.pop('related_object_type', None)
+        self.related_object_kwarg = kwargs.pop('related_object_kwarg', None)
+        super(BaseSignUpView, self).initial(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if self.related_object_type and self.related_object_kwarg:
+            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.serializer_class = UserCreateSerializer
+        return self.create(request, *args, **kwargs)
+
+    def pre_save(self, obj):
+        obj.verified_email = self.verified_email
+        super(BaseSignUpView, self).pre_save(obj)
+
+
+class UserSignUpView(BaseSignUpView):
+    """ general, non admin privileged signup """
+
+    permission_classes = (AllowAny,)
+    verified_email = False
+
+    def post(self, request, *args, **kwargs):
+        redirect_params_serializer = RedirectParamsSerializer(data=request.DATA)
+        if not redirect_params_serializer.is_valid():
+            return Response(redirect_params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        signup_response = super(UserSignUpView, self).post(request, *args, **kwargs)
+        if signup_response.status_code == status.HTTP_201_CREATED:
+            profile = UserProfile.objects.get(mnemonic=signup_response.data['username'])
+            send_verify_email_message.delay(
+                profile.name,
+                profile.email,
+                profile.get_verify_email_url(request),
+                build_redirect_urls(redirect_params_serializer.data),
+            )
+        return signup_response
+
+    def get(self, request, verification_token):
+        try:
+            username = timestamp_unsign(verification_token, timedelta(days=2))
+        except BadSignature:
+            return redirect(request.QUERY_PARAMS.get(FAILURE_URL_PARAM, OCL_WEB_BASE_URL))
+
+        profile = UserProfile.objects.get(mnemonic=username)
+        profile.verified_email = True
+        profile.save()
+
+        return redirect(request.QUERY_PARAMS.get(SUCCESS_URL_PARAM, OCL_WEB_BASE_URL))
+
+
+class UserListView(BaseSignUpView,
+                   ListWithHeadersMixin):
     queryset = UserProfile.objects.filter(is_active=True)
     filter_backends = [HaystackSearchFilter]
     solr_fields = {
@@ -28,8 +102,6 @@ class UserListView(BaseAPIView,
     }
 
     def initial(self, request, *args, **kwargs):
-        self.related_object_type = kwargs.pop('related_object_type', None)
-        self.related_object_kwarg = kwargs.pop('related_object_kwarg', None)
         if request.method == 'POST':
             self.permission_classes = (IsAdminUser, )
         super(UserListView, self).initial(request, *args, **kwargs)
@@ -46,12 +118,6 @@ class UserListView(BaseAPIView,
                             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
                 self.queryset = UserProfile.objects.filter(id__in=organization.members)
         return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        if self.related_object_type and self.related_object_kwarg:
-            return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        self.serializer_class = UserCreateSerializer
-        return self.create(request, *args, **kwargs)
 
 
 class UserBaseView(BaseAPIView):
@@ -104,22 +170,29 @@ class UserDetailView(UserBaseView,
 
 class UserLoginView(views.APIView):
     permission_classes = (AllowAny,)
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        errors = {}
-        username = request.DATA.get('username')
-        if not username:
-            errors['username'] = ['This field is required.']
-        password = request.DATA.get('password')
-        hashed_password = request.DATA.get('hashed_password')
-        if not password and not hashed_password:
-            errors['password'] = ['This field is required.']
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data=request.DATA)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        username = serializer.data.get('username')
+        password = serializer.data.get('password', None)
+        hashed_password = serializer.data.get('hashed_password', None)
+
         try:
             profile = UserProfile.objects.get(mnemonic=username)
             if check_password(password, profile.hashed_password) or hashed_password == profile.hashed_password:
-                return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+                if profile.verified_email:
+                    return Response({'token': profile.user.auth_token.key}, status=status.HTTP_200_OK)
+                send_verify_email_message.delay(
+                    profile.name,
+                    profile.email,
+                    profile.get_verify_email_url(request),
+                    build_redirect_urls(serializer.data),
+                )
+                return Response({'detail': VERIFY_EMAIL_MESSAGE}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 return Response({'detail': 'No such user or wrong password.'}, status=status.HTTP_401_UNAUTHORIZED)
 

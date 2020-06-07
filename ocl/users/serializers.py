@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from users.models import UserProfile
@@ -105,3 +106,22 @@ class UserDetailSerializer(serializers.Serializer):
         super(UserDetailSerializer, self).save_object(obj, **kwargs)
         user = obj.user
         user.save()
+
+
+class RedirectParamsSerializer(serializers.Serializer):
+    email_verify_success_url = serializers.URLField()
+    email_verify_failure_url = serializers.URLField()
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(required=False)
+    hashed_password = serializers.CharField(required=False)
+    email_verify_success_url = serializers.URLField(required=False)
+    email_verify_failure_url = serializers.URLField(required=False)
+
+    @staticmethod
+    def validate(attrs):
+        if not attrs.get('password', None) and not attrs.get('hashed_password', None):
+            raise ValidationError(dict(password=['This field is required.']))
+        return attrs

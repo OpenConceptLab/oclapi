@@ -4,8 +4,10 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from djangotoolbox.fields import ListField
+from rest_framework.reverse import reverse as drf_reverse
 from collection.models import Collection
 from oclapi.models import BaseResourceModel
+from oclapi.utils import timestamp_sign
 from sources.models import Source
 
 USER_OBJECT_TYPE = 'User'
@@ -21,6 +23,7 @@ class UserProfile(BaseResourceModel):
     location = models.TextField(null=True, blank=True)
     preferred_locale = models.TextField(null=True, blank=True)
     organizations = ListField()
+    verified_email = models.BooleanField(default=True)
 
     def __unicode__(self):
         return self.mnemonic
@@ -76,6 +79,9 @@ class UserProfile(BaseResourceModel):
     @property
     def collections_url(self):
         return reverse('collection-list', kwargs={'user': self.mnemonic})
+
+    def get_verify_email_url(self, request):
+        return drf_reverse("userprofile-signup-verify-email", kwargs={"verification_token": timestamp_sign(self.username)}, request=request)
 
     def is_admin_for(self, concept_container):
         if concept_container.owner_type == UserProfile.resource_type():

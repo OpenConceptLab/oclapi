@@ -1,10 +1,15 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
+from django.core.signing import BadSignature
+
 from oclapi.models import ACCESS_TYPE_EDIT
 from orgs.models import Organization
 from sources.models import Source, SourceVersion
 from users.models import UserProfile
 from test_helper.base import OclApiBaseTestCase
-from oclapi.utils import compact, extract_values
+from oclapi.utils import compact, extract_values, timestamp_sign, timestamp_unsign
+
 
 class ResourceVersionModelBaseTest(OclApiBaseTestCase):
 
@@ -102,3 +107,7 @@ class UtilsTest(OclApiBaseTestCase):
         self.assertListEqual(extract_values({'k1': 1, 'k2': '2', 'k3': None, 'k4': 'foobar'}, ['k2', 'k1', 'k3']), ['2', 1, None])
         self.assertListEqual(extract_values({'k1': '2'}, ['k1']), ['2'])
         self.assertListEqual(extract_values({'k1': 1}, ['k1']), [1])
+
+    def test_timestamp_sign_unsign(self):
+        self.assertEquals(timestamp_unsign(timestamp_sign("test_string"), timedelta(hours=1)), "test_string")
+        self.assertRaises(BadSignature, lambda: timestamp_unsign(timestamp_sign("test_string"), timedelta(hours=-1)))

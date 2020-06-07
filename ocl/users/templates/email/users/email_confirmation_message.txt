@@ -1,0 +1,8 @@
+Hi {{ name }},
+
+Welcome to the Open Concept Lab. To finish activating your account, please follow this link to verify your email address:
+
+{{ verify_email_url | safe }}
+
+Thanks,
+The OCL Team

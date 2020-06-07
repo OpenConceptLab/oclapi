@@ -6,6 +6,8 @@ import tempfile
 import haystack
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
+from django.core import signing
+from django.core.signing import TimestampSigner
 from haystack.utils import loading
 from rest_framework.reverse import reverse
 from rest_framework.utils import encoders
@@ -290,3 +292,12 @@ def extract_values(_dict, keys):
     values = itemgetter(*keys)(_dict)
     values = values if type(values).__name__ == 'tuple'  or type(values).__name__ == 'list' else [values]
     return list(values)
+
+
+def timestamp_sign(string):
+    # double signing because the timestamp signer leaves the plaintext string prefixing its output
+    return signing.dumps(dict(timestamped_username=TimestampSigner().sign(string)))
+
+
+def timestamp_unsign(string, max_age=None):
+    return TimestampSigner().unsign(signing.loads(string).get('timestamped_username', ""), max_age=max_age.total_seconds() if max_age else max_age)
