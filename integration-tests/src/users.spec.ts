@@ -50,3 +50,42 @@ describe('Login', () => {
 });
 
 
+describe('Signup', () => {
+    const helper = new TestHelper();
+    const signUpUrl = 'users/signup/';
+    const loginUrl = 'users/login/';
+
+    it('allows user to create account', async () => {
+        const username = helper.newId('user');
+        const user = {
+            username,
+            name: "test_name",
+            password: "test_password",
+            email: `${username}test@openconceptlab.org`,
+            email_verify_success_url: "https://example.org",
+            email_verify_failure_url: "https://example.org",
+        };
+        const res = await helper.post(signUpUrl, user);
+
+        expect(res.status).toBe(201);
+        const json = await res.json();
+        expect(json.username).toBe(user.username);
+    });
+
+    it('requires email confirmation', async () => {
+        const username = helper.newId('user');
+        const user = {
+            username,
+            name: "test_name",
+            password: "test_password",
+            email: `${username}test@openconceptlab.org`,
+            email_verify_success_url: "https://example.org",
+            email_verify_failure_url: "https://example.org",
+        };
+        await helper.post(signUpUrl, user);
+
+        const loginResponse = await helper.post(loginUrl, {username: user.username, password: user.password});
+        const json = await loginResponse.json();
+        expect(json.detail).toContain("A verification email has been sent to the address on record.")
+    });
+});

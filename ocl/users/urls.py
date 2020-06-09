@@ -4,12 +4,14 @@ from collection.views import OrganizationCollectionListView
 from orgs.views import OrganizationListView
 from sources.views import OrganizationSourceListView
 from users.models import UserProfile
-from users.views import UserListView, UserDetailView, UserReactivateView, UserLoginView
+from users.views import UserListView, UserDetailView, UserReactivateView, UserLoginView, UserSignUpView
 from oclapi.models import NAMESPACE_PATTERN
 
 __author__ = 'misternando'
 
 urlpatterns = patterns('',
+    url(r'^signup/$', UserSignUpView.as_view(), name='userprofile-signup'),
+    url(r'^signup/verify-email/(?P<verification_token>[^/]+)/$', UserSignUpView.as_view(), name='userprofile-signup-verify-email'),
     url(r'^$', UserListView.as_view(), name='userprofile-list'),
     url(r'^login/$', UserLoginView.as_view(), name='user-login'),
     url(r'^(?P<user>' + NAMESPACE_PATTERN + ')/$', UserDetailView.as_view(), name='userprofile-detail'),

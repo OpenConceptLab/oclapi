@@ -2,6 +2,11 @@ from __future__ import absolute_import
 
 import os
 
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template import Context
+from django.template.loader import render_to_string
+
 from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oclapi.settings.local')
@@ -16,7 +21,7 @@ importer.install()
 from celery import Celery
 from celery.utils.log import get_task_logger
 from celery_once import QueueOnce
-from oclapi.utils import update_all_in_index, write_export_file
+from oclapi.utils import update_all_in_index, write_export_file, timestamp_sign
 
 import json
 from rest_framework.test import APIRequestFactory
@@ -236,3 +241,17 @@ def index_resource(resource_ids, resource_klass, resource_version_klass, identif
     kwargs[identifier] = version_ids
     versions = resource_version_klass.objects.filter(**kwargs)
     update_all_in_index(resource_version_klass, versions)
+
+
+@celery.task
+def send_verify_email_message(name, email, verify_email_url, redirect_urls):
+    return send_mail('[OCL] Verify your email address',
+                     render_to_string(
+                         "email/users/email_confirmation_message.txt",
+                         context_instance=Context(
+                             dict(name=name, verify_email_url=verify_email_url + "?" + redirect_urls)),
+                     ),
+                     settings.DEFAULT_FROM_EMAIL,
+                     [email],
+                     fail_silently=False,
+                     )
