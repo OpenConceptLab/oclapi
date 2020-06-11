@@ -271,6 +271,7 @@ class CollectionTest(CollectionBaseTest):
             create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=fromConcept,
             to_concept=toConcept,
@@ -281,7 +282,7 @@ class CollectionTest(CollectionBaseTest):
         }
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
-        reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+        reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].mnemonic + '/'
         collection.expressions = [reference]
         collection.full_clean()
         collection.save()
@@ -418,6 +419,7 @@ class CollectionTest(CollectionBaseTest):
         )
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
@@ -433,7 +435,7 @@ class CollectionTest(CollectionBaseTest):
             mnemonic=from_concept.mnemonic).mnemonic + '/'
         concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
             mnemonic=concept1.mnemonic).mnemonic + '/'
-        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/'
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].mnemonic + '/'
 
         references = [concept1_reference, from_concept_reference, mapping_reference]
 
@@ -1265,6 +1267,7 @@ class CollectionVersionTest(CollectionBaseTest):
         (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept1,
             to_concept=to_concept,
@@ -1277,6 +1280,7 @@ class CollectionVersionTest(CollectionBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         mapping2 = Mapping(
+            mnemonic='TestMapping2',
             map_type='Same As',
             from_concept=from_concept2,
             to_concept=to_concept,
@@ -1919,6 +1923,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
@@ -1932,7 +1937,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         mapping_version = MappingVersion.objects.get(versioned_object_id=mapping.id)
 
         reference = CollectionReference(expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[
-            0].id + '/' + mapping_version.mnemonic + '/')
+            0].mnemonic + '/' + mapping_version.mnemonic + '/')
 
         reference.full_clean()
 
@@ -1989,6 +1994,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
@@ -2001,7 +2007,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         reference = CollectionReference(
-            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].mnemonic + '/')
         try:
             reference.full_clean()
         except ValidationError as e:
@@ -2070,7 +2076,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping(self.user1, source, concept_one, concept_two, "Broader Than")
+        mapping = create_mapping('mapping1', self.user1, source, concept_one, concept_two, "Broader Than")
 
         mapping_version_number = mapping.get_latest_version.mnemonic + '/'
 
@@ -2096,8 +2102,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping_one = create_mapping(self.user1, source, concept_one, concept_two, "BROADER-THAN")
-        mapping_two = create_mapping(self.user1, source, concept_two, concept_one, "SAME-AS")
+        mapping_one = create_mapping('mapping1', self.user1, source, concept_one, concept_two, "BROADER-THAN")
+        mapping_two = create_mapping('mapping2', self.user1, source, concept_two, concept_one, "SAME-AS")
 
         mapping_one_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
                                                                            mapping_one.mnemonic)
@@ -2176,7 +2182,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping(self.user1, source, concept_one, concept_two, "SAME-AS")
+        mapping = create_mapping('testmapping', self.user1, source, concept_one, concept_two, "SAME-AS")
 
         collection.expressions = [mapping.url]
         collection.full_clean()
@@ -2211,7 +2217,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping(self.user1, source, from_concept, to_concept)
+        mapping = create_mapping('mapping1', self.user1, source, from_concept, to_concept)
 
         collection.expressions = [mapping.url]
         collection.full_clean()
@@ -2341,6 +2347,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
         (to_concept, errors) = create_concept(mnemonic="toConcept", user=self.user1, source=source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
@@ -2353,7 +2360,7 @@ class CollectionVersionReferenceTest(CollectionReferenceTest):
 
         version = CollectionVersion.for_base_object(self.collection1, 'version1')
         reference = CollectionReference(
-            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].id + '/')
+            expression='/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].mnemonic + '/')
         reference.full_clean()
         CollectionVersion.persist_changes(version, col_reference=reference)
         self.assertEquals(len(version.get_mappings()), 1)

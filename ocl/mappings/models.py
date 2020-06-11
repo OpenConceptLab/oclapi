@@ -8,7 +8,7 @@ from django_mongodb_engine.contrib import MongoDBManager
 
 from concepts.models import Concept
 from mappings.mixins import MappingValidationMixin
-from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel
+from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel, BaseResourceModel
 from sources.models import Source, SourceVersion
 from djangotoolbox.fields import SetField
 
@@ -16,6 +16,7 @@ MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
 
 class Mapping(MappingValidationMixin, BaseModel):
+    mnemonic = models.CharField(max_length=255)
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')
@@ -25,6 +26,9 @@ class Mapping(MappingValidationMixin, BaseModel):
     to_concept_name = models.TextField(null=True, blank=True)
     retired = models.BooleanField(default=False)
     external_id = models.TextField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('mnemonic', 'parent')
 
     class MongoMeta:
         indexes = [[('parent', 1), ('from_concept', 1)],
@@ -49,10 +53,6 @@ class Mapping(MappingValidationMixin, BaseModel):
             retired=self.retired,
             external_id=self.external_id,
         )
-
-    @property
-    def mnemonic(self):
-        return self.id
 
     @property
     def source(self):
@@ -251,6 +251,7 @@ class Mapping(MappingValidationMixin, BaseModel):
         mapping.parent = parent_resource
         mapping.public_access = parent_resource.public_access
 
+        # Perform mapping validations
         try:
             mapping.full_clean()
         except ValidationError as e:
@@ -375,6 +376,12 @@ class MappingVersion(MappingValidationMixin, ResourceVersionModel):
 
     class Meta:
         pass
+
+    @property
+    def name(self):
+        if self.versioned_object.mnemonic:
+            return self.versioned_object.mnemonic
+        return self.id
 
     @property
     def source(self):

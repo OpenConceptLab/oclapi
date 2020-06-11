@@ -127,6 +127,7 @@ class MappingVersionBaseTest(MappingBaseTest):
     def setUp(self):
         super(MappingVersionBaseTest, self).setUp()
         self.mapping1 = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -142,6 +143,7 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_positive(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -153,8 +155,8 @@ class MappingTest(MappingBaseTest):
         mapping.full_clean()
         mapping.save()
 
-        self.assertTrue(Mapping.objects.filter(external_id='mapping1').exists())
-        mapping = Mapping.objects.get(external_id='mapping1')
+        self.assertTrue(Mapping.objects.filter(mnemonic='TestMapping').exists())
+        mapping = Mapping.objects.get(mnemonic='TestMapping')
         self.assertEquals(ACCESS_TYPE_VIEW, mapping.public_access)
         self.assertEquals('user1', mapping.created_by)
         self.assertEquals('user1', mapping.updated_by)
@@ -173,6 +175,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__no_created_by(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 updated_by=self.user1,
                 parent=self.source1,
                 map_type='Same As',
@@ -186,6 +189,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__no_updated_by(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 parent=self.source1,
                 map_type='Same As',
@@ -198,6 +202,7 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_negative__no_parent(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             map_type='Same As',
@@ -212,6 +217,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__no_map_type(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -225,6 +231,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__no_from_concept(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -238,6 +245,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__no_to_concept(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -251,6 +259,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__two_to_concepts(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -266,6 +275,7 @@ class MappingTest(MappingBaseTest):
     def test_create_mapping_negative__self_mapping(self):
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -279,6 +289,7 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_negative__same_mapping_type1(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -294,6 +305,7 @@ class MappingTest(MappingBaseTest):
 
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -307,6 +319,7 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_negative__same_mapping_type2(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -341,6 +354,7 @@ class MappingTest(MappingBaseTest):
 
         with self.assertRaises(ValidationError):
             mapping = Mapping(
+                mnemonic='TestMapping',
                 created_by=self.user1,
                 updated_by=self.user1,
                 parent=self.source1,
@@ -358,6 +372,7 @@ class MappingTest(MappingBaseTest):
     def test_mapping_access_changes_with_source(self):
         public_access = self.source1.public_access
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -390,6 +405,7 @@ class MappingTest(MappingBaseTest):
         (concept2, _) = create_concept(user, source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=user,
             updated_by=user,
             parent=source,
@@ -419,6 +435,7 @@ class MappingTest(MappingBaseTest):
         (concept2, _) = create_concept(user, source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=user,
             updated_by=user,
             parent=source,
@@ -435,6 +452,96 @@ class MappingTest(MappingBaseTest):
         errors = Mapping.persist_new(mapping, user, **kwargs)
         self.assertEquals(0, len(errors))
 
+    def test_create_mapping_special_characters(self):
+        # period in mnemonic
+        mapping = create_mapping(mnemonic='mapping.1', user=self.user1, source=self.source1, from_concept=self.concept1,
+                                 to_concept=self.concept2, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
+
+        # hyphen in mnemonic
+        mapping = create_mapping(mnemonic='mapping-1', user=self.user1, source=self.source1, from_concept=self.concept2,
+                                 to_concept=self.concept3, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
+
+        # underscore in mnemonic
+        mapping = create_mapping(mnemonic='mapping_1', user=self.user1, source=self.source1, from_concept=self.concept3,
+                                 to_concept=self.concept4, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
+
+        # all characters in mnemonic
+        mapping = create_mapping(mnemonic='mapping.1_2-3', user=self.user1, source=self.source1,
+                                 from_concept=self.concept4, to_concept=self.concept5, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
+
+        # test validation error
+        with self.assertRaises(ValidationError):
+            mapping = Mapping(mnemonic='mapping#1', source=self.source1, from_concept=self.concept4,
+                              to_concept=self.concept5, map_type='Component')
+            mapping.full_clean()
+            mapping.save()
+
+    def test_create_mapping_across_sources_with_same_id(self):
+        # create mapping in source1 - with id test_mapping
+        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
+                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+
+        # create mapping in source2 - with id test_mapping
+        mapping2 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source2,
+                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping2.mnemonic).exists())
+        self.assertEquals(2, Mapping.objects.filter(mnemonic=mapping1.mnemonic).count())
+        self.assertEquals(self.source1, mapping1.parent)
+        self.assertEquals(self.source2, mapping2.parent)
+        self.assertEquals(self.concept1, mapping1.from_concept)
+        self.assertEquals(self.concept1, mapping2.from_concept)
+        self.assertEquals(self.concept2, mapping1.to_concept)
+        self.assertEquals(self.concept2, mapping2.to_concept)
+        self.assertEquals('Component', mapping1.map_type)
+        self.assertEquals('Component', mapping2.map_type)
+
+    def test_create_mapping_within_source_with_same_id(self):
+        # create mapping in source1 - with id test_mapping
+        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
+                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
+        # validation error should be thrown when tryting to create same mapping with same id
+        with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
+            mapping = Mapping(mnemonic='test_mapping', parent=self.source1, from_concept=self.concept1,
+                              to_concept=self.concept2, map_type='Component', created_by=self.user1,
+                              updated_by=self.user1)
+            mapping.full_clean()
+            mapping.save()
+
+    def test_create_mapping_within_source_same_id_different_mapping(self):
+        # create mapping in source1 - with id test_mapping
+        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
+                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
+        # validation error should be thrown when tryting to create mapping with same id & same from_concept
+        with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
+            mapping = Mapping(mnemonic='test_mapping', parent=self.source1, from_concept=self.concept1,
+                              to_concept=self.concept3, map_type='SAME-AS', created_by=self.user1,
+                              updated_by=self.user1)
+            mapping.full_clean()
+            mapping.save()
+
+        # validation error should be thrown when tryting to create mapping with same id & same to_concept
+        with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
+            mapping = Mapping(mnemonic='test_mapping', parent=self.source1, from_concept=self.concept3,
+                              to_concept=self.concept2, map_type='SAME-AS', created_by=self.user1,
+                              updated_by=self.user1)
+            mapping.full_clean()
+            mapping.save()
+
+        # validation error should be thrown when tryting to create mapping with same id & same map_type
+        with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
+            mapping = Mapping(mnemonic='test_mapping', parent=self.source1, from_concept=self.concept3,
+                              to_concept=self.concept4, map_type='Component', created_by=self.user1,
+                              updated_by=self.user1)
+            mapping.full_clean()
+            mapping.save()
 
 class MappingVersionTest(MappingVersionBaseTest):
 
@@ -628,6 +735,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         (to_concept, errors) = create_concept(mnemonic='toConcept', user=self.user1, source=source)
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=from_concept,
             to_concept=to_concept,
@@ -640,7 +748,7 @@ class MappingVersionTest(MappingVersionBaseTest):
         Mapping.persist_new(mapping, self.user1, **kwargs)
 
         mapping = Mapping.objects.filter()[1]
-        mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.id + '/'
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + mapping.mnemonic + '/'
 
         references = [mapping_reference]
 
@@ -665,11 +773,39 @@ class MappingVersionTest(MappingVersionBaseTest):
         self.assertEquals(mapping_version.get_collection_version_ids()[1],
                           CollectionVersion.objects.get(mnemonic='version1').id)
 
+    def test_create_mapping_version_special_characters(self):
+        # period in mnemonic
+        self.create_mapping_version_for_mnemonic(mnemonic='version.1')
+        # period in hyphen
+        self.create_mapping_version_for_mnemonic(mnemonic='version-1')
+        # period in underscore
+        self.create_mapping_version_for_mnemonic(mnemonic='version_1')
+        # all characters in mnemonic
+        self.create_mapping_version_for_mnemonic(mnemonic='version.1_2-3')
+        # test validation error
+        with self.assertRaises(ValidationError):
+            mapping_version = MappingVersion(created_by=self.user1, updated_by=self.user1, parent=self.source1,
+                                             map_type='Same As', from_concept=self.concept1, to_concept=self.concept5,
+                                             versioned_object_id=self.mapping1.id, mnemonic='version@1',
+                                             versioned_object_type=ContentType.objects.get_for_model(Mapping))
+            mapping_version.full_clean()
+            mapping_version.save()
+
+    def create_mapping_version_for_mnemonic(self, mnemonic=None):
+        mapping_version = MappingVersion(created_by=self.user1, updated_by=self.user1, parent=self.source1,
+                                         map_type='Same As', from_concept=self.concept1, to_concept=self.concept5,
+                                         versioned_object_id=self.mapping1.id, mnemonic=mnemonic,
+                                         versioned_object_type=ContentType.objects.get_for_model(Mapping))
+        mapping_version.full_clean()
+        mapping_version.save()
+        self.assertTrue(MappingVersion.objects.filter(mnemonic=mnemonic, versioned_object_id=self.mapping1.id).exists())
+
 
 class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_positive(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -706,6 +842,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_version_created_positive(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -745,6 +882,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_negative__no_creator(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -768,6 +906,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_negative__no_parent(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -789,6 +928,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_negative__same_mapping(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -811,6 +951,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
         # Repeat with same concepts
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -828,6 +969,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_new_positive__same_mapping_different_source(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -850,6 +992,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
         # Repeat with same concepts
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -882,6 +1025,7 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertEquals(0, len(source_version.get_mapping_ids()))
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -908,6 +1052,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_persist_changes_positive(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -941,6 +1086,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_persist_persist_changes_negative__no_updated_by(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -969,6 +1115,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_retire_positive(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -985,11 +1132,12 @@ class MappingClassMethodsTest(MappingBaseTest):
         self.assertTrue(mapping.retired)
         mapping = Mapping.objects.get(external_id='mapping1')
         self.assertTrue(mapping.retired)
-        mappingVersion=MappingVersion.objects.get(versioned_object_id=mapping.mnemonic, mnemonic=2)
+        mappingVersion=MappingVersion.objects.get(versioned_object_id=mapping.id, mnemonic=2)
         self.assertTrue(mappingVersion.retired)
 
     def test_retire_negative(self):
         mapping = Mapping(
+            mnemonic='TestMapping',
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -1010,6 +1158,7 @@ class MappingClassMethodsTest(MappingBaseTest):
 
     def test_edit_mapping_make_new_version_positive(self):
         mapping1 = Mapping(
+            mnemonic="TestMapping",
             map_type='Same As',
             from_concept=self.concept1,
             to_concept=self.concept2,
@@ -1049,9 +1198,10 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept1, _) = create_concept(user, source)
         (concept2, _) = create_concept(user, source)
 
-        create_mapping(user, source, concept1, concept2, "Same As")
+        create_mapping("TestMapping", user, source, concept1, concept2, "Same As")
 
         mapping = Mapping(
+            mnemonic='TestMapping',
             created_by=user,
             updated_by=user,
             parent=source,
@@ -1078,8 +1228,8 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept2, _) = create_concept(user, source2)
         (concept3, _) = create_concept(user, source2)
 
-        create_mapping(user, source1, concept1, concept2, "Same As")
-        mapping = create_mapping(user, source1, concept2, concept3, "Same As")
+        create_mapping("TestMapping1", user, source1, concept1, concept2, "Same As")
+        mapping = create_mapping("TestMapping2", user, source1, concept2, concept3, "Same As")
 
         mapping.from_concept = concept1
         mapping.to_concept = concept2
@@ -1099,7 +1249,7 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept1, _) = create_concept(user, source1)
         (concept2, _) = create_concept(user, source2)
 
-        mapping = create_mapping(user, source1, concept1, concept2, "Same As")
+        mapping = create_mapping("TestMapping", user, source1, concept1, concept2, "Same As")
 
         mapping.map_type = "Different"
 

@@ -3,7 +3,7 @@ from concepts.fields import ConceptURLField, SourceURLField
 from concepts.models import Concept
 from mappings.models import Mapping, MappingVersion
 from oclapi.serializers import ResourceVersionSerializer
-
+from oclapi.models import RegexValidator,NAMESPACE_REGEX
 __author__ = 'misternando'
 
 
@@ -12,6 +12,7 @@ class MappingBaseSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         mapping = instance if instance else Mapping()
         mapping.map_type = attrs.get('map_type', mapping.map_type)
+        mapping.mnemonic = attrs.get('mnemonic', mapping.mnemonic)
         from_concept = None
         try:
             from_concept = mapping.from_concept
@@ -51,9 +52,11 @@ class MappingVersionBaseSerializer(serializers.Serializer):
         model = MappingVersion
         lookup_field = 'mnemonic'
 
+
 class MappingDetailSerializer(MappingBaseSerializer):
     type = serializers.CharField(source='resource_type', read_only=True)
-    id = serializers.CharField(read_only=True)
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    uuid = serializers.CharField(source='id')
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
     map_type = serializers.CharField(required=True)
@@ -90,7 +93,7 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
     version = serializers.CharField(source='mnemonic')
     is_latest_version = serializers.CharField()
     type = serializers.CharField(source='resource_type', read_only=True)
-    id = serializers.CharField(read_only=True)
+    id = serializers.CharField(source='name')
     versioned_object_id = serializers.CharField(source='versioned_object_id')
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
@@ -127,6 +130,8 @@ class MappingVersionDetailSerializer(MappingVersionBaseSerializer):
 
 
 class MappingListSerializer(MappingBaseSerializer):
+    id = serializers.CharField(required=True, source='mnemonic')
+    uuid = serializers.CharField(source='id')
     external_id = serializers.CharField(required=False)
     retired = serializers.BooleanField(required=False)
     map_type = serializers.CharField(required=True)
@@ -160,7 +165,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
     # and if that happend then we need not to set the url as we do below
     url = serializers.SerializerMethodField(method_name='get_url')
     version = serializers.CharField(source='mnemonic')
-    id = serializers.CharField(read_only=True)
+    id = serializers.CharField(source='name')
     versioned_object_id = serializers.CharField(source='versioned_object_id')
     from_source_owner = serializers.CharField(read_only=True)
     from_source_owner_type = serializers.CharField(read_only=True)
@@ -193,6 +198,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
 
 
 class MappingCreateSerializer(MappingBaseSerializer):
+    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     map_type = serializers.CharField(required=True)
     from_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
     to_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')

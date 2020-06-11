@@ -1274,6 +1274,7 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         )
 
         mapping1 = Mapping(
+            mnemonic='mapping1',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
@@ -1286,6 +1287,7 @@ class ConceptVersionListViewTest(ConceptBaseTest):
         mapping1.save()
 
         mapping2 = Mapping(
+            mnemonic='mapping2',
             created_by=self.user1,
             updated_by=self.user1,
             parent=self.source1,
