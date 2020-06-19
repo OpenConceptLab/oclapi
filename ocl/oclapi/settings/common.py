@@ -283,6 +283,10 @@ class Common(Configuration):
     # (A profile is created automatically for any user created using the 'POST /users' endpoint.)
     AUTH_PROFILE_MODULE = 'users.UserProfile'
 
+    # Only used for flower
+    FLOWER_USER=os.environ.get('FLOWER_USER', 'floweruser')
+    FLOWER_PWD=os.environ.get('FLOWER_PWD', 'Flower123')
+
     def ignore_404_and_401_errors(record):
         if ' 404' in record.message or ' 401' in record.message:
             return False

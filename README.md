@@ -70,6 +70,10 @@ Docker `.env` file should be located under the root project folder. On developme
 
 `IMPORT_DEMO_DATA=` Set to 'true' to import ~2k concepts from the CIEL demo data.
 
+`FLOWER_USER=` Flower user (Default value - floweruser).
+
+`FLOWER_PWD=` Flower password (Default value - Flower123).
+
 ### Running commands in a container
 
 You can run any command in a running container. Open up a new terminal and run for example:

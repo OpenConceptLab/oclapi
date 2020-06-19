@@ -1,8 +1,13 @@
 import logging
 import uuid
+import os
+import json
+import requests
+from requests.auth import HTTPBasicAuth
 
 from celery.result import AsyncResult
 from django.http import HttpResponse
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +16,7 @@ from manage import serializers
 from tasks import find_broken_references, bulk_import, bulk_priority_import
 
 logger = logging.getLogger('oclapi')
+
 
 class ManageBrokenReferencesView(viewsets.ViewSet):
 
@@ -30,12 +36,13 @@ class ManageBrokenReferencesView(viewsets.ViewSet):
             return Response(serializer.data)
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
+        elif task.state == 'PENDING':
+            return check_task_id(self, task.id)
         else:
             return Response({'task': task.id, 'state': task.state})
 
     def post(self, request):
         task = find_broken_references.delay()
-
         return Response({'task': task.id, 'state': task.state})
 
     def delete(self, request):
@@ -87,6 +94,8 @@ class BulkImportView(viewsets.ViewSet):
                 return HttpResponse(result.detailed_summary)
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
+        elif task.state == 'PENDING':
+            return check_task_id(self, task.id)
         else:
             return Response({'task': task.id, 'state': task.state})
 
@@ -106,4 +115,18 @@ class BulkImportView(viewsets.ViewSet):
         else:
             task = bulk_import.apply_async((request.body, username, update_if_exists), task_id=str(uuid.uuid4()) + '-' + username)
 
+
         return Response({'task': task.id, 'state': task.state})
+
+
+def check_task_id(self, task_id):
+    '''
+    This method is used to check Celery Task validity when state is PENDING. If task exists in
+    Flower then it's considered as Valid task otherwise invalid task.
+    '''
+    flower_response = requests.get('http://flower:5555/api/task/info/' + task_id,
+                                   auth=HTTPBasicAuth(settings.FLOWER_USER, settings.FLOWER_PWD))
+    if flower_response is not None and flower_response.status_code == 200 and flower_response.text:
+        return Response({'task': tast_id, 'state': json.loads(flower_response.text).get('state')})
+    else:
+        return Response({'exception': 'task '+ task_id +' not found'}, status=status.HTTP_404_NOT_FOUND)
