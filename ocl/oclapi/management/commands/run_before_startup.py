@@ -1,5 +1,6 @@
 from django.core.management import BaseCommand
 from django.db import connections
+from bson import ObjectId
 
 from oclapi.models import ConceptContainerVersionModel
 from sources.models import SourceVersion
@@ -10,9 +11,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.run_db_migrations()
-
         self.clear_all_processing()
-
+        self.run_mapping_migrations()
 
     def run_db_migrations(self):
         db = connections['default']
@@ -42,3 +42,14 @@ class Command(BaseCommand):
     def clear_all_processing(self):
         ConceptContainerVersionModel.clear_all_processing(SourceVersion)
         ConceptContainerVersionModel.clear_all_processing(CollectionVersion)
+
+    def run_mapping_migrations(self):
+        db = connections['default']
+        print 'Running Mapping migrations'
+        mappings = db.get_collection('mappings_mapping').find({'mnemonic': {'$exists': False}})
+
+        for mapping in mappings:
+            if mapping.get('mnemonic')  is None:
+                id = mapping['_id']
+                db.get_collection('mappings_mapping').update({'_id': id}, {'$set': {'mnemonic' :str(id)}})
+

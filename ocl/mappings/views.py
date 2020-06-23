@@ -23,7 +23,7 @@ LIMIT_PARAM = 'limit'
 
 class MappingBaseView(ConceptDictionaryMixin):
     lookup_field = 'mapping'
-    pk_field = 'id'
+    pk_field = 'mnemonic'
     model = Mapping
     child_list_attribute = 'get_mapping_ids'
     include_retired = False
@@ -93,6 +93,10 @@ class MappingVersionBaseView(ConceptDictionaryMixin):
 
     def get_queryset(self):
         queryset = MappingVersion.objects.filter(is_active=True, versioned_object_id=self.kwargs.get('mapping'))
+        mapping = Mapping.objects.get(is_active=True, mnemonic=self.kwargs.get('mapping'))
+        if mapping:
+            mapping_id = mapping.id
+            queryset = queryset | MappingVersion.objects.filter(is_active=True, versioned_object_id=mapping_id)
         return queryset
 
 

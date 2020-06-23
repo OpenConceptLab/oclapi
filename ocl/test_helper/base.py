@@ -169,8 +169,9 @@ def create_concept(user, source, source_version=None, names=None, mnemonic=None,
     return concept, errors
 
 
-def create_mapping(user, source, from_concept, to_concept, map_type="SAME-AS"):
+def create_mapping(mnemonic, user, source, from_concept, to_concept, map_type="SAME-AS"):
     mapping = Mapping(
+        mnemonic=mnemonic,
         created_by=user,
         updated_by=user,
         parent=source,
