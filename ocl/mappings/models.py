@@ -11,12 +11,14 @@ from mappings.mixins import MappingValidationMixin
 from oclapi.models import BaseModel, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, ResourceVersionModel, BaseResourceModel
 from sources.models import Source, SourceVersion
 from djangotoolbox.fields import SetField
+from oclapi.models import RegexValidator,NAMESPACE_REGEX
+import uuid
 
 MAPPING_RESOURCE_TYPE = 'Mapping'
 MAPPING_VERSION_RESOURCE_TYPE = 'MappingVersion'
 
 class Mapping(MappingValidationMixin, BaseModel):
-    mnemonic = models.CharField(max_length=255)
+    mnemonic = models.CharField(max_length=255, default=uuid.uuid4, validators=[RegexValidator(regex=NAMESPACE_REGEX)])
     parent = models.ForeignKey(Source, related_name='mappings_from')
     map_type = models.TextField()
     from_concept = models.ForeignKey(Concept, related_name='mappings_from')

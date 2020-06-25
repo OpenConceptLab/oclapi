@@ -198,7 +198,7 @@ class MappingVersionListSerializer(ResourceVersionSerializer):
 
 
 class MappingCreateSerializer(MappingBaseSerializer):
-    id = serializers.CharField(required=True, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
+    id = serializers.CharField(required=False, validators=[RegexValidator(regex=NAMESPACE_REGEX)], source='mnemonic')
     map_type = serializers.CharField(required=True)
     from_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=True, source='from_concept')
     to_concept_url = ConceptURLField(view_name='concept-detail', queryset=Concept.objects.all(), lookup_kwarg='concept', lookup_field='concept', required=False, source='to_concept')
