@@ -454,40 +454,40 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_special_characters(self):
         # period in mnemonic
-        mapping = create_mapping(mnemonic='mapping.1', user=self.user1, source=self.source1, from_concept=self.concept1,
-                                 to_concept=self.concept2, map_type='Component')
+        mapping = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept1,
+                                 to_concept=self.concept2, map_type='Component', mnemonic='mapping.1')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
 
         # hyphen in mnemonic
-        mapping = create_mapping(mnemonic='mapping-1', user=self.user1, source=self.source1, from_concept=self.concept2,
-                                 to_concept=self.concept3, map_type='Component')
+        mapping = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept2,
+                                 to_concept=self.concept3, map_type='Component', mnemonic='mapping-1')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
 
         # underscore in mnemonic
-        mapping = create_mapping(mnemonic='mapping_1', user=self.user1, source=self.source1, from_concept=self.concept3,
-                                 to_concept=self.concept4, map_type='Component')
+        mapping = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept3,
+                                 to_concept=self.concept4, map_type='Component', mnemonic='mapping_1')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
 
         # all characters in mnemonic
-        mapping = create_mapping(mnemonic='mapping.1_2-3', user=self.user1, source=self.source1,
-                                 from_concept=self.concept4, to_concept=self.concept5, map_type='Component')
+        mapping = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept4,
+                                 to_concept=self.concept5, map_type='Component', mnemonic='mapping.1_2-3')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping.mnemonic).exists())
 
         # test validation error
         with self.assertRaises(ValidationError):
-            mapping = Mapping(mnemonic='mapping#1', source=self.source1, from_concept=self.concept4,
-                              to_concept=self.concept5, map_type='Component')
+            mapping = Mapping(source=self.source1, from_concept=self.concept4,
+                              to_concept=self.concept5, map_type='Component', mnemonic='mapping#1')
             mapping.full_clean()
             mapping.save()
 
     def test_create_mapping_across_sources_with_same_id(self):
         # create mapping in source1 - with id test_mapping
-        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
-                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        mapping1 = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept1,
+                                  to_concept=self.concept2, map_type='Component', mnemonic='test_mapping')
 
         # create mapping in source2 - with id test_mapping
-        mapping2 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source2,
-                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        mapping2 = create_mapping(user=self.user1, source=self.source2, from_concept=self.concept1,
+                                  to_concept=self.concept2, map_type='Component', mnemonic='test_mapping')
 
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping2.mnemonic).exists())
@@ -503,21 +503,21 @@ class MappingTest(MappingBaseTest):
 
     def test_create_mapping_within_source_with_same_id(self):
         # create mapping in source1 - with id test_mapping
-        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
-                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        mapping1 = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept1,
+                                  to_concept=self.concept2, map_type='Component', mnemonic='test_mapping')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
         # validation error should be thrown when tryting to create same mapping with same id
         with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
-            mapping = Mapping(mnemonic='test_mapping', parent=self.source1, from_concept=self.concept1,
-                              to_concept=self.concept2, map_type='Component', created_by=self.user1,
-                              updated_by=self.user1)
+            mapping = Mapping(parent=self.source1, from_concept=self.concept1, to_concept=self.concept2,
+                              map_type='Component', created_by=self.user1, updated_by=self.user1,
+                              mnemonic='test_mapping')
             mapping.full_clean()
             mapping.save()
 
     def test_create_mapping_within_source_same_id_different_mapping(self):
         # create mapping in source1 - with id test_mapping
-        mapping1 = create_mapping(mnemonic='test_mapping', user=self.user1, source=self.source1,
-                                  from_concept=self.concept1, to_concept=self.concept2, map_type='Component')
+        mapping1 = create_mapping(user=self.user1, source=self.source1, from_concept=self.concept1,
+                                  to_concept=self.concept2, map_type='Component', mnemonic='test_mapping')
         self.assertTrue(Mapping.objects.filter(mnemonic=mapping1.mnemonic).exists())
         # validation error should be thrown when tryting to create mapping with same id & same from_concept
         with self.assertRaisesRegexp(ValidationError, 'Mapping with this Mnemonic and Parent already exists.'):
@@ -1198,7 +1198,7 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept1, _) = create_concept(user, source)
         (concept2, _) = create_concept(user, source)
 
-        create_mapping("TestMapping", user, source, concept1, concept2, "Same As")
+        create_mapping(user, source, concept1, concept2, "Same As", "TestMapping")
 
         mapping = Mapping(
             mnemonic='TestMapping',
@@ -1228,8 +1228,8 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept2, _) = create_concept(user, source2)
         (concept3, _) = create_concept(user, source2)
 
-        create_mapping("TestMapping1", user, source1, concept1, concept2, "Same As")
-        mapping = create_mapping("TestMapping2", user, source1, concept2, concept3, "Same As")
+        create_mapping(user, source1, concept1, concept2, "Same As", "TestMapping1")
+        mapping = create_mapping(user, source1, concept2, concept3, "Same As", "TestMapping2")
 
         mapping.from_concept = concept1
         mapping.to_concept = concept2
@@ -1249,7 +1249,7 @@ class OpenMRSMappingValidationTest(MappingBaseTest):
         (concept1, _) = create_concept(user, source1)
         (concept2, _) = create_concept(user, source2)
 
-        mapping = create_mapping("TestMapping", user, source1, concept1, concept2, "Same As")
+        mapping = create_mapping(user, source1, concept1, concept2, "Same As", "TestMapping")
 
         mapping.map_type = "Different"
 

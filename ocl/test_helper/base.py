@@ -168,19 +168,14 @@ def create_concept(user, source, source_version=None, names=None, mnemonic=None,
 
     return concept, errors
 
-
-def create_mapping(mnemonic, user, source, from_concept, to_concept, map_type="SAME-AS"):
-    mapping = Mapping(
-        mnemonic=mnemonic,
-        created_by=user,
-        updated_by=user,
-        parent=source,
-        map_type=map_type,
-        from_concept=from_concept,
-        to_concept=to_concept,
-        public_access=ACCESS_TYPE_VIEW,
-    )
-
+def create_mapping(user, source, from_concept, to_concept, map_type="SAME-AS", mnemonic=None):
+    mapping=None
+    if mnemonic:
+        mapping = Mapping(mnemonic=mnemonic, created_by=user, updated_by=user, parent=source, map_type=map_type,
+                          from_concept=from_concept, to_concept=to_concept, public_access=ACCESS_TYPE_VIEW,)
+    else:
+        mapping = Mapping(created_by=user, updated_by=user, parent=source, map_type=map_type,
+                          from_concept=from_concept, to_concept=to_concept, public_access=ACCESS_TYPE_VIEW, )
     kwargs = {
         'parent_resource': source,
     }

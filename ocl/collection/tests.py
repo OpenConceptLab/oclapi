@@ -2076,7 +2076,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping('mapping1', self.user1, source, concept_one, concept_two, "Broader Than")
+        mapping = create_mapping(self.user1, source, concept_one, concept_two, "Broader Than", 'mapping1')
 
         mapping_version_number = mapping.get_latest_version.mnemonic + '/'
 
@@ -2102,8 +2102,8 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping_one = create_mapping('mapping1', self.user1, source, concept_one, concept_two, "BROADER-THAN")
-        mapping_two = create_mapping('mapping2', self.user1, source, concept_two, concept_one, "SAME-AS")
+        mapping_one = create_mapping(self.user1, source, concept_one, concept_two, "BROADER-THAN", 'mapping1')
+        mapping_two = create_mapping(self.user1, source, concept_two, concept_one, "SAME-AS", 'mapping2')
 
         mapping_one_reference = '/users/{}/sources/{}/mappings/{}/'.format(self.user1.username, source.name,
                                                                            mapping_one.mnemonic)
@@ -2182,7 +2182,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (concept_two, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='en', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping('testmapping', self.user1, source, concept_one, concept_two, "SAME-AS")
+        mapping = create_mapping(self.user1, source, concept_one, concept_two, "SAME-AS", 'testmapping')
 
         collection.expressions = [mapping.url]
         collection.full_clean()
@@ -2217,7 +2217,7 @@ class CollectionReferenceTest(CollectionBaseTest):
         (to_concept, errors) = create_concept(user=self.user1, source=source, names=[
             create_localized_text(name='User', locale='es', type='FULLY_SPECIFIED')])
 
-        mapping = create_mapping('mapping1', self.user1, source, from_concept, to_concept)
+        mapping = create_mapping(self.user1, source, from_concept, to_concept, mnemonic='mapping1')
 
         collection.expressions = [mapping.url]
         collection.full_clean()
