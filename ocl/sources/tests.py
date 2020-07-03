@@ -15,6 +15,7 @@ from mock import mock
 from concepts.models import Concept, LocalizedText
 from concepts.validation_messages import OPENMRS_SHORT_NAME_CANNOT_BE_PREFERRED
 from concepts.validators import message_with_name_details
+from mappings.models import MappingVersion
 from oclapi.models import ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW, LOOKUP_SOURCES
 from oclapi.models import CUSTOM_VALIDATION_SCHEMA_OPENMRS
 from orgs.models import Organization
@@ -736,44 +737,127 @@ class SourceVersionTest(SourceBaseTest):
         self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
 
     def test_source_delete(self):
-        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=self.source1, released=True,
+        #Given
+        source = Source(name='source2', mnemonic='source2', full_name='Source Two', parent=self.org1, created_by=self.user1, updated_by=self.user1)
+        source.full_clean()
+        source.save()
+
+        head = SourceVersion(name='head', mnemonic='HEAD', versioned_object=source, released=True,
                              created_by=self.user1, updated_by=self.user1)
         head.full_clean()
         head.save()
 
-        create_concept(mnemonic='concept1', user=self.user1, source=self.source1)
-
         version1 = SourceVersion(
             name='version1',
             mnemonic='version1',
-            versioned_object=self.source1,
+            versioned_object=source,
             released=True,
             created_by=self.user1,
             updated_by=self.user1,
         )
         SourceVersion.persist_new(version1)
 
-        source_versions = SourceVersion.objects.filter(
-            mnemonic='version1',
-            versioned_object_type=ContentType.objects.get_for_model(Source),
-            versioned_object_id=self.source1.id
+        concept1, _ = create_concept(mnemonic='concept1', user=self.user1, source=source)
+
+        self.assertTrue(Concept.objects.filter(id=concept1.id).exists())
+
+        concept2, _ = create_concept(mnemonic='concept2', user=self.user1, source=source)
+
+        self.assertTrue(Concept.objects.filter(id=concept2.id).exists())
+
+        version2 = SourceVersion(
+            name='version2',
+            mnemonic='version2',
+            versioned_object=source,
+            released=True,
+            created_by=self.user1,
+            updated_by=self.user1,
         )
-        self.assertTrue(source_versions.exists())
-        self.assertEquals(version1.get_concepts().count(), 1)
+        SourceVersion.persist_new(version2)
 
-        version1_id = version1.id
-
-        version1.delete()
-
-        self.assertFalse(SourceVersion.objects.filter(
-            mnemonic='version1',
+        source_versions = SourceVersion.objects.filter(
             versioned_object_type=ContentType.objects.get_for_model(Source),
-            versioned_object_id=self.source1.id
-        ).exists())
+            versioned_object_id=source.id
+        )
+
+        self.assertTrue(source_versions.count(), 2)
+        self.assertEquals(version1.get_concepts().count(), 0)
+        self.assertEquals(version2.get_concepts().count(), 2)
 
         from concepts.models import ConceptVersion
-        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1_id).exists())
+        self.assertEquals(ConceptVersion.objects.filter(source_version_ids__contains=version1.id).count(), 0)
+        self.assertEquals(ConceptVersion.objects.filter(source_version_ids__contains=version2.id).count(), 2)
 
+        from mappings.models import Mapping
+        mapping1 = Mapping(
+            mnemonic='TestMapping',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            map_type='Same As',
+            from_concept=concept1,
+            to_concept=concept2,
+            external_id='mapping1',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping1, self.user1, **kwargs)
+        mapping1 = Mapping.objects.get(external_id='mapping1')
+
+        self.assertEquals(MappingVersion.objects.filter(versioned_object_id=mapping1.id).count(), 1)
+
+        mapping2 = Mapping(
+            mnemonic='TestMappingExternal',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=source,
+            map_type='Same As',
+            from_concept=concept1,
+            to_source=source,
+            to_concept_code='code',
+            to_concept_name='name',
+            external_id='mapping2',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+        Mapping.persist_new(mapping2, self.user1, **kwargs)
+        mapping2 = Mapping.objects.get(external_id='mapping2')
+
+        self.assertEquals(MappingVersion.objects.filter(versioned_object_id=mapping2.id).count(), 1)
+
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=version1.id).count(), 0)
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=version2.id).count(), 0)
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=head.id).count(), 2)
+
+        source_id = source.id
+        #When
+        source.delete()
+
+        #Then
+        self.assertFalse(Source.objects.filter(id=source_id).exists())
+
+        self.assertFalse(SourceVersion.objects.filter(
+            versioned_object_type=ContentType.objects.get_for_model(Source),
+            versioned_object_id=source_id
+        ).exists())
+
+        self.assertFalse(Concept.objects.filter(id=concept1.id).exists())
+        self.assertFalse(Concept.objects.filter(id=concept2.id).exists())
+
+        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version1.id).exists())
+        self.assertFalse(ConceptVersion.objects.filter(source_version_ids__contains=version2.id).exists())
+
+        self.assertFalse(Mapping.objects.filter(external_id='mapping1').exists())
+        self.assertFalse(Mapping.objects.filter(external_id='mapping2').exists())
+
+        self.assertEquals(MappingVersion.objects.filter(versioned_object_id=mapping1.id).count(), 0)
+        self.assertEquals(MappingVersion.objects.filter(versioned_object_id=mapping2.id).count(), 0)
+
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=version1.id).count(), 0)
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=version2.id).count(), 0)
+        self.assertEquals(MappingVersion.objects.filter(source_version_ids__contains=head.id).count(), 0)
 
 
     def test_seed_concepts(self):

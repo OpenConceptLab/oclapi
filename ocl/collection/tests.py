@@ -9,7 +9,7 @@ from unittest import skip
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from collection.models import CollectionReference
+from collection.models import CollectionReference, CollectionConcept, CollectionMapping
 from collection.validation_messages import REFERENCE_ALREADY_EXISTS, CONCEPT_FULLY_SPECIFIED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE, \
     CONCEPT_PREFERRED_NAME_UNIQUE_PER_COLLECTION_AND_LOCALE
 from oclapi.models import ACCESS_TYPE_VIEW, CUSTOM_VALIDATION_SCHEMA_OPENMRS
@@ -575,18 +575,80 @@ class CollectionClassMethodTest(CollectionBaseTest):
         self.assertEquals(1, collection.num_versions)
         self.assertEquals(collection_version, CollectionVersion.get_latest_version_of(collection))
 
-    def test_delete_collection_allversion_also_deleted(self):
+    def test_delete_collection_all_versions_also_deleted(self):
+        #Given
         kwargs = {
             'parent_resource': self.userprofile1
         }
         errors = Collection.persist_new(self.new_collection, self.user1, **kwargs)
         self.assertEquals(0, len(errors))
         self.assertTrue(Collection.objects.filter(name='collection1').exists())
-        id = Collection.objects.get(name='collection1').id
-        self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=id))
+        collection = Collection.objects.get(name='collection1')
+        collection_id = collection.id
+        self.assertTrue(CollectionVersion.objects.filter(versioned_object_id=collection_id).exists())
+
+        source = Source(
+            name='source',
+            mnemonic='source',
+            full_name='Source One',
+            source_type='Dictionary',
+            public_access=ACCESS_TYPE_EDIT,
+            default_locale='en',
+            supported_locales=['en'],
+            website='www.source1.com',
+            description='This is the first test source'
+        )
+        kwargs = {
+            'parent_resource': self.org1
+        }
+        Source.persist_new(source, self.user1, **kwargs)
+
+        (concept, errors) = create_concept(mnemonic="concept", user=self.user1, source=source)
+
+        (concept2, errors) = create_concept(mnemonic="concept2", user=self.user1, source=source)
+
+        collection_head = collection.get_head()
+        collection_head.add_concept(concept.get_latest_version)
+        collection_head.add_concept(concept2.get_latest_version)
+
+        self.assertEquals(CollectionConcept.objects.filter(collection_id=collection_head.id).count(), 2)
+
+        mapping = Mapping(
+            mnemonic='TestMapping',
+            map_type='Same As',
+            from_concept=concept,
+            to_concept=concept2,
+            external_id='mapping',
+        )
+        kwargs = {
+            'parent_resource': source,
+        }
+
+        Mapping.persist_new(mapping, self.user1, **kwargs)
+
+        from_concept_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=concept.mnemonic).mnemonic + '/'
+        concept1_reference = '/orgs/org1/sources/source/concepts/' + Concept.objects.get(
+            mnemonic=concept2.mnemonic).mnemonic + '/'
+        mapping_reference = '/orgs/org1/sources/source/mappings/' + Mapping.objects.filter()[0].mnemonic + '/'
+
+        references = [concept1_reference, from_concept_reference, mapping_reference]
+
+        collection.expressions = references
+        collection.full_clean()
+        collection.save()
+
+        self.assertEquals(CollectionMapping.objects.filter(collection_id=collection_head.id).count(), 1)
+
+        #When
         Collection.objects.get(name='collection1').delete()
+
+        #Then
         self.assertFalse(Collection.objects.filter(name='collection1').exists())
-        self.assertFalse(CollectionVersion.objects.filter(versioned_object_id=id))
+        self.assertFalse(CollectionVersion.objects.filter(versioned_object_id=collection_id).exists())
+
+        self.assertEquals(CollectionConcept.objects.filter(collection_id=collection_head.id).count(), 0)
+        self.assertEquals(CollectionMapping.objects.filter(collection_id=collection_head.id).count(), 0)
 
     def test_persist_new_negative__no_parent(self):
         errors = Collection.persist_new(self.new_collection, self.user1)

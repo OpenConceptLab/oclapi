@@ -6,6 +6,7 @@ from djangotoolbox.fields import ListField
 from collection.models import Collection
 from oclapi.models import BaseResourceModel, ACCESS_TYPE_NONE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW
 from sources.models import Source
+from users.models import UserProfile
 
 ORG_OBJECT_TYPE = 'Organization'
 
@@ -25,6 +26,11 @@ class Organization(BaseResourceModel):
         sources = Source.objects.filter(parent_id=self.id)
         for source in sources:
             source.delete()
+
+        users = UserProfile.objects.filter(organizations__contains=self.id)
+        for user in users:
+            user.organizations.remove(self.id)
+            user.save()
 
         super(Organization, self).delete()
 

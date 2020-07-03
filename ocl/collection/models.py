@@ -193,8 +193,10 @@ class Collection(ConceptContainerModel):
     def get_url_kwarg():
         return 'collection'
 
-    def delete(self):
-        CollectionVersion.objects.filter(versioned_object_id=self.id).delete()
+    def delete(self, **kwargs):
+        collection_versions = CollectionVersion.objects.filter(versioned_object_id=self.id)
+        for collection_version in collection_versions:
+            collection_version.delete()
         super(Collection, self).delete()
 
     def delete_references(self, references):

@@ -7,11 +7,13 @@ Replace this with more appropriate tests for your application.
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from collection.models import Collection, CollectionVersion
+from concepts.models import Concept, ConceptVersion
 from oclapi.utils import add_user_to_org, remove_user_from_org
 from orgs.models import Organization, ORG_OBJECT_TYPE
-from sources.models import Source
+from sources.models import Source, SourceVersion
 from users.models import UserProfile
-from test_helper.base import OclApiBaseTestCase, create_organization
+from test_helper.base import OclApiBaseTestCase, create_organization, create_concept
 
 
 class OrganizationTestCase(OclApiBaseTestCase):
@@ -34,7 +36,7 @@ class OrganizationTestCase(OclApiBaseTestCase):
             org.full_clean()
             org.save()
 
-    def test_organization_delete(self):
+    def test_delete_organization(self):
         org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')
         org.full_clean()
         org.save()
@@ -47,6 +49,111 @@ class OrganizationTestCase(OclApiBaseTestCase):
         self.assertTrue(Organization.objects.filter(id=org_id).exists())
         org.delete()
         self.assertFalse(Organization.objects.filter(id=org_id).exists())
+
+    def test_delete_organization_with_sources_and_collections(self):
+        org = Organization(mnemonic='org1', name='My Organization', created_by=self.user, updated_by=self.user)
+        org.full_clean()
+        org.save()
+        org_id = org.id
+
+        org = Organization.objects.get(id=org.id)
+        user1 = UserProfile.objects.get(mnemonic=self.user.username);
+        org.members.append(user1.id)
+        user1.organizations.append(org.id)
+        org.save()
+        user1.save()
+
+        source = Source(name='source1', mnemonic='source1', full_name='Source One', parent=org, created_by=self.user, updated_by=self.user)
+        source.full_clean()
+        source.save()
+
+        source2 = Source(name='source2', mnemonic='source2', full_name='Source Two', parent=org, created_by=self.user, updated_by=self.user)
+        source2.full_clean()
+        source2.save()
+
+        source_version = SourceVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=source2,
+            released=True,
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        source_version.full_clean()
+        source_version.save()
+
+        source_version2 = SourceVersion(
+            name='version2',
+            mnemonic='version2',
+            versioned_object=source2,
+            released=True,
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        source_version2.full_clean()
+        source_version2.save()
+
+        collection = Collection.objects.create(name='collection1', mnemonic='collection1', created_by=self.user,
+                                  updated_by=self.user, parent=org, external_id='EXTID1')
+
+        collection_version = CollectionVersion(
+            name='version1',
+            mnemonic='version1',
+            versioned_object=collection,
+            released=True,
+            created_by='user1',
+            updated_by='user1',
+        )
+        collection_version.full_clean()
+        collection_version.save()
+
+        collection_version2 = CollectionVersion(
+            name='version2',
+            mnemonic='version2',
+            versioned_object=collection,
+            released=True,
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        collection_version2.full_clean()
+        collection_version2.save()
+
+        collection2 = Collection.objects.create(name='collection2', mnemonic='collection2', created_by=self.user,
+                                               updated_by=self.user, parent=org, external_id='EXTID2')
+
+        self.assertTrue(Organization.objects.filter(id=org_id).exists())
+
+        self.assertTrue(Source.objects.filter(id=source.id).exists())
+        self.assertTrue(Source.objects.filter(id=source2.id).exists())
+
+        self.assertTrue(SourceVersion.objects.filter(id=source_version.id).exists());
+        self.assertTrue(SourceVersion.objects.filter(id=source_version2.id).exists());
+
+        self.assertTrue(Collection.objects.filter(id=collection.id).exists())
+        self.assertTrue(Collection.objects.filter(id=collection2.id).exists())
+
+        self.assertTrue(CollectionVersion.objects.filter(id=collection_version.id).exists());
+        self.assertTrue(CollectionVersion.objects.filter(id=collection_version2.id).exists());
+
+        org.delete()
+        self.assertFalse(Organization.objects.filter(id=org.id).exists())
+
+        self.assertFalse(Source.objects.filter(id=source.id).exists())
+        self.assertFalse(Source.objects.filter(id=source2.id).exists())
+
+        self.assertFalse(SourceVersion.objects.filter(id=source_version.id).exists());
+        self.assertFalse(SourceVersion.objects.filter(id=source_version2.id).exists());
+
+        self.assertFalse(Collection.objects.filter(id=collection.id).exists())
+        self.assertFalse(Collection.objects.filter(id=collection2.id).exists())
+
+        self.assertFalse(CollectionVersion.objects.filter(id=collection_version.id).exists());
+        self.assertFalse(CollectionVersion.objects.filter(id=collection_version2.id).exists());
+
+        #should not delete member user
+        self.assertTrue(UserProfile.objects.filter(mnemonic=self.user.username).exists());
+        #should delete org from organizations on user
+        self.assertFalse(org_id in UserProfile.objects.get(mnemonic=self.user.username).organizations)
 
     def test_resource_type(self):
         org = Organization(mnemonic='org1', name='My Organization', created_by='user1', updated_by='user1')

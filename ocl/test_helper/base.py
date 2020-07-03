@@ -16,9 +16,9 @@ from django.test import TestCase
 class OclApiBaseTestCase(TestCase):
     def setUp(self):
         self._clear_fixtures()
-        user = create_user()
+        self.user = create_user()
         org_ocl = create_organization("OCL")
-        create_lookup_concept_classes(user, org_ocl)
+        create_lookup_concept_classes(self.user, org_ocl)
 
     def _clear_fixtures(self):
         LocalizedText.objects.filter().delete()
