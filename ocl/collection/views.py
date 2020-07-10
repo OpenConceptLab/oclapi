@@ -309,6 +309,12 @@ class CollectionListView(CollectionBaseView,
     def get(self, request, *args, **kwargs):
         self.serializer_class = CollectionDetailSerializer if self.is_verbose(request) else CollectionListSerializer
         self.contains_uri = request.QUERY_PARAMS.get('contains', None)
+        # This is to support collectionType filter along with collection_type filter
+        # Since Solr uses collection_type key, we are replacing collectionType to collection_type
+        if request.QUERY_PARAMS.has_key('collectionType'):
+            request._request.GET = request._request.GET.copy()
+            request._request.GET['collection_type'] = request._request.GET['collectionType']
+            request._request.GET.pop('collectionType')
         # Running the filter_backends seems to reset changes made to the queryset.
         # Therefore, remove the filter_backends when the 'contains' parameter is passed, and
         # apply the appropriate public_access filter in get_queryset
