@@ -255,9 +255,18 @@ def remove_from_search_index(type, id):
             type._meta.module_name,
             id
         )
+        backend.remove(objectid, commit=True)
 
-        backend.remove(objectid)
+def update_search_index_by_id(object_type, id):
+    if isinstance(haystack.signal_processor, haystack.signals.RealtimeSignalProcessor):
+        default_connection = haystack_connections['default']
+        unified_index = default_connection.get_unified_index()
+        index = unified_index.get_index(object_type)
+        backend = default_connection.get_backend()
 
+        #fetch the most recent data from db
+        object = object_type.objects.filter(id = id)
+        backend.update(index, object)
 
 def update_all_in_index(model, qs):
     if not qs.exists():

@@ -10,7 +10,7 @@ logger = logging.getLogger('oclapi')
 class ReferenceDefinition:
     _reference_definitions = None
 
-    def __init__(self, source_type, source_field, target_type, use_object_id = True, nullable = False):
+    def __init__(self, source_type, source_field, target_type, use_object_id = True, nullable = False, list = False):
         self.source_type = source_type
         self.source_field = source_field
         self.target_type = target_type
@@ -18,6 +18,7 @@ class ReferenceDefinition:
         self.use_object_id = use_object_id
         self.nullable = nullable
         self._dependencies = None
+        self.list = list
 
     @property
     def dependencies(self):
@@ -58,13 +59,13 @@ class ReferenceDefinition:
             ReferenceDefinition(Collection, 'parent_id', Organization),
             ReferenceDefinition(Collection, 'parent_id', UserProfile),
 
-            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, False),
+            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, False, False, True),
             ReferenceDefinition(ConceptVersion, 'versioned_object_id', Concept, False),
             ReferenceDefinition(ConceptVersion, 'previous_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'parent_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'root_version', ConceptVersion),
 
-            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, False),
+            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, False, False, True),
             ReferenceDefinition(MappingVersion, 'versioned_object_id', Mapping, False),
             ReferenceDefinition(MappingVersion, 'previous_version', MappingVersion),
             ReferenceDefinition(MappingVersion, 'parent_version', MappingVersion),
@@ -88,9 +89,9 @@ class ReferenceDefinition:
             ReferenceDefinition(CollectionMapping, 'mapping_id', MappingVersion, False),
             ReferenceDefinition(CollectionMapping, 'collection_id', CollectionVersion, False),
 
-            ReferenceDefinition(UserProfile, 'organizations', Organization, False, True),
+            ReferenceDefinition(UserProfile, 'organizations', Organization, False, True, True),
 
-            ReferenceDefinition(Organization, 'members', UserProfile, False, True)
+            ReferenceDefinition(Organization, 'members', UserProfile, False, True, True)
         ]
 
 class Reference:
@@ -233,10 +234,20 @@ class ReferenceList:
                     else:
                         broken_references_by_type[source_type] = [broken_reference]
 
-        for type in broken_references_by_type:
-            ids = [broken_reference.source_id for broken_reference in broken_references_by_type[type]]
-            RawQueries().bulk_delete(type, ids)
-            for broken_reference in broken_references_by_type[type]:
+        for source_type in broken_references_by_type:
+            ids = []
+            broken_references = broken_references_by_type[source_type]
+            for broken_reference in broken_references:
+                if broken_reference.reference_definition.list:
+                    RawQueries().bulk_delete_from_list(source_type, [broken_reference.source_id],
+                                                       broken_reference.reference_definition.source_field,
+                                                       [broken_reference.target_id])
+                else:
+                    ids.append(broken_reference.source_id)
+            if ids:
+                RawQueries().bulk_delete(source_type, ids)
+
+            for broken_reference in broken_references_by_type[source_type]:
                 broken_reference.deleted = True
 
 class ReferenceListItem:

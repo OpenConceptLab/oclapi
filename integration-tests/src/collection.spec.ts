@@ -64,8 +64,9 @@ describe('Collection', () => {
         const res = await helper.get('collections?user=' + helper.regularMemberUser);
         expect(res.status).toBe(200);
         const json = await res.json();
-        expect(json).toEqual(expect.arrayContaining([helper.toUserCollection(helper.regularMemberUser, collectionId)]));
-        expect(json).toHaveLength(1);
+        expect(json).toEqual(expect.arrayContaining([helper.toOrgCollection(helper.viewOrg, helper.viewCollection),
+            helper.toOrgCollection(helper.viewOrg, helper.editCollection), helper.toUserCollection(helper.regularMemberUser, collectionId)]));
+        expect(json).toHaveLength(3);
     });
 
     it('should list only public collections for anonymous', async () => {

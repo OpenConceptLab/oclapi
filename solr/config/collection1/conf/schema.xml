@@ -165,6 +165,8 @@
 
     <field name="name" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
+    <field name="mnemonic" type="lowercase" indexed="true" stored="true" multiValued="false" />
+
     <field name="sourceType" type="lowercase" indexed="true" stored="true" multiValued="false" />
 
     <field name="locale_exact" type="string" indexed="true" stored="true" multiValued="true" />
@@ -282,7 +284,7 @@
   </fields>
 
   <!-- field to use to determine and enforce document uniqueness. -->
-  <uniqueKey>django_id</uniqueKey>
+  <uniqueKey>id</uniqueKey>
 
   <!-- field for the QueryParser to use when an explicit fieldname is absent -->
   <defaultSearchField>text</defaultSearchField>

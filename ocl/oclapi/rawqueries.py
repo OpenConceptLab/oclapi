@@ -2,6 +2,7 @@ from bson import ObjectId
 from django.db import connections
 
 from oclapi.utils import remove_from_search_index
+from oclapi.utils import update_search_index_by_id
 from tasks import update_search_index_task
 
 
@@ -14,6 +15,12 @@ class RawQueries():
         collection.remove({'_id': {'$in': [ObjectId(id) for id in ids]}})
         for id in ids:
             remove_from_search_index(type, id)
+
+    def bulk_delete_from_list(self, type, ids, list_field, list_values):
+        collection = self.db.get_collection(type._meta.db_table)
+        collection.update({'_id': {'$in': [ObjectId(id) for id in ids]}}, {'$pull': {list_field: {'$in': list_values}}})
+        for id in ids:
+            update_search_index_by_id(type, id)
 
     def find_by_id(self, type, id):
         collection = self.db.get_collection(type._meta.db_table)
