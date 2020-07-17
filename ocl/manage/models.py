@@ -59,13 +59,13 @@ class ReferenceDefinition:
             ReferenceDefinition(Collection, 'parent_id', Organization),
             ReferenceDefinition(Collection, 'parent_id', UserProfile),
 
-            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, False, False, True),
+            ReferenceDefinition(ConceptVersion, 'source_version_ids', SourceVersion, False, True, True),
             ReferenceDefinition(ConceptVersion, 'versioned_object_id', Concept, False),
             ReferenceDefinition(ConceptVersion, 'previous_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'parent_version', ConceptVersion),
             ReferenceDefinition(ConceptVersion, 'root_version', ConceptVersion),
 
-            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, False, False, True),
+            ReferenceDefinition(MappingVersion, 'source_version_ids', SourceVersion, False, True, True),
             ReferenceDefinition(MappingVersion, 'versioned_object_id', Mapping, False),
             ReferenceDefinition(MappingVersion, 'previous_version', MappingVersion),
             ReferenceDefinition(MappingVersion, 'parent_version', MappingVersion),

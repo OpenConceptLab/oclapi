@@ -32,7 +32,6 @@ class RawQueries():
         items = collection.find({field: value})
         return items
 
-
     def delete_source_version(self, source_version):
 
         from mappings.models import MappingVersion
