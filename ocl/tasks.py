@@ -1,11 +1,15 @@
 from __future__ import absolute_import
 
 import os
+import random
+import uuid
 
+import requests
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import Context
 from django.template.loader import render_to_string
+from requests.auth import HTTPBasicAuth
 
 from oclapi.management.data_integrity_checks import update_concepts_and_mappings_count
 
@@ -31,10 +35,11 @@ logger = get_task_logger(__name__)
 celery = Celery('tasks', backend='redis://', broker='django://')
 celery.config_from_object('django.conf:settings')
 celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
-celery.conf.CELERY_ROUTES = {'tasks.bulk_import': {'queue': 'bulk_import'},
-                           'tasks.bulk_priority_import': {'queue': 'bulk_priority_import'}}
 celery.conf.CELERY_TASK_RESULT_EXPIRES = 259200 #72 hours
 celery.conf.CELERY_TRACK_STARTED = True
+celery.conf.CELERY_CREATE_MISSING_QUEUES = True
+
+BULK_IMPORT_QUEUES_COUNT = 5
 
 @celery.task(base=QueueOnce, bind=True)
 def data_integrity_checks(self):
@@ -46,13 +51,70 @@ def find_broken_references(self):
     broken_references = Reference.find_broken_references()
     return broken_references
 
-@celery.task(base=QueueOnce, bind=True)
-def bulk_import(self, to_import, username, update_if_exists):
-    from manage.imports.bulk_import import BulkImport
-    return BulkImport().run_import(to_import, username, update_if_exists)
+def queue_bulk_import(to_import, import_queue, username, update_if_exists):
+    """
+    Used to queue bulk imports. It assigns a bulk import task to a specified import queue or a random one.
+    If requested by the root user, the bulk import goes to the priority queue.
+
+    :param to_import:
+    :param import_queue:
+    :param username:
+    :param update_if_exists:
+    :return: task
+    """
+    task_id=str(uuid.uuid4()) + '-' + username
+
+    if username == 'root':
+        queue_id = 'bulk_import_root'
+        task_id += '-priority'
+    elif import_queue:
+        queue_id = 'bulk_import_' + str(hash(username + import_queue) % BULK_IMPORT_QUEUES_COUNT) #assing to one of 5 queues processed in order
+        task_id += '-' + import_queue
+    else:
+        queue_id = 'bulk_import_' + str(random.randrange(0, BULK_IMPORT_QUEUES_COUNT)) #assing randomly to one of 5 queues processed in order
+        task_id += '-default'
+
+    task = bulk_import.apply_async((to_import, username, update_if_exists), task_id=task_id, queue=queue_id)
+    return task
+
+def parse_bulk_import_task_id(task_id):
+    """
+    Used to parse bulk import task id, which is in format '{uuid}-{username}-{queue}'.
+    :param task_id:
+    :return: dictionary with uuid, username, queue
+    """
+    task = { 'uuid': task_id[:37]}
+    username = task_id[37:]
+    queue_index = username.find('-')
+    if queue_index != -1:
+        queue = username[queue_index + 1:]
+        username = username[:queue_index]
+    else:
+        queue = 'default'
+
+    task['username'] = username
+    task['queue'] = queue
+    return task
+
+def flower_get(url):
+    """
+    Returns a flower response from the given endpoint url.
+    :param url:
+    :return:
+    """
+    return requests.get('http://flower:5555/' + url, auth=HTTPBasicAuth(settings.FLOWER_USER, settings.FLOWER_PWD))
+
+def task_exists(task_id):
+    """
+    This method is used to check Celery Task validity when state is PENDING. If task exists in
+    Flower then it's considered as Valid task otherwise invalid task.
+    """
+    flower_response = flower_get('api/task/info/' + task_id)
+    return flower_response and flower_response.status_code == 200 and flower_response.text
+
 
 @celery.task(base=QueueOnce, bind=True)
-def bulk_priority_import(self, to_import, username, update_if_exists):
+def bulk_import(self, to_import, username, update_if_exists):
     from manage.imports.bulk_import import BulkImport
     return BulkImport().run_import(to_import, username, update_if_exists)
 

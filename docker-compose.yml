@@ -73,7 +73,7 @@ services:
         max-file: "10"
   celery:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: celery -A tasks worker -l INFO -n default --autoscale=15,3
+    command: celery -A tasks worker -l INFO -Q default -n default --autoscale=15,3
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -94,9 +94,9 @@ services:
       options:
         max-size: "10M"
         max-file: "10"
-  celery_bulk_import:
+  celery_bulk_import_0:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: celery -A tasks worker -l INFO -Q bulk_import -n bulk_import --autoscale=3,1
+    command: celery -A tasks worker -l INFO -Q bulk_import_0 -n bulk_import_0 -c 1
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"
@@ -117,9 +117,101 @@ services:
       options:
         max-size: "10M"
         max-file: "10"
-  celery_bulk_priority_import:
+  celery_bulk_import_1:
     image: openconceptlab/oclapi:${ENVIRONMENT-production}
-    command: celery -A tasks worker -l INFO -Q bulk_priority_import -n bulk_priority_import --autoscale=3,1
+    command: celery -A tasks worker -l INFO -Q bulk_import_1 -n bulk_import_1 -c 1
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+  celery_bulk_import_2:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_import_2 -n bulk_import_2 -c 1
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+  celery_bulk_import_3:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_import_3 -n bulk_import_3 -c 1
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+  celery_bulk_import_4:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_import_4 -n bulk_import_4 -c 1
+    links:
+      - "mongo:mongo.openconceptlab.org"
+      - "redis:redis.openconceptlab.org"
+      - "solr:solr.openconceptlab.org"
+      - "api:api.openconceptlab.org"
+    environment:
+      - C_FORCE_ROOT=1
+      - SECRET_KEY
+      - SENTRY_DSN_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+  celery_bulk_import_root:
+    image: openconceptlab/oclapi:${ENVIRONMENT-production}
+    command: celery -A tasks worker -l INFO -Q bulk_import_root -n bulk_import_root -c 1
     links:
       - "mongo:mongo.openconceptlab.org"
       - "redis:redis.openconceptlab.org"

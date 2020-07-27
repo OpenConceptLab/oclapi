@@ -1,10 +1,12 @@
-from rest_framework import routers
+from django.conf.urls import patterns, url
 
 from manage.views import ManageBrokenReferencesView, BulkImportView
+from oclapi.models import NAMESPACE_PATTERN
 
-router = routers.DefaultRouter()
-router.register(r'brokenreferences', ManageBrokenReferencesView, base_name='brokenreferences')
-router.register(r'bulkimport', BulkImportView, base_name='bulkimport')
-
-urlpatterns = router.urls
+urlpatterns = patterns(
+    '',
+    url(r'^brokenreferences/$', ManageBrokenReferencesView.as_view(), name='brokenreferences-list'),
+    url(r'^bulkimport/$', BulkImportView.as_view(), name='bulkimport-list'),
+    url(r'^bulkimport/(?P<import_queue>' + NAMESPACE_PATTERN + ')/$', BulkImportView.as_view(), name='bulkimport-detail'),
+)
 
