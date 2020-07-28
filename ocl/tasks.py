@@ -38,6 +38,7 @@ celery.conf.ONCE_REDIS_URL = celery.conf.CELERY_RESULT_BACKEND
 celery.conf.CELERY_TASK_RESULT_EXPIRES = 259200 #72 hours
 celery.conf.CELERY_TRACK_STARTED = True
 celery.conf.CELERY_CREATE_MISSING_QUEUES = True
+celery.conf.CELERY_DEFAULT_QUEUE = 'default'
 
 BULK_IMPORT_QUEUES_COUNT = 5
 

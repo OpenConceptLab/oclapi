@@ -25,7 +25,7 @@ class ManageBrokenReferencesView(APIView):
         self.permission_classes = (IsAdminUser, )
         super(ManageBrokenReferencesView, self).initial(request, *args, **kwargs)
 
-    def list(self, request):
+    def get(self, request):
         task = AsyncResult(request.GET.get('task'))
 
         if task.successful():
@@ -35,8 +35,8 @@ class ManageBrokenReferencesView(APIView):
             return Response(serializer.data)
         elif task.failed():
             return Response({'exception': str(task.result)}, status=status.HTTP_400_BAD_REQUEST)
-        elif task.state == 'PENDING':
-            return check_task_id(self, task.id)
+        elif task.state == 'PENDING' and not task_exists(task.id):
+            return Response({'exception': 'task '+ task.id +' not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({'task': task.id, 'state': task.state})
 
