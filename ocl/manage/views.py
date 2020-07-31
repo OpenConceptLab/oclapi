@@ -100,7 +100,8 @@ class BulkImportView(APIView):
             elif task.state == 'PENDING' and not task_exists(task_id):
                 return Response({'exception': 'task '+ task_id +' not found'}, status=status.HTTP_404_NOT_FOUND)
             else:
-                return Response({'task': task.id, 'state': task.state, 'username' : username, 'queue': parsed_task['queue']})
+                return Response({'task': task.id, 'state': task.state, 'username' : username,
+                                 'queue': parsed_task['queue']}, status=status.HTTP_202_ACCEPTED)
         else:
             flower_tasks = flower_get('api/tasks').json()
             tasks = []
@@ -110,8 +111,10 @@ class BulkImportView(APIView):
 
                 task = parse_bulk_import_task_id(task_id)
                 if user.is_staff or user.username == task['username']:
-                    if (not import_queue or task['queue'] == import_queue) and (not username or task['username'] == username):
-                        tasks.append({'task': task_id, 'state': value['state'], 'queue': task['queue'], 'username': task['username']})
+                    if (not import_queue or task['queue'] == import_queue) and \
+                            (not username or task['username'] == username):
+                        tasks.append({'task': task_id, 'state': value['state'], 'queue': task['queue'],
+                                      'username': task['username']})
 
             return Response(tasks)
 
@@ -123,12 +126,14 @@ class BulkImportView(APIView):
         elif update_if_exists == 'false':
             update_if_exists = False
         else:
-            return Response({'exception': 'update_if_exists must be either \'true\' or \'false\''}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'exception': 'update_if_exists must be either \'true\' or \'false\''},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         task = queue_bulk_import(request.body, import_queue, username, update_if_exists)
         parsed_task = parse_bulk_import_task_id(task.id)
 
-        return Response({'task': task.id, 'state': task.state, 'username' : username, 'queue': parsed_task['queue']})
+        return Response({'task': task.id, 'state': task.state, 'username' : username,
+                         'queue': parsed_task['queue']}, status=status.HTTP_202_ACCEPTED)
 
 
 
