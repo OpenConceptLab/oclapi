@@ -67,26 +67,26 @@ def queue_bulk_import(to_import, import_queue, username, update_if_exists):
 
     if username == 'root':
         queue_id = 'bulk_import_root'
-        task_id += '-priority'
+        task_id += '~priority'
     elif import_queue:
         queue_id = 'bulk_import_' + str(hash(username + import_queue) % BULK_IMPORT_QUEUES_COUNT) #assing to one of 5 queues processed in order
-        task_id += '-' + import_queue
+        task_id += '~' + import_queue
     else:
         queue_id = 'bulk_import_' + str(random.randrange(0, BULK_IMPORT_QUEUES_COUNT)) #assing randomly to one of 5 queues processed in order
-        task_id += '-default'
+        task_id += '~default'
 
     task = bulk_import.apply_async((to_import, username, update_if_exists), task_id=task_id, queue=queue_id)
     return task
 
 def parse_bulk_import_task_id(task_id):
     """
-    Used to parse bulk import task id, which is in format '{uuid}-{username}-{queue}'.
+    Used to parse bulk import task id, which is in format '{uuid}-{username}~{queue}'.
     :param task_id:
     :return: dictionary with uuid, username, queue
     """
     task = { 'uuid': task_id[:37]}
     username = task_id[37:]
-    queue_index = username.find('-')
+    queue_index = username.find('~')
     if queue_index != -1:
         queue = username[queue_index + 1:]
         username = username[:queue_index]

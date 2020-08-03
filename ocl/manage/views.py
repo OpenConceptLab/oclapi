@@ -1,6 +1,7 @@
 import logging
 import json
 import requests
+from celery_once import AlreadyQueued
 from requests.auth import HTTPBasicAuth
 
 from celery.result import AsyncResult
@@ -128,8 +129,11 @@ class BulkImportView(APIView):
         else:
             return Response({'exception': 'update_if_exists must be either \'true\' or \'false\''},
                             status=status.HTTP_400_BAD_REQUEST)
+        try:
+            task = queue_bulk_import(request.body, import_queue, username, update_if_exists)
+        except AlreadyQueued:
+            return Response({'exception': 'The same import has been already queued'}, status=status.HTTP_409_CONFLICT)
 
-        task = queue_bulk_import(request.body, import_queue, username, update_if_exists)
         parsed_task = parse_bulk_import_task_id(task.id)
 
         return Response({'task': task.id, 'state': task.state, 'username' : username,
