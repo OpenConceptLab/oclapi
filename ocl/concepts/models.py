@@ -15,7 +15,7 @@ from concepts.mixins import DictionaryItemMixin, ConceptValidationMixin
 from oclapi.models import (ConceptBaseModel, ResourceVersionModel,
                            VERSION_TYPE, ACCESS_TYPE_EDIT, ACCESS_TYPE_VIEW)
 from sources.models import SourceVersion, Source
-
+from oclapi.settings.common import Common
 
 class LocalizedText(models.Model):
     uuid = UUIDField(auto=True)
@@ -195,21 +195,65 @@ class Concept(ConceptValidationMixin, ConceptBaseModel, DictionaryItemMixin):
 
     @staticmethod
     def get_display_name_for(obj):
-        if not obj.names:
-            return None
-        for name in obj.names:
-            if name.locale_preferred:
-                return name.name
-        return obj.names[0].name
+        name = Concept.get_display_locale_object_for(obj)
+        if name:
+            return name.name
+
+        return None
 
     @staticmethod
     def get_display_locale_for(obj):
+        name = Concept.get_display_locale_object_for(obj)
+        if name:
+            return name.locale
+
+        return None
+
+    @staticmethod
+    def get_display_locale_object_for(obj):
         if not obj.names:
             return None
-        for name in obj.names:
-            if name.locale_preferred:
-                return name.locale
-        return obj.names[0].locale
+
+        return Concept.get_parent_default_locale_name_object_for(
+            obj
+        ) or Concept.get_parent_supported_locale_name_object_for(
+            obj
+        ) or Concept.get_system_default_locale_name_object_for(
+            obj
+        ) or Concept.get_preferred_locale_name_object_for(
+            obj
+        ) or obj.names[0]
+
+    @staticmethod
+    def get_preferred_locale_name_object_for(obj):
+        if not obj.names:
+            return None
+
+        return next((name for name in obj.names if name.locale_preferred), None)
+
+    @staticmethod
+    def get_parent_default_locale_name_object_for(obj):
+        return Concept.__get_locale_name_object_for(obj, [obj.parent_source.default_locale])
+
+    @staticmethod
+    def get_parent_supported_locale_name_object_for(obj):
+        return Concept.__get_locale_name_object_for(obj, obj.parent_source.supported_locales or [])
+
+    @staticmethod
+    def get_system_default_locale_name_object_for(obj):
+        return Concept.__get_locale_name_object_for(obj, [Common.DEFAULT_LOCALE])
+
+    @staticmethod
+    def __get_locale_name_object_for(obj, locales):
+        if not obj.names or not locales:
+            return None
+
+        locale_matching_names = [name for name in obj.names if name.locale in locales]
+
+        if len(locale_matching_names):
+            return next((name for name in locale_matching_names if name.locale_preferred), locale_matching_names[0])
+
+        return None
 
     @staticmethod
     def get_version_model():

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 This file demonstrates writing tests using the unittest module. These will pass
 when you run "manage.py test".
@@ -243,6 +245,106 @@ class ConceptTest(ConceptBaseTest):
         self.assertEquals(self.source1.owner_name, concept.owner_name)
         self.assertEquals(self.source1.owner_type, concept.owner_type)
         self.assertEquals(0, concept.num_versions)
+
+    def test_display_name(self):
+        original_default_locale = self.source1.default_locale
+        original_supported_locales = self.source1.supported_locales
+
+        self.source1.default_locale = 'fr'
+        self.source1.supported_locales = ['fr', 'ti']
+        self.source1.save()
+        ch_locale = LocalizedText(locale_preferred=True, locale='ch', name='ch concept')
+        en_locale = LocalizedText(locale_preferred=True, locale='en', name='en concept')
+        concept = Concept(
+            mnemonic='concept1',
+            created_by=self.user1,
+            updated_by=self.user1,
+            parent=self.source1,
+            concept_class='Diagnosis',
+            descriptions=[self.name],
+            datatype="None"
+        )
+        concept.names = [ch_locale, en_locale]
+        concept.full_clean()
+        concept.save()
+
+        self.assertEqual(concept.display_name, en_locale.name)  # locale preferred order by created at desc
+
+        self.source1.supported_locales = ['fr', 'ti', 'ch']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.save()
+
+        self.assertEqual(concept.display_name, ch_locale.name)  # locale preferred parent's supported locale
+
+        # taking scenarios for ciel 1366 concept
+        en_locale_preferred = LocalizedText(locale_preferred=True, locale='en', name='MALARIA SMEAR, QUALITATIVE')
+        en_short_locale_not_preferred = LocalizedText(type='SHORT', locale_preferred=False, locale='en', name='malaria sm, qual')
+        en_locale_not_preferred = LocalizedText(locale_preferred=False, locale='en', name='Jungle fever smear')
+        fr_locale = LocalizedText(locale_preferred=True, locale='fr', name='FROTTIS POUR DÉTECTER PALUDISME')
+        ht_locale = LocalizedText(locale_preferred=False, locale='ht', name='tès MALARYA , kalitatif')
+        es_locale1 = LocalizedText(locale_preferred=False, locale='es', name='Frotis de paludismo')
+        es_locale2 = LocalizedText(locale_preferred=False, locale='es', name='frotis de malaria (cualitativo)')
+
+        self.source1.default_locale = 'en'
+        self.source1.supported_locales = ['en']
+        self.source1.save()
+        concept.names = [
+            en_locale_preferred, en_short_locale_not_preferred, en_locale_not_preferred, fr_locale, ht_locale,
+            es_locale1, es_locale2
+        ]
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+
+        self.assertEqual(concept.display_name, 'MALARIA SMEAR, QUALITATIVE')
+
+        self.source1.default_locale = 'fr'
+        self.source1.supported_locales = ['fr', 'en']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.assertEqual(concept.display_name, 'FROTTIS POUR DÉTECTER PALUDISME')
+
+        self.source1.default_locale = 'es'
+        self.source1.supported_locales = ['es']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.assertEqual(concept.display_name, 'Frotis de paludismo')
+
+        self.source1.default_locale = 'ht'
+        self.source1.supported_locales = ['ht', 'en']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.assertEqual(concept.display_name, 'tès MALARYA , kalitatif')
+
+        self.source1.default_locale = 'ti'
+        self.source1.supported_locales = ['ti']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.assertEqual(concept.display_name, 'MALARIA SMEAR, QUALITATIVE')  # system default locale = en
+
+        self.source1.default_locale = 'ti'
+        self.source1.supported_locales = ['ti', 'en']
+        self.source1.save()
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.assertEqual(concept.display_name, 'MALARIA SMEAR, QUALITATIVE')
+
+        self.source1.supported_locales = original_supported_locales
+        self.source1.default_locale = original_default_locale
+        concept.parent = self.source1
+        concept.full_clean()
+        concept.save()
+        self.source1.save()
 
     def test_concept_descriptions(self):
         """
