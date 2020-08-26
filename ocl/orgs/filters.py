@@ -22,9 +22,19 @@ class OrgSearchFilter(HaystackSearchFilter):
             unicode_ids = []
             for org_id in org_ids:
                 unicode_ids.append(u'orgs.organization.%s' % org_id)
+
+            # We need to differenciate behavior based on URL request
+            # For /orgs/ return public + membership organizations
+            # For /users/:user/orgs/ return only membership organizations
+            is_user_specific = True if request.user.get_profile().username in request.path else False
             if org_ids:
-                filters.append(SQ(public_can_view=True) | SQ(id__in=unicode_ids))
-            else:
+                if is_user_specific:
+                    filters.append(SQ(id__in=unicode_ids))
+                else:
+                    filters.append(SQ(public_can_view=True) | SQ(id__in=unicode_ids))
+            elif (not is_user_specific) and (not org_ids):
                 filters.append(SQ(public_can_view=True))
 
         return filters
+
+
