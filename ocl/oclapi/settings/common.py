@@ -157,7 +157,6 @@ class Common(Configuration):
         'mappings',
         'integration_tests',
         'raven.contrib.django.raven_compat', #used to push logs to sentry.io/openconceptlab
-        'celery_haystack',
     )
 
     # Django Rest Framework configuration
@@ -266,8 +265,7 @@ class Common(Configuration):
     # RealtimeSignalProcessor will update the index for every mongo update, sometimes at
     # the cost of performance. BaseSignalProcessor does not update the index at all, which
     # means the index must be updated manually (e.g. using the haystack update_index command).
-    HAYSTACK_SIGNAL_PROCESSOR = 'celery_haystack.signals.CelerySignalProcessor'
-
+    HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
     HAYSTACK_ITERATOR_LOAD_PER_QUERY = 25
     HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
     # Override to properly support Mongo identifiers with alphanumerics
@@ -275,7 +273,6 @@ class Common(Configuration):
 
     # Celery settings
     CELERY_RESULT_BACKEND = 'redis://redis.openconceptlab.org:6379/0'
-    CELERY_IMPORTS = 'celery_haystack.tasks',
     # Set these in your postactivate hook if you use virtualenvwrapper
     AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
