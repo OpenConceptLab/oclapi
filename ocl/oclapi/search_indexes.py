@@ -1,15 +1,11 @@
 import urllib
 
 from haystack.indexes import SearchIndex
-from celery_haystack.indexes import CelerySearchIndex
-from haystack.signals import BaseSignalProcessor
-from haystack.exceptions import HaystackError
-from django.db import models
-import logging
+
 __author__ = 'misternando'
 
 
-class OCLSearchIndex(CelerySearchIndex):
+class OCLSearchIndex(SearchIndex):
 
     def get_updated_field(self):
         return 'updated_at'
