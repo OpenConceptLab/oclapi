@@ -45,6 +45,6 @@ class LimitCollectionVersionFilter(ConceptSearchFilter):
                     collection_version = CollectionVersion.objects.get(versioned_object_id=collection.id, mnemonic=view.kwargs['version'])
                 filters.update({'collection_version': collection_version.id})
             else:
-                filters.update({'collection': collection.id})
-
+                collection_version = CollectionVersion.objects.get(versioned_object_id=collection.id, mnemonic='HEAD')
+                filters.update({'collection_version': collection_version.id})
         return filters
