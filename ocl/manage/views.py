@@ -107,7 +107,7 @@ class BulkImportView(APIView):
             flower_tasks = flower_get('api/tasks').json()
             tasks = []
             for task_id, value in flower_tasks.items():
-                if not value['name'].startswith('tasks.bulk_import'):
+                if value['name'] is None or not value['name'].startswith('tasks.bulk_import'):
                     continue
 
                 task = parse_bulk_import_task_id(task_id)
