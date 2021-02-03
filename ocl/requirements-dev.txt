@@ -1,0 +1,25 @@
+git+https://github.com/django-nonrel/django@nonrel-1.5
+django-mongodb-engine
+git+https://github.com/snyaggarwal/django-queryset-csv
+boto==2.38.0
+celery[redis]==3.1.17
+redis==2.10.6
+celery_once==0.1.4
+flower==0.9.5
+# django-celery==3.0.11
+django-configurations==0.8
+django-haystack==2.1.0
+django-uuidfield==0.4.0
+djangorestframework==2.3.7
+Fabric==1.9.0
+pymongo==2.6
+pysolr==3.2.0
+wsgiref==0.1.2
+python-dateutil==2.2
+gunicorn==18.0
+moto==0.4.25
+django-cors-headers==1.1.0
+ocldev==0.1.73
+fhir.resources==5.0.1
+mock
+raven #used to push logs to sentry.io/openconceptlab
