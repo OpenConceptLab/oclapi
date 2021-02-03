@@ -34,7 +34,7 @@ click==7.1.2
 configparser==4.0.2
 contextlib2==0.6.0.post1
 cryptography==3.3.1
-Django==1.5.11
+Django==1.11.29
 django-queryset-csv==0.3.3
 djangotoolbox==1.8.0
 enum34==1.1.10
