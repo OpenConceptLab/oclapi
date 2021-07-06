@@ -1,3 +1,5 @@
+# This project has been deprecated. Please see https://github.com/OpenConceptLab/oclapi2 for the latest version.
+
 OCL API
 ======
 
